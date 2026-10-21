@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=7 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/ember_staff.png" id="1_6rc3h"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_kcudo"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="3_yg3iu"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/fireball.png" id="4_q5hgj"]
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="5_k3831"]
+
+[sub_resource type="Resource" id="Resource_rjfc4"]
+script = ExtResource("3_yg3iu")
+status = &"burn"
+duration = 3.0
+power = 3.0
+chance = 0.5
+
+[resource]
+script = ExtResource("5_k3831")
+weapon_type = 5
+base_damage = 9.0
+attack_speed = 1.3
+reach = 180.0
+knockback = 60.0
+attack_pattern = 2
+two_handed = true
+damage_type = 1
+attack_animation = &""
+projectile_texture = ExtResource("4_q5hgj")
+projectile_speed = 220.0
+projectile_pierce = 0
+projectile_blast_radius = 22.0
+on_hit_effects = Array[ExtResource("2_kcudo")]([SubResource("Resource_rjfc4")])
+held_angle = -45.0
+grip_pixel = Vector2(3, 12)
+gender = "m"
+slot_type = &"weapon"
+visual_layer = &"armor"
+id = &"ember_staff"
+display_name = "Посох углей"
+description = "Огненные шары поджигают врагов."
+icon = ExtResource("1_6rc3h")
+item_type = 0
+rarity = 1
+max_stack = 1
+stat_bonuses = {
+"intellect": 3
+}
+has_durability = true
+max_durability = 180

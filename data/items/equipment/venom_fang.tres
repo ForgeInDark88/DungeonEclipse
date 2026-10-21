@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=6 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/venom_fang.png" id="1_xxbyx"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_wx0un"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="3_i4ilu"]
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="4_mvena"]
+
+[sub_resource type="Resource" id="Resource_nfrhv"]
+script = ExtResource("3_i4ilu")
+status = &"poison"
+duration = 4.0
+power = 3.0
+chance = 1.0
+
+[resource]
+script = ExtResource("4_mvena")
+weapon_type = 3
+base_damage = 9.0
+attack_speed = 4.0
+reach = 18.0
+knockback = 70.0
+attack_pattern = 1
+two_handed = false
+damage_type = 3
+attack_animation = &""
+projectile_speed = 260.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("2_wx0un")]([SubResource("Resource_nfrhv")])
+held_angle = -45.0
+grip_pixel = Vector2(3, 12)
+gender = "m"
+slot_type = &"weapon"
+visual_layer = &"armor"
+id = &"venom_fang"
+display_name = "Ядовитый клык"
+description = "Сочится зелёной отравой."
+icon = ExtResource("1_xxbyx")
+item_type = 0
+rarity = 2
+max_stack = 1
+stat_bonuses = {
+"agility": 4,
+"crit_chance": 0.05
+}
+has_durability = true
+max_durability = 240

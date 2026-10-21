@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("2_rwp41")
 slot_type = &"gloves"
+visual_layer = &"armor"
 id = &"gauntlets"
 display_name = "Латные рукавицы"
 description = "Кулак в них — уже оружие."
@@ -17,3 +18,5 @@ stat_bonuses = {
 "armor": 3,
 "strength": 2
 }
+has_durability = true
+max_durability = 120

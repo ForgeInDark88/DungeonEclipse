@@ -20,6 +20,7 @@ var _frame: PixelFrame
 var _icon: TextureRect
 var _count: Label
 var _placeholder: TextureRect
+var _durability: ColorRect
 var _key: Label
 var _hovered := false
 var _last_item: ItemData
@@ -65,6 +66,12 @@ func _ready() -> void:
 	_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_icon)
+	# Thin durability strip at the bottom of the slot.
+	_durability = ColorRect.new()
+	_durability.position = Vector2(4, UIStyle.SLOT_SIZE.y - 5)
+	_durability.size = Vector2(UIStyle.SLOT_SIZE.x - 8, 1)
+	_durability.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_durability)
 	_count = UIStyle.outlined_label("", 7, Color.WHITE)
 	_count.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_count.offset_right = -3
@@ -119,6 +126,12 @@ func refresh() -> void:
 	elif item and kind == Kind.QUICK and item.max_stack > 1:
 		_count.text = str(c)
 	_placeholder.visible = item == null
+	_durability.visible = item != null and item.has_durability and item.is_instance() and item.durability < item.max_durability
+	if _durability.visible:
+		var r := float(item.durability) / item.max_durability
+		_durability.size.x = maxf(1.0, (UIStyle.SLOT_SIZE.x - 8) * r)
+		_durability.color = Color(0.85, 0.15, 0.1) if r < 0.25 else (Color(0.95, 0.75, 0.2) if r < 0.6 else Color(0.3, 0.8, 0.3))
+	_icon.modulate = Color(1.0, 0.45, 0.45) if item and item.is_broken() else _icon.modulate
 	var tex := AssetPaths.SLOT_EMPTY if item == null else AssetPaths.SLOT
 	if _hovered:
 		tex = AssetPaths.SLOT_HOVER

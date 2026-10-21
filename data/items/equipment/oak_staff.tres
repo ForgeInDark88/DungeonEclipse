@@ -1,20 +1,41 @@
-[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=5 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/items/oak_staff.png" id="1_ujobn"]
-[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_1tilk"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_uu410"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/magic_bolt.png" id="3_s60u1"]
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="4_atp0s"]
 
 [resource]
-script = ExtResource("2_1tilk")
+script = ExtResource("4_atp0s")
+weapon_type = 5
+base_damage = 6.0
+attack_speed = 1.4
+reach = 180.0
+knockback = 40.0
+attack_pattern = 2
+two_handed = true
+damage_type = 4
+attack_animation = &""
+projectile_texture = ExtResource("3_s60u1")
+projectile_speed = 240.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("2_uu410")]([])
+held_angle = -45.0
+grip_pixel = Vector2(3, 12)
+gender = "m"
 slot_type = &"weapon"
+visual_layer = &"armor"
 id = &"oak_staff"
 display_name = "Дубовый посох"
-description = "Простой посох ученика."
+description = "Простой посох ученика: выпускает магические сгустки."
 icon = ExtResource("1_ujobn")
 item_type = 0
 rarity = 0
 max_stack = 1
 stat_bonuses = {
-"damage": 3,
 "intellect": 2,
 "max_mana": 10
 }
+has_durability = true
+max_durability = 120

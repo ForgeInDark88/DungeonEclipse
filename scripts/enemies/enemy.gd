@@ -39,6 +39,7 @@ var _flash_tween: Tween
 @onready var sprite: AnimatedSprite2D = $Sprite
 @onready var shape: CollisionShape2D = $CollisionShape2D
 @onready var hp_bar: ProgressBar = $HpBar
+@onready var status: StatusEffects = $StatusEffects
 
 
 func setup(p_data: EnemyData, p_floor: int) -> void:
@@ -69,6 +70,19 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if _player == null or not is_instance_valid(_player):
 		_player = get_tree().get_first_node_in_group("player") as Player
+	if status.is_stunned():
+		# Stunned: no thinking, no attacks, just physics.
+		if data.behavior != EnemyData.Behavior.FLYER:
+			velocity.y = minf(velocity.y + GRAVITY * delta, 420.0)
+		velocity.x = move_toward(velocity.x, 0.0, 600.0 * delta)
+		if data.behavior == EnemyData.Behavior.FLYER:
+			velocity.y = move_toward(velocity.y, 0.0, 600.0 * delta)
+		if state == State.ATTACK:
+			state = State.CHASE
+			_set_flash(0.0)
+		move_and_slide()
+		_play(&"hurt")
+		return
 	_attack_timer = maxf(0.0, _attack_timer - delta)
 	_think_timer -= delta
 	if _think_timer <= 0.0:
@@ -80,6 +94,11 @@ func _physics_process(delta: float) -> void:
 			_fly(delta)
 		_:
 			_walk(delta)
+	var slow := status.speed_multiplier()
+	if slow < 1.0:
+		velocity.x *= slow
+		if data.behavior == EnemyData.Behavior.FLYER:
+			velocity.y *= slow
 	move_and_slide()
 	if absf(velocity.x) > 1.0:
 		sprite.flip_h = velocity.x < 0.0
@@ -305,6 +324,26 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 		velocity = Vector2(kb * 120.0, -80.0 if data.behavior != EnemyData.Behavior.FLYER else 0.0)
 
 
+## Weapon knockback (direction -1/1, force in px/s).
+func apply_knockback(dir: float, force: float) -> void:
+	velocity.x = dir * force
+	if data.behavior != EnemyData.Behavior.FLYER:
+		velocity.y = minf(velocity.y, -force * 0.4)
+
+
+## Damage from statuses (poison, burn, bleed): ignores armor, no hit-stop.
+func take_status_damage(amount: int, _status: StringName, color: Color) -> void:
+	if _dead or amount <= 0:
+		return
+	hp -= amount
+	hp_bar.visible = true
+	hp_bar.max_value = max_hp
+	hp_bar.value = hp
+	EventBus.floating_text.emit(global_position + Vector2(randf_range(-4, 4), -data.collision_size.y - 2), str(amount), color)
+	if hp <= 0:
+		_die()
+
+
 ## Freezes the enemy in the HURT state (frost nova and similar effects).
 func stun(duration: float) -> void:
 	state = State.HURT
@@ -329,6 +368,8 @@ func is_dead() -> bool:
 func _die() -> void:
 	_dead = true
 	set_physics_process(false)
+	status.clear()
+	status.set_physics_process(false)
 	remove_from_group("enemies")
 	shape.set_deferred("disabled", true)
 	hp_bar.visible = false

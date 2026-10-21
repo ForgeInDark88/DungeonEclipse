@@ -1,11 +1,29 @@
-[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=4 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/items/rusty_sword.png" id="1_k35nk"]
-[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_wote8"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_lwxht"]
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="3_5gtgs"]
 
 [resource]
-script = ExtResource("2_wote8")
+script = ExtResource("3_5gtgs")
+weapon_type = 0
+base_damage = 7.0
+attack_speed = 2.2
+reach = 22.0
+knockback = 110.0
+attack_pattern = 0
+two_handed = false
+damage_type = 0
+attack_animation = &""
+projectile_speed = 260.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("2_lwxht")]([])
+held_angle = -45.0
+grip_pixel = Vector2(3, 12)
+gender = "m"
 slot_type = &"weapon"
+visual_layer = &"armor"
 id = &"rusty_sword"
 display_name = "Ржавый меч"
 description = "Видал лучшие времена, но всё ещё режет."
@@ -13,6 +31,6 @@ icon = ExtResource("1_k35nk")
 item_type = 0
 rarity = 0
 max_stack = 1
-stat_bonuses = {
-"damage": 3
-}
+stat_bonuses = {}
+has_durability = true
+max_durability = 120

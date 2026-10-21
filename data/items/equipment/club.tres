@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=6 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/club.png" id="1_mgwvm"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_vwixc"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="3_clmqu"]
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="4_l7t0v"]
+
+[sub_resource type="Resource" id="Resource_xdhfm"]
+script = ExtResource("3_clmqu")
+status = &"stun"
+duration = 0.8
+power = 1.0
+chance = 0.15
+
+[resource]
+script = ExtResource("4_l7t0v")
+weapon_type = 6
+base_damage = 9.0
+attack_speed = 1.6
+reach = 22.0
+knockback = 200.0
+attack_pattern = 0
+two_handed = false
+damage_type = 0
+attack_animation = &""
+projectile_speed = 260.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("2_vwixc")]([SubResource("Resource_xdhfm")])
+held_angle = -45.0
+grip_pixel = Vector2(3, 12)
+gender = "f"
+slot_type = &"weapon"
+visual_layer = &"armor"
+id = &"club"
+display_name = "Дубина"
+description = "Простая, как сама жизнь."
+icon = ExtResource("1_mgwvm")
+item_type = 0
+rarity = 0
+max_stack = 1
+stat_bonuses = {}
+has_durability = true
+max_durability = 120

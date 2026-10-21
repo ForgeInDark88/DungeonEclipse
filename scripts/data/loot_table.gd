@@ -25,7 +25,8 @@ func roll(floor_number: int, rng: RandomNumberGenerator = null) -> Array:
 		var entry := _pick_entry(floor_number, rng)
 		if entry != null and entry.item != null:
 			result.append({"item": entry.item, "count": rng.randi_range(entry.min_count, maxi(entry.min_count, entry.max_count))})
-	return result
+	# Weapons/armor become unique copies (affixes, durability) when they drop.
+	return ItemFactory.instantiate_loot(result, floor_number, rng)
 
 
 func _pick_entry(floor_number: int, rng: RandomNumberGenerator) -> LootEntry:

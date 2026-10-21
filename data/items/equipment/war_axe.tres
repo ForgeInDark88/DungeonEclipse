@@ -1,11 +1,37 @@
-[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=6 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/items/war_axe.png" id="1_iidf5"]
-[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_fxs52"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_826po"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="3_ly8rq"]
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="4_uvvbl"]
+
+[sub_resource type="Resource" id="Resource_4vlrp"]
+script = ExtResource("3_ly8rq")
+status = &"bleed"
+duration = 3.0
+power = 2.0
+chance = 0.3
 
 [resource]
-script = ExtResource("2_fxs52")
+script = ExtResource("4_uvvbl")
+weapon_type = 1
+base_damage = 15.0
+attack_speed = 1.2
+reach = 26.0
+knockback = 200.0
+attack_pattern = 0
+two_handed = true
+damage_type = 0
+attack_animation = &""
+projectile_speed = 260.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("2_826po")]([SubResource("Resource_4vlrp")])
+held_angle = -45.0
+grip_pixel = Vector2(3, 12)
+gender = "m"
 slot_type = &"weapon"
+visual_layer = &"armor"
 id = &"war_axe"
 display_name = "Боевой топор"
 description = "Тяжёлый, медленный и очень убедительный."
@@ -14,7 +40,8 @@ item_type = 0
 rarity = 1
 max_stack = 1
 stat_bonuses = {
-"damage": 10,
 "speed": -5,
 "strength": 3
 }
+has_durability = true
+max_durability = 180

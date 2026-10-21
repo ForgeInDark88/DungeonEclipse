@@ -82,6 +82,7 @@ func total_bonuses() -> Dictionary:
 	for item: EquipmentItemData in items.values():
 		if item == null:
 			continue
-		for k in item.stat_bonuses:
-			total[k] = float(total.get(k, 0.0)) + float(item.stat_bonuses[k])
+		var bonuses := item.active_bonuses()
+		for k in bonuses:
+			total[k] = float(total.get(k, 0.0)) + float(bonuses[k])
 	return total

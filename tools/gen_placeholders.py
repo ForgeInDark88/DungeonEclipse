@@ -265,6 +265,47 @@ def icon_ore():
     return im
 
 
+def icon_spear(head, shaft=(130, 90, 50, 255), wide=False):
+    im = new(16, 16)
+    d = ImageDraw.Draw(im)
+    d.line((1, 15, 11, 5), fill=shaft, width=1)
+    d.line((2, 15, 12, 5), fill=shade(shaft, 0.8), width=1)
+    if wide:
+        d.polygon([(10, 3), (15, 0), (13, 6), (12, 8), (9, 6)], fill=head)
+    else:
+        d.polygon([(11, 3), (15, 0), (13, 5), (12, 6)], fill=head)
+    return im
+
+
+def icon_bow(wood, string=(230, 225, 205, 255)):
+    im = new(16, 16)
+    d = ImageDraw.Draw(im)
+    d.arc((2, 1, 13, 14), 280, 80, fill=wood, width=2)
+    d.line((8, 1, 8, 14), fill=string)
+    d.point((8, 7), fill=GOLD_D)
+    return im
+
+
+def icon_club(c, spikes=False):
+    im = new(16, 16)
+    d = ImageDraw.Draw(im)
+    d.line((2, 14, 8, 8), fill=(110, 75, 40, 255), width=2)
+    d.ellipse((7, 2, 14, 9), fill=c)
+    if spikes:
+        for p in ((10, 1), (15, 5), (11, 10), (6, 5)):
+            d.point(p, fill=(220, 220, 230, 255))
+    return im
+
+
+def icon_whetstone():
+    im = new(16, 16)
+    d = ImageDraw.Draw(im)
+    d.polygon([(2, 10), (11, 4), (14, 7), (5, 13)], fill=(120, 125, 135, 255))
+    d.line((3, 10, 11, 5), fill=(170, 175, 185, 255))
+    d.point((12, 3), fill=(255, 255, 220, 255))
+    return im
+
+
 # -------------------------------------------------------------------- skills
 def skill_bg(glow):
     im = new(16, 16)
@@ -705,6 +746,19 @@ def main() -> None:
         "gold_coin": icon_coin(),
         "bone": icon_bone(),
         "iron_ore": icon_ore(),
+        # stage 12 weapons
+        "knight_sword": icon_sword((220, 225, 240, 255), guard=(60, 90, 200, 255)),
+        "hatchet": icon_axe((150, 150, 160, 255)),
+        "executioner_axe": icon_axe((90, 20, 30, 255)),
+        "wooden_spear": icon_spear((170, 170, 180, 255)),
+        "glaive": icon_spear((200, 210, 230, 255), wide=True),
+        "venom_fang": icon_dagger((90, 220, 80, 255)),
+        "short_bow": icon_bow((140, 95, 50, 255)),
+        "hunter_bow": icon_bow((90, 60, 35, 255)),
+        "ember_staff": icon_staff((255, 120, 30, 255)),
+        "club": icon_club((120, 85, 45, 255)),
+        "morning_star": icon_club((150, 155, 165, 255), spikes=True),
+        "whetstone": icon_whetstone(),
     }
     for name, im in items.items():
         save(im, f"sprites/items/{name}.png")
@@ -752,6 +806,13 @@ def main() -> None:
     save(projectile((255, 120, 20, 255)), "sprites/fx/fireball.png")
     save(projectile((200, 205, 215, 255), 8, 3), "sprites/fx/knife.png")
     save(projectile((200, 60, 230, 255)), "sprites/fx/dark_bolt.png")
+    arrow = new(10, 3)
+    ImageDraw.Draw(arrow).line((0, 1, 8, 1), fill=(150, 110, 60, 255))
+    ImageDraw.Draw(arrow).point((9, 1), fill=(210, 210, 220, 255))
+    ImageDraw.Draw(arrow).point((0, 0), fill=(230, 230, 230, 255))
+    ImageDraw.Draw(arrow).point((0, 2), fill=(230, 230, 230, 255))
+    save(arrow, "sprites/fx/arrow.png", do_outline=False)
+    save(projectile((120, 160, 255, 255), 7, 5), "sprites/fx/magic_bolt.png")
     save(light_tex(), "sprites/fx/light.png", do_outline=False)
     spark = new(4, 4)
     ImageDraw.Draw(spark).rectangle((0, 0, 3, 3), fill=(255, 255, 255, 255))

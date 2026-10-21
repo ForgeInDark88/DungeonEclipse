@@ -29,6 +29,8 @@ var _layers: Dictionary = {}  # StringName -> AnimatedSprite2D
 var _hand: Sprite2D
 var _held_override: Texture2D
 var _held_default: Texture2D
+var _held_angle := ICON_ANGLE
+var _held_grip := ICON_GRIP
 var _squash_tween: Tween
 var _flash_tween: Tween
 var _speed := 1.0
@@ -84,8 +86,14 @@ func refresh_from(hero: Hero) -> void:
 				armor = item.visual_sheet
 	set_layer(&"armor", armor)
 	set_layer(&"head", head)
-	var weapon := hero.equipment.get_item(&"weapon")
-	_held_default = weapon.icon if weapon else null
+	var weapon := hero.weapon()
+	_held_default = null
+	_held_angle = ICON_ANGLE
+	_held_grip = ICON_GRIP
+	if weapon:
+		_held_default = weapon.held_texture if weapon.held_texture else weapon.icon
+		_held_angle = weapon.held_angle
+		_held_grip = weapon.grip_pixel
 	_update_held()
 
 
@@ -142,6 +150,15 @@ func flash(color := Color.WHITE, duration := 0.15) -> void:
 func _process(_delta: float) -> void:
 	scale = Vector2(facing * squash.x * base_scale.x, squash.y * base_scale.y)
 	modulate = Color(tint.r, tint.g, tint.b, alpha)
+	# Smooth weapon motion between the key frames of one-shot animations.
+	var body: AnimatedSprite2D = _layers[&"body"]
+	if _hand and _hand.visible and current.begins_with("attack") and body.is_playing():
+		var f := body.frame
+		var n := body.sprite_frames.get_frame_count(current) if body.sprite_frames else 1
+		if f < n - 1:
+			var t := body.frame_progress
+			_hand.position = layout.hand_point(current, f).lerp(layout.hand_point(current, f + 1), t)
+			_hand.rotation_degrees = lerpf(layout.hand_angle(current, f), layout.hand_angle(current, f + 1), t) - _current_icon_angle()
 
 
 func _sync() -> void:
@@ -157,8 +174,13 @@ func _update_held() -> void:
 		return
 	var tex := _held_override if _held_override else _held_default
 	_hand.texture = tex
+	_hand.offset = -(ICON_GRIP if _held_override else _held_grip)
 	_hand.visible = tex != null and (hand_visible or _held_override != null)
 	if layout and current != &"":
 		var f := frame()
 		_hand.position = layout.hand_point(current, f)
-		_hand.rotation_degrees = layout.hand_angle(current, f) - ICON_ANGLE
+		_hand.rotation_degrees = layout.hand_angle(current, f) - _current_icon_angle()
+
+
+func _current_icon_angle() -> float:
+	return ICON_ANGLE if _held_override else _held_angle

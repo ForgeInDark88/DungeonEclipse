@@ -21,6 +21,7 @@ const CLIMB_SPEED := 75.0
 const INVULNERABLE_TIME := 0.7
 const PLATFORM_LAYER := 2
 const BASE_LIGHT_SCALE := 1.4
+const PROJECTILE_SCENE := preload("res://scenes/world/projectile.tscn")
 
 var hero: Hero
 var level: DungeonLevel
@@ -46,7 +47,6 @@ var _run_dust_timer := 0.0
 @onready var animator: HeroAnimator = $Animator
 @onready var camera: Camera2D = $Camera2D
 @onready var light: PointLight2D = $PointLight2D
-@onready var attack_area: Area2D = $AttackArea
 @onready var interact_area: Area2D = $InteractArea
 
 
@@ -101,7 +101,6 @@ func _physics_process(delta: float) -> void:
 	if input_x != 0.0 and not animator.is_busy():
 		facing = signf(input_x)
 		visual.facing = facing
-		attack_area.scale.x = facing
 
 	if _dash_time > 0.0:
 		_dash_time -= delta
@@ -274,23 +273,92 @@ func roll_damage(multiplier := 1.0) -> Dictionary:
 func attack() -> void:
 	if _attack_cooldown > 0.0 or climbing:
 		return
-	_attack_cooldown = hero.class_data.attack_cooldown
-	play_attack_animation()
-	for body in attack_area.get_overlapping_bodies():
-		if body.is_in_group("enemies") and body.has_method("take_damage"):
-			var d := roll_damage()
-			body.take_damage(d["amount"], d["crit"], global_position)
+	var w := hero.weapon()
+	var interval := hero.attack_interval()
+	_attack_cooldown = interval
+	# Fists use the quick jab; weapons their own animation.
+	animator.play_action(w.animation() if w else &"attack_quick", interval * 0.95)
+	# The hit lands on the "active" part of the swing.
+	var delay := clampf(interval * 0.35, 0.04, 0.22)
+	get_tree().create_timer(delay, false).timeout.connect(_perform_attack.bind(w, facing))
 
 
-## Attack animation by class (replaced by weapon types in a later stage).
-func play_attack_animation() -> void:
-	var anim := &"attack_slash"
-	match hero.class_data.id:
-		&"rogue":
-			anim = &"attack_quick"
-		&"mage":
-			anim = &"attack_cast"
-	animator.play_action(anim, hero.class_data.attack_cooldown)
+func _perform_attack(w: WeaponItemData, dir: float) -> void:
+	if dead or not is_inside_tree():
+		return
+	if w and w.is_ranged():
+		_shoot(w, dir)
+		return
+	var reach := w.reach if w else 16.0
+	var thrust := w != null and w.attack_pattern == WeaponItemData.Pattern.THRUST
+	var color := w.damage_color() if w else Color.WHITE
+	SlashTrail.spawn(get_parent(), global_position + Vector2(dir * 4.0, -12.0), dir, reach, thrust, color)
+	var hits := _melee_targets(reach, thrust, dir)
+	for enemy in hits:
+		hit_enemy(enemy, w, 1.0)
+	if not hits.is_empty() and w:
+		hero.wear_weapon(1)
+
+
+## Enemies inside the weapon hit shape: a long narrow box for thrusts,
+## a half circle in front for swings.
+func _melee_targets(reach: float, thrust: bool, dir: float) -> Array[Node]:
+	var query := PhysicsShapeQueryParameters2D.new()
+	query.collision_mask = 8
+	query.collide_with_bodies = true
+	var center: Vector2
+	if thrust:
+		var rect := RectangleShape2D.new()
+		rect.size = Vector2(reach, 14)
+		query.shape = rect
+		center = global_position + Vector2(dir * (reach / 2.0 + 3.0), -11.0)
+	else:
+		var circle := CircleShape2D.new()
+		circle.radius = reach
+		query.shape = circle
+		center = global_position + Vector2(dir * reach * 0.3, -12.0)
+	query.transform = Transform2D(0.0, center)
+	var result: Array[Node] = []
+	for hit in get_world_2d().direct_space_state.intersect_shape(query, 16):
+		var body: Node = hit["collider"]
+		if body.is_in_group("enemies") and body not in result:
+			if thrust or (body.global_position.x - global_position.x) * dir > -6.0:
+				result.append(body)
+	return result
+
+
+## Applies damage, knockback and the weapon's on-hit effects.
+func hit_enemy(enemy: Node, w: WeaponItemData, multiplier: float) -> void:
+	var d := roll_damage(multiplier)
+	enemy.take_damage(d["amount"], d["crit"], global_position)
+	if not is_instance_valid(enemy) or enemy.is_dead():
+		return
+	if w:
+		enemy.apply_knockback(signf(enemy.global_position.x - global_position.x), w.knockback)
+		for e in w.on_hit_effects:
+			if e:
+				e.try_apply(self, enemy, d["amount"])
+
+
+func _shoot(w: WeaponItemData, dir: float) -> void:
+	if level == null:
+		return
+	var p: Projectile = PROJECTILE_SCENE.instantiate()
+	var d := roll_damage()
+	p.setup(w.projectile_texture, Vector2(dir, 0), w.projectile_speed, d["amount"], "enemies")
+	p.crit = d["crit"]
+	p.pierce = w.projectile_pierce
+	p.blast_radius = w.projectile_blast_radius
+	p.blast_color = w.damage_color()
+	p.lifetime = w.reach / maxf(1.0, w.projectile_speed) + 0.4
+	p.on_hit = func(enemy: Node, _dmg: int) -> void:
+		if is_instance_valid(enemy) and not enemy.is_dead():
+			enemy.apply_knockback(dir, w.knockback)
+			for e in w.on_hit_effects:
+				if e:
+					e.try_apply(self, enemy, _dmg)
+		hero.wear_weapon(1)
+	level.add_entity(p, global_position + Vector2(dir * 10.0, -13.0))
 
 
 ## Called by enemies, enemy projectiles and traps.
@@ -298,6 +366,7 @@ func take_damage(amount: int, from_pos: Vector2 = Vector2.INF) -> void:
 	if dead or _invulnerable > 0.0 or _dash_time > 0.0:
 		return
 	var lost := hero.stats.take_damage(amount)
+	hero.wear_armor(1)
 	EventBus.damage_dealt.emit(global_position + Vector2(0, -24), lost, false, true)
 	_invulnerable = INVULNERABLE_TIME
 	visual.flash(Color(1.0, 0.3, 0.3))
@@ -385,7 +454,7 @@ func use_item(item: ItemData) -> bool:
 		EventBus.message.emit("Нет предмета: %s" % item.display_name)
 		return false
 	if item is EquipmentItemData:
-		return hero.equip_from_inventory(hero.inventory.find_index(item.id))
+		return hero.equip_from_inventory(hero.inventory.find_item(item))
 	if not (item is UsableItemData):
 		return false
 	if _item_cooldowns.has(item.id):

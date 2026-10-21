@@ -8,6 +8,7 @@ const GRAVITY := 700.0
 var item: ItemData
 var count: int = 1
 var _bob := 0.0
+var _glow: PointLight2D
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var count_label: Label = $Count
@@ -25,6 +26,14 @@ func _ready() -> void:
 	sprite.texture = item.icon if item else null
 	count_label.text = str(count) if count > 1 else ""
 	_bob = randf() * TAU
+	# Rare and epic items glow on the floor.
+	if item and item.rarity > ItemData.Rarity.COMMON:
+		_glow = PointLight2D.new()
+		_glow.texture = AssetPaths.tex(AssetPaths.LIGHT)
+		_glow.color = item.rarity_color()
+		_glow.texture_scale = 0.25 if item.rarity == ItemData.Rarity.RARE else 0.35
+		_glow.position = Vector2(0, -8)
+		add_child(_glow)
 
 
 func _physics_process(delta: float) -> void:
@@ -34,6 +43,9 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_bob += delta * 3.0
 	sprite.position.y = -8.0 + sin(_bob) * 1.5
+	if _glow:
+		_glow.energy = 0.9 + sin(_bob * 1.7) * 0.35
+		sprite.modulate = Color.WHITE.lerp(item.rarity_color() * 1.5, (sin(_bob * 1.7) + 1.0) * 0.2)
 
 
 func get_prompt() -> String:

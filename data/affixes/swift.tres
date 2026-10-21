@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="AffixData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="1_y66eo"]
+[ext_resource type="Script" path="res://scripts/data/affix_data.gd" id="2_rbdm4"]
+
+[resource]
+script = ExtResource("2_rbdm4")
+id = &"swift"
+prefix_forms = {
+"f": "Быстрая",
+"m": "Быстрый",
+"n": "Быстрое"
+}
+suffix = ""
+description = "+20% скорости атаки"
+min_rarity = 1
+weight = 1.3
+allowed_types = Array[int]([])
+stat_bonuses = {}
+damage_mult = 0.0
+speed_mult = 0.2
+reach_add = 0.0
+knockback_add = 0.0
+damage_type = -1
+hit_effects = Array[ExtResource("1_y66eo")]([])

@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=4 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/glaive.png" id="1_vor36"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_ot3ey"]
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="3_u1u0j"]
+
+[resource]
+script = ExtResource("3_u1u0j")
+weapon_type = 2
+base_damage = 13.0
+attack_speed = 1.5
+reach = 46.0
+knockback = 170.0
+attack_pattern = 1
+two_handed = true
+damage_type = 0
+attack_animation = &""
+projectile_speed = 260.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("2_ot3ey")]([])
+held_angle = -45.0
+grip_pixel = Vector2(6, 10)
+gender = "f"
+slot_type = &"weapon"
+visual_layer = &"armor"
+id = &"glaive"
+display_name = "Глефа"
+description = "Длинное древко и широкое лезвие."
+icon = ExtResource("1_vor36")
+item_type = 0
+rarity = 1
+max_stack = 1
+stat_bonuses = {
+"agility": 2
+}
+has_durability = true
+max_durability = 180

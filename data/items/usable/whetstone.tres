@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="UsableItemData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/item_effect.gd" id="1_23bf4"]
+[ext_resource type="Script" path="res://scripts/effects/repair_effect.gd" id="2_t5a2l"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/whetstone.png" id="3_hm8k5"]
+[ext_resource type="Script" path="res://scripts/data/usable_item_data.gd" id="4_5qtjc"]
+
+[sub_resource type="Resource" id="Resource_6p50e"]
+script = ExtResource("2_t5a2l")
+fraction = 1.0
+
+[resource]
+script = ExtResource("4_5qtjc")
+effects = Array[ExtResource("1_23bf4")]([SubResource("Resource_6p50e")])
+consume_on_use = true
+cooldown = 0.3
+use_animation = &"interact"
+id = &"whetstone"
+display_name = "Точильный камень"
+description = "Чинит надетое оружие и доспехи."
+icon = ExtResource("3_hm8k5")
+item_type = 1
+rarity = 0
+max_stack = 5
+stat_bonuses = {}
+has_durability = false
+max_durability = 100

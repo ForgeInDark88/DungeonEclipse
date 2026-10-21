@@ -33,8 +33,13 @@ func _init(p_race: RaceData, p_class: ClassData, layout: EquipmentLayout) -> voi
 func give_starting_kit() -> void:
 	for id: StringName in class_data.starting_items:
 		var item := ItemDatabase.get_item(id)
-		if item:
+		if item == null:
+			continue
+		if item.is_stackable():
 			inventory.add_item(item, int(class_data.starting_items[id]))
+		else:
+			for i in int(class_data.starting_items[id]):
+				inventory.add_item(ItemFactory.create(item))
 	for id in class_data.starting_equipment:
 		var idx := inventory.find_index(id)
 		if idx >= 0:
@@ -119,5 +124,49 @@ func move_equipment(from_slot: StringName, to_slot: StringName) -> void:
 	equipment.changed.emit()
 
 
+func weapon() -> WeaponItemData:
+	return equipment.get_item(&"weapon") as WeaponItemData
+
+
+## Seconds between attacks with the current weapon (class penalty included).
+func attack_interval() -> float:
+	var w := weapon()
+	if w == null:
+		return class_data.attack_cooldown
+	var interval := w.cooldown()
+	if not class_data.allows_weapon(w):
+		interval /= ClassData.WRONG_WEAPON_SPEED
+	return interval
+
+
+## Wears the weapon by `amount` (called on each hit).
+func wear_weapon(amount: int = 1) -> void:
+	_wear(weapon(), amount)
+
+
+## Wears a random worn armor piece (called when the hero is hit).
+func wear_armor(amount: int = 1) -> void:
+	var pieces: Array[EquipmentItemData] = []
+	for item: EquipmentItemData in equipment.items.values():
+		if item and not (item is WeaponItemData) and item.has_durability and item.is_instance() and item.durability > 0:
+			pieces.append(item)
+	if not pieces.is_empty():
+		_wear(pieces.pick_random(), amount)
+
+
+func _wear(item: EquipmentItemData, amount: int) -> void:
+	if item == null or not item.has_durability or not item.is_instance() or item.durability <= 0:
+		return
+	item.durability = maxi(0, item.durability - amount)
+	if item.durability == 0:
+		EventBus.message.emit("%s ломается! Нужен ремонт." % item.display_name)
+		equipment.changed.emit()
+	elif item.durability == item.max_durability / 5:
+		EventBus.message.emit("%s почти сломан(а)" % item.display_name)
+
+
 func _on_equipment_changed() -> void:
+	var w := weapon()
+	stats.weapon_base = w.effective_damage() if w else 0.0
+	stats.weapon_penalty = 1.0 if class_data.allows_weapon(w) else ClassData.WRONG_WEAPON_DAMAGE
 	stats.set_modifier("equipment", equipment.total_bonuses())

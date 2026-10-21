@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=4 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/wooden_spear.png" id="1_3akp2"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_ik7y8"]
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="3_m3ps4"]
+
+[resource]
+script = ExtResource("3_m3ps4")
+weapon_type = 2
+base_damage = 8.0
+attack_speed = 1.8
+reach = 40.0
+knockback = 130.0
+attack_pattern = 1
+two_handed = true
+damage_type = 0
+attack_animation = &""
+projectile_speed = 260.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("2_ik7y8")]([])
+held_angle = -45.0
+grip_pixel = Vector2(6, 10)
+gender = "n"
+slot_type = &"weapon"
+visual_layer = &"armor"
+id = &"wooden_spear"
+display_name = "Деревянное копьё"
+description = "Обожжённое на огне остриё."
+icon = ExtResource("1_3akp2")
+item_type = 0
+rarity = 0
+max_stack = 1
+stat_bonuses = {}
+has_durability = true
+max_durability = 120

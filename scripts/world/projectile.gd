@@ -13,6 +13,8 @@ var lifetime: float = 2.5
 ## Optional: explodes on impact with this radius (0 = no explosion).
 var blast_radius: float = 0.0
 var blast_color := Color(1.0, 0.5, 0.2)
+## Optional: called as on_hit.call(target, damage) for each target hit.
+var on_hit: Callable
 
 var _hit: Array[Node] = []
 
@@ -68,6 +70,8 @@ func _damage(body: Node) -> void:
 		body.take_damage(damage, global_position)
 	else:
 		body.take_damage(damage, crit, global_position)
+		if on_hit.is_valid():
+			on_hit.call(body, damage)
 
 
 func _finish() -> void:

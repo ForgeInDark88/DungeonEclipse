@@ -1,11 +1,35 @@
-[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=6 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/items/eclipse_blade.png" id="1_fm1ua"]
-[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_iduas"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_0l5tc"]
+[ext_resource type="Script" path="res://scripts/combat/life_steal_hit_effect.gd" id="3_ofe3j"]
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="4_edfbs"]
+
+[sub_resource type="Resource" id="Resource_rl2lb"]
+script = ExtResource("3_ofe3j")
+percent = 0.08
+chance = 1.0
 
 [resource]
-script = ExtResource("2_iduas")
+script = ExtResource("4_edfbs")
+weapon_type = 0
+base_damage = 16.0
+attack_speed = 2.1
+reach = 28.0
+knockback = 150.0
+attack_pattern = 0
+two_handed = false
+damage_type = 4
+attack_animation = &""
+projectile_speed = 260.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("2_0l5tc")]([SubResource("Resource_rl2lb")])
+held_angle = -45.0
+grip_pixel = Vector2(3, 12)
+gender = "m"
 slot_type = &"weapon"
+visual_layer = &"armor"
 id = &"eclipse_blade"
 display_name = "Клинок Затмения"
 description = "Выкован в час, когда погасло солнце."
@@ -15,6 +39,7 @@ rarity = 2
 max_stack = 1
 stat_bonuses = {
 "crit_chance": 0.08,
-"damage": 16,
 "strength": 4
 }
+has_durability = true
+max_durability = 240

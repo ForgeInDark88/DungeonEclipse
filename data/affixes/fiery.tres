@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="AffixData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="1_6ffrv"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="2_2l1ml"]
+[ext_resource type="Script" path="res://scripts/data/affix_data.gd" id="3_kn3dk"]
+
+[sub_resource type="Resource" id="Resource_87oju"]
+script = ExtResource("2_2l1ml")
+status = &"burn"
+duration = 3.0
+power = 3.0
+chance = 0.35
+
+[resource]
+script = ExtResource("3_kn3dk")
+id = &"fiery"
+prefix_forms = {
+"f": "Огненная",
+"m": "Огненный",
+"n": "Огненное"
+}
+suffix = ""
+description = "Огненный урон, поджигает"
+min_rarity = 1
+weight = 1.0
+allowed_types = Array[int]([])
+stat_bonuses = {}
+damage_mult = 0.0
+speed_mult = 0.0
+reach_add = 0.0
+knockback_add = 0.0
+damage_type = 1
+hit_effects = Array[ExtResource("1_6ffrv")]([SubResource("Resource_87oju")])

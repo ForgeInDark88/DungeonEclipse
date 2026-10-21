@@ -1,11 +1,29 @@
-[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=4 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/items/shadow_dagger.png" id="1_nqx8l"]
-[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_yxlo7"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_0ioqm"]
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="3_1ec8n"]
 
 [resource]
-script = ExtResource("2_yxlo7")
+script = ExtResource("3_1ec8n")
+weapon_type = 3
+base_damage = 7.0
+attack_speed = 3.8
+reach = 18.0
+knockback = 70.0
+attack_pattern = 1
+two_handed = false
+damage_type = 0
+attack_animation = &""
+projectile_speed = 260.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("2_0ioqm")]([])
+held_angle = -45.0
+grip_pixel = Vector2(3, 12)
+gender = "m"
 slot_type = &"weapon"
+visual_layer = &"armor"
 id = &"shadow_dagger"
 display_name = "Теневой кинжал"
 description = "Лезвие словно поглощает свет."
@@ -15,6 +33,7 @@ rarity = 1
 max_stack = 1
 stat_bonuses = {
 "agility": 3,
-"crit_chance": 0.06,
-"damage": 8
+"crit_chance": 0.06
 }
+has_durability = true
+max_durability = 180

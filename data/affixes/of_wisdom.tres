@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="AffixData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="1_6kmdp"]
+[ext_resource type="Script" path="res://scripts/data/affix_data.gd" id="2_26ndk"]
+
+[resource]
+script = ExtResource("2_26ndk")
+id = &"of_wisdom"
+prefix_forms = {}
+suffix = "мудрости"
+description = "+3 к Интеллекту, +10 маны"
+min_rarity = 1
+weight = 1.0
+allowed_types = Array[int]([])
+stat_bonuses = {
+"intellect": 3,
+"max_mana": 10
+}
+damage_mult = 0.0
+speed_mult = 0.0
+reach_add = 0.0
+knockback_add = 0.0
+damage_type = -1
+hit_effects = Array[ExtResource("1_6kmdp")]([])

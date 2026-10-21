@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="LootTable" load_steps=23 format=3]
+[gd_resource type="Resource" script_class="LootTable" load_steps=35 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/loot_entry.gd" id="1_se6wl"]
 [ext_resource type="Resource" path="res://data/items/usable/health_potion.tres" id="2_wlafl"]
@@ -9,11 +9,17 @@
 [ext_resource type="Resource" path="res://data/items/usable/key.tres" id="7_oyo53"]
 [ext_resource type="Resource" path="res://data/items/usable/big_health_potion.tres" id="8_0wfeg"]
 [ext_resource type="Resource" path="res://data/items/equipment/ruby_ring.tres" id="9_70xnb"]
+[ext_resource type="Resource" path="res://data/items/usable/whetstone.tres" id="9_hlyr8"]
 [ext_resource type="Resource" path="res://data/items/equipment/iron_helm.tres" id="10_efldk"]
+[ext_resource type="Resource" path="res://data/items/equipment/hatchet.tres" id="10_mqsja"]
 [ext_resource type="Resource" path="res://data/items/equipment/eclipse_ring.tres" id="11_4w755"]
+[ext_resource type="Resource" path="res://data/items/equipment/club.tres" id="11_pumas"]
+[ext_resource type="Resource" path="res://data/items/equipment/short_bow.tres" id="12_5bvma"]
 [ext_resource type="Script" path="res://scripts/data/loot_table.gd" id="12_kcmbx"]
+[ext_resource type="Resource" path="res://data/items/equipment/wooden_spear.tres" id="13_l0r61"]
+[ext_resource type="Resource" path="res://data/items/equipment/knight_sword.tres" id="16_37wb3"]
 
-[sub_resource type="Resource" id="Resource_ipryf"]
+[sub_resource type="Resource" id="Resource_yxai6"]
 script = ExtResource("1_se6wl")
 item = ExtResource("2_wlafl")
 weight = 3.0
@@ -21,7 +27,7 @@ min_count = 1
 max_count = 1
 min_floor = 1
 
-[sub_resource type="Resource" id="Resource_wpbdg"]
+[sub_resource type="Resource" id="Resource_psscp"]
 script = ExtResource("1_se6wl")
 item = ExtResource("3_wb5h6")
 weight = 3.0
@@ -29,7 +35,7 @@ min_count = 1
 max_count = 2
 min_floor = 1
 
-[sub_resource type="Resource" id="Resource_jj3dq"]
+[sub_resource type="Resource" id="Resource_w120w"]
 script = ExtResource("1_se6wl")
 item = ExtResource("4_4nqo7")
 weight = 3.0
@@ -37,7 +43,7 @@ min_count = 1
 max_count = 4
 min_floor = 1
 
-[sub_resource type="Resource" id="Resource_esgpr"]
+[sub_resource type="Resource" id="Resource_uhs4j"]
 script = ExtResource("1_se6wl")
 item = ExtResource("5_3i5x3")
 weight = 1.0
@@ -45,7 +51,7 @@ min_count = 1
 max_count = 1
 min_floor = 1
 
-[sub_resource type="Resource" id="Resource_1ykik"]
+[sub_resource type="Resource" id="Resource_8fm2d"]
 script = ExtResource("1_se6wl")
 item = ExtResource("6_ha7j1")
 weight = 1.5
@@ -53,7 +59,7 @@ min_count = 1
 max_count = 1
 min_floor = 1
 
-[sub_resource type="Resource" id="Resource_iu85n"]
+[sub_resource type="Resource" id="Resource_gbw5g"]
 script = ExtResource("1_se6wl")
 item = ExtResource("7_oyo53")
 weight = 1.0
@@ -61,7 +67,7 @@ min_count = 1
 max_count = 1
 min_floor = 1
 
-[sub_resource type="Resource" id="Resource_56t6a"]
+[sub_resource type="Resource" id="Resource_75auv"]
 script = ExtResource("1_se6wl")
 item = ExtResource("8_0wfeg")
 weight = 1.0
@@ -69,7 +75,47 @@ min_count = 1
 max_count = 1
 min_floor = 1
 
-[sub_resource type="Resource" id="Resource_gtqb8"]
+[sub_resource type="Resource" id="Resource_0bie0"]
+script = ExtResource("1_se6wl")
+item = ExtResource("9_hlyr8")
+weight = 0.6
+min_count = 1
+max_count = 1
+min_floor = 1
+
+[sub_resource type="Resource" id="Resource_j3y87"]
+script = ExtResource("1_se6wl")
+item = ExtResource("10_mqsja")
+weight = 0.5
+min_count = 1
+max_count = 1
+min_floor = 1
+
+[sub_resource type="Resource" id="Resource_i1lmv"]
+script = ExtResource("1_se6wl")
+item = ExtResource("11_pumas")
+weight = 0.5
+min_count = 1
+max_count = 1
+min_floor = 1
+
+[sub_resource type="Resource" id="Resource_0rmbd"]
+script = ExtResource("1_se6wl")
+item = ExtResource("12_5bvma")
+weight = 0.4
+min_count = 1
+max_count = 1
+min_floor = 1
+
+[sub_resource type="Resource" id="Resource_kxefj"]
+script = ExtResource("1_se6wl")
+item = ExtResource("13_l0r61")
+weight = 0.4
+min_count = 1
+max_count = 1
+min_floor = 1
+
+[sub_resource type="Resource" id="Resource_5ynv0"]
 script = ExtResource("1_se6wl")
 item = ExtResource("9_70xnb")
 weight = 0.5
@@ -77,7 +123,7 @@ min_count = 1
 max_count = 1
 min_floor = 1
 
-[sub_resource type="Resource" id="Resource_dtnea"]
+[sub_resource type="Resource" id="Resource_meotj"]
 script = ExtResource("1_se6wl")
 item = ExtResource("10_efldk")
 weight = 0.5
@@ -85,7 +131,15 @@ min_count = 1
 max_count = 1
 min_floor = 1
 
-[sub_resource type="Resource" id="Resource_tpmto"]
+[sub_resource type="Resource" id="Resource_3t3dh"]
+script = ExtResource("1_se6wl")
+item = ExtResource("16_37wb3")
+weight = 0.3
+min_count = 1
+max_count = 1
+min_floor = 1
+
+[sub_resource type="Resource" id="Resource_0gdld"]
 script = ExtResource("1_se6wl")
 item = ExtResource("11_4w755")
 weight = 0.3
@@ -100,4 +154,4 @@ rolls_max = 1
 rarity_weights = Array[float]([85.0, 13.0, 2.0])
 rare_bonus_per_floor = 3.0
 epic_bonus_per_floor = 1.5
-entries = Array[ExtResource("1_se6wl")]([SubResource("Resource_ipryf"), SubResource("Resource_wpbdg"), SubResource("Resource_jj3dq"), SubResource("Resource_esgpr"), SubResource("Resource_1ykik"), SubResource("Resource_iu85n"), SubResource("Resource_56t6a"), SubResource("Resource_gtqb8"), SubResource("Resource_dtnea"), SubResource("Resource_tpmto")])
+entries = Array[ExtResource("1_se6wl")]([SubResource("Resource_yxai6"), SubResource("Resource_psscp"), SubResource("Resource_w120w"), SubResource("Resource_uhs4j"), SubResource("Resource_8fm2d"), SubResource("Resource_gbw5g"), SubResource("Resource_75auv"), SubResource("Resource_0bie0"), SubResource("Resource_j3y87"), SubResource("Resource_i1lmv"), SubResource("Resource_0rmbd"), SubResource("Resource_kxefj"), SubResource("Resource_5ynv0"), SubResource("Resource_meotj"), SubResource("Resource_3t3dh"), SubResource("Resource_0gdld")])

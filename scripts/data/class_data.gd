@@ -32,3 +32,22 @@ extends Resource
 ## Item ids placed into the quick bar at start, in order.
 @export var starting_quick_bar: Array[StringName] = []
 @export var skills: Array[SkillData] = []
+## WeaponItemData.WeaponType values this class is trained in (empty = all).
+## Other weapons still work but with WRONG_WEAPON_* penalties.
+@export var allowed_weapon_types: Array[int] = []
+
+const WRONG_WEAPON_DAMAGE := 0.6
+const WRONG_WEAPON_SPEED := 0.75
+
+
+func allows_weapon(w: WeaponItemData) -> bool:
+	return w == null or allowed_weapon_types.is_empty() or int(w.weapon_type) in allowed_weapon_types
+
+
+func allowed_weapons_text() -> String:
+	if allowed_weapon_types.is_empty():
+		return "любое"
+	var names: Array[String] = []
+	for t in allowed_weapon_types:
+		names.append(String(WeaponItemData.WEAPON_TYPE_NAMES[t]).to_lower())
+	return ", ".join(names)

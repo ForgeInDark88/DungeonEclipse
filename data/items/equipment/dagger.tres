@@ -1,11 +1,29 @@
-[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=4 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/items/dagger.png" id="1_l550y"]
-[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_ftbev"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_6hhee"]
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="3_s871x"]
 
 [resource]
-script = ExtResource("2_ftbev")
+script = ExtResource("3_s871x")
+weapon_type = 3
+base_damage = 5.0
+attack_speed = 3.5
+reach = 16.0
+knockback = 60.0
+attack_pattern = 1
+two_handed = false
+damage_type = 0
+attack_animation = &""
+projectile_speed = 260.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("2_6hhee")]([])
+held_angle = -45.0
+grip_pixel = Vector2(3, 12)
+gender = "m"
 slot_type = &"weapon"
+visual_layer = &"armor"
 id = &"dagger"
 display_name = "Кинжал"
 description = "Короткий и быстрый."
@@ -15,6 +33,7 @@ rarity = 0
 max_stack = 1
 stat_bonuses = {
 "agility": 1,
-"crit_chance": 0.03,
-"damage": 4
+"crit_chance": 0.03
 }
+has_durability = true
+max_durability = 120

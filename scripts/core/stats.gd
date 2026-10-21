@@ -18,10 +18,15 @@ const SPEED_PER_AGILITY := 1.5
 const BASE_CRIT := 0.05
 const CRIT_PER_AGILITY := 0.006
 const ARMOR_PER_VITALITY := 0.5
+const DAMAGE_PER_MAIN_ATTR := 0.08
 
 var race: RaceData
 var class_data: ClassData
 var level: int = 1
+## Damage of the equipped weapon (0 = unarmed: ClassData.base_damage is used)
+## and the class penalty multiplier for untrained weapon types.
+var weapon_base: float = 0.0
+var weapon_penalty: float = 1.0
 
 var hp: int = 1
 var mana: int = 0
@@ -83,7 +88,9 @@ func recalculate() -> void:
 	_values = primary.duplicate()
 	_values[StatTypes.MAX_HP] = BASE_HP + vit_v * HP_PER_VITALITY + _flat(StatTypes.MAX_HP)
 	_values[StatTypes.MAX_MANA] = BASE_MANA + int_v * MANA_PER_INTELLECT + _flat(StatTypes.MAX_MANA)
-	_values[StatTypes.DAMAGE] = (class_data.base_damage if class_data else 3) + main_attr * 0.8 + _flat(StatTypes.DAMAGE)
+	# Weapon damage scaled by the class main attribute (+8% per point).
+	var base_dmg := weapon_base if weapon_base > 0.0 else float(class_data.base_damage if class_data else 3)
+	_values[StatTypes.DAMAGE] = (base_dmg + _flat(StatTypes.DAMAGE)) * (1.0 + main_attr * DAMAGE_PER_MAIN_ATTR) * weapon_penalty
 	_values[StatTypes.ARMOR] = vit_v * ARMOR_PER_VITALITY + _flat(StatTypes.ARMOR)
 	_values[StatTypes.SPEED] = BASE_SPEED + agi_v * SPEED_PER_AGILITY + _flat(StatTypes.SPEED)
 	_values[StatTypes.CRIT_CHANCE] = clampf(BASE_CRIT + agi_v * CRIT_PER_AGILITY + _flat(StatTypes.CRIT_CHANCE), 0.0, 0.75)

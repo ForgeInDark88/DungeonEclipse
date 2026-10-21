@@ -6,6 +6,7 @@
 [resource]
 script = ExtResource("2_msxdk")
 slot_type = &"boots"
+visual_layer = &"armor"
 id = &"swift_boots"
 display_name = "Сапоги скорохода"
 description = "Ноги сами несут вперёд."
@@ -17,3 +18,5 @@ stat_bonuses = {
 "agility": 2,
 "speed": 20
 }
+has_durability = true
+max_durability = 120

@@ -7,6 +7,7 @@ const RACES_DIR := "res://data/races"
 const CLASSES_DIR := "res://data/classes"
 const ENEMIES_DIR := "res://data/enemies"
 const LOOT_DIR := "res://data/loot_tables"
+const AFFIX_DIR := "res://data/affixes"
 const EQUIPMENT_LAYOUT := "res://data/equipment_layout.tres"
 
 var items: Dictionary = {}  # StringName -> ItemData
@@ -14,6 +15,7 @@ var races: Array[RaceData] = []
 var classes: Array[ClassData] = []
 var enemies: Array[EnemyData] = []
 var loot_tables: Dictionary = {}  # StringName (file name) -> LootTable
+var affixes: Array[AffixData] = []
 var equipment_layout: EquipmentLayout
 
 
@@ -27,6 +29,10 @@ func reload() -> void:
 	classes.clear()
 	enemies.clear()
 	loot_tables.clear()
+	affixes.clear()
+	for res in _load_dir(AFFIX_DIR):
+		if res is AffixData:
+			affixes.append(res)
 	for res in _load_dir(ITEMS_DIR):
 		if res is ItemData:
 			if items.has(res.id):
