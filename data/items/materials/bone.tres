@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/bone.png" id="1_wjbef"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="2_mq5op"]
+
+[resource]
+script = ExtResource("2_mq5op")
+id = &"bone"
+display_name = "Кость"
+description = "Осталась от скелета."
+icon = ExtResource("1_wjbef")
+item_type = 2
+rarity = 0
+max_stack = 20
+stat_bonuses = {}

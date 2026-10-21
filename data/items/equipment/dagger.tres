@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/dagger.png" id="1_l550y"]
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_ftbev"]
+
+[resource]
+script = ExtResource("2_ftbev")
+slot_type = &"weapon"
+id = &"dagger"
+display_name = "Кинжал"
+description = "Короткий и быстрый."
+icon = ExtResource("1_l550y")
+item_type = 0
+rarity = 0
+max_stack = 1
+stat_bonuses = {
+"agility": 1,
+"crit_chance": 0.03,
+"damage": 4
+}

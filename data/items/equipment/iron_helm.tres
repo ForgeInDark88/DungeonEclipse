@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/iron_helm.png" id="1_vfb52"]
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_bupcf"]
+
+[resource]
+script = ExtResource("2_bupcf")
+slot_type = &"helmet"
+id = &"iron_helm"
+display_name = "Железный шлем"
+description = "Звенит от каждого удара, но держит."
+icon = ExtResource("1_vfb52")
+item_type = 0
+rarity = 1
+max_stack = 1
+stat_bonuses = {
+"armor": 5,
+"vitality": 1
+}

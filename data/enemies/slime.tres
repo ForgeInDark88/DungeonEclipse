@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=4 format=3]
+
+[ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="1_8f3q0"]
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="2_s5mx1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/slime.png" id="3_q2kvs"]
+
+[resource]
+script = ExtResource("2_s5mx1")
+id = &"slime"
+display_name = "Слизень"
+texture = ExtResource("3_q2kvs")
+behavior = 0
+collision_size = Vector2(14, 10)
+max_hp = 18
+damage = 5
+armor = 0
+speed = 25.0
+chase_speed = 55.0
+aggro_range = 110.0
+attack_range = 12.0
+attack_cooldown = 1.0
+jumps = true
+projectile_speed = 140.0
+xp_reward = 8
+loot_table = ExtResource("1_8f3q0")
+loot_chance = 0.3
+min_floor = 1
+spawn_weight = 1.2
+tint = Color(1, 1, 1, 1)

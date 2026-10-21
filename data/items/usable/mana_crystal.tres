@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="UsableItemData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/item_effect.gd" id="1_mkw2v"]
+[ext_resource type="Script" path="res://scripts/effects/mana_effect.gd" id="2_aku5k"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/mana_crystal.png" id="3_6pkrb"]
+[ext_resource type="Script" path="res://scripts/data/usable_item_data.gd" id="4_8jata"]
+
+[sub_resource type="Resource" id="Resource_an5h0"]
+script = ExtResource("2_aku5k")
+amount = 30
+
+[resource]
+script = ExtResource("4_8jata")
+effects = Array[ExtResource("1_mkw2v")]([SubResource("Resource_an5h0")])
+consume_on_use = true
+cooldown = 0.3
+id = &"mana_crystal"
+display_name = "Кристалл маны"
+description = "Раздавите — и мана вернётся."
+icon = ExtResource("3_6pkrb")
+item_type = 1
+rarity = 0
+max_stack = 10
+stat_bonuses = {}

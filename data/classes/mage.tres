@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="ClassData" load_steps=9 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/portraits/class_mage.png" id="1_03uoa"]
+[ext_resource type="Script" path="res://scripts/data/class_data.gd" id="2_g2l5e"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="3_kjic0"]
+[ext_resource type="Resource" path="res://data/skills/fireball.tres" id="4_nbq6m"]
+[ext_resource type="Resource" path="res://data/skills/frost_nova.tres" id="5_k0gng"]
+[ext_resource type="Resource" path="res://data/skills/arcane_shield.tres" id="6_dkchj"]
+[ext_resource type="Resource" path="res://data/skills/blink.tres" id="7_tdmdb"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/mage.png" id="8_8mf1t"]
+
+[resource]
+script = ExtResource("2_g2l5e")
+id = &"mage"
+display_name = "Маг"
+order = 2
+description = "Хрупкий повелитель стихий. Урон зависит от Интеллекта."
+portrait_overlay = ExtResource("1_03uoa")
+sprite = ExtResource("8_8mf1t")
+base_stats = {
+"agility": 4,
+"intellect": 9,
+"strength": 2,
+"vitality": 4
+}
+growth_per_level = {
+"agility": 1,
+"intellect": 3,
+"strength": 0,
+"vitality": 1
+}
+main_attribute = "intellect"
+base_damage = 2
+attack_range = 18.0
+attack_cooldown = 0.45
+starting_items = {
+"bomb": 1,
+"health_potion": 2,
+"leather_cap": 1,
+"mana_crystal": 3,
+"oak_staff": 1,
+"pickaxe": 1,
+"rope": 1,
+"torch": 2
+}
+starting_equipment = Array[StringName]([&"oak_staff", &"leather_cap"])
+starting_quick_bar = Array[StringName]([&"pickaxe", &"torch", &"bomb", &"mana_crystal", &"health_potion", &"rope"])
+skills = Array[ExtResource("3_kjic0")]([ExtResource("4_nbq6m"), ExtResource("5_k0gng"), ExtResource("6_dkchj"), ExtResource("7_tdmdb")])

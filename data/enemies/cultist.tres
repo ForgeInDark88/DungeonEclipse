@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=5 format=3]
+
+[ext_resource type="Resource" path="res://data/loot_tables/enemy_rare.tres" id="1_gbajf"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/dark_bolt.png" id="2_mls8h"]
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="3_achw7"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/cultist.png" id="4_gycwh"]
+
+[resource]
+script = ExtResource("3_achw7")
+id = &"cultist"
+display_name = "Культист Затмения"
+texture = ExtResource("4_gycwh")
+behavior = 2
+collision_size = Vector2(10, 20)
+max_hp = 24
+damage = 7
+armor = 0
+speed = 30.0
+chase_speed = 40.0
+aggro_range = 180.0
+attack_range = 130.0
+attack_cooldown = 2.0
+jumps = false
+projectile_texture = ExtResource("2_mls8h")
+projectile_speed = 130.0
+xp_reward = 18
+loot_table = ExtResource("1_gbajf")
+loot_chance = 0.5
+min_floor = 2
+spawn_weight = 0.8
+tint = Color(1, 1, 1, 1)

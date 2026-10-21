@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/dash_skill.gd" id="1_q2nkk"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/dash.png" id="2_frqcs"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="3_40a0e"]
+
+[sub_resource type="Resource" id="Resource_2s1hv"]
+script = ExtResource("1_q2nkk")
+speed = 420.0
+duration = 0.18
+duration_per_level = 0.03
+damage_multiplier = 1.0
+
+[resource]
+script = ExtResource("3_40a0e")
+id = &"dash"
+display_name = "Рывок"
+description = "Стремительный рывок сквозь врагов."
+icon = ExtResource("2_frqcs")
+mana_cost = 8
+cooldown = 3.0
+max_level = 4
+effect = SubResource("Resource_2s1hv")

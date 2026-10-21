@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/eclipse_blade.png" id="1_fm1ua"]
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_iduas"]
+
+[resource]
+script = ExtResource("2_iduas")
+slot_type = &"weapon"
+id = &"eclipse_blade"
+display_name = "Клинок Затмения"
+description = "Выкован в час, когда погасло солнце."
+icon = ExtResource("1_fm1ua")
+item_type = 0
+rarity = 2
+max_stack = 1
+stat_bonuses = {
+"crit_chance": 0.08,
+"damage": 16,
+"strength": 4
+}

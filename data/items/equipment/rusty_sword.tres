@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/rusty_sword.png" id="1_k35nk"]
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_wote8"]
+
+[resource]
+script = ExtResource("2_wote8")
+slot_type = &"weapon"
+id = &"rusty_sword"
+display_name = "Ржавый меч"
+description = "Видал лучшие времена, но всё ещё режет."
+icon = ExtResource("1_k35nk")
+item_type = 0
+rarity = 0
+max_stack = 1
+stat_bonuses = {
+"damage": 3
+}

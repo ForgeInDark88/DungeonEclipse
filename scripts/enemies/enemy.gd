@@ -1,0 +1,276 @@
+class_name Enemy
+extends CharacterBody2D
+## Generic monster driven by an EnemyData resource.
+## States: PATROL -> CHASE (player in sight) -> ATTACK (wind-up, then hit/shoot).
+## Behaviours: WALKER (ground, turns at walls/ledges, optional hops),
+## FLYER (ignores gravity, swoops at the player), RANGED (keeps distance, shoots).
+## Stats scale with the floor number.
+
+enum State { PATROL, CHASE, ATTACK, HURT }
+
+const GRAVITY := 900.0
+const PROJECTILE_SCENE := preload("res://scenes/world/projectile.tscn")
+const HP_SCALE_PER_FLOOR := 0.3
+const DMG_SCALE_PER_FLOOR := 0.18
+
+var data: EnemyData
+var floor_number: int = 1
+var max_hp: int = 10
+var hp: int = 10
+var damage: int = 1
+var state: State = State.PATROL
+var dir: float = 1.0
+
+var _attack_timer := 0.0
+var _windup := 0.0
+var _hurt_timer := 0.0
+var _hop_timer := 0.0
+var _think_timer := 0.0
+var _float_t := 0.0
+var _home := Vector2.ZERO
+var _player: Player
+
+@onready var sprite: Sprite2D = $Sprite2D
+@onready var shape: CollisionShape2D = $CollisionShape2D
+@onready var hp_bar: ProgressBar = $HpBar
+
+
+func setup(p_data: EnemyData, p_floor: int) -> void:
+	data = p_data
+	floor_number = p_floor
+	var f := float(p_floor - 1)
+	max_hp = roundi(data.max_hp * (1.0 + HP_SCALE_PER_FLOOR * f))
+	damage = roundi(data.damage * (1.0 + DMG_SCALE_PER_FLOOR * f))
+	hp = max_hp
+
+
+func _ready() -> void:
+	add_to_group("enemies")
+	sprite.texture = data.texture
+	sprite.modulate = data.tint
+	var rect := RectangleShape2D.new()
+	rect.size = data.collision_size
+	shape.shape = rect
+	shape.position = Vector2(0, -data.collision_size.y / 2.0)
+	sprite.position = Vector2(0, -data.texture.get_height() / 2.0 if data.texture else -8.0)
+	hp_bar.position = Vector2(-8, -data.collision_size.y - 6)
+	hp_bar.visible = false
+	dir = -1.0 if randf() < 0.5 else 1.0
+	_home = global_position
+	_float_t = randf() * TAU
+	if data.behavior == EnemyData.Behavior.FLYER:
+		motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
+
+
+func _physics_process(delta: float) -> void:
+	if _player == null or not is_instance_valid(_player):
+		_player = get_tree().get_first_node_in_group("player") as Player
+	_attack_timer = maxf(0.0, _attack_timer - delta)
+	_think_timer -= delta
+	if _think_timer <= 0.0:
+		_think_timer = 0.2
+		_think()
+
+	match data.behavior:
+		EnemyData.Behavior.FLYER:
+			_fly(delta)
+		_:
+			_walk(delta)
+	move_and_slide()
+	if absf(velocity.x) > 1.0:
+		sprite.flip_h = velocity.x < 0.0
+
+
+func _player_visible() -> bool:
+	if _player == null or _player.dead:
+		return false
+	var to_player := _player.global_position - global_position
+	if to_player.length() > data.aggro_range:
+		return false
+	if data.behavior == EnemyData.Behavior.WALKER and absf(to_player.y) > 56.0:
+		return false
+	# Line of sight against the world layer.
+	var query := PhysicsRayQueryParameters2D.create(global_position + Vector2(0, -6), _player.global_position + Vector2(0, -10), 1)
+	return get_world_2d().direct_space_state.intersect_ray(query).is_empty()
+
+
+func _think() -> void:
+	if state == State.HURT or state == State.ATTACK:
+		return
+	state = State.CHASE if _player_visible() else State.PATROL
+
+
+func _distance_to_player() -> float:
+	return global_position.distance_to(_player.global_position) if _player else INF
+
+
+# ------------------------------------------------------------------ walking
+func _walk(delta: float) -> void:
+	velocity.y = minf(velocity.y + GRAVITY * delta, 420.0)
+	match state:
+		State.HURT:
+			_hurt_timer -= delta
+			velocity.x = move_toward(velocity.x, 0.0, 400.0 * delta)
+			if _hurt_timer <= 0.0:
+				state = State.CHASE
+		State.PATROL:
+			velocity.x = dir * data.speed
+			if is_on_floor() and (is_on_wall() or _ledge_ahead()):
+				dir = -dir
+		State.CHASE:
+			var dx := _player.global_position.x - global_position.x
+			var dist := _distance_to_player()
+			if data.behavior == EnemyData.Behavior.RANGED:
+				# Keep some distance and shoot.
+				dir = signf(dx) if dx != 0.0 else dir
+				var desired := 0.0
+				if dist < data.attack_range * 0.5:
+					desired = -dir * data.speed
+				elif dist > data.attack_range * 0.9:
+					desired = dir * data.speed
+				if _ledge_ahead() and signf(desired) == dir:
+					desired = 0.0
+				velocity.x = desired
+				if dist <= data.attack_range and _attack_timer <= 0.0:
+					_begin_attack()
+			else:
+				dir = signf(dx) if absf(dx) > 2.0 else dir
+				velocity.x = dir * data.chase_speed
+				if data.jumps:
+					_hop_timer -= delta
+					if is_on_floor() and _hop_timer <= 0.0:
+						velocity.y = -220.0
+						_hop_timer = randf_range(0.6, 1.2)
+				elif is_on_floor() and is_on_wall():
+					velocity.y = -260.0  # try to hop over small obstacles
+				if dist <= data.attack_range + 6.0 and _attack_timer <= 0.0:
+					_begin_attack()
+		State.ATTACK:
+			velocity.x = move_toward(velocity.x, 0.0, 600.0 * delta)
+			_update_attack(delta)
+
+
+func _ledge_ahead() -> bool:
+	var level := _level()
+	if level == null:
+		return false
+	var probe := global_position + Vector2(dir * (data.collision_size.x / 2.0 + 3.0), 4.0)
+	return not level.is_ground_at(probe)
+
+
+func _level() -> DungeonLevel:
+	var p := get_parent()
+	return p.get_parent() as DungeonLevel if p else null
+
+
+# ------------------------------------------------------------------- flying
+func _fly(delta: float) -> void:
+	_float_t += delta
+	match state:
+		State.HURT:
+			_hurt_timer -= delta
+			velocity = velocity.move_toward(Vector2.ZERO, 300.0 * delta)
+			if _hurt_timer <= 0.0:
+				state = State.CHASE
+		State.PATROL:
+			var target := _home + Vector2(sin(_float_t * 0.7) * 40.0, sin(_float_t * 2.0) * 8.0)
+			velocity = (target - global_position).limit_length(data.speed)
+		State.CHASE:
+			var target := _player.global_position + Vector2(0, -12)
+			velocity = velocity.move_toward((target - global_position).normalized() * data.chase_speed, 300.0 * delta)
+			velocity.y += sin(_float_t * 6.0) * 20.0
+			if _distance_to_player() <= data.attack_range + 8.0 and _attack_timer <= 0.0:
+				_begin_attack()
+		State.ATTACK:
+			velocity = velocity.move_toward(Vector2.ZERO, 200.0 * delta)
+			_update_attack(delta)
+
+
+# ------------------------------------------------------------------- attack
+func _begin_attack() -> void:
+	state = State.ATTACK
+	_windup = 0.35 if data.behavior != EnemyData.Behavior.FLYER else 0.15
+	sprite.modulate = data.tint * Color(1.6, 1.0, 1.0)
+
+
+func _update_attack(delta: float) -> void:
+	_windup -= delta
+	if _windup > 0.0:
+		return
+	sprite.modulate = data.tint
+	_attack_timer = data.attack_cooldown
+	state = State.CHASE
+	if _player == null or _player.dead:
+		return
+	if data.behavior == EnemyData.Behavior.RANGED:
+		_shoot()
+		return
+	if data.behavior == EnemyData.Behavior.FLYER:
+		velocity = (_player.global_position + Vector2(0, -10) - global_position).normalized() * data.chase_speed * 2.2
+	elif data.behavior == EnemyData.Behavior.WALKER:
+		velocity.x = dir * data.chase_speed * 1.8  # lunge
+	if _distance_to_player() <= data.attack_range + 14.0:
+		_player.take_damage(damage, global_position)
+
+
+func _shoot() -> void:
+	var level := _level()
+	if level == null:
+		return
+	var p: Projectile = PROJECTILE_SCENE.instantiate()
+	var from := global_position + Vector2(0, -12)
+	var dir_v := (_player.global_position + Vector2(0, -10) - from).normalized()
+	p.setup(data.projectile_texture, dir_v, data.projectile_speed, damage, "player")
+	p.blast_color = Color(0.8, 0.3, 1.0)
+	level.add_entity(p, from)
+
+
+# ------------------------------------------------------------------ damage
+func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.INF) -> void:
+	if hp <= 0:
+		return
+	var dealt := maxi(1, amount - data.armor)
+	hp -= dealt
+	hp_bar.visible = true
+	hp_bar.max_value = max_hp
+	hp_bar.value = hp
+	EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 4),
+			("%d!" % dealt) if crit else str(dealt), Color(1.0, 0.85, 0.2) if crit else Color.WHITE)
+	_flash()
+	if hp <= 0:
+		_die()
+		return
+	state = State.HURT
+	_hurt_timer = 0.25
+	if from_pos != Vector2.INF:
+		var kb := signf(global_position.x - from_pos.x)
+		velocity = Vector2(kb * 120.0, -80.0 if data.behavior != EnemyData.Behavior.FLYER else 0.0)
+
+
+## Freezes the enemy in the HURT state (frost nova and similar effects).
+func stun(duration: float) -> void:
+	state = State.HURT
+	_hurt_timer = duration
+	sprite.modulate = Color(0.6, 0.8, 1.4)
+	var tw := create_tween()
+	tw.tween_property(sprite, "modulate", data.tint, duration)
+
+
+func _flash() -> void:
+	sprite.modulate = Color(3, 3, 3)
+	var tw := create_tween()
+	tw.tween_property(sprite, "modulate", data.tint, 0.15)
+
+
+func _die() -> void:
+	set_physics_process(false)
+	EventBus.enemy_killed.emit(data, global_position)
+	if GameState.hero:
+		GameState.hero.add_xp(data.xp_reward + floor_number - 1)
+	EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 12), "+%d XP" % (data.xp_reward + floor_number - 1), Color(1.0, 0.85, 0.3))
+	if data.loot_table and randf() < data.loot_chance:
+		var loot := data.loot_table.roll(floor_number)
+		if not loot.is_empty():
+			EventBus.spawn_items.emit(global_position + Vector2(0, -8), loot)
+	Fx.sparks(get_parent(), global_position + Vector2(0, -6), data.tint.darkened(0.2), 14, 100.0)
+	queue_free()

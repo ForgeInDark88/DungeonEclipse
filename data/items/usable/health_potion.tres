@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="UsableItemData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/item_effect.gd" id="1_cmgc2"]
+[ext_resource type="Script" path="res://scripts/effects/heal_effect.gd" id="2_ksi5a"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/health_potion.png" id="3_8ynpn"]
+[ext_resource type="Script" path="res://scripts/data/usable_item_data.gd" id="4_jkweb"]
+
+[sub_resource type="Resource" id="Resource_s2tot"]
+script = ExtResource("2_ksi5a")
+amount = 35
+percent = 0.0
+
+[resource]
+script = ExtResource("4_jkweb")
+effects = Array[ExtResource("1_cmgc2")]([SubResource("Resource_s2tot")])
+consume_on_use = true
+cooldown = 0.3
+id = &"health_potion"
+display_name = "Зелье лечения"
+description = "Горькое, но действенное."
+icon = ExtResource("3_8ynpn")
+item_type = 1
+rarity = 0
+max_stack = 10
+stat_bonuses = {}

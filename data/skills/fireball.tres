@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/projectile_skill.gd" id="1_7mee6"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/fireball.png" id="2_n6lax"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/fireball.png" id="3_nfinr"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="4_27pyq"]
+
+[sub_resource type="Resource" id="Resource_04put"]
+script = ExtResource("1_7mee6")
+texture = ExtResource("2_n6lax")
+speed = 220.0
+damage_multiplier = 1.8
+damage_per_level = 0.35
+count = 1
+extra_every_levels = 0
+spread_degrees = 10.0
+pierce = 0
+blast_radius = 28.0
+color = Color(1, 0.5, 0.15, 1)
+
+[resource]
+script = ExtResource("4_27pyq")
+id = &"fireball"
+display_name = "Огненный шар"
+description = "Взрывается при попадании."
+icon = ExtResource("3_nfinr")
+mana_cost = 10
+cooldown = 1.2
+max_level = 4
+effect = SubResource("Resource_04put")

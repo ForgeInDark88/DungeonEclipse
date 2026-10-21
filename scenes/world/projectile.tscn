@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/projectile.gd" id="1_proj"]
+
+[sub_resource type="RectangleShape2D" id="Shape_proj"]
+size = Vector2(6, 4)
+
+[node name="Projectile" type="Area2D"]
+collision_layer = 0
+collision_mask = 9
+monitorable = false
+script = ExtResource("1_proj")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Shape_proj")

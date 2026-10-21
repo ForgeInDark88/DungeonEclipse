@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RaceData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/portraits/race_human.png" id="1_juhia"]
+[ext_resource type="Script" path="res://scripts/data/race_data.gd" id="2_y7kln"]
+
+[resource]
+script = ExtResource("2_y7kln")
+id = &"human"
+display_name = "Человек"
+order = 0
+description = "Упорные и разносторонние. Понемногу хороши во всём."
+portrait = ExtResource("1_juhia")
+stat_bonuses = {
+"agility": 1,
+"crit_chance": 0.02,
+"intellect": 1,
+"strength": 1,
+"vitality": 1
+}
