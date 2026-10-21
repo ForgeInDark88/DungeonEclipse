@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/copper_ring.png" id="1_8dn5i"]
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_0apff"]
+
+[resource]
+script = ExtResource("2_0apff")
+slot_type = &"ring"
+id = &"copper_ring"
+display_name = "Медное кольцо"
+description = "Позеленело от времени."
+icon = ExtResource("1_8dn5i")
+item_type = 0
+rarity = 0
+max_stack = 1
+stat_bonuses = {
+"vitality": 1
+}

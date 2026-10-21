@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/mage_robe.png" id="1_ddywp"]
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_licm1"]
+
+[resource]
+script = ExtResource("2_licm1")
+slot_type = &"chest"
+id = &"mage_robe"
+display_name = "Мантия мага"
+description = "Расшита защитными рунами."
+icon = ExtResource("1_ddywp")
+item_type = 0
+rarity = 1
+max_stack = 1
+stat_bonuses = {
+"armor": 3,
+"intellect": 3,
+"max_mana": 15
+}

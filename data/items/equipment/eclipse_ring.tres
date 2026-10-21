@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/eclipse_ring.png" id="1_frwye"]
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_qtmj8"]
+
+[resource]
+script = ExtResource("2_qtmj8")
+slot_type = &"ring"
+id = &"eclipse_ring"
+display_name = "Кольцо Затмения"
+description = "Чёрный камень в золотой оправе."
+icon = ExtResource("1_frwye")
+item_type = 0
+rarity = 2
+max_stack = 1
+stat_bonuses = {
+"agility": 2,
+"crit_chance": 0.05,
+"intellect": 2,
+"strength": 2,
+"vitality": 2
+}

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/moon_amulet.png" id="1_6koat"]
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_8p0ug"]
+
+[resource]
+script = ExtResource("2_8p0ug")
+slot_type = &"amulet"
+id = &"moon_amulet"
+display_name = "Лунный амулет"
+description = "Светится в темноте холодным светом."
+icon = ExtResource("1_6koat")
+item_type = 0
+rarity = 2
+max_stack = 1
+stat_bonuses = {
+"armor": 2,
+"intellect": 5,
+"max_mana": 25
+}

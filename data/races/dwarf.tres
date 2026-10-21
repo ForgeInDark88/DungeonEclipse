@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RaceData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/portraits/race_dwarf.png" id="1_xrj0o"]
+[ext_resource type="Script" path="res://scripts/data/race_data.gd" id="2_ip2ak"]
+
+[resource]
+script = ExtResource("2_ip2ak")
+id = &"dwarf"
+display_name = "Гном"
+order = 1
+description = "Крепкие шахтёры подгорных глубин. Медленные, но несокрушимые."
+portrait = ExtResource("1_xrj0o")
+stat_bonuses = {
+"agility": -1,
+"armor": 3,
+"speed": -8,
+"strength": 2,
+"vitality": 3
+}

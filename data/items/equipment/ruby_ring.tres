@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/ruby_ring.png" id="1_nt6ui"]
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_xlcde"]
+
+[resource]
+script = ExtResource("2_xlcde")
+slot_type = &"ring"
+id = &"ruby_ring"
+display_name = "Рубиновое кольцо"
+description = "Камень тёплый на ощупь."
+icon = ExtResource("1_nt6ui")
+item_type = 0
+rarity = 1
+max_stack = 1
+stat_bonuses = {
+"max_hp": 15,
+"strength": 2
+}

@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/buff_skill.gd" id="1_vnhpg"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/iron_skin.png" id="2_peydj"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="3_kpske"]
+
+[sub_resource type="Resource" id="Resource_iqw05"]
+script = ExtResource("1_vnhpg")
+key = "iron_skin"
+bonuses = {
+"armor": 15
+}
+bonuses_per_level = {
+"armor": 8
+}
+duration = 6.0
+duration_per_level = 1.0
+tint = Color(0.6, 1, 0.6, 1)
+heal_percent = 0.1
+
+[resource]
+script = ExtResource("3_kpske")
+id = &"iron_skin"
+display_name = "Железная кожа"
+description = "Зелёный щит поглощает удары."
+icon = ExtResource("2_peydj")
+mana_cost = 18
+cooldown = 14.0
+max_level = 4
+effect = SubResource("Resource_iqw05")

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/arcane_staff.png" id="1_mqd5x"]
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_xrtyn"]
+
+[resource]
+script = ExtResource("2_xrtyn")
+slot_type = &"weapon"
+id = &"arcane_staff"
+display_name = "Посох тайн"
+description = "В навершии пульсирует фиолетовый огонь."
+icon = ExtResource("1_mqd5x")
+item_type = 0
+rarity = 2
+max_stack = 1
+stat_bonuses = {
+"damage": 9,
+"intellect": 6,
+"max_mana": 30
+}

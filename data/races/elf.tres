@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RaceData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/portraits/race_elf.png" id="1_ocp41"]
+[ext_resource type="Script" path="res://scripts/data/race_data.gd" id="2_7qfea"]
+
+[resource]
+script = ExtResource("2_7qfea")
+id = &"elf"
+display_name = "Эльф"
+order = 2
+description = "Ловкие и проницательные дети сумерек."
+portrait = ExtResource("1_ocp41")
+stat_bonuses = {
+"agility": 3,
+"intellect": 2,
+"speed": 10,
+"vitality": -1
+}

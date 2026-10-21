@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="ClassData" load_steps=9 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/portraits/class_warrior.png" id="1_1y7wg"]
+[ext_resource type="Script" path="res://scripts/data/class_data.gd" id="2_3268n"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="3_o3gbp"]
+[ext_resource type="Resource" path="res://data/skills/haste.tres" id="4_vp7vw"]
+[ext_resource type="Resource" path="res://data/skills/power_strike.tres" id="5_c13nv"]
+[ext_resource type="Resource" path="res://data/skills/earthquake.tres" id="6_pse82"]
+[ext_resource type="Resource" path="res://data/skills/iron_skin.tres" id="7_ontb7"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/warrior.png" id="8_h8h0d"]
+
+[resource]
+script = ExtResource("2_3268n")
+id = &"warrior"
+display_name = "Воин"
+order = 0
+description = "Крепкий боец ближнего боя с киркой и щитом. Урон зависит от Силы."
+portrait_overlay = ExtResource("1_1y7wg")
+sprite = ExtResource("8_h8h0d")
+base_stats = {
+"agility": 4,
+"intellect": 2,
+"strength": 8,
+"vitality": 7
+}
+growth_per_level = {
+"agility": 1,
+"intellect": 0,
+"strength": 2,
+"vitality": 2
+}
+main_attribute = "strength"
+base_damage = 4
+attack_range = 18.0
+attack_cooldown = 0.38
+starting_items = {
+"bomb": 2,
+"health_potion": 3,
+"key": 1,
+"leather_armor": 1,
+"mana_crystal": 1,
+"pickaxe": 1,
+"rope": 1,
+"rusty_sword": 1,
+"torch": 2
+}
+starting_equipment = Array[StringName]([&"rusty_sword", &"leather_armor"])
+starting_quick_bar = Array[StringName]([&"pickaxe", &"torch", &"bomb", &"mana_crystal", &"health_potion", &"rope", &"key"])
+skills = Array[ExtResource("3_o3gbp")]([ExtResource("4_vp7vw"), ExtResource("5_c13nv"), ExtResource("6_pse82"), ExtResource("7_ontb7")])

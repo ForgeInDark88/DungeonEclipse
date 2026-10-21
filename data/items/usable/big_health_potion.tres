@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="UsableItemData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/item_effect.gd" id="1_jx5wo"]
+[ext_resource type="Script" path="res://scripts/effects/heal_effect.gd" id="2_lrwgy"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/big_health_potion.png" id="3_rlhv8"]
+[ext_resource type="Script" path="res://scripts/data/usable_item_data.gd" id="4_67fqj"]
+
+[sub_resource type="Resource" id="Resource_bgdyv"]
+script = ExtResource("2_lrwgy")
+amount = 30
+percent = 0.4
+
+[resource]
+script = ExtResource("4_67fqj")
+effects = Array[ExtResource("1_jx5wo")]([SubResource("Resource_bgdyv")])
+consume_on_use = true
+cooldown = 0.3
+id = &"big_health_potion"
+display_name = "Большое зелье лечения"
+description = "Густое и красное, как закат."
+icon = ExtResource("3_rlhv8")
+item_type = 1
+rarity = 1
+max_stack = 5
+stat_bonuses = {}

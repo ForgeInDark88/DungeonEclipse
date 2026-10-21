@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/leather_armor.png" id="1_b4d1j"]
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_mqp7n"]
+
+[resource]
+script = ExtResource("2_mqp7n")
+slot_type = &"chest"
+id = &"leather_armor"
+display_name = "Кожаная броня"
+description = "Лёгкая и удобная."
+icon = ExtResource("1_b4d1j")
+item_type = 0
+rarity = 0
+max_stack = 1
+stat_bonuses = {
+"armor": 4,
+"max_hp": 5
+}

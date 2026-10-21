@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/shadow_dagger.png" id="1_nqx8l"]
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_yxlo7"]
+
+[resource]
+script = ExtResource("2_yxlo7")
+slot_type = &"weapon"
+id = &"shadow_dagger"
+display_name = "Теневой кинжал"
+description = "Лезвие словно поглощает свет."
+icon = ExtResource("1_nqx8l")
+item_type = 0
+rarity = 1
+max_stack = 1
+stat_bonuses = {
+"agility": 3,
+"crit_chance": 0.06,
+"damage": 8
+}

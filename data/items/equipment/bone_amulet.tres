@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/bone_amulet.png" id="1_thefj"]
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_nv3mr"]
+
+[resource]
+script = ExtResource("2_nv3mr")
+slot_type = &"amulet"
+id = &"bone_amulet"
+display_name = "Костяной амулет"
+description = "Оберег из костей подземных тварей."
+icon = ExtResource("1_thefj")
+item_type = 0
+rarity = 0
+max_stack = 1
+stat_bonuses = {
+"max_hp": 10
+}

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/gold_coin.png" id="1_fdetc"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="2_4pk4g"]
+
+[resource]
+script = ExtResource("2_4pk4g")
+id = &"gold_coin"
+display_name = "Золотая монета"
+description = "Блестит. Пока что просто трофей."
+icon = ExtResource("1_fdetc")
+item_type = 2
+rarity = 0
+max_stack = 99
+stat_bonuses = {}

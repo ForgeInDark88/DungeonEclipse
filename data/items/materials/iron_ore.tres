@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/iron_ore.png" id="1_qp1rf"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="2_e3ob4"]
+
+[resource]
+script = ExtResource("2_e3ob4")
+id = &"iron_ore"
+display_name = "Железная руда"
+description = "Найдена в стенах подземелья."
+icon = ExtResource("1_qp1rf")
+item_type = 2
+rarity = 0
+max_stack = 20
+stat_bonuses = {}

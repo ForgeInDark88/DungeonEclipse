@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="ClassData" load_steps=9 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/portraits/class_rogue.png" id="1_8t6c3"]
+[ext_resource type="Script" path="res://scripts/data/class_data.gd" id="2_1ke0y"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="3_j5d85"]
+[ext_resource type="Resource" path="res://data/skills/dash.tres" id="4_dc6po"]
+[ext_resource type="Resource" path="res://data/skills/throw_knives.tres" id="5_8yl4t"]
+[ext_resource type="Resource" path="res://data/skills/smoke_bomb.tres" id="6_bf3fw"]
+[ext_resource type="Resource" path="res://data/skills/evasion.tres" id="7_3b8my"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/rogue.png" id="8_fq2fb"]
+
+[resource]
+script = ExtResource("2_1ke0y")
+id = &"rogue"
+display_name = "Разбойник"
+order = 1
+description = "Быстрый и смертоносный, полагается на криты. Урон зависит от Ловкости."
+portrait_overlay = ExtResource("1_8t6c3")
+sprite = ExtResource("8_fq2fb")
+base_stats = {
+"agility": 8,
+"intellect": 3,
+"strength": 4,
+"vitality": 5
+}
+growth_per_level = {
+"agility": 2,
+"intellect": 1,
+"strength": 1,
+"vitality": 1
+}
+main_attribute = "agility"
+base_damage = 3
+attack_range = 18.0
+attack_cooldown = 0.25
+starting_items = {
+"bomb": 3,
+"dagger": 1,
+"health_potion": 2,
+"key": 1,
+"leather_boots": 1,
+"pickaxe": 1,
+"rope": 2,
+"torch": 1
+}
+starting_equipment = Array[StringName]([&"dagger", &"leather_boots"])
+starting_quick_bar = Array[StringName]([&"pickaxe", &"torch", &"bomb", &"health_potion", &"rope", &"key"])
+skills = Array[ExtResource("3_j5d85")]([ExtResource("4_dc6po"), ExtResource("5_8yl4t"), ExtResource("6_bf3fw"), ExtResource("7_3b8my")])

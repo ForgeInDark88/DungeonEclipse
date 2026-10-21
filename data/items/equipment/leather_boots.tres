@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/leather_boots.png" id="1_fnj6b"]
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_8wyop"]
+
+[resource]
+script = ExtResource("2_8wyop")
+slot_type = &"boots"
+id = &"leather_boots"
+display_name = "Кожаные сапоги"
+description = "Мягкие подошвы для тихих шагов."
+icon = ExtResource("1_fnj6b")
+item_type = 0
+rarity = 0
+max_stack = 1
+stat_bonuses = {
+"armor": 1,
+"speed": 5
+}

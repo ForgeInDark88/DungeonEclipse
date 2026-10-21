@@ -1,0 +1,103 @@
+[gd_resource type="Resource" script_class="LootTable" load_steps=23 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/loot_entry.gd" id="1_se6wl"]
+[ext_resource type="Resource" path="res://data/items/usable/health_potion.tres" id="2_wlafl"]
+[ext_resource type="Resource" path="res://data/items/materials/bone.tres" id="3_wb5h6"]
+[ext_resource type="Resource" path="res://data/items/materials/gold_coin.tres" id="4_4nqo7"]
+[ext_resource type="Resource" path="res://data/items/usable/bomb.tres" id="5_3i5x3"]
+[ext_resource type="Resource" path="res://data/items/usable/mana_crystal.tres" id="6_ha7j1"]
+[ext_resource type="Resource" path="res://data/items/usable/key.tres" id="7_oyo53"]
+[ext_resource type="Resource" path="res://data/items/usable/big_health_potion.tres" id="8_0wfeg"]
+[ext_resource type="Resource" path="res://data/items/equipment/ruby_ring.tres" id="9_70xnb"]
+[ext_resource type="Resource" path="res://data/items/equipment/iron_helm.tres" id="10_efldk"]
+[ext_resource type="Resource" path="res://data/items/equipment/eclipse_ring.tres" id="11_4w755"]
+[ext_resource type="Script" path="res://scripts/data/loot_table.gd" id="12_kcmbx"]
+
+[sub_resource type="Resource" id="Resource_ipryf"]
+script = ExtResource("1_se6wl")
+item = ExtResource("2_wlafl")
+weight = 3.0
+min_count = 1
+max_count = 1
+min_floor = 1
+
+[sub_resource type="Resource" id="Resource_wpbdg"]
+script = ExtResource("1_se6wl")
+item = ExtResource("3_wb5h6")
+weight = 3.0
+min_count = 1
+max_count = 2
+min_floor = 1
+
+[sub_resource type="Resource" id="Resource_jj3dq"]
+script = ExtResource("1_se6wl")
+item = ExtResource("4_4nqo7")
+weight = 3.0
+min_count = 1
+max_count = 4
+min_floor = 1
+
+[sub_resource type="Resource" id="Resource_esgpr"]
+script = ExtResource("1_se6wl")
+item = ExtResource("5_3i5x3")
+weight = 1.0
+min_count = 1
+max_count = 1
+min_floor = 1
+
+[sub_resource type="Resource" id="Resource_1ykik"]
+script = ExtResource("1_se6wl")
+item = ExtResource("6_ha7j1")
+weight = 1.5
+min_count = 1
+max_count = 1
+min_floor = 1
+
+[sub_resource type="Resource" id="Resource_iu85n"]
+script = ExtResource("1_se6wl")
+item = ExtResource("7_oyo53")
+weight = 1.0
+min_count = 1
+max_count = 1
+min_floor = 1
+
+[sub_resource type="Resource" id="Resource_56t6a"]
+script = ExtResource("1_se6wl")
+item = ExtResource("8_0wfeg")
+weight = 1.0
+min_count = 1
+max_count = 1
+min_floor = 1
+
+[sub_resource type="Resource" id="Resource_gtqb8"]
+script = ExtResource("1_se6wl")
+item = ExtResource("9_70xnb")
+weight = 0.5
+min_count = 1
+max_count = 1
+min_floor = 1
+
+[sub_resource type="Resource" id="Resource_dtnea"]
+script = ExtResource("1_se6wl")
+item = ExtResource("10_efldk")
+weight = 0.5
+min_count = 1
+max_count = 1
+min_floor = 1
+
+[sub_resource type="Resource" id="Resource_tpmto"]
+script = ExtResource("1_se6wl")
+item = ExtResource("11_4w755")
+weight = 0.3
+min_count = 1
+max_count = 1
+min_floor = 3
+
+[resource]
+script = ExtResource("12_kcmbx")
+rolls_min = 1
+rolls_max = 1
+rarity_weights = Array[float]([85.0, 13.0, 2.0])
+rare_bonus_per_floor = 3.0
+epic_bonus_per_floor = 1.5
+entries = Array[ExtResource("1_se6wl")]([SubResource("Resource_ipryf"), SubResource("Resource_wpbdg"), SubResource("Resource_jj3dq"), SubResource("Resource_esgpr"), SubResource("Resource_1ykik"), SubResource("Resource_iu85n"), SubResource("Resource_56t6a"), SubResource("Resource_gtqb8"), SubResource("Resource_dtnea"), SubResource("Resource_tpmto")])

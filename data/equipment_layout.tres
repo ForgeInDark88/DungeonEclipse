@@ -1,0 +1,79 @@
+[gd_resource type="Resource" script_class="EquipmentLayout" load_steps=18 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_layout.gd" id="1_vcl2w"]
+[ext_resource type="Script" path="res://scripts/data/equip_slot_def.gd" id="2_hvyp8"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/leather_cap.png" id="ph_helmet"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/bone_amulet.png" id="ph_amulet"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/rusty_sword.png" id="ph_weapon"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/leather_armor.png" id="ph_chest"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/leather_gloves.png" id="ph_gloves"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/copper_ring.png" id="ph_ring"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/leather_boots.png" id="ph_boots"]
+
+[sub_resource type="Resource" id="Resource_vajbe"]
+script = ExtResource("2_hvyp8")
+id = &"helmet"
+slot_type = &"helmet"
+placeholder = ExtResource("ph_helmet")
+label = "Шлем"
+page_position = Vector2(46, 0)
+
+[sub_resource type="Resource" id="Resource_wfud8"]
+script = ExtResource("2_hvyp8")
+id = &"amulet"
+slot_type = &"amulet"
+placeholder = ExtResource("ph_amulet")
+label = "Амулет"
+page_position = Vector2(88, 10)
+
+[sub_resource type="Resource" id="Resource_6wdsk"]
+script = ExtResource("2_hvyp8")
+id = &"weapon"
+slot_type = &"weapon"
+placeholder = ExtResource("ph_weapon")
+label = "Оружие"
+page_position = Vector2(4, 46)
+
+[sub_resource type="Resource" id="Resource_1jwoi"]
+script = ExtResource("2_hvyp8")
+id = &"chest"
+slot_type = &"chest"
+placeholder = ExtResource("ph_chest")
+label = "Нагрудник"
+page_position = Vector2(46, 46)
+
+[sub_resource type="Resource" id="Resource_oxd7f"]
+script = ExtResource("2_hvyp8")
+id = &"gloves"
+slot_type = &"gloves"
+placeholder = ExtResource("ph_gloves")
+label = "Перчатки"
+page_position = Vector2(88, 46)
+
+[sub_resource type="Resource" id="Resource_fhghm"]
+script = ExtResource("2_hvyp8")
+id = &"ring_1"
+slot_type = &"ring"
+placeholder = ExtResource("ph_ring")
+label = "Кольцо"
+page_position = Vector2(4, 86)
+
+[sub_resource type="Resource" id="Resource_2fu2l"]
+script = ExtResource("2_hvyp8")
+id = &"ring_2"
+slot_type = &"ring"
+placeholder = ExtResource("ph_ring")
+label = "Кольцо"
+page_position = Vector2(88, 86)
+
+[sub_resource type="Resource" id="Resource_f0k5o"]
+script = ExtResource("2_hvyp8")
+id = &"boots"
+slot_type = &"boots"
+placeholder = ExtResource("ph_boots")
+label = "Сапоги"
+page_position = Vector2(46, 120)
+
+[resource]
+script = ExtResource("1_vcl2w")
+slots = Array[ExtResource("2_hvyp8")]([SubResource("Resource_vajbe"), SubResource("Resource_wfud8"), SubResource("Resource_6wdsk"), SubResource("Resource_1jwoi"), SubResource("Resource_oxd7f"), SubResource("Resource_fhghm"), SubResource("Resource_2fu2l"), SubResource("Resource_f0k5o")])

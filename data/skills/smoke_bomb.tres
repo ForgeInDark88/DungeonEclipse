@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/area_blast_skill.gd" id="1_jn8dv"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/smoke_bomb.png" id="2_fy2go"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="3_t6orn"]
+
+[sub_resource type="Resource" id="Resource_oihyb"]
+script = ExtResource("1_jn8dv")
+radius = 54.0
+radius_per_level = 6.0
+damage_multiplier = 0.6
+damage_per_level = 0.15
+knockback = 60.0
+breaks_tiles = false
+stun_time = 1.5
+color = Color(0.6, 0.6, 0.7, 1)
+
+[resource]
+script = ExtResource("3_t6orn")
+id = &"smoke_bomb"
+display_name = "Дымовая завеса"
+description = "Враги вокруг теряют ориентацию."
+icon = ExtResource("2_fy2go")
+mana_cost = 15
+cooldown = 10.0
+max_level = 4
+effect = SubResource("Resource_oihyb")

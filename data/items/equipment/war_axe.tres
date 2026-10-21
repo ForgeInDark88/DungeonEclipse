@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/war_axe.png" id="1_iidf5"]
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_fxs52"]
+
+[resource]
+script = ExtResource("2_fxs52")
+slot_type = &"weapon"
+id = &"war_axe"
+display_name = "Боевой топор"
+description = "Тяжёлый, медленный и очень убедительный."
+icon = ExtResource("1_iidf5")
+item_type = 0
+rarity = 1
+max_stack = 1
+stat_bonuses = {
+"damage": 10,
+"speed": -5,
+"strength": 3
+}
