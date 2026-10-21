@@ -1,10 +1,13 @@
 [gd_resource type="Resource" script_class="RaceData" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://assets/sprites/player/body_elf.png" id="sheet_body"]
 [ext_resource type="Texture2D" path="res://assets/sprites/portraits/race_elf.png" id="1_ocp41"]
 [ext_resource type="Script" path="res://scripts/data/race_data.gd" id="2_7qfea"]
 
 [resource]
 script = ExtResource("2_7qfea")
+body_sheet = ExtResource("sheet_body")
+sprite_scale = Vector2(0.95, 1.06)
 id = &"elf"
 display_name = "Эльф"
 order = 2

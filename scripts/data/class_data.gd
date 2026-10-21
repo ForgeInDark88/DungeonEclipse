@@ -11,6 +11,10 @@ extends Resource
 @export var portrait_overlay: Texture2D
 ## In-world sprite of the hero.
 @export var sprite: Texture2D
+## Animated layers drawn over the race body (same layout as the body sheet).
+@export var outfit_sheet: Texture2D
+## Headgear when no helmet with its own visual is equipped.
+@export var head_sheet: Texture2D
 ## Base primary attributes, keyed by StatTypes names.
 @export var base_stats: Dictionary = {"strength": 5, "agility": 5, "intellect": 5, "vitality": 5}
 ## Added to primary attributes on every level up.

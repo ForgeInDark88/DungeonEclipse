@@ -39,31 +39,44 @@ var _external_velocity := Vector2.ZERO
 var _light_tween: Tween
 var _hint := ""
 var _dash_time := 0.0
+var _afterimage_timer := 0.0
+var _run_dust_timer := 0.0
 
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var visual: HeroVisual = $Visual
+@onready var animator: HeroAnimator = $Animator
 @onready var camera: Camera2D = $Camera2D
 @onready var light: PointLight2D = $PointLight2D
 @onready var attack_area: Area2D = $AttackArea
 @onready var interact_area: Area2D = $InteractArea
-@onready var swing: Sprite2D = $Swing
 
 
 func _ready() -> void:
 	add_to_group("player")
 	light.texture = AssetPaths.tex(AssetPaths.LIGHT)
 	light.texture_scale = BASE_LIGHT_SCALE
-	swing.visible = false
+	animator.setup(visual)
 
 
 func setup(p_hero: Hero, p_level: DungeonLevel) -> void:
 	hero = p_hero
 	level = p_level
-	sprite.texture = hero.class_data.sprite
 	if not hero.stats.died.is_connected(_on_died):
 		hero.stats.died.connect(_on_died)
-	_update_swing_texture()
-	if not hero.equipment.changed.is_connected(_update_swing_texture):
-		hero.equipment.changed.connect(_update_swing_texture)
+	visual.refresh_from(hero)
+	if not hero.leveled_up.is_connected(_on_leveled_up):
+		hero.leveled_up.connect(_on_leveled_up)
+	if not hero.equipment.changed.is_connected(_on_equipment_changed):
+		hero.equipment.changed.connect(_on_equipment_changed)
+
+
+func _on_leveled_up(_level: int) -> void:
+	visual.flash(Color(1.0, 0.9, 0.4), 0.5)
+	visual.squash_to(Vector2(0.8, 1.25), 0.3)
+	Fx.sparks(get_parent(), global_position + Vector2(0, -12), Color(1.0, 0.85, 0.3), 24, 120.0)
+
+
+func _on_equipment_changed() -> void:
+	visual.refresh_from(hero)
 
 
 func set_level(p_level: DungeonLevel) -> void:
@@ -85,15 +98,20 @@ func _physics_process(delta: float) -> void:
 		return
 	_tick_timers(delta)
 	var input_x := Input.get_axis("move_left", "move_right")
-	if input_x != 0.0:
+	if input_x != 0.0 and not animator.is_busy():
 		facing = signf(input_x)
-		sprite.flip_h = facing < 0.0
+		visual.facing = facing
 		attack_area.scale.x = facing
 
 	if _dash_time > 0.0:
 		_dash_time -= delta
 		velocity.y = 0.0
 		move_and_slide()
+		_afterimage_timer -= delta
+		if _afterimage_timer <= 0.0:
+			_afterimage_timer = 0.035
+			Fx.afterimage(visual, get_parent())
+		animator.update(delta, is_on_floor(), velocity, false, true)
 		return
 
 	_update_ladder_state()
@@ -103,8 +121,29 @@ func _physics_process(delta: float) -> void:
 		_walk(input_x, delta)
 	velocity += _external_velocity
 	_external_velocity = Vector2.ZERO
+	var was_on_floor := is_on_floor()
+	var fall_speed := velocity.y
 	move_and_slide()
+	if not was_on_floor and is_on_floor() and not climbing:
+		_on_landed(fall_speed)
+	elif is_on_floor() and absf(velocity.x) > 60.0:
+		_run_dust_timer -= delta
+		if _run_dust_timer <= 0.0:
+			_run_dust_timer = 0.28
+			Fx.dust(get_parent(), global_position - Vector2(facing * 5.0, 0))
+	animator.update(delta, is_on_floor(), velocity, climbing, false)
 	_update_interact_hint()
+
+
+func _on_landed(fall_speed: float) -> void:
+	if fall_speed < 60.0:
+		return
+	var k := clampf(fall_speed / MAX_FALL_SPEED, 0.2, 1.0)
+	visual.squash_to(Vector2(1.0 + 0.35 * k, 1.0 - 0.3 * k), 0.2)
+	animator.landed()
+	Fx.dust(get_parent(), global_position, k > 0.6)
+	if k > 0.8:
+		EventBus.screen_shake.emit(1.5)
 
 
 func _tick_timers(delta: float) -> void:
@@ -113,9 +152,9 @@ func _tick_timers(delta: float) -> void:
 	_attack_cooldown = maxf(0.0, _attack_cooldown - delta)
 	if _invulnerable > 0.0:
 		_invulnerable -= delta
-		sprite.modulate.a = 0.4 if int(_invulnerable * 20.0) % 2 == 0 else 1.0
+		visual.alpha = 0.4 if int(_invulnerable * 20.0) % 2 == 0 else 1.0
 		if _invulnerable <= 0.0:
-			sprite.modulate.a = 1.0
+			visual.alpha = 1.0
 	if _drop_timer > 0.0:
 		_drop_timer -= delta
 		if _drop_timer <= 0.0 and not climbing:
@@ -130,7 +169,7 @@ func _tick_timers(delta: float) -> void:
 			_buffs.erase(key)
 			hero.stats.remove_modifier(key)
 			if _buffs.is_empty():
-				sprite.self_modulate = Color.WHITE
+				visual.tint = Color.WHITE
 	hero.skills.tick(delta)
 
 
@@ -194,6 +233,8 @@ func _walk(input_x: float, delta: float) -> void:
 		velocity.y = JUMP_VELOCITY
 		_jump_buffer = 0.0
 		_coyote = 0.0
+		visual.squash_to(Vector2(0.75, 1.25), 0.22)
+		Fx.dust(get_parent(), global_position)
 	if Input.is_action_just_released("jump") and velocity.y < 0.0:
 		velocity.y *= JUMP_CUT
 
@@ -234,28 +275,22 @@ func attack() -> void:
 	if _attack_cooldown > 0.0 or climbing:
 		return
 	_attack_cooldown = hero.class_data.attack_cooldown
-	_play_swing()
+	play_attack_animation()
 	for body in attack_area.get_overlapping_bodies():
 		if body.is_in_group("enemies") and body.has_method("take_damage"):
 			var d := roll_damage()
 			body.take_damage(d["amount"], d["crit"], global_position)
 
 
-func _play_swing() -> void:
-	swing.visible = true
-	swing.position = Vector2(8 * facing, -10)
-	swing.flip_h = facing < 0.0
-	var from := -100.0 if facing > 0.0 else 100.0
-	var to := 40.0 if facing > 0.0 else -40.0
-	swing.rotation_degrees = from
-	var tw := create_tween()
-	tw.tween_property(swing, "rotation_degrees", to, 0.12)
-	tw.tween_callback(func() -> void: swing.visible = false)
-
-
-func _update_swing_texture() -> void:
-	var weapon := hero.equipment.get_item(&"weapon") if hero else null
-	swing.texture = weapon.icon if weapon else AssetPaths.tex("res://assets/sprites/items/rusty_sword.png")
+## Attack animation by class (replaced by weapon types in a later stage).
+func play_attack_animation() -> void:
+	var anim := &"attack_slash"
+	match hero.class_data.id:
+		&"rogue":
+			anim = &"attack_quick"
+		&"mage":
+			anim = &"attack_cast"
+	animator.play_action(anim, hero.class_data.attack_cooldown)
 
 
 ## Called by enemies, enemy projectiles and traps.
@@ -263,9 +298,11 @@ func take_damage(amount: int, from_pos: Vector2 = Vector2.INF) -> void:
 	if dead or _invulnerable > 0.0 or _dash_time > 0.0:
 		return
 	var lost := hero.stats.take_damage(amount)
-	EventBus.floating_text.emit(global_position + Vector2(0, -24), str(lost), Color(1.0, 0.3, 0.3))
-	EventBus.screen_shake.emit(3.0)
+	EventBus.damage_dealt.emit(global_position + Vector2(0, -24), lost, false, true)
 	_invulnerable = INVULNERABLE_TIME
+	visual.flash(Color(1.0, 0.3, 0.3))
+	if not dead:
+		animator.hurt()
 	if from_pos != Vector2.INF:
 		var dir := signf(global_position.x - from_pos.x)
 		if dir == 0.0:
@@ -280,9 +317,9 @@ func _on_died() -> void:
 		return
 	dead = true
 	velocity = Vector2.ZERO
-	sprite.modulate = Color(0.6, 0.1, 0.1)
-	var tw := create_tween()
-	tw.tween_property(sprite, "rotation_degrees", 90.0 * facing, 0.4)
+	visual.alpha = 1.0
+	animator.die()
+	Fx.sparks(get_parent(), global_position + Vector2(0, -10), Color(0.7, 0.1, 0.1), 16, 80.0)
 	EventBus.player_died.emit()
 
 
@@ -296,12 +333,13 @@ func dash(speed: float, duration: float) -> void:
 		_stop_climbing()
 	velocity = Vector2(facing * speed, 0.0)
 	_dash_time = duration
+	visual.squash_to(Vector2(1.25, 0.85), duration + 0.1)
 
 
 func apply_buff(key: String, bonuses: Dictionary, duration: float, tint := Color.WHITE) -> void:
 	hero.stats.set_modifier(key, bonuses)
 	_buffs[key] = duration
-	sprite.self_modulate = tint
+	visual.tint = tint
 
 
 func boost_light(scale_mult: float, duration: float) -> void:
@@ -329,6 +367,8 @@ func use_skill(index: int) -> void:
 	if skill.effect.execute(self, skills.get_level(index)):
 		hero.stats.spend_mana(skill.mana_cost)
 		skills.start_cooldown(index)
+		if skill.cast_animation != &"":
+			animator.play_action(skill.cast_animation, 0.4)
 
 
 func use_quick_slot(index: int) -> void:
@@ -354,6 +394,9 @@ func use_item(item: ItemData) -> bool:
 	if not usable.use(self):
 		return false
 	_item_cooldowns[item.id] = usable.cooldown
+	if usable.use_animation != &"":
+		animator.play_action(usable.use_animation, 0.45)
+		visual.hold_temporarily(usable.icon, 0.45)
 	if usable.consume_on_use:
 		hero.inventory.remove_by_id(item.id, 1)
 	return true
@@ -380,6 +423,8 @@ func try_interact() -> bool:
 	var target := _nearest_interactable()
 	if target == null:
 		return false
+	if target is Chest:
+		animator.play_action(&"interact", 0.35)
 	target.interact(self)
 	return true
 

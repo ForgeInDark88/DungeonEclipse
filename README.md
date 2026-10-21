@@ -155,6 +155,17 @@ HP, урон, броня, скорости, дальности, `xp_reward`, `lo
 16×16 в `assets/sprites/tiles/dungeon_tiles.png`: камень-рамка, кирпич, платформа, лестница,
 задняя стена. Фильтр текстур Nearest включён в настройках проекта.
 
+### Анимация (спрайт-листы)
+Подробно — в [docs/ANIMATION_GUIDE.md](docs/ANIMATION_GUIDE.md). Коротко:
+- лист — PNG-сетка «строка = анимация, столбец = кадр», раскладка лежит в `data/animations/*.tres`
+  (`SpriteSheetLayout`: размер кадра, origin, fps, loop, точки руки героя);
+- замена: свой PNG с тем же именем и размерами кадров поверх плейсхолдера;
+- герой — 4 слоя одной раскладки: тело расы (`RaceData.body_sheet`), одежда класса
+  (`ClassData.outfit_sheet`), броня (`EquipmentItemData.visual_sheet`, `visual_layer = "armor"`),
+  голова (шлем с `visual_layer = "head"` или `ClassData.head_sheet`);
+- монстр — `EnemyData.sheet` + `EnemyData.sheet_layout`, строки idle, walk|fly, windup, attack, hurt, death;
+- анимация использования предмета — `UsableItemData.use_animation`, каста навыка — `SkillData.cast_animation`.
+
 ## Принятые решения (где задание допускало варианты)
 
 - Базовое разрешение 640×360 (окно 1280×720), stretch `canvas_items`, aspect `expand`, рендер Compatibility.
@@ -169,6 +180,12 @@ HP, урон, броня, скорости, дальности, `xp_reward`, `lo
 - Подсказка (tooltip) сделана как autoload `Tooltip`, чтобы работать на паузе и в любом меню.
 - Добавлены autoload `SaveManager` (настройки и мета) и `Tooltip`, помимо GameState, EventBus и ItemDatabase.
 - Звук не реализован, есть только регулятор громкости. Папка `assets/audio/` ждёт файлов.
+- Анимация героя — конечный автомат в коде (`scripts/anim/hero_animator.gd`) поверх
+  AnimatedSprite2D-слоёв (`HeroVisual`), а не AnimationTree: слоёв несколько, и их проще
+  синхронизировать по кадру тела.
+- Рост расы — масштаб спрайта (`RaceData.sprite_scale`), а не отдельный скелет, чтобы слои одежды
+  и шлемов подходили всем расам.
+- Hit-stop делается через `Engine.time_scale` на 30–70 мс реального времени.
 
 ## Этапы
 
@@ -182,3 +199,6 @@ HP, урон, броня, скорости, дальности, `xp_reward`, `lo
 8. ✅ Монстры, бой, числа урона, лут, опыт
 9. ✅ Навыки классов, смерть, возврат в меню, полировка (свет, частицы, тряска экрана)
 10. ✅ README
+11. ✅ Анимации: слоёный герой (17 анимаций, конечный автомат, squash & stretch, предмет в руке),
+    4 монстра × 6 анимаций с белой вспышкой и смертью, факелы, сундуки, портал, капли, взрывы,
+    осколки, пыль; анимированный UI и game feel

@@ -58,6 +58,7 @@ func collect(hero: Hero) -> void:
 	var left := hero.inventory.add_item(item, count)
 	var taken := count - left
 	if taken > 0:
+		EventBus.item_collected.emit(item, global_position + Vector2(0, -8))
 		EventBus.floating_text.emit(global_position + Vector2(0, -16), "+%d %s" % [taken, item.display_name], item.rarity_color())
 	if left > 0:
 		count = left

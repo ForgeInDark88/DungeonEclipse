@@ -22,6 +22,11 @@ var _count: Label
 var _placeholder: TextureRect
 var _key: Label
 var _hovered := false
+var _last_item: ItemData
+var _last_count := 0
+var _pulse_t := 0.0
+var _rarity_tint := Color.WHITE
+var _scale_tween: Tween
 
 
 static func create(p_kind: Kind, p_hero: Hero, p_index: int = -1, p_slot_id: StringName = StringName()) -> ItemSlot:
@@ -118,13 +123,48 @@ func refresh() -> void:
 	if _hovered:
 		tex = AssetPaths.SLOT_HOVER
 	_frame.texture = AssetPaths.tex(tex)
-	_frame.modulate = item.rarity_color().lerp(Color.WHITE, 0.55) if item and item.rarity > ItemData.Rarity.COMMON else Color.WHITE
+	_rarity_tint = item.rarity_color().lerp(Color.WHITE, 0.55) if item and item.rarity > ItemData.Rarity.COMMON else Color.WHITE
+	_frame.modulate = _rarity_tint
+	# Rare and epic items pulse softly.
+	set_process(item != null and item.rarity > ItemData.Rarity.COMMON)
+	# A new item (or more of it) arrived: small pop.
+	if item != null and (item != _last_item or c > _last_count) and is_visible_in_tree():
+		pop()
+	_last_item = item
+	_last_count = c
 	if _hovered and item:
 		Tooltip.show_text(TooltipText.item(item, hero, kind == Kind.EQUIPMENT), self)
 
 
+func _process(delta: float) -> void:
+	_pulse_t += delta
+	var item := get_item()
+	var speed := 5.0 if item and item.rarity == ItemData.Rarity.EPIC else 3.0
+	var k := (sin(_pulse_t * speed) + 1.0) * 0.5
+	_frame.modulate = _rarity_tint.lerp(_rarity_tint * 1.45, k)
+
+
+## Scale bounce (item arrived / used).
+func pop(strength := 0.25) -> void:
+	pivot_offset = size / 2.0
+	if _scale_tween:
+		_scale_tween.kill()
+	scale = Vector2.ONE * (1.0 + strength)
+	_scale_tween = create_tween()
+	_scale_tween.tween_property(self, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+func _hover_scale(target: float) -> void:
+	pivot_offset = size / 2.0
+	if _scale_tween:
+		_scale_tween.kill()
+	_scale_tween = create_tween()
+	_scale_tween.tween_property(self, "scale", Vector2.ONE * target, 0.1)
+
+
 func _on_mouse_entered() -> void:
 	_hovered = true
+	_hover_scale(1.08)
 	refresh()
 	if get_item() == null:
 		if kind == Kind.EQUIPMENT and hint != "":
@@ -133,6 +173,7 @@ func _on_mouse_entered() -> void:
 
 func _on_mouse_exited() -> void:
 	_hovered = false
+	_hover_scale(1.0)
 	Tooltip.hide_tip(self)
 	refresh()
 

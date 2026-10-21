@@ -1,7 +1,8 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
-[ext_resource type="Texture2D" path="res://assets/sprites/player/warrior.png" id="2_sprite"]
+[ext_resource type="Script" path="res://scripts/anim/hero_visual.gd" id="2_visual"]
+[ext_resource type="Script" path="res://scripts/anim/hero_animator.gd" id="3_anim"]
 
 [sub_resource type="RectangleShape2D" id="Shape_body"]
 size = Vector2(10, 20)
@@ -12,19 +13,21 @@ size = Vector2(26, 24)
 [sub_resource type="RectangleShape2D" id="Shape_interact"]
 size = Vector2(28, 24)
 
+[sub_resource type="Gradient" id="Grad_dust"]
+colors = PackedColorArray(0.8, 0.75, 0.7, 0, 0.8, 0.75, 0.7, 0.5, 0.8, 0.75, 0.7, 0)
+offsets = PackedFloat32Array(0, 0.3, 1)
+
 [node name="Player" type="CharacterBody2D"]
 collision_layer = 4
 collision_mask = 3
 floor_snap_length = 3.0
 script = ExtResource("1_player")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(0, -11)
-texture = ExtResource("2_sprite")
+[node name="Visual" type="Node2D" parent="."]
+script = ExtResource("2_visual")
 
-[node name="Swing" type="Sprite2D" parent="."]
-position = Vector2(8, -10)
-offset = Vector2(5, -5)
+[node name="Animator" type="Node" parent="."]
+script = ExtResource("3_anim")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -10)
@@ -58,3 +61,18 @@ position = Vector2(0, -12)
 color = Color(1, 0.86, 0.65, 1)
 energy = 1.5
 shadow_enabled = false
+
+[node name="AmbientDust" type="CPUParticles2D" parent="."]
+position = Vector2(0, -60)
+amount = 40
+lifetime = 6.0
+preprocess = 6.0
+local_coords = false
+emission_shape = 3
+emission_rect_extents = Vector2(340, 200)
+direction = Vector2(0.3, 1)
+spread = 30.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 3.0
+initial_velocity_max = 10.0
+color_ramp = SubResource("Grad_dust")

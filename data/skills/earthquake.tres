@@ -17,6 +17,7 @@ color = Color(1, 0.5, 0.15, 1)
 
 [resource]
 script = ExtResource("3_km0d7")
+cast_animation = &"attack_heavy"
 id = &"earthquake"
 display_name = "Взрыв ярости"
 description = "Взрыв вокруг героя: урон и разрушение."

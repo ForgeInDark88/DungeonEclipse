@@ -38,6 +38,7 @@ func _ready() -> void:
 
 	EventBus.spawn_items.connect(_on_spawn_items)
 	EventBus.floating_text.connect(_on_floating_text)
+	EventBus.damage_dealt.connect(_on_damage_dealt)
 	EventBus.screen_shake.connect(func(s: float) -> void: _shake = maxf(_shake, s))
 	EventBus.floor_changed.connect(func(_f: int) -> void: _load_floor.call_deferred())
 	EventBus.player_died.connect(_on_player_died)
@@ -101,6 +102,45 @@ func _on_floating_text(pos: Vector2, text: String, color: Color) -> void:
 	var n: DamageNumber = DAMAGE_NUMBER_SCENE.instantiate()
 	world.add_child(n)
 	n.show_text(text, color, pos)
+
+
+## Damage numbers + game feel: hit-stop, camera shake, red flash on the hero.
+func _on_damage_dealt(pos: Vector2, amount: int, crit: bool, on_player: bool) -> void:
+	var n: DamageNumber = DAMAGE_NUMBER_SCENE.instantiate()
+	world.add_child(n)
+	if on_player:
+		n.show_text(str(amount), Color(1.0, 0.3, 0.3), pos, 1.2)
+		_shake = maxf(_shake, 4.0)
+		_flash_screen(Color(0.8, 0.05, 0.05, 0.35))
+		hit_stop(0.06)
+	elif crit:
+		n.show_text("%d!" % amount, Color(1.0, 0.85, 0.2), pos, 1.6)
+		_shake = maxf(_shake, 3.0)
+		hit_stop(0.07)
+	else:
+		n.show_text(str(amount), Color.WHITE, pos)
+		_shake = maxf(_shake, 1.2)
+		hit_stop(0.03)
+
+
+## Freezes the action for a few real-time milliseconds.
+func hit_stop(duration: float) -> void:
+	if get_tree().paused or Engine.time_scale < 1.0:
+		return
+	Engine.time_scale = 0.05
+	await get_tree().create_timer(duration, true, false, true).timeout
+	Engine.time_scale = 1.0
+
+
+func _flash_screen(color: Color) -> void:
+	var rect: ColorRect = $ScreenFlash/Rect
+	rect.color = color
+	var tw := create_tween()
+	tw.tween_property(rect, "color:a", 0.0, 0.3)
+
+
+func _exit_tree() -> void:
+	Engine.time_scale = 1.0
 
 
 func _on_player_died() -> void:

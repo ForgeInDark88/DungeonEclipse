@@ -5,6 +5,8 @@ extends CharacterBody2D
 ## Behaviours: WALKER (ground, turns at walls/ledges, optional hops),
 ## FLYER (ignores gravity, swoops at the player), RANGED (keeps distance, shoots).
 ## Stats scale with the floor number.
+## Animations (from EnemyData.sheet): idle, walk|fly, windup, attack, hurt,
+## death; hit flash through the flash shader.
 
 enum State { PATROL, CHASE, ATTACK, HURT }
 
@@ -29,8 +31,12 @@ var _think_timer := 0.0
 var _float_t := 0.0
 var _home := Vector2.ZERO
 var _player: Player
+var _dead := false
+## Remaining time of the one-shot "attack" animation after a hit/shot.
+var _attack_anim_left := 0.0
+var _flash_tween: Tween
 
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var sprite: AnimatedSprite2D = $Sprite
 @onready var shape: CollisionShape2D = $CollisionShape2D
 @onready var hp_bar: ProgressBar = $HpBar
 
@@ -46,13 +52,11 @@ func setup(p_data: EnemyData, p_floor: int) -> void:
 
 func _ready() -> void:
 	add_to_group("enemies")
-	sprite.texture = data.texture
-	sprite.modulate = data.tint
+	_setup_sprite()
 	var rect := RectangleShape2D.new()
 	rect.size = data.collision_size
 	shape.shape = rect
 	shape.position = Vector2(0, -data.collision_size.y / 2.0)
-	sprite.position = Vector2(0, -data.texture.get_height() / 2.0 if data.texture else -8.0)
 	hp_bar.position = Vector2(-8, -data.collision_size.y - 6)
 	hp_bar.visible = false
 	dir = -1.0 if randf() < 0.5 else 1.0
@@ -79,6 +83,57 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	if absf(velocity.x) > 1.0:
 		sprite.flip_h = velocity.x < 0.0
+	_attack_anim_left = maxf(0.0, _attack_anim_left - delta)
+	_update_animation()
+
+
+# --------------------------------------------------------------- animation
+func _setup_sprite() -> void:
+	sprite.material = AssetPaths.flash_material()
+	sprite.modulate = data.tint
+	if data.sheet and data.sheet_layout:
+		data.sheet_layout.apply_to(sprite, data.sheet)
+	else:
+		# Static fallback: one frame for every animation name.
+		var frames := SpriteFrames.new()
+		for anim in [&"default", &"idle", _move_anim(), &"windup", &"attack", &"hurt", &"death"]:
+			if not frames.has_animation(anim):
+				frames.add_animation(anim)
+			frames.add_frame(anim, data.texture)
+			frames.set_animation_loop(anim, anim in [&"idle", _move_anim()])
+		sprite.sprite_frames = frames
+		sprite.centered = false
+		var tsize := data.texture.get_size() if data.texture else Vector2(16, 16)
+		sprite.offset = Vector2(-tsize.x / 2.0, -tsize.y)
+	sprite.play(&"idle")
+
+
+func _move_anim() -> StringName:
+	return &"fly" if data.behavior == EnemyData.Behavior.FLYER else &"walk"
+
+
+func _play(anim: StringName) -> void:
+	if sprite.animation != anim and sprite.sprite_frames.has_animation(anim):
+		sprite.play(anim)
+
+
+func _update_animation() -> void:
+	if state == State.HURT:
+		_play(&"hurt")
+	elif state == State.ATTACK:
+		_play(&"windup")
+	elif _attack_anim_left > 0.0:
+		_play(&"attack")
+	elif data.behavior == EnemyData.Behavior.FLYER or absf(velocity.x) > 5.0:
+		_play(_move_anim())
+	else:
+		_play(&"idle")
+
+
+func _set_flash(amount: float, color := Color.WHITE) -> void:
+	var m := sprite.material as ShaderMaterial
+	m.set_shader_parameter("flash_color", color)
+	m.set_shader_parameter("flash", amount)
 
 
 func _player_visible() -> bool:
@@ -190,16 +245,18 @@ func _fly(delta: float) -> void:
 func _begin_attack() -> void:
 	state = State.ATTACK
 	_windup = 0.35 if data.behavior != EnemyData.Behavior.FLYER else 0.15
-	sprite.modulate = data.tint * Color(1.6, 1.0, 1.0)
+	# Telegraph: red glow during the wind-up.
+	_set_flash(0.35, Color(1.0, 0.2, 0.1))
 
 
 func _update_attack(delta: float) -> void:
 	_windup -= delta
 	if _windup > 0.0:
 		return
-	sprite.modulate = data.tint
+	_set_flash(0.0)
 	_attack_timer = data.attack_cooldown
 	state = State.CHASE
+	_attack_anim_left = 0.25
 	if _player == null or _player.dead:
 		return
 	if data.behavior == EnemyData.Behavior.RANGED:
@@ -234,8 +291,9 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 	hp_bar.visible = true
 	hp_bar.max_value = max_hp
 	hp_bar.value = hp
-	EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 4),
-			("%d!" % dealt) if crit else str(dealt), Color(1.0, 0.85, 0.2) if crit else Color.WHITE)
+	var top := global_position + Vector2(0, -data.collision_size.y - 4)
+	EventBus.damage_dealt.emit(top, dealt, crit, false)
+	Fx.hit_spark(get_parent(), global_position + Vector2(0, -data.collision_size.y / 2.0), crit)
 	_flash()
 	if hp <= 0:
 		_die()
@@ -257,13 +315,23 @@ func stun(duration: float) -> void:
 
 
 func _flash() -> void:
-	sprite.modulate = Color(3, 3, 3)
-	var tw := create_tween()
-	tw.tween_property(sprite, "modulate", data.tint, 0.15)
+	if _flash_tween:
+		_flash_tween.kill()
+	_set_flash(1.0)
+	_flash_tween = create_tween()
+	_flash_tween.tween_method(func(v: float) -> void: _set_flash(v), 1.0, 0.0, 0.15)
+
+
+func is_dead() -> bool:
+	return _dead
 
 
 func _die() -> void:
+	_dead = true
 	set_physics_process(false)
+	remove_from_group("enemies")
+	shape.set_deferred("disabled", true)
+	hp_bar.visible = false
 	EventBus.enemy_killed.emit(data, global_position)
 	if GameState.hero:
 		GameState.hero.add_xp(data.xp_reward + floor_number - 1)
@@ -272,5 +340,11 @@ func _die() -> void:
 		var loot := data.loot_table.roll(floor_number)
 		if not loot.is_empty():
 			EventBus.spawn_items.emit(global_position + Vector2(0, -8), loot)
-	Fx.sparks(get_parent(), global_position + Vector2(0, -6), data.tint.darkened(0.2), 14, 100.0)
-	queue_free()
+	# Death animation, then the body breaks into particles.
+	sprite.play(&"death")
+	var parent := get_parent()
+	var pos := global_position + Vector2(0, -6)
+	var color := data.tint.darkened(0.2)
+	sprite.animation_finished.connect(func() -> void:
+		Fx.sparks(parent, pos, color, 14, 100.0)
+		queue_free(), CONNECT_ONE_SHOT)

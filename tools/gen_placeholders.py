@@ -782,6 +782,8 @@ def main() -> None:
     save(button_tex(PARCH_DD), "ui/button_pressed.png", do_outline=False)
     save(doll(), "ui/doll.png", do_outline=False)
     print("placeholders generated")
+    import gen_sheets  # animated sprite sheets (see docs/ANIMATION_GUIDE.md)
+    gen_sheets.main()
 
 
 if __name__ == "__main__":

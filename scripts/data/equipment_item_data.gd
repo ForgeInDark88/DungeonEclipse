@@ -15,6 +15,11 @@ const SLOT_TYPE_NAMES := {
 }
 
 @export var slot_type: StringName = &"weapon"
+## Optional animated layer shown on the hero while equipped
+## (same layout as the hero body sheet).
+@export var visual_sheet: Texture2D
+## Hero layer it replaces/fills: "armor" (over the class outfit) or "head".
+@export var visual_layer: StringName = &"armor"
 
 
 func _init() -> void:

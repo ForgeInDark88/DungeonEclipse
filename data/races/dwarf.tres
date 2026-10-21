@@ -1,10 +1,13 @@
 [gd_resource type="Resource" script_class="RaceData" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://assets/sprites/player/body_dwarf.png" id="sheet_body"]
 [ext_resource type="Texture2D" path="res://assets/sprites/portraits/race_dwarf.png" id="1_xrj0o"]
 [ext_resource type="Script" path="res://scripts/data/race_data.gd" id="2_ip2ak"]
 
 [resource]
 script = ExtResource("2_ip2ak")
+body_sheet = ExtResource("sheet_body")
+sprite_scale = Vector2(1.1, 0.88)
 id = &"dwarf"
 display_name = "Гном"
 order = 1

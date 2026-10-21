@@ -7,6 +7,10 @@ enum Behavior { WALKER, FLYER, RANGED }
 @export var id: StringName
 @export var display_name: String = ""
 @export var texture: Texture2D
+## Animated sheet (idle, walk/fly, windup, attack, hurt, death) + its layout.
+## If empty, the static `texture` is used.
+@export var sheet: Texture2D
+@export var sheet_layout: SpriteSheetLayout
 @export var behavior: Behavior = Behavior.WALKER
 @export var collision_size: Vector2 = Vector2(12, 12)
 @export var max_hp: int = 20

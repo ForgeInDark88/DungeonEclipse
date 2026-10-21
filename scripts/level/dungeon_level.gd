@@ -8,6 +8,8 @@ const TILE := 16
 const CHEST_SCENE := preload("res://scenes/world/chest.tscn")
 const ENEMY_SCENE := preload("res://scenes/enemies/enemy.tscn")
 const DOOR_SCENE := preload("res://scenes/world/exit_door.tscn")
+const TORCH_SCENE := preload("res://scenes/world/wall_torch.tscn")
+const DRIP_SCENE := preload("res://scenes/world/water_drip.tscn")
 const T = LevelLayout.Tile
 
 @onready var back: TileMapLayer = $Back
@@ -34,6 +36,7 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int) -> void:
 	_spawn_door()
 	_spawn_chests()
 	_spawn_enemies()
+	_spawn_ambience()
 
 
 func _apply_tile(cell: Vector2i, kind: int) -> void:
@@ -98,6 +101,7 @@ func break_tile(cell: Vector2i, effects := true) -> bool:
 	_apply_tile(cell, T.EMPTY)
 	if effects:
 		_debris(cell_center(cell))
+		Fx.shards(entities, cell_center(cell), Color(0.6, 0.45, 0.36), 8)
 		# Sometimes there is something inside the wall.
 		if rng.randf() < 0.08:
 			var ore := ItemDatabase.get_item(&"iron_ore") if rng.randf() < 0.6 else ItemDatabase.get_item(&"gold_coin")
@@ -116,6 +120,7 @@ func explode(center: Vector2, radius: float) -> void:
 				broke = break_tile(Vector2i(x, y), false) or broke
 	if broke:
 		_debris(center, 24)
+		Fx.shards(entities, center, Color(0.6, 0.45, 0.36), 16)
 
 
 ## Hangs a rope (ladder tiles) from `cell` upward. Returns number of cells.
@@ -170,6 +175,27 @@ func _spawn_chests() -> void:
 		chest.tier = info["tier"]
 		chest.floor_number = floor_number
 		add_entity(chest, cell_bottom(info["cell"]))
+
+
+## Decoration only: wall torches (one per room at most) and ceiling drips.
+func _spawn_ambience() -> void:
+	var rw := LevelGenerator.ROOM_W
+	var rh := LevelGenerator.ROOM_H
+	for ry in range(layout.height / rh):
+		for rx in range(layout.width / rw):
+			if rng.randf() < 0.75:
+				var x := rx * rw + rng.randi_range(3, rw - 4)
+				var y := (ry + 1) * rh - 4
+				if layout.get_tile(x, y) == T.EMPTY and layout.get_tile(x, y + 1) == T.EMPTY:
+					var torch := TORCH_SCENE.instantiate()
+					add_entity(torch, cell_bottom(Vector2i(x, y)))
+			if rng.randf() < 0.6:
+				var x := rx * rw + rng.randi_range(2, rw - 3)
+				var y := ry * rh + 1
+				if layout.get_tile(x, y) == T.EMPTY and LevelLayout.is_solid(layout.get_tile(x, y - 1)):
+					var drip: WaterDrip = DRIP_SCENE.instantiate()
+					drip.level = self
+					add_entity(drip, cell_center(Vector2i(x, y)) + Vector2(0, -6))
 
 
 func _spawn_enemies() -> void:

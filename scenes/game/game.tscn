@@ -13,6 +13,18 @@ color = Color(0.15, 0.13, 0.19, 1)
 
 [node name="World" type="Node2D" parent="."]
 
+[node name="ScreenFlash" type="CanvasLayer" parent="."]
+layer = 5
+
+[node name="Rect" type="ColorRect" parent="ScreenFlash"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0, 0, 0)
+
 [node name="HUD" type="CanvasLayer" parent="."]
 script = ExtResource("2_hud")
 

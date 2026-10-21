@@ -13,6 +13,7 @@ range_px = 40.0
 script = ExtResource("4_na30j")
 effects = Array[ExtResource("1_piv6x")]([SubResource("Resource_ulcvk")])
 consume_on_use = true
+use_animation = &"interact"
 cooldown = 0.3
 id = &"key"
 display_name = "Ключ"

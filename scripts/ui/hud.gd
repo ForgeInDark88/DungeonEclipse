@@ -41,6 +41,7 @@ func setup(p_hero: Hero, player: Player) -> void:
 	hero.quick_bar.changed.connect(_refresh_quick)
 	hero.skills.changed.connect(_refresh_skills)
 	EventBus.message.connect(show_message)
+	EventBus.item_collected.connect(_fly_item)
 	EventBus.floor_changed.connect(func(_f: int) -> void: _refresh_floor())
 	player.interact_hint_changed.connect(func(t: String) -> void: _hint.text = t)
 	_hp.set_values(hero.stats.hp, hero.stats.max_hp())
@@ -168,7 +169,52 @@ func _refresh_floor() -> void:
 func _on_level_up(new_level: int) -> void:
 	_refresh_xp()
 	_refresh_skills()
-	show_message("Новый уровень: %d! Получено очко навыка." % new_level)
+	show_message("Получено очко навыка — кликните по навыку.")
+	var banner := LevelUpBanner.new()
+	banner.level_number = new_level
+	add_child(banner)
+	_pulse(_portrait_holder.get_parent() as Control)
+
+
+## Item icon flies from the world to its quick slot (or to the portrait).
+func _fly_item(item: ItemData, world_pos: Vector2) -> void:
+	var start := get_viewport().get_canvas_transform() * world_pos
+	var target_ctrl: Control = _portrait_holder
+	for q in _quick_slots:
+		if q.get_item() == item:
+			target_ctrl = q
+			break
+	var target := target_ctrl.get_global_rect().get_center()
+	var icon := TextureRect.new()
+	icon.texture = item.icon
+	icon.size = Vector2(16, 16)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon.pivot_offset = Vector2(8, 8)
+	icon.position = start - Vector2(8, 8)
+	add_child(icon)
+	var dur := 0.5
+	var tw := create_tween().set_parallel()
+	tw.tween_property(icon, "position:x", target.x - 8.0, dur).set_trans(Tween.TRANS_SINE)
+	# Arc: first up, then down into the slot.
+	var up := create_tween()
+	up.tween_property(icon, "position:y", minf(start.y, target.y) - 30.0, dur * 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	up.tween_property(icon, "position:y", target.y - 8.0, dur * 0.6).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	tw.tween_property(icon, "scale", Vector2(1.4, 1.4), dur * 0.4)
+	tw.chain().tween_callback(func() -> void:
+		icon.queue_free()
+		if target_ctrl is ItemSlot:
+			(target_ctrl as ItemSlot).pop()
+		else:
+			_pulse(target_ctrl.get_parent() as Control))
+
+
+func _pulse(ctrl: Control) -> void:
+	if ctrl == null:
+		return
+	ctrl.pivot_offset = ctrl.size / 2.0
+	ctrl.scale = Vector2(1.12, 1.12)
+	create_tween().tween_property(ctrl, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func show_message(text: String) -> void:

@@ -10,3 +10,5 @@ extends Resource
 @export var cooldown: float = 3.0
 @export_range(1, 5) var max_level: int = 4
 @export var effect: SkillEffect
+## Hero animation played when cast ("" = none, e.g. dashes use the dash pose).
+@export var cast_animation: StringName = &"attack_cast"

@@ -1,5 +1,7 @@
 [gd_resource type="Resource" script_class="EnemyData" load_steps=5 format=3]
 
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/cultist_sheet.png" id="sheet_tex"]
+[ext_resource type="Resource" path="res://data/animations/cultist_layout.tres" id="sheet_lay"]
 [ext_resource type="Resource" path="res://data/loot_tables/enemy_rare.tres" id="1_gbajf"]
 [ext_resource type="Texture2D" path="res://assets/sprites/fx/dark_bolt.png" id="2_mls8h"]
 [ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="3_achw7"]
@@ -7,6 +9,8 @@
 
 [resource]
 script = ExtResource("3_achw7")
+sheet = ExtResource("sheet_tex")
+sheet_layout = ExtResource("sheet_lay")
 id = &"cultist"
 display_name = "Культист Затмения"
 texture = ExtResource("4_gycwh")

@@ -5,7 +5,14 @@ extends Area2D
 
 func _ready() -> void:
 	add_to_group("interactable")
-	$Sprite2D.texture = AssetPaths.tex(AssetPaths.EXIT_DOOR)
+	var portal: AnimatedSprite2D = $Portal
+	AssetPaths.layout(AssetPaths.PORTAL_LAYOUT).apply_to(portal, AssetPaths.tex(AssetPaths.PORTAL_SHEET))
+	portal.play(&"swirl")
+	# Pulsing portal light.
+	var light: PointLight2D = $PointLight2D
+	var tw := create_tween().set_loops()
+	tw.tween_property(light, "energy", 1.4, 0.8).set_trans(Tween.TRANS_SINE)
+	tw.tween_property(light, "energy", 0.6, 0.8).set_trans(Tween.TRANS_SINE)
 
 
 func get_prompt() -> String:

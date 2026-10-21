@@ -13,6 +13,7 @@ reach_tiles = 1
 script = ExtResource("4_7b5wf")
 effects = Array[ExtResource("1_yqg5k")]([SubResource("Resource_bo6dv")])
 consume_on_use = false
+use_animation = &"attack_slash"
 cooldown = 0.35
 id = &"pickaxe"
 display_name = "Кирка"

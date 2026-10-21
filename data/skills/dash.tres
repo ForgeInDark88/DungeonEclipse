@@ -13,6 +13,7 @@ damage_multiplier = 1.0
 
 [resource]
 script = ExtResource("3_40a0e")
+cast_animation = &""
 id = &"dash"
 display_name = "Рывок"
 description = "Стремительный рывок сквозь врагов."

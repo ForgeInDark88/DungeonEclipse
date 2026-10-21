@@ -1,5 +1,7 @@
 [gd_resource type="Resource" script_class="ClassData" load_steps=9 format=3]
 
+[ext_resource type="Texture2D" path="res://assets/sprites/player/outfit_rogue.png" id="sheet_outfit"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/head_rogue.png" id="sheet_head"]
 [ext_resource type="Texture2D" path="res://assets/sprites/portraits/class_rogue.png" id="1_8t6c3"]
 [ext_resource type="Script" path="res://scripts/data/class_data.gd" id="2_1ke0y"]
 [ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="3_j5d85"]
@@ -11,6 +13,8 @@
 
 [resource]
 script = ExtResource("2_1ke0y")
+outfit_sheet = ExtResource("sheet_outfit")
+head_sheet = ExtResource("sheet_head")
 id = &"rogue"
 display_name = "Разбойник"
 order = 1

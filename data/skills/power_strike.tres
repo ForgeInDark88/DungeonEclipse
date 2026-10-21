@@ -12,6 +12,7 @@ reach = 26.0
 
 [resource]
 script = ExtResource("3_tk2sc")
+cast_animation = &"attack_heavy"
 id = &"power_strike"
 display_name = "Удар кирки"
 description = "Сокрушительный удар, ломающий стены."

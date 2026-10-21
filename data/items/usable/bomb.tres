@@ -16,6 +16,7 @@ throw_velocity = Vector2(160, -170)
 script = ExtResource("4_qdlxw")
 effects = Array[ExtResource("1_trer3")]([SubResource("Resource_3kvhh")])
 consume_on_use = true
+use_animation = &"attack_quick"
 cooldown = 0.5
 id = &"bomb"
 display_name = "Бомба"

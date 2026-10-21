@@ -13,6 +13,7 @@ max_length = 10
 script = ExtResource("4_2j5br")
 effects = Array[ExtResource("1_th0pu")]([SubResource("Resource_7u1ee")])
 consume_on_use = true
+use_animation = &"use"
 cooldown = 0.5
 id = &"rope"
 display_name = "Верёвка"

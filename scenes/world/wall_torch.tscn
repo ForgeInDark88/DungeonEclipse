@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/wall_torch.gd" id="1_torch"]
+
+[sub_resource type="CanvasItemMaterial" id="Mat_unshaded"]
+light_mode = 1
+
+[node name="WallTorch" type="Node2D"]
+z_index = -1
+script = ExtResource("1_torch")
+
+[node name="Flame" type="AnimatedSprite2D" parent="."]
+material = SubResource("Mat_unshaded")
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+position = Vector2(0, -12)
+color = Color(1, 0.62, 0.3, 1)
+energy = 1.0
+texture_scale = 0.7
