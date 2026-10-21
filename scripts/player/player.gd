@@ -51,6 +51,7 @@ var _step_timer := 0.0
 @onready var camera: Camera2D = $Camera2D
 @onready var light: PointLight2D = $PointLight2D
 @onready var interact_area: Area2D = $InteractArea
+@onready var status: StatusEffects = $StatusEffects
 
 
 func _ready() -> void:
@@ -58,6 +59,9 @@ func _ready() -> void:
 	light.texture = AssetPaths.tex(AssetPaths.LIGHT)
 	light.texture_scale = BASE_LIGHT_SCALE
 	animator.setup(visual)
+	var sv := StatusVisual.new()
+	add_child(sv)
+	sv.setup(status, visual, 22.0)
 
 
 func setup(p_hero: Hero, p_level: DungeonLevel) -> void:
@@ -122,6 +126,13 @@ func _physics_process(delta: float) -> void:
 		animator.update(delta, is_on_floor(), velocity, false, true)
 		return
 
+	if status.is_stunned():
+		# Stunned: physics only, no control.
+		velocity.y = minf(velocity.y + GRAVITY * delta, MAX_FALL_SPEED)
+		velocity.x = move_toward(velocity.x, 0.0, FRICTION * delta)
+		move_and_slide()
+		animator.update(delta, is_on_floor(), velocity, false, false)
+		return
 	_update_ladder_state()
 	if climbing:
 		_climb(input_x)
@@ -246,7 +257,7 @@ func _climb(input_x: float) -> void:
 
 func _walk(input_x: float, delta: float) -> void:
 	velocity.y = minf(velocity.y + GRAVITY * delta, MAX_FALL_SPEED)
-	var target := input_x * hero.stats.speed()
+	var target := input_x * hero.stats.speed() * status.speed_multiplier()
 	var accel := ACCELERATION if is_on_floor() else AIR_ACCELERATION
 	if input_x == 0.0:
 		accel = FRICTION if is_on_floor() else AIR_ACCELERATION * 0.5
@@ -267,7 +278,7 @@ func _walk(input_x: float, delta: float) -> void:
 
 # -------------------------------------------------------------------- input
 func _unhandled_input(event: InputEvent) -> void:
-	if hero == null or dead:
+	if hero == null or dead or status.is_stunned():
 		return
 	if event.is_action_pressed("interact") and try_interact():
 		get_viewport().set_input_as_handled()
@@ -358,7 +369,7 @@ func _melee_targets(reach: float, thrust: bool, dir: float) -> Array[Node]:
 ## Applies damage, knockback and the weapon's on-hit effects.
 func hit_enemy(enemy: Node, w: WeaponItemData, multiplier: float) -> void:
 	var d := roll_damage(multiplier)
-	enemy.take_damage(d["amount"], d["crit"], global_position)
+	enemy.take_damage(d["amount"], d["crit"], global_position, w.damage_type if w else 0)
 	if not is_instance_valid(enemy) or enemy.is_dead():
 		return
 	if w:
@@ -375,6 +386,7 @@ func _shoot(w: WeaponItemData, dir: float) -> void:
 	var d := roll_damage()
 	p.setup(w.projectile_texture, Vector2(dir, 0), w.projectile_speed, d["amount"], "enemies")
 	p.crit = d["crit"]
+	p.damage_type = w.damage_type
 	p.pierce = w.projectile_pierce
 	p.blast_radius = w.projectile_blast_radius
 	p.blast_color = w.damage_color()
@@ -389,9 +401,18 @@ func _shoot(w: WeaponItemData, dir: float) -> void:
 	level.add_entity(p, global_position + Vector2(dir * 10.0, -13.0))
 
 
-## Called by enemies, enemy projectiles and traps.
-func take_damage(amount: int, from_pos: Vector2 = Vector2.INF) -> void:
+## Called by enemies, enemy projectiles and traps. Elemental damage
+## (damage_type > 0) is reduced by resistances, then a shield absorbs it.
+func take_damage(amount: int, from_pos: Vector2 = Vector2.INF, damage_type: int = 0) -> void:
 	if dead or _invulnerable > 0.0 or _dash_time > 0.0:
+		return
+	if damage_type > 0:
+		amount = roundi(amount * (1.0 - hero.stats.resistance(damage_type)))
+	amount = status.absorb(amount)
+	if amount <= 0:
+		visual.flash(Color(0.6, 0.8, 1.0), 0.12)
+		_invulnerable = INVULNERABLE_TIME * 0.5
+		EventBus.floating_text.emit(global_position + Vector2(0, -26), "Поглощено", Color(0.6, 0.8, 1.0))
 		return
 	var lost := hero.stats.take_damage(amount)
 	hero.wear_armor(1)
@@ -420,6 +441,28 @@ func _on_died() -> void:
 	AudioManager.play_sfx(&"player_death", global_position)
 	Fx.sparks(get_parent(), global_position + Vector2(0, -10), Color(0.7, 0.1, 0.1), 16, 80.0)
 	EventBus.player_died.emit()
+
+
+## Damage over time from statuses: ignores armor and invulnerability.
+func take_status_damage(amount: int, p_status: StringName, color: Color) -> void:
+	if dead:
+		return
+	amount = roundi(amount * (1.0 - status_resistance(p_status)))
+	if amount <= 0:
+		return
+	hero.stats.lose_hp(amount)
+	EventBus.floating_text.emit(global_position + Vector2(randf_range(-4, 4), -26), str(amount), color)
+
+
+func heal_status(amount: int) -> void:
+	if dead or hero.stats.hp >= hero.stats.max_hp():
+		return
+	hero.stats.heal(amount)
+	EventBus.floating_text.emit(global_position + Vector2(0, -26), "+%d" % amount, Color(0.4, 1.0, 0.5))
+
+
+func status_resistance(id: StringName) -> float:
+	return hero.stats.resistance(StatusEffects.damage_type_of(id))
 
 
 func push(impulse: Vector2) -> void:

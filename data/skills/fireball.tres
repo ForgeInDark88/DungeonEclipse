@@ -16,6 +16,7 @@ extra_every_levels = 0
 spread_degrees = 10.0
 pierce = 0
 blast_radius = 28.0
+damage_type = 1
 color = Color(1, 0.5, 0.15, 1)
 
 [resource]
@@ -28,3 +29,4 @@ mana_cost = 10
 cooldown = 1.2
 max_level = 4
 effect = SubResource("Resource_04put")
+cast_animation = &"attack_cast"

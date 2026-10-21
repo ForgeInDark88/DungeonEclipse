@@ -54,6 +54,10 @@ func setup(p_data: EnemyData, p_floor: int) -> void:
 func _ready() -> void:
 	add_to_group("enemies")
 	_setup_sprite()
+	status.immunities = data.status_immunities
+	var sv := StatusVisual.new()
+	add_child(sv)
+	sv.setup(status, sprite, data.collision_size.y)
 	var rect := RectangleShape2D.new()
 	rect.size = data.collision_size
 	shape.shape = rect
@@ -287,6 +291,15 @@ func _update_attack(delta: float) -> void:
 		velocity.x = dir * data.chase_speed * 1.8  # lunge
 	if _distance_to_player() <= data.attack_range + 14.0:
 		_player.take_damage(damage, global_position)
+		_apply_hit_effects(_player, damage)
+
+
+func _apply_hit_effects(target: Node, dmg: int) -> void:
+	if not is_instance_valid(target) or target.dead:
+		return
+	for e in data.on_hit_effects:
+		if e:
+			e.try_apply(self, target, dmg)
 
 
 func _shoot() -> void:
@@ -298,15 +311,31 @@ func _shoot() -> void:
 	var dir_v := (_player.global_position + Vector2(0, -10) - from).normalized()
 	p.setup(data.projectile_texture, dir_v, data.projectile_speed, damage, "player")
 	p.blast_color = Color(0.8, 0.3, 1.0)
+	p.on_hit = func(target: Node, dmg: int) -> void: _apply_hit_effects(target, dmg)
 	AudioManager.play_sfx(data.sound_attack if data.sound_attack != &"" else &"enemy_shoot", global_position)
 	level.add_entity(p, from)
 
 
 # ------------------------------------------------------------------ damage
-func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.INF) -> void:
+## Resistance 0..1 against a WeaponItemData.DamageType.
+func resistance(damage_type: int) -> float:
+	if damage_type <= 0 or damage_type >= StatTypes.DAMAGE_TYPE_RES.size():
+		return 0.0
+	return clampf(float(data.resistances.get(StatTypes.DAMAGE_TYPE_RES[damage_type], 0.0)), 0.0, 1.0)
+
+
+func status_resistance(id: StringName) -> float:
+	return resistance(StatusEffects.damage_type_of(id))
+
+
+func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.INF, damage_type: int = 0) -> void:
 	if hp <= 0:
 		return
-	var dealt := maxi(1, amount - data.armor)
+	# Physical damage is reduced by armor, elemental by resistances.
+	var dealt := maxi(1, amount - data.armor) if damage_type == 0 else roundi(amount * (1.0 - resistance(damage_type)))
+	if dealt <= 0:
+		EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 4), "Иммунитет", Color(0.7, 0.7, 0.7))
+		return
 	hp -= dealt
 	hp_bar.visible = true
 	hp_bar.max_value = max_hp
@@ -335,7 +364,8 @@ func apply_knockback(dir: float, force: float) -> void:
 
 
 ## Damage from statuses (poison, burn, bleed): ignores armor, no hit-stop.
-func take_status_damage(amount: int, _status: StringName, color: Color) -> void:
+func take_status_damage(amount: int, p_status: StringName, color: Color) -> void:
+	amount = roundi(amount * (1.0 - status_resistance(p_status)))
 	if _dead or amount <= 0:
 		return
 	hp -= amount

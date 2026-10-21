@@ -26,6 +26,9 @@ const DOLL := UI_DIR + "doll.png"
 const TILES := SPRITES_DIR + "tiles/tiles_catacombs.png"  # fallback biome tileset
 const SHADOW := SPRITES_DIR + "fx/shadow.png"
 const RIVET := UI_DIR + "rivet.png"
+## Status icons: STATUS_ICON_DIR + "<status id>.png" (8x8).
+const STATUS_ICON_DIR := UI_DIR + "status/"
+const SHIELD_BUBBLE := SPRITES_DIR + "fx/shield_bubble.png"
 const EXIT_DOOR := SPRITES_DIR + "props/exit_door.png"
 const LIGHT := SPRITES_DIR + "fx/light.png"
 const PIXEL := SPRITES_DIR + "fx/pixel.png"

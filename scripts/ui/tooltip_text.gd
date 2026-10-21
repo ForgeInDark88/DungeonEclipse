@@ -143,6 +143,12 @@ static func hero_stats(hero: Hero) -> String:
 	lines.append("Мана: [b]%d / %d[/b]" % [s.mana, s.max_mana()])
 	for stat in [StatTypes.DAMAGE, StatTypes.ARMOR, StatTypes.SPEED, StatTypes.CRIT_CHANCE]:
 		lines.append("%s: [b]%s[/b]" % [StatTypes.label(stat), StatTypes.format_value(stat, s.get_value(stat))])
+	var res: Array[String] = []
+	for r in StatTypes.RESISTANCES:
+		if s.get_value(r) > 0.0:
+			res.append("%s %s" % [StatTypes.label(r), StatTypes.format_value(r, s.get_value(r))])
+	if not res.is_empty():
+		lines.append(", ".join(res))
 	lines.append("")
 	lines.append(_c(UIStyle.INK_SOFT, "Этаж %d · Убито врагов: %d" % [GameState.floor_number, GameState.kills]))
 	return "\n".join(lines)

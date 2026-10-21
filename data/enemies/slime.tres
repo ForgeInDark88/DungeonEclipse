@@ -1,18 +1,27 @@
-[gd_resource type="Resource" script_class="EnemyData" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="EnemyData" load_steps=9 format=3]
 
-[ext_resource type="Texture2D" path="res://assets/sprites/enemies/slime_sheet.png" id="sheet_tex"]
-[ext_resource type="Resource" path="res://data/animations/slime_layout.tres" id="sheet_lay"]
 [ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="1_8f3q0"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_csfin"]
 [ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="2_s5mx1"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="3_abkk4"]
 [ext_resource type="Texture2D" path="res://assets/sprites/enemies/slime.png" id="3_q2kvs"]
+[ext_resource type="Resource" path="res://data/animations/slime_layout.tres" id="sheet_lay"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/slime_sheet.png" id="sheet_tex"]
+
+[sub_resource type="Resource" id="Resource_k8wkx"]
+script = ExtResource("3_abkk4")
+status = &"poison"
+duration = 3.0
+power = 2.0
+chance = 0.25
 
 [resource]
 script = ExtResource("2_s5mx1")
-sheet = ExtResource("sheet_tex")
-sheet_layout = ExtResource("sheet_lay")
 id = &"slime"
 display_name = "Слизень"
 texture = ExtResource("3_q2kvs")
+sheet = ExtResource("sheet_tex")
+sheet_layout = ExtResource("sheet_lay")
 behavior = 0
 collision_size = Vector2(14, 10)
 max_hp = 18
@@ -30,4 +39,13 @@ loot_table = ExtResource("1_8f3q0")
 loot_chance = 0.3
 min_floor = 1
 spawn_weight = 1.2
+biomes = Array[StringName]([])
 tint = Color(1, 1, 1, 1)
+resistances = {
+"res_poison": 0.5
+}
+status_immunities = Array[StringName]([])
+on_hit_effects = Array[ExtResource("2_csfin")]([SubResource("Resource_k8wkx")])
+sound_hurt = &"enemy_hurt"
+sound_death = &"enemy_death"
+sound_attack = &""

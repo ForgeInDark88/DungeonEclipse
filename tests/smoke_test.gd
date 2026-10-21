@@ -56,6 +56,7 @@ func _ready() -> void:
 	_test_inventory()
 	_test_weapons()
 	_test_audio()
+	_test_statuses()
 	await _test_scenes()
 	if not _finished:
 		failures.append("scenario did not reach the end (script error?)")
@@ -229,6 +230,24 @@ func _test_audio() -> void:
 	AudioManager.play_ui(&"ui_click")
 
 
+func _test_statuses() -> void:
+	var st := StatusEffects.new()
+	st.apply(&"slow", 3.0, 0.5)
+	check(is_equal_approx(st.speed_multiplier(), 0.5), "slow halves speed")
+	st.apply(&"burn", 3.0, 2.0)
+	check(st.has(&"burn") and not st.has(&"slow"), "fire melts ice (slow removed by burn)")
+	st.apply(&"slow", 3.0, 0.5)
+	check(st.has(&"slow") and not st.has(&"burn"), "ice puts out fire")
+	st.apply(&"shield", 5.0, 30.0)
+	check(st.absorb(20) == 0 and st.absorb(20) == 10 and not st.has(&"shield"), "shield absorbs 30 then breaks")
+	st.immunities = [&"poison"]
+	st.apply(&"poison", 3.0, 2.0)
+	check(not st.has(&"poison"), "immunity blocks poison")
+	st.free()
+	var skel: EnemyData = load("res://data/enemies/skeleton.tres")
+	check(&"poison" in skel.status_immunities, "skeletons are immune to poison")
+
+
 func _test_scenes() -> void:
 	get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn")
 	await frames(10)
@@ -339,6 +358,25 @@ func _test_scenes() -> void:
 	player.camera.zoom = Vector2(4, 4)
 	await shot("12a_bow_zoom")
 	player.camera.zoom = Vector2.ONE
+	# --- 15.1 statuses on the hero
+	var hp0 := player.hero.stats.hp
+	player.status.apply(&"poison", 1.2, 3.0)
+	await get_tree().create_timer(1.3).timeout
+	check(player.hero.stats.hp < hp0, "poison ticks on the hero (%d -> %d)" % [hp0, player.hero.stats.hp])
+	player.status.apply(&"stun", 0.5)
+	var px := player.global_position.x
+	Input.action_press("move_right")
+	await frames(10)
+	Input.action_release("move_right")
+	check(absf(player.global_position.x - px) < 2.0, "stunned hero cannot move")
+	await get_tree().create_timer(0.6).timeout
+	player.status.apply(&"shield", 5.0, 999.0)
+	var hp1 := player.hero.stats.hp
+	player._invulnerable = 0.0
+	player.take_damage(50, player.global_position + Vector2(10, 0))
+	check(player.hero.stats.hp == hp1, "shield absorbs the hit")
+	player.status.clear()
+	player.hero.stats.heal(9999)
 	# attack + skills + items
 	await press("attack")
 	for i in 4:

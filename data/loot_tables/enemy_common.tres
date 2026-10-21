@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="LootTable" load_steps=35 format=3]
+[gd_resource type="Resource" script_class="LootTable" load_steps=41 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/loot_entry.gd" id="1_se6wl"]
 [ext_resource type="Resource" path="res://data/items/usable/health_potion.tres" id="2_wlafl"]
@@ -18,6 +18,9 @@
 [ext_resource type="Script" path="res://scripts/data/loot_table.gd" id="12_kcmbx"]
 [ext_resource type="Resource" path="res://data/items/equipment/wooden_spear.tres" id="13_l0r61"]
 [ext_resource type="Resource" path="res://data/items/equipment/knight_sword.tres" id="16_37wb3"]
+[ext_resource type="Resource" path="res://data/items/usable/antidote.tres" id="18_b3oaa"]
+[ext_resource type="Resource" path="res://data/items/usable/regen_potion.tres" id="19_rpms3"]
+[ext_resource type="Resource" path="res://data/items/usable/shield_elixir.tres" id="20_cj62y"]
 
 [sub_resource type="Resource" id="Resource_yxai6"]
 script = ExtResource("1_se6wl")
@@ -147,6 +150,30 @@ min_count = 1
 max_count = 1
 min_floor = 3
 
+[sub_resource type="Resource" id="Resource_2kuib"]
+script = ExtResource("1_se6wl")
+item = ExtResource("18_b3oaa")
+weight = 1.5
+min_count = 1
+max_count = 1
+min_floor = 1
+
+[sub_resource type="Resource" id="Resource_vtoxp"]
+script = ExtResource("1_se6wl")
+item = ExtResource("19_rpms3")
+weight = 0.8
+min_count = 1
+max_count = 1
+min_floor = 1
+
+[sub_resource type="Resource" id="Resource_7bjb5"]
+script = ExtResource("1_se6wl")
+item = ExtResource("20_cj62y")
+weight = 0.8
+min_count = 1
+max_count = 1
+min_floor = 1
+
 [resource]
 script = ExtResource("12_kcmbx")
 rolls_min = 1
@@ -154,4 +181,4 @@ rolls_max = 1
 rarity_weights = Array[float]([85.0, 13.0, 2.0])
 rare_bonus_per_floor = 3.0
 epic_bonus_per_floor = 1.5
-entries = Array[ExtResource("1_se6wl")]([SubResource("Resource_yxai6"), SubResource("Resource_psscp"), SubResource("Resource_w120w"), SubResource("Resource_uhs4j"), SubResource("Resource_8fm2d"), SubResource("Resource_gbw5g"), SubResource("Resource_75auv"), SubResource("Resource_0bie0"), SubResource("Resource_j3y87"), SubResource("Resource_i1lmv"), SubResource("Resource_0rmbd"), SubResource("Resource_kxefj"), SubResource("Resource_5ynv0"), SubResource("Resource_meotj"), SubResource("Resource_3t3dh"), SubResource("Resource_0gdld")])
+entries = Array[ExtResource("1_se6wl")]([SubResource("Resource_yxai6"), SubResource("Resource_psscp"), SubResource("Resource_w120w"), SubResource("Resource_uhs4j"), SubResource("Resource_8fm2d"), SubResource("Resource_gbw5g"), SubResource("Resource_75auv"), SubResource("Resource_0bie0"), SubResource("Resource_j3y87"), SubResource("Resource_i1lmv"), SubResource("Resource_0rmbd"), SubResource("Resource_kxefj"), SubResource("Resource_5ynv0"), SubResource("Resource_meotj"), SubResource("Resource_3t3dh"), SubResource("Resource_0gdld"), SubResource("Resource_2kuib"), SubResource("Resource_vtoxp"), SubResource("Resource_7bjb5")])

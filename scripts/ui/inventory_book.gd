@@ -206,7 +206,7 @@ func _build_left_page(page: Control) -> void:
 	page.add_child(stats_box)
 	var header := UIStyle.label("Характеристики", 8, UIStyle.INK_SOFT)
 	stats_box.add_child(header)
-	for stat in ["level"] + StatTypes.PRIMARY + ["hp", "mana"] + [StatTypes.DAMAGE, StatTypes.ARMOR, StatTypes.SPEED, StatTypes.CRIT_CHANCE]:
+	for stat in ["level"] + StatTypes.PRIMARY + ["hp", "mana"] + [StatTypes.DAMAGE, StatTypes.ARMOR, StatTypes.SPEED, StatTypes.CRIT_CHANCE, "resist"]:
 		var row := HBoxContainer.new()
 		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var name_l := UIStyle.label("", 7, UIStyle.INK_SOFT)
@@ -281,6 +281,12 @@ func _refresh_stats() -> void:
 			"mana":
 				labels[0].text = "Мана"
 				labels[1].text = "%d / %d" % [st.mana, st.max_mana()]
+			"resist":
+				labels[0].text = "Огонь/Лёд/Яд/Магия"
+				var parts: Array[String] = []
+				for r in StatTypes.RESISTANCES:
+					parts.append(str(roundi(st.get_value(r) * 100.0)))
+				labels[1].text = "/".join(parts) + "%"
 			_:
 				labels[0].text = StatTypes.label(key)
 				labels[1].text = StatTypes.format_value(key, st.get_value(key))

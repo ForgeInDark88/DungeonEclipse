@@ -13,6 +13,7 @@ damage_per_level = 0.35
 knockback = 160.0
 breaks_tiles = false
 stun_time = 2.0
+damage_type = 2
 color = Color(0.5, 0.75, 1, 1)
 
 [resource]
@@ -25,3 +26,4 @@ mana_cost = 20
 cooldown = 7.0
 max_level = 4
 effect = SubResource("Resource_2vb88")
+cast_animation = &"attack_cast"

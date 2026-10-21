@@ -35,6 +35,13 @@ enum Behavior { WALKER, FLYER, RANGED }
 ## Biome ids where it appears (empty = everywhere).
 @export var biomes: Array[StringName] = []
 @export var tint: Color = Color.WHITE
+@export_group("Statuses and elements")
+## Resistances by stat key: {"res_fire": 0.5, "res_poison": 1.0}.
+@export var resistances: Dictionary = {}
+## Statuses that never apply (e.g. golems are immune to poison).
+@export var status_immunities: Array[StringName] = []
+## Applied to the hero when this monster hits (melee or projectile).
+@export var on_hit_effects: Array[HitEffect] = []
 @export_group("Sounds (ids from AssetPaths.SFX)")
 @export var sound_hurt: StringName = &"enemy_hurt"
 @export var sound_death: StringName = &"enemy_death"

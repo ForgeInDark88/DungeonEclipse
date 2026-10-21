@@ -7,6 +7,8 @@ var direction := Vector2.RIGHT
 var speed: float = 200.0
 var damage: int = 10
 var crit := false
+## WeaponItemData.DamageType of the hit.
+var damage_type: int = 0
 var target_group := "enemies"
 var pierce := 0
 var lifetime: float = 2.5
@@ -67,11 +69,11 @@ func _on_body_entered(body: Node) -> void:
 
 func _damage(body: Node) -> void:
 	if target_group == "player":
-		body.take_damage(damage, global_position)
+		body.take_damage(damage, global_position, damage_type)
 	else:
-		body.take_damage(damage, crit, global_position)
-		if on_hit.is_valid():
-			on_hit.call(body, damage)
+		body.take_damage(damage, crit, global_position, damage_type)
+	if on_hit.is_valid():
+		on_hit.call(body, damage)
 
 
 func _finish() -> void:

@@ -94,6 +94,8 @@ func recalculate() -> void:
 	_values[StatTypes.ARMOR] = vit_v * ARMOR_PER_VITALITY + _flat(StatTypes.ARMOR)
 	_values[StatTypes.SPEED] = BASE_SPEED + agi_v * SPEED_PER_AGILITY + _flat(StatTypes.SPEED)
 	_values[StatTypes.CRIT_CHANCE] = clampf(BASE_CRIT + agi_v * CRIT_PER_AGILITY + _flat(StatTypes.CRIT_CHANCE), 0.0, 0.75)
+	for res in StatTypes.RESISTANCES:
+		_values[res] = clampf(_flat(res), 0.0, 0.75)
 
 	hp = mini(hp, max_hp())
 	mana = mini(mana, max_mana())
@@ -184,6 +186,23 @@ func take_damage(amount: int) -> int:
 	if hp == 0:
 		died.emit()
 	return reduced
+
+
+## Resistance (0..0.75) against a WeaponItemData.DamageType.
+func resistance(damage_type: int) -> float:
+	var key: String = StatTypes.DAMAGE_TYPE_RES[damage_type] if damage_type >= 0 and damage_type < StatTypes.DAMAGE_TYPE_RES.size() else ""
+	return get_value(key) if key != "" else 0.0
+
+
+## HP loss that ignores armor (poison, burning, traps' true damage).
+func lose_hp(amount: int) -> int:
+	if is_dead() or amount <= 0:
+		return 0
+	hp = maxi(0, hp - amount)
+	hp_changed.emit(hp, max_hp())
+	if hp == 0:
+		died.emit()
+	return amount
 
 
 func heal(amount: int) -> void:

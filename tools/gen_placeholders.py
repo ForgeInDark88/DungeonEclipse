@@ -759,6 +759,10 @@ def main() -> None:
         "club": icon_club((120, 85, 45, 255)),
         "morning_star": icon_club((150, 155, 165, 255), spikes=True),
         "whetstone": icon_whetstone(),
+        # stage 15 potions
+        "antidote": icon_potion((90, 210, 80, 255)),
+        "regen_potion": icon_potion((240, 120, 170, 255)),
+        "shield_elixir": icon_potion((90, 140, 255, 255)),
     }
     for name, im in items.items():
         save(im, f"sprites/items/{name}.png")
@@ -844,6 +848,8 @@ def main() -> None:
     gen_sheets.main()
     import gen_biomes  # biome tilesets, parallax, decorations, extra layers
     gen_biomes.main()
+    import gen_mechanics  # status icons, traps, merchant, bosses, monsters...
+    gen_mechanics.main()
 
 
 if __name__ == "__main__":

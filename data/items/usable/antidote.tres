@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="UsableItemData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/item_effect.gd" id="1_guio1"]
+[ext_resource type="Script" path="res://scripts/effects/cure_effect.gd" id="2_navny"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/antidote.png" id="3_rwxq2"]
+[ext_resource type="Script" path="res://scripts/data/usable_item_data.gd" id="4_185uv"]
+
+[sub_resource type="Resource" id="Resource_t0lp6"]
+script = ExtResource("2_navny")
+statuses = Array[StringName]([&"poison", &"bleed"])
+
+[resource]
+script = ExtResource("4_185uv")
+effects = Array[ExtResource("1_guio1")]([SubResource("Resource_t0lp6")])
+consume_on_use = true
+cooldown = 0.3
+use_animation = &"use"
+use_sound = &"potion_drink"
+id = &"antidote"
+display_name = "Противоядие"
+description = "Горькая настойка трав."
+icon = ExtResource("3_rwxq2")
+item_type = 1
+rarity = 0
+max_stack = 5
+stat_bonuses = {}
+has_durability = false
+max_durability = 100

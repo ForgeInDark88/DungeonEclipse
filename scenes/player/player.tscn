@@ -1,5 +1,6 @@
 [gd_scene load_steps=8 format=3]
 
+[ext_resource type="Script" path="res://scripts/combat/status_effects.gd" id="10_status"]
 [ext_resource type="Script" path="res://scripts/world/blob_shadow.gd" id="9_shadow"]
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://scripts/anim/hero_visual.gd" id="2_visual"]
@@ -68,3 +69,6 @@ gravity = Vector2(0, 0)
 initial_velocity_min = 3.0
 initial_velocity_max = 10.0
 color_ramp = SubResource("Grad_dust")
+
+[node name="StatusEffects" type="Node" parent="."]
+script = ExtResource("10_status")

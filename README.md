@@ -170,6 +170,18 @@ tools/gen_placeholders.py  генератор пиксельных заглуш�
 `BiomeData.music`, `BiomeData.step_sound`) или вызывается из кода
 `AudioManager.play_sfx(id, позиция)` / `play_ui(id)` / `play_music(id)`.
 
+### Статус-эффекты и стихии
+Компонент `StatusEffects` есть у героя и у монстров: яд, горение, кровотечение (урон каждые
+0.5 с, без учёта брони), оглушение, замедление, регенерация, щит (поглощает урон), проклятие.
+Иконки — над головой и в строке над HUD (негативные — в красной рамке).
+- Стихии: огонь растапливает лёд (снимает замедление), лёд гасит огонь; яд вдвое ослабляет регенерацию.
+- Сопротивления: у героя — статы `res_fire/res_ice/res_poison/res_magic` (бонусы предметов и рас),
+  у монстра — `EnemyData.resistances`; они режут стихийный урон и длительность статусов.
+  `EnemyData.status_immunities` — полный иммунитет (скелеты не травятся).
+- Источники: `on_hit_effects` оружия и аффиксов, `EnemyData.on_hit_effects` (монстры → герой),
+  предметы (`StatusSelfEffect`, `CureEffect` — противоядие), навыки (`StatusSkill`).
+- Новый статус: строка в `StatusEffects.INFO` + иконка `assets/ui/status/<id>.png` (8×8).
+
 ### Новая раса
 `RaceData` в `data/races/`: `id`, `display_name`, `order` (место в списке), `description`,
 `portrait` (лицо 32×32), `stat_bonuses`.

@@ -198,7 +198,12 @@ func _refresh_floor() -> void:
 func _process(_delta: float) -> void:
 	if _player == null or not is_instance_valid(_player):
 		return
-	_update_status_row(_player.get_buffs())
+	var entries := _player.get_buffs()
+	for id: StringName in _player.status.active:
+		entries.append({"key": "st_" + String(id), "left": _player.status.active[id]["time"],
+				"duration": _player.status.active[id]["duration"], "icon": StatusEffects.icon_of(id),
+				"tint": StatusEffects.color_of(id), "negative": id in StatusEffects.NEGATIVE})
+	_update_status_row(entries)
 
 
 ## Icons of active buffs (and later statuses) with a shrinking timer bar.
@@ -215,7 +220,7 @@ func _update_status_row(buffs: Array[Dictionary]) -> void:
 			box.custom_minimum_size = Vector2(14, 16)
 			box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			var bg := ColorRect.new()
-			bg.color = Color(0.1, 0.06, 0.04, 0.85)
+			bg.color = Color(0.45, 0.05, 0.05, 0.9) if b.get("negative", false) else Color(0.1, 0.06, 0.04, 0.85)
 			bg.size = Vector2(14, 14)
 			box.add_child(bg)
 			var icon := TextureRect.new()

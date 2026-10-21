@@ -38,6 +38,7 @@ base_damage = 4
 attack_range = 18.0
 attack_cooldown = 0.38
 starting_items = {
+"antidote": 1,
 "bomb": 2,
 "health_potion": 3,
 "key": 1,
