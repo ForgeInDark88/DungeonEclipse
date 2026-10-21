@@ -23,6 +23,9 @@ var _hint: Label
 var _points_label: Label
 var _portrait_holder: Control
 var _message_tween: Tween
+var _player: Player
+var _status_row: HBoxContainer
+var _status_keys: Array[String] = []
 
 
 func _ready() -> void:
@@ -32,6 +35,7 @@ func _ready() -> void:
 
 func setup(p_hero: Hero, player: Player) -> void:
 	hero = p_hero
+	_player = player
 	_build()
 	hero.stats.hp_changed.connect(func(hp: int, mx: int) -> void: _hp.set_values(hp, mx))
 	hero.stats.mana_changed.connect(func(m: int, mx: int) -> void: _mana.set_values(m, mx))
@@ -71,6 +75,21 @@ func _build() -> void:
 	panel.offset_top = -panel_size.y
 	root.add_child(panel)
 	panel.add_child(UIStyle.frame(AssetPaths.BOOK_PANEL, 30, 0.5))
+	# Metal rivets along the panel border (like the reference HUD).
+	var rivet_tex := AssetPaths.tex(AssetPaths.RIVET)
+	for x in [8.0, panel_size.x * 0.25, panel_size.x * 0.5, panel_size.x * 0.75, panel_size.x - 13.0]:
+		for y in [3.0, panel_size.y - 8.0]:
+			var r := TextureRect.new()
+			r.texture = rivet_tex
+			r.position = Vector2(x, y)
+			r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			panel.add_child(r)
+	# Active buffs / statuses above the portrait.
+	_status_row = HBoxContainer.new()
+	_status_row.add_theme_constant_override("separation", 2)
+	_status_row.position = Vector2(PADDING, -18)
+	_status_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(_status_row)
 
 	# Portrait
 	var portrait := Control.new()
@@ -124,9 +143,16 @@ func _build() -> void:
 	panel.add_child(_points_label)
 
 	# Texts over the game
-	_floor_label = UIStyle.outlined_label("", 9, UIStyle.GOLD)
-	_floor_label.position = Vector2(8, 6)
-	root.add_child(_floor_label)
+	var plaque := Control.new()
+	plaque.position = Vector2(4, 3)
+	plaque.size = Vector2(150, 18)
+	plaque.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	plaque.add_child(UIStyle.frame(AssetPaths.BAR_FRAME, 3))
+	root.add_child(plaque)
+	_floor_label = UIStyle.outlined_label("", 8, UIStyle.GOLD)
+	_floor_label.position = Vector2(6, 2)
+	_floor_label.size = Vector2(140, 14)
+	plaque.add_child(_floor_label)
 	_hint = UIStyle.outlined_label("", 8, UIStyle.PARCHMENT)
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hint.anchor_left = 0.0
@@ -163,7 +189,55 @@ func _refresh_xp() -> void:
 
 
 func _refresh_floor() -> void:
-	_floor_label.text = "Этаж %d" % GameState.floor_number
+	var biome := GameState.current_biome()
+	_floor_label.text = "Этаж %d · %s" % [GameState.floor_number, biome.display_name] if biome else "Этаж %d" % GameState.floor_number
+	var plaque := _floor_label.get_parent() as Control
+	plaque.size.x = _floor_label.get_minimum_size().x + 14
+
+
+func _process(_delta: float) -> void:
+	if _player == null or not is_instance_valid(_player):
+		return
+	_update_status_row(_player.get_buffs())
+
+
+## Icons of active buffs (and later statuses) with a shrinking timer bar.
+func _update_status_row(buffs: Array[Dictionary]) -> void:
+	var keys: Array[String] = []
+	for b in buffs:
+		keys.append(b["key"])
+	if keys != _status_keys:
+		_status_keys = keys
+		for c in _status_row.get_children():
+			c.queue_free()
+		for b in buffs:
+			var box := Control.new()
+			box.custom_minimum_size = Vector2(14, 16)
+			box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			var bg := ColorRect.new()
+			bg.color = Color(0.1, 0.06, 0.04, 0.85)
+			bg.size = Vector2(14, 14)
+			box.add_child(bg)
+			var icon := TextureRect.new()
+			icon.texture = b["icon"]
+			icon.position = Vector2(1, 1)
+			icon.size = Vector2(12, 12)
+			icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			box.add_child(icon)
+			var bar := ColorRect.new()
+			bar.name = "Bar"
+			bar.color = b["tint"]
+			bar.position = Vector2(0, 14)
+			bar.size = Vector2(14, 2)
+			box.add_child(bar)
+			_status_row.add_child(box)
+	var i := 0
+	for c in _status_row.get_children():
+		if i < buffs.size() and not c.is_queued_for_deletion():
+			var bar := c.get_node_or_null("Bar") as ColorRect
+			if bar:
+				bar.size.x = 14.0 * clampf(buffs[i]["left"] / maxf(0.01, buffs[i]["duration"]), 0.0, 1.0)
+			i += 1
 
 
 func _on_level_up(new_level: int) -> void:

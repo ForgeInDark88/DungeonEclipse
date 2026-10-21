@@ -23,7 +23,9 @@ const TOOLTIP := UI_DIR + "tooltip.png"
 const DOLL := UI_DIR + "doll.png"
 
 # --- World ---
-const TILES := SPRITES_DIR + "tiles/dungeon_tiles.png"
+const TILES := SPRITES_DIR + "tiles/tiles_catacombs.png"  # fallback biome tileset
+const SHADOW := SPRITES_DIR + "fx/shadow.png"
+const RIVET := UI_DIR + "rivet.png"
 const EXIT_DOOR := SPRITES_DIR + "props/exit_door.png"
 const LIGHT := SPRITES_DIR + "fx/light.png"
 const PIXEL := SPRITES_DIR + "fx/pixel.png"
@@ -58,13 +60,21 @@ const FALLBACK_WEAPON := SPRITES_DIR + "items/rusty_sword.png"
 
 # --- Shaders ---
 const SHADER_FLASH := "res://assets/shaders/flash.gdshader"
+const SHADER_POST_FX := "res://assets/shaders/post_fx.gdshader"
 
-# Atlas coordinates inside TILES (16x16 cells).
-const TILE_BEDROCK := Vector2i(0, 0)
-const TILE_BRICK := Vector2i(1, 0)
-const TILE_PLATFORM := Vector2i(2, 0)
-const TILE_LADDER := Vector2i(3, 0)
-const TILE_BACKWALL := Vector2i(4, 0)
+# Biome tileset atlas (16x16 cells, 4 columns): rows of variants.
+# The texture itself comes from BiomeData.tileset_texture.
+const TILE_ROW_BEDROCK := 0
+const TILE_ROW_BRICK := 1  # columns 0-1 plain, 2 cracked, 3 ore
+const TILE_ROW_BRICK_TOP := 2  # exposed top (moss / dust / magma)
+const TILE_ROW_BRICK_BOTTOM := 3  # exposed bottom (ceiling)
+const TILE_PLATFORM_LEFT := Vector2i(0, 4)
+const TILE_PLATFORM_MID := Vector2i(1, 4)
+const TILE_PLATFORM_RIGHT := Vector2i(2, 4)
+const TILE_LADDER := Vector2i(3, 4)
+const TILE_ROW_BACKWALL := 5
+const TILE_ORE_GLOW := Vector2i(0, 6)
+const TILE_ORE := Vector2i(3, 1)
 
 
 static func layout(path: String) -> SpriteSheetLayout:

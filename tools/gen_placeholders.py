@@ -781,10 +781,7 @@ def main() -> None:
     for name, im in skills.items():
         save(im, f"sprites/skills/{name}.png", do_outline=False)
 
-    atlas = new(16 * 5, 16)
-    for i, t in enumerate((tile_bedrock(), tile_brick(), tile_platform(), tile_ladder(), tile_backwall())):
-        atlas.alpha_composite(t, (i * 16, 0))
-    save(atlas, "sprites/tiles/dungeon_tiles.png", do_outline=False)
+    # Tilesets are per biome now: see gen_biomes.py (sprites/tiles/tiles_<biome>.png).
 
     save(char_sprite((140, 40, 40, 255), (230, 190, 150, 255), (90, 60, 30, 255), "helm"), "sprites/player/warrior.png")
     save(char_sprite((50, 90, 50, 255), (230, 190, 150, 255), (40, 60, 40, 255), "hood"), "sprites/player/rogue.png")
@@ -845,6 +842,8 @@ def main() -> None:
     print("placeholders generated")
     import gen_sheets  # animated sprite sheets (see docs/ANIMATION_GUIDE.md)
     gen_sheets.main()
+    import gen_biomes  # biome tilesets, parallax, decorations, extra layers
+    gen_biomes.main()
 
 
 if __name__ == "__main__":

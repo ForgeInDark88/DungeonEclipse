@@ -32,4 +32,6 @@ enum Behavior { WALKER, FLYER, RANGED }
 ## First floor where it may spawn, and spawn weight.
 @export var min_floor: int = 1
 @export var spawn_weight: float = 1.0
+## Biome ids where it appears (empty = everywhere).
+@export var biomes: Array[StringName] = []
 @export var tint: Color = Color.WHITE

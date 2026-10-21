@@ -1,12 +1,14 @@
 [gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
 
+[ext_resource type="Texture2D" path="res://assets/sprites/player/equip_gauntlets.png" id="sheet_visual"]
 [ext_resource type="Texture2D" path="res://assets/sprites/items/gauntlets.png" id="1_n167h"]
 [ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_rwp41"]
 
 [resource]
 script = ExtResource("2_rwp41")
+visual_sheet = ExtResource("sheet_visual")
+visual_layer = &"gloves"
 slot_type = &"gloves"
-visual_layer = &"armor"
 id = &"gauntlets"
 display_name = "Латные рукавицы"
 description = "Кулак в них — уже оружие."

@@ -52,13 +52,38 @@ func _load_floor() -> void:
 	var floor_number := GameState.floor_number
 	var seed_value := GameState.floor_seed()
 	var layout := LevelGenerator.new().generate(floor_number, seed_value)
+	var biome := GameState.current_biome()
 	level = LEVEL_SCENE.instantiate()
 	world.add_child(level)
 	world.move_child(level, 0)
-	level.build(layout, floor_number, seed_value)
+	level.build(layout, floor_number, seed_value, biome)
 	player.global_position = level.start_position()
 	player.set_level(level)
-	EventBus.message.emit("Этаж %d" % floor_number)
+	_apply_biome(biome)
+	EventBus.message.emit("Этаж %d — %s" % [floor_number, biome.display_name] if biome else "Этаж %d" % floor_number)
+
+
+## Palette, light, parallax and post effects of the biome.
+func _apply_biome(biome: BiomeData) -> void:
+	if biome == null:
+		return
+	($Darkness as CanvasModulate).color = biome.darkness
+	player.apply_biome(biome)
+	var textures := [biome.parallax_far, biome.parallax_mid, biome.parallax_near]
+	var layers := $Parallax.get_children()
+	for i in layers.size():
+		var sprite: Sprite2D = layers[i].get_child(0)
+		sprite.texture = textures[i]
+		# The parallax is its own canvas layer: darken it like the world.
+		sprite.modulate = biome.darkness.lightened(0.25 + 0.1 * i)
+		layers[i].visible = textures[i] != null
+	var m := ($PostFX/Rect as ColorRect).material as ShaderMaterial
+	m.set_shader_parameter("tint", biome.grade_tint)
+	m.set_shader_parameter("saturation", biome.saturation)
+	m.set_shader_parameter("contrast", biome.contrast)
+	m.set_shader_parameter("vignette", biome.vignette)
+	m.set_shader_parameter("fog_color", biome.fog_color)
+	m.set_shader_parameter("fog_amount", biome.fog_amount)
 
 
 func _process(delta: float) -> void:

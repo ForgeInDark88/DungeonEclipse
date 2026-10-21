@@ -2,6 +2,7 @@ class_name WallTorch
 extends Node2D
 ## Flickering wall torch: animated flame + warm light with noisy energy.
 
+var light_color := Color(1.0, 0.62, 0.3)
 var _t := 0.0
 var _base_energy := 1.0
 
@@ -14,6 +15,7 @@ func _ready() -> void:
 	flame.play(&"burn")
 	flame.frame = randi() % 6
 	light.texture = AssetPaths.tex(AssetPaths.LIGHT)
+	light.color = light_color
 	_base_energy = light.energy
 	_t = randf() * 10.0
 

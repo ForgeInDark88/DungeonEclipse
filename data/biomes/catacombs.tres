@@ -1,0 +1,88 @@
+[gd_resource type="Resource" script_class="BiomeData" load_steps=17 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="1_m0mwk"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/bones.png" id="2_5rnmc"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/skulls.png" id="3_xdt3g"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/cobweb.png" id="4_4hf5m"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/candles.png" id="5_yctjf"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/chains.png" id="6_bu5u6"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/catacombs_far.png" id="7_8syng"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/catacombs_mid.png" id="8_0t1sy"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/catacombs_near.png" id="9_d31lw"]
+[ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="10_sa776"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/tiles_catacombs.png" id="11_h7hxk"]
+
+[sub_resource type="Resource" id="Resource_kq3hy"]
+script = ExtResource("1_m0mwk")
+texture = ExtResource("2_5rnmc")
+placement = 0
+weight = 3.0
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Resource_6fl0w"]
+script = ExtResource("1_m0mwk")
+texture = ExtResource("3_xdt3g")
+placement = 0
+weight = 1.5
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Resource_iaxtp"]
+script = ExtResource("1_m0mwk")
+texture = ExtResource("4_4hf5m")
+placement = 1
+weight = 2.0
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = true
+
+[sub_resource type="Resource" id="Resource_67w7s"]
+script = ExtResource("1_m0mwk")
+texture = ExtResource("5_yctjf")
+placement = 0
+weight = 1.0
+light_color = Color(1, 0.75, 0.4, 1)
+light_scale = 0.25
+unshaded = true
+sway = false
+
+[sub_resource type="Resource" id="Resource_qawlg"]
+script = ExtResource("1_m0mwk")
+texture = ExtResource("6_bu5u6")
+placement = 1
+weight = 1.0
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = true
+
+[resource]
+script = ExtResource("10_sa776")
+id = &"catacombs"
+display_name = "Катакомбы"
+order = 0
+tileset_texture = ExtResource("11_h7hxk")
+parallax_far = ExtResource("7_8syng")
+parallax_mid = ExtResource("8_0t1sy")
+parallax_near = ExtResource("9_d31lw")
+darkness = Color(0.15, 0.13, 0.19, 1)
+back_wall_modulate = Color(0.6, 0.55, 0.65, 1)
+torch_color = Color(1, 0.62, 0.3, 1)
+hero_light_color = Color(1, 0.86, 0.65, 1)
+ambient_particles = Color(0.8, 0.75, 0.7, 1)
+fog_color = Color(0.45, 0.45, 0.55, 1)
+fog_amount = 0.07
+grade_tint = Color(1, 0.97, 0.95, 1)
+saturation = 0.9
+contrast = 1.05
+vignette = 0.4
+decorations = Array[ExtResource("1_m0mwk")]([SubResource("Resource_kq3hy"), SubResource("Resource_6fl0w"), SubResource("Resource_iaxtp"), SubResource("Resource_67w7s"), SubResource("Resource_qawlg")])
+decor_per_room = 3.0
+ore_chance = 0.035
+ore_item = &"iron_ore"

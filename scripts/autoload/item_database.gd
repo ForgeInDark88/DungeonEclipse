@@ -8,6 +8,7 @@ const CLASSES_DIR := "res://data/classes"
 const ENEMIES_DIR := "res://data/enemies"
 const LOOT_DIR := "res://data/loot_tables"
 const AFFIX_DIR := "res://data/affixes"
+const BIOME_DIR := "res://data/biomes"
 const EQUIPMENT_LAYOUT := "res://data/equipment_layout.tres"
 
 var items: Dictionary = {}  # StringName -> ItemData
@@ -16,6 +17,7 @@ var classes: Array[ClassData] = []
 var enemies: Array[EnemyData] = []
 var loot_tables: Dictionary = {}  # StringName (file name) -> LootTable
 var affixes: Array[AffixData] = []
+var biomes: Array[BiomeData] = []
 var equipment_layout: EquipmentLayout
 
 
@@ -30,6 +32,11 @@ func reload() -> void:
 	enemies.clear()
 	loot_tables.clear()
 	affixes.clear()
+	biomes.clear()
+	for res in _load_dir(BIOME_DIR):
+		if res is BiomeData:
+			biomes.append(res)
+	biomes.sort_custom(func(a: BiomeData, b: BiomeData) -> bool: return a.order < b.order)
 	for res in _load_dir(AFFIX_DIR):
 		if res is AffixData:
 			affixes.append(res)
@@ -66,12 +73,20 @@ func get_loot_table(table_name: StringName) -> LootTable:
 	return loot_tables.get(table_name)
 
 
-func enemies_for_floor(floor_number: int) -> Array[EnemyData]:
+## Enemies allowed on a floor; EnemyData.biomes (if set) limits them to biomes.
+func enemies_for_floor(floor_number: int, biome_id: StringName = &"") -> Array[EnemyData]:
 	var list: Array[EnemyData] = []
 	for e in enemies:
-		if e.min_floor <= floor_number:
+		if e.min_floor <= floor_number and (e.biomes.is_empty() or biome_id == &"" or biome_id in e.biomes):
 			list.append(e)
 	return list
+
+
+## Biome of a floor: they rotate every GameState.FLOORS_PER_BIOME floors.
+func biome_for_floor(floor_number: int) -> BiomeData:
+	if biomes.is_empty():
+		return null
+	return biomes[((floor_number - 1) / GameState.FLOORS_PER_BIOME) % biomes.size()]
 
 
 ## Recursively loads resources. Handles ".remap" names of exported builds.

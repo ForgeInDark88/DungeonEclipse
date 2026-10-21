@@ -1,0 +1,77 @@
+[gd_resource type="Resource" script_class="BiomeData" load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="1_hm27p"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/stalactite.png" id="2_j2kyn"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/ember_rocks.png" id="3_geufk"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/fire_crystal.png" id="4_lcr18"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/chains.png" id="5_krujs"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/lava_far.png" id="6_k551e"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/lava_mid.png" id="7_56gk8"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/lava_near.png" id="8_d0kkq"]
+[ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="9_tpf2t"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/tiles_lava.png" id="10_771dq"]
+
+[sub_resource type="Resource" id="Resource_ik8yg"]
+script = ExtResource("1_hm27p")
+texture = ExtResource("2_j2kyn")
+placement = 1
+weight = 3.0
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Resource_blxpc"]
+script = ExtResource("1_hm27p")
+texture = ExtResource("3_geufk")
+placement = 0
+weight = 2.5
+light_color = Color(1, 0.45, 0.15, 1)
+light_scale = 0.25
+unshaded = true
+sway = false
+
+[sub_resource type="Resource" id="Resource_j8ao4"]
+script = ExtResource("1_hm27p")
+texture = ExtResource("4_lcr18")
+placement = 0
+weight = 1.2
+light_color = Color(1, 0.4, 0.2, 1)
+light_scale = 0.25
+unshaded = true
+sway = false
+
+[sub_resource type="Resource" id="Resource_7et0i"]
+script = ExtResource("1_hm27p")
+texture = ExtResource("5_krujs")
+placement = 1
+weight = 1.0
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = true
+
+[resource]
+script = ExtResource("9_tpf2t")
+id = &"lava"
+display_name = "Лавовые глубины"
+order = 3
+tileset_texture = ExtResource("10_771dq")
+parallax_far = ExtResource("6_k551e")
+parallax_mid = ExtResource("7_56gk8")
+parallax_near = ExtResource("8_d0kkq")
+darkness = Color(0.2, 0.1, 0.08, 1)
+back_wall_modulate = Color(0.7, 0.45, 0.4, 1)
+torch_color = Color(1, 0.45, 0.2, 1)
+hero_light_color = Color(1, 0.75, 0.55, 1)
+ambient_particles = Color(1, 0.5, 0.2, 1)
+fog_color = Color(0.8, 0.25, 0.1, 1)
+fog_amount = 0.1
+grade_tint = Color(1.08, 0.95, 0.9, 1)
+saturation = 1.1
+contrast = 1.1
+vignette = 0.5
+decorations = Array[ExtResource("1_hm27p")]([SubResource("Resource_ik8yg"), SubResource("Resource_blxpc"), SubResource("Resource_j8ao4"), SubResource("Resource_7et0i")])
+decor_per_room = 3.0
+ore_chance = 0.05
+ore_item = &"iron_ore"

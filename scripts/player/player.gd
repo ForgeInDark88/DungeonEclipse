@@ -36,6 +36,8 @@ var _invulnerable := 0.0
 var _attack_cooldown := 0.0
 var _item_cooldowns: Dictionary = {}  # item id -> seconds
 var _buffs: Dictionary = {}  # modifier key -> seconds left
+var _buff_info: Dictionary = {}  # modifier key -> {"icon": Texture2D, "duration": float}
+var _casting_icon: Texture2D
 var _external_velocity := Vector2.ZERO
 var _light_tween: Tween
 var _hint := ""
@@ -67,6 +69,11 @@ func setup(p_hero: Hero, p_level: DungeonLevel) -> void:
 		hero.leveled_up.connect(_on_leveled_up)
 	if not hero.equipment.changed.is_connected(_on_equipment_changed):
 		hero.equipment.changed.connect(_on_equipment_changed)
+
+
+func apply_biome(biome: BiomeData) -> void:
+	light.color = biome.hero_light_color
+	($AmbientDust as CPUParticles2D).color = biome.ambient_particles
 
 
 func _on_leveled_up(_level: int) -> void:
@@ -408,7 +415,18 @@ func dash(speed: float, duration: float) -> void:
 func apply_buff(key: String, bonuses: Dictionary, duration: float, tint := Color.WHITE) -> void:
 	hero.stats.set_modifier(key, bonuses)
 	_buffs[key] = duration
+	_buff_info[key] = {"icon": _casting_icon, "duration": duration, "tint": tint}
 	visual.tint = tint
+
+
+## Active buffs for the HUD: [{key, left, duration, icon, tint}].
+func get_buffs() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for key: String in _buffs:
+		var info: Dictionary = _buff_info.get(key, {})
+		out.append({"key": key, "left": _buffs[key], "duration": info.get("duration", 1.0),
+				"icon": info.get("icon"), "tint": info.get("tint", Color.WHITE)})
+	return out
 
 
 func boost_light(scale_mult: float, duration: float) -> void:
@@ -433,7 +451,10 @@ func use_skill(index: int) -> void:
 	if hero.stats.mana < skill.mana_cost:
 		EventBus.message.emit("Недостаточно маны")
 		return
-	if skill.effect.execute(self, skills.get_level(index)):
+	_casting_icon = skill.icon
+	var fired := skill.effect.execute(self, skills.get_level(index))
+	_casting_icon = null
+	if fired:
 		hero.stats.spend_mana(skill.mana_cost)
 		skills.start_cooldown(index)
 		if skill.cast_animation != &"":

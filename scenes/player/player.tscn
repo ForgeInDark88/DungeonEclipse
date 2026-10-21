@@ -1,5 +1,6 @@
 [gd_scene load_steps=8 format=3]
 
+[ext_resource type="Script" path="res://scripts/world/blob_shadow.gd" id="9_shadow"]
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://scripts/anim/hero_visual.gd" id="2_visual"]
 [ext_resource type="Script" path="res://scripts/anim/hero_animator.gd" id="3_anim"]
@@ -19,6 +20,9 @@ collision_layer = 4
 collision_mask = 3
 floor_snap_length = 3.0
 script = ExtResource("1_player")
+
+[node name="Shadow" type="Sprite2D" parent="."]
+script = ExtResource("9_shadow")
 
 [node name="Visual" type="Node2D" parent="."]
 script = ExtResource("2_visual")

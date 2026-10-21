@@ -4,6 +4,8 @@ extends Node
 const MAIN_MENU := "res://scenes/ui/main_menu.tscn"
 const CHARACTER_CREATION := "res://scenes/ui/character_creation.tscn"
 const GAME := "res://scenes/game/game.tscn"
+## A new biome every N floors (see data/biomes, BiomeData.order).
+const FLOORS_PER_BIOME := 3
 
 var hero: Hero
 var floor_number: int = 1
@@ -30,6 +32,10 @@ func start_new_run(race: RaceData, class_data: ClassData) -> void:
 ## Seed of the current floor: each run and each floor is different.
 func floor_seed() -> int:
 	return hash([run_seed, floor_number])
+
+
+func current_biome() -> BiomeData:
+	return ItemDatabase.biome_for_floor(floor_number)
 
 
 func next_floor() -> void:

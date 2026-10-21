@@ -1,0 +1,77 @@
+[gd_resource type="Resource" script_class="BiomeData" load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="1_linjs"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/mushrooms.png" id="2_6jimb"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/big_mushroom.png" id="3_xva47"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/crystals.png" id="4_2ymip"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/vines.png" id="5_a6fo6"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/fungal_far.png" id="6_8sj0y"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/fungal_mid.png" id="7_trdj7"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/fungal_near.png" id="8_1cgql"]
+[ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="9_1a17a"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/tiles_fungal.png" id="10_g5q6i"]
+
+[sub_resource type="Resource" id="Resource_7wvo4"]
+script = ExtResource("1_linjs")
+texture = ExtResource("2_6jimb")
+placement = 0
+weight = 3.0
+light_color = Color(0.3, 1, 0.85, 1)
+light_scale = 0.25
+unshaded = true
+sway = false
+
+[sub_resource type="Resource" id="Resource_vs538"]
+script = ExtResource("1_linjs")
+texture = ExtResource("3_xva47")
+placement = 0
+weight = 1.2
+light_color = Color(0.3, 0.9, 1, 1)
+light_scale = 0.35
+unshaded = true
+sway = false
+
+[sub_resource type="Resource" id="Resource_6con0"]
+script = ExtResource("1_linjs")
+texture = ExtResource("4_2ymip")
+placement = 0
+weight = 1.5
+light_color = Color(0.4, 0.9, 1, 1)
+light_scale = 0.25
+unshaded = true
+sway = false
+
+[sub_resource type="Resource" id="Resource_kacfg"]
+script = ExtResource("1_linjs")
+texture = ExtResource("5_a6fo6")
+placement = 1
+weight = 2.5
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = true
+
+[resource]
+script = ExtResource("9_1a17a")
+id = &"fungal"
+display_name = "Грибные пещеры"
+order = 1
+tileset_texture = ExtResource("10_g5q6i")
+parallax_far = ExtResource("6_8sj0y")
+parallax_mid = ExtResource("7_trdj7")
+parallax_near = ExtResource("8_1cgql")
+darkness = Color(0.1, 0.15, 0.16, 1)
+back_wall_modulate = Color(0.5, 0.65, 0.65, 1)
+torch_color = Color(0.5, 1, 0.85, 1)
+hero_light_color = Color(0.8, 1, 0.9, 1)
+ambient_particles = Color(0.5, 1, 0.85, 1)
+fog_color = Color(0.3, 0.6, 0.5, 1)
+fog_amount = 0.12
+grade_tint = Color(0.92, 1, 0.98, 1)
+saturation = 1.15
+contrast = 1.0
+vignette = 0.35
+decorations = Array[ExtResource("1_linjs")]([SubResource("Resource_7wvo4"), SubResource("Resource_vs538"), SubResource("Resource_6con0"), SubResource("Resource_kacfg")])
+decor_per_room = 3.0
+ore_chance = 0.04
+ore_item = &"mana_crystal"

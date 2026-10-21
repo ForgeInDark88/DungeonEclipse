@@ -18,7 +18,8 @@ const SLOT_TYPE_NAMES := {
 ## Optional animated layer shown on the hero while equipped
 ## (same layout as the hero body sheet).
 @export var visual_sheet: Texture2D
-## Hero layer it replaces/fills: "armor" (over the class outfit) or "head".
+## Hero layer it fills: "armor" (over the class outfit), "boots", "gloves"
+## or "head" (replaces the class headgear).
 @export var visual_layer: StringName = &"armor"
 
 

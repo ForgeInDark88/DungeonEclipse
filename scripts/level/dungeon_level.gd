@@ -14,37 +14,118 @@ const T = LevelLayout.Tile
 
 @onready var back: TileMapLayer = $Back
 @onready var tiles: TileMapLayer = $Tiles
+@onready var glow: TileMapLayer = $Glow
 @onready var entities: Node2D = $Entities
 
 var layout: LevelLayout
 var floor_number: int = 1
+var biome: BiomeData
 var rng := RandomNumberGenerator.new()
+## Cells of glowing ore veins (break them for loot).
+var ore_cells: Dictionary = {}
 
 
-func build(p_layout: LevelLayout, p_floor: int, seed_value: int) -> void:
+func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeData = null) -> void:
 	layout = p_layout
 	floor_number = p_floor
+	biome = p_biome
 	rng.seed = seed_value
-	var ts := TilesetBuilder.get_tileset()
+	var ts := TilesetBuilder.get_tileset(biome.tileset_texture if biome else null)
 	back.tile_set = ts
 	tiles.tile_set = ts
+	glow.tile_set = ts
+	if biome:
+		back.modulate = biome.back_wall_modulate
+	_place_ore()
+	# Back wall with gaps: through them the parallax cave is visible.
+	var noise := FastNoiseLite.new()
+	noise.seed = seed_value
+	noise.frequency = 0.08
 	for y in layout.height:
 		for x in layout.width:
 			var cell := Vector2i(x, y)
-			back.set_cell(cell, TilesetBuilder.SOURCE_ID, AssetPaths.TILE_BACKWALL)
+			if noise.get_noise_2d(x, y) > -0.25 or _near_solid(cell):
+				back.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(_variant(cell), AssetPaths.TILE_ROW_BACKWALL))
 			_apply_tile(cell, layout.get_tile(x, y))
 	_spawn_door()
 	_spawn_chests()
 	_spawn_enemies()
 	_spawn_ambience()
+	_spawn_decorations()
 
 
+## Deterministic 0..3 variant per cell.
+func _variant(cell: Vector2i) -> int:
+	return absi(hash(cell * 7 + Vector2i(floor_number, 3))) % 4
+
+
+func _near_solid(cell: Vector2i) -> bool:
+	for d in [Vector2i.ZERO, Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
+		if LevelLayout.is_solid(layout.get_tile(cell.x + d.x, cell.y + d.y)):
+			return true
+	return false
+
+
+func _place_ore() -> void:
+	ore_cells.clear()
+	var chance := biome.ore_chance if biome else 0.04
+	for y in range(1, layout.height - 1):
+		for x in range(1, layout.width - 1):
+			if layout.get_tile(x, y) != T.BRICK:
+				continue
+			# Only visible bricks (touching an open cell) become ore.
+			var exposed := false
+			for d in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
+				if not LevelLayout.is_solid(layout.get_tile(x + d.x, y + d.y)):
+					exposed = true
+			if exposed and rng.randf() < chance:
+				ore_cells[Vector2i(x, y)] = true
+
+
+## Picks the atlas tile for a cell from its neighbours (autotiling): exposed
+## top / bottom edges, platform ends, random variants, ore.
 func _apply_tile(cell: Vector2i, kind: int) -> void:
-	var t := TilesetBuilder.tile_for(kind)
-	if t[0] == Vector2i(-1, -1):
-		tiles.erase_cell(cell)
-	else:
-		tiles.set_cell(cell, TilesetBuilder.SOURCE_ID, t[0], t[1])
+	glow.erase_cell(cell)
+	var v := _variant(cell)
+	match kind:
+		T.EMPTY:
+			tiles.erase_cell(cell)
+		T.BEDROCK:
+			tiles.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(v, AssetPaths.TILE_ROW_BEDROCK))
+		T.BRICK:
+			var coords: Vector2i
+			if ore_cells.has(cell):
+				coords = AssetPaths.TILE_ORE
+				glow.set_cell(cell, TilesetBuilder.SOURCE_ID, AssetPaths.TILE_ORE_GLOW)
+			elif not LevelLayout.is_solid(layout.get_tile(cell.x, cell.y - 1)):
+				coords = Vector2i(v, AssetPaths.TILE_ROW_BRICK_TOP)
+			elif not LevelLayout.is_solid(layout.get_tile(cell.x, cell.y + 1)):
+				coords = Vector2i(v, AssetPaths.TILE_ROW_BRICK_BOTTOM)
+			else:
+				# Mostly plain bricks, sometimes cracked.
+				coords = Vector2i(2 if v == 3 else v % 2, AssetPaths.TILE_ROW_BRICK)
+			tiles.set_cell(cell, TilesetBuilder.SOURCE_ID, coords)
+		T.PLATFORM:
+			var left := layout.get_tile(cell.x - 1, cell.y) == T.PLATFORM
+			var right := layout.get_tile(cell.x + 1, cell.y) == T.PLATFORM
+			var c := AssetPaths.TILE_PLATFORM_MID
+			if not left:
+				c = AssetPaths.TILE_PLATFORM_LEFT
+			elif not right:
+				c = AssetPaths.TILE_PLATFORM_RIGHT
+			tiles.set_cell(cell, TilesetBuilder.SOURCE_ID, c)
+		T.LADDER:
+			tiles.set_cell(cell, TilesetBuilder.SOURCE_ID, AssetPaths.TILE_LADDER, 0)
+		T.LADDER_TOP:
+			tiles.set_cell(cell, TilesetBuilder.SOURCE_ID, AssetPaths.TILE_LADDER, TilesetBuilder.LADDER_TOP_ALT)
+
+
+## Re-picks the tile of a cell and its neighbours (after digging).
+func _refresh_around(cell: Vector2i) -> void:
+	for d in [Vector2i.ZERO, Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
+		var c: Vector2i = cell + d
+		if layout.in_bounds(c.x, c.y):
+			_apply_tile(c, layout.get_tile(c.x, c.y))
 
 
 # ------------------------------------------------------------- coordinates
@@ -98,12 +179,18 @@ func break_tile(cell: Vector2i, effects := true) -> bool:
 	if layout.get_tile(cell.x, cell.y) != T.BRICK:
 		return false
 	layout.set_tile(cell.x, cell.y, T.EMPTY)
-	_apply_tile(cell, T.EMPTY)
+	var was_ore := ore_cells.erase(cell)
+	_refresh_around(cell)
+	if was_ore:
+		var ore := ItemDatabase.get_item(biome.ore_item if biome else &"iron_ore")
+		if ore:
+			EventBus.spawn_items.emit(cell_center(cell), [{"item": ore, "count": rng.randi_range(1, 2)}])
+		Fx.sparks(entities, cell_center(cell), Color(1.0, 0.85, 0.4), 12, 90.0)
 	if effects:
 		_debris(cell_center(cell))
 		Fx.shards(entities, cell_center(cell), Color(0.6, 0.45, 0.36), 8)
 		# Sometimes there is something inside the wall.
-		if rng.randf() < 0.08:
+		if not was_ore and rng.randf() < 0.06:
 			var ore := ItemDatabase.get_item(&"iron_ore") if rng.randf() < 0.6 else ItemDatabase.get_item(&"gold_coin")
 			if ore:
 				EventBus.spawn_items.emit(cell_center(cell), [{"item": ore, "count": 1}])
@@ -132,7 +219,7 @@ func place_rope(cell: Vector2i, max_length: int) -> int:
 		y += 1
 	while count < max_length and layout.get_tile(cell.x, y) == T.EMPTY:
 		layout.set_tile(cell.x, y, T.LADDER)
-		_apply_tile(Vector2i(cell.x, y), T.LADDER)
+		_refresh_around(Vector2i(cell.x, y))
 		count += 1
 		y -= 1
 	return count
@@ -187,7 +274,9 @@ func _spawn_ambience() -> void:
 				var x := rx * rw + rng.randi_range(3, rw - 4)
 				var y := (ry + 1) * rh - 4
 				if layout.get_tile(x, y) == T.EMPTY and layout.get_tile(x, y + 1) == T.EMPTY:
-					var torch := TORCH_SCENE.instantiate()
+					var torch: WallTorch = TORCH_SCENE.instantiate()
+					if biome:
+						torch.light_color = biome.torch_color
 					add_entity(torch, cell_bottom(Vector2i(x, y)))
 			if rng.randf() < 0.6:
 				var x := rx * rw + rng.randi_range(2, rw - 3)
@@ -198,8 +287,42 @@ func _spawn_ambience() -> void:
 					add_entity(drip, cell_center(Vector2i(x, y)) + Vector2(0, -6))
 
 
+## Bones, cobwebs, crystals, statues... from BiomeData.decorations.
+func _spawn_decorations() -> void:
+	if biome == null or biome.decorations.is_empty():
+		return
+	var weights: Array[float] = []
+	for d in biome.decorations:
+		weights.append(d.weight)
+	var rooms := (layout.width / LevelGenerator.ROOM_W) * (layout.height / LevelGenerator.ROOM_H)
+	var count := roundi(rooms * biome.decor_per_room)
+	var used := {}
+	var tries := 0
+	while count > 0 and tries < count * 20:
+		tries += 1
+		var data: DecorData = biome.decorations[LootTable._weighted_index(weights, rng)]
+		var cell := Vector2i(rng.randi_range(1, layout.width - 2), rng.randi_range(1, layout.height - 2))
+		if used.has(cell) or layout.get_tile(cell.x, cell.y) != T.EMPTY or cell == layout.exit_cell:
+			continue
+		var tall := data.texture.get_height() > TILE
+		var pos: Vector2
+		if data.placement == DecorData.Placement.FLOOR:
+			if layout.get_tile(cell.x, cell.y + 1) != T.BRICK or (tall and layout.get_tile(cell.x, cell.y - 1) != T.EMPTY):
+				continue
+			pos = cell_bottom(cell)
+		else:
+			if not LevelLayout.is_solid(layout.get_tile(cell.x, cell.y - 1)):
+				continue
+			pos = cell_center(cell) - Vector2(0, TILE / 2.0)
+		used[cell] = true
+		var deco := Decoration.new()
+		deco.data = data
+		add_entity(deco, pos)
+		count -= 1
+
+
 func _spawn_enemies() -> void:
-	var pool := ItemDatabase.enemies_for_floor(floor_number)
+	var pool := ItemDatabase.enemies_for_floor(floor_number, biome.id if biome else &"")
 	if pool.is_empty():
 		return
 	var weights: Array[float] = []

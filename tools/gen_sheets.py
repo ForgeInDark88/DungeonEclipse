@@ -202,6 +202,9 @@ def _torso(d, s, color, wide=0, extra_top=0):
     nx, ny = s["neck"]
     w = 3 + wide
     d.polygon([(hx - w, hy), (hx + w - 1, hy), (nx + w - 1, ny - extra_top), (nx - w, ny - extra_top)], fill=color)
+    # Simple shading: darker back edge, lighter front edge.
+    d.line((hx - w, hy, nx - w, ny - extra_top), fill=shade(color, 0.7))
+    d.line((hx + w - 1, hy, nx + w - 1, ny - extra_top), fill=shade(color, 1.2))
 
 
 def _arm(d, s, side, color, hand_color):

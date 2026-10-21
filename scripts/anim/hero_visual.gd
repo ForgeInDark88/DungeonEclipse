@@ -1,14 +1,14 @@
 class_name HeroVisual
 extends Node2D
-## Layered animated hero: body (race) + outfit (class) + armor (equipped
-## chest item) + head (helmet or class headgear), all on the same sheet layout
+## Layered animated hero: body (race) + outfit (class) + armor, boots, gloves
+## (equipment visuals) + head (helmet or class headgear), all on the same sheet layout
 ## (data/animations/hero_layout.tres) and kept frame-synchronised.
 ## Also owns the item held in the hand (follows per-frame hand points/angles),
 ## facing flip, squash & stretch and the white hit flash.
 
 signal animation_finished(anim: StringName)
 
-const LAYER_ORDER: Array[StringName] = [&"body", &"outfit", &"armor", &"head"]
+const LAYER_ORDER: Array[StringName] = [&"body", &"outfit", &"armor", &"boots", &"gloves", &"head"]
 ## Item icons are drawn with the blade pointing up-right; grip pixel in the icon.
 const ICON_ANGLE := -45.0
 const ICON_GRIP := Vector2(3, 12)
@@ -76,16 +76,12 @@ func refresh_from(hero: Hero) -> void:
 	base_scale = hero.race.sprite_scale
 	set_layer(&"body", hero.race.body_sheet)
 	set_layer(&"outfit", hero.class_data.outfit_sheet)
-	var armor: Texture2D = null
-	var head: Texture2D = hero.class_data.head_sheet
+	var sheets := {&"armor": null, &"boots": null, &"gloves": null, &"head": hero.class_data.head_sheet}
 	for item: EquipmentItemData in hero.equipment.items.values():
-		if item and item.visual_sheet:
-			if item.visual_layer == &"head":
-				head = item.visual_sheet
-			else:
-				armor = item.visual_sheet
-	set_layer(&"armor", armor)
-	set_layer(&"head", head)
+		if item and item.visual_sheet and sheets.has(item.visual_layer):
+			sheets[item.visual_layer] = item.visual_sheet
+	for layer_name: StringName in sheets:
+		set_layer(layer_name, sheets[layer_name])
 	var weapon := hero.weapon()
 	_held_default = null
 	_held_angle = ICON_ANGLE
