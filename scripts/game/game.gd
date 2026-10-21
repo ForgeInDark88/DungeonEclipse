@@ -68,6 +68,7 @@ func _apply_biome(biome: BiomeData) -> void:
 	if biome == null:
 		return
 	($Darkness as CanvasModulate).color = biome.darkness
+	AudioManager.play_music(biome.music)
 	player.apply_biome(biome)
 	var textures := [biome.parallax_far, biome.parallax_mid, biome.parallax_near]
 	var layers := $Parallax.get_children()

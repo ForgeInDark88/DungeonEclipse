@@ -64,6 +64,8 @@ sway = false
 
 [resource]
 script = ExtResource("10_0ie7r")
+music = &"ruins"
+step_sound = &"step_stone"
 id = &"ruins"
 display_name = "Руины"
 order = 2

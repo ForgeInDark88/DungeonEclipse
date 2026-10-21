@@ -20,4 +20,5 @@ func get_prompt() -> String:
 
 
 func interact(_player: Node) -> void:
+	AudioManager.play_sfx(&"portal")
 	GameState.next_floor()

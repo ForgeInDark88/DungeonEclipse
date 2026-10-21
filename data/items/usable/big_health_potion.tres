@@ -12,6 +12,7 @@ percent = 0.4
 
 [resource]
 script = ExtResource("4_67fqj")
+use_sound = &"potion_drink"
 effects = Array[ExtResource("1_jx5wo")]([SubResource("Resource_bgdyv")])
 consume_on_use = true
 cooldown = 0.3

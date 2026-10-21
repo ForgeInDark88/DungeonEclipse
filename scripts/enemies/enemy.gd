@@ -298,6 +298,7 @@ func _shoot() -> void:
 	var dir_v := (_player.global_position + Vector2(0, -10) - from).normalized()
 	p.setup(data.projectile_texture, dir_v, data.projectile_speed, damage, "player")
 	p.blast_color = Color(0.8, 0.3, 1.0)
+	AudioManager.play_sfx(data.sound_attack if data.sound_attack != &"" else &"enemy_shoot", global_position)
 	level.add_entity(p, from)
 
 
@@ -312,6 +313,8 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 	hp_bar.value = hp
 	var top := global_position + Vector2(0, -data.collision_size.y - 4)
 	EventBus.damage_dealt.emit(top, dealt, crit, false)
+	AudioManager.play_sfx(&"hit_crit" if crit else &"hit_flesh", global_position)
+	AudioManager.play_sfx(data.sound_hurt, global_position, -4.0)
 	Fx.hit_spark(get_parent(), global_position + Vector2(0, -data.collision_size.y / 2.0), crit)
 	_flash()
 	if hp <= 0:
@@ -367,6 +370,7 @@ func is_dead() -> bool:
 
 func _die() -> void:
 	_dead = true
+	AudioManager.play_sfx(data.sound_death, global_position)
 	set_physics_process(false)
 	status.clear()
 	status.set_physics_process(false)

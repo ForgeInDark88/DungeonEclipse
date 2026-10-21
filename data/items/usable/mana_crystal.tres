@@ -11,6 +11,7 @@ amount = 30
 
 [resource]
 script = ExtResource("4_8jata")
+use_sound = &"potion_drink"
 effects = Array[ExtResource("1_mkw2v")]([SubResource("Resource_an5h0")])
 consume_on_use = true
 cooldown = 0.3

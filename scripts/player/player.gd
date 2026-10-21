@@ -44,6 +44,7 @@ var _hint := ""
 var _dash_time := 0.0
 var _afterimage_timer := 0.0
 var _run_dust_timer := 0.0
+var _step_timer := 0.0
 
 @onready var visual: HeroVisual = $Visual
 @onready var animator: HeroAnimator = $Animator
@@ -77,6 +78,7 @@ func apply_biome(biome: BiomeData) -> void:
 
 
 func _on_leveled_up(_level: int) -> void:
+	AudioManager.play_ui(&"level_up")
 	visual.flash(Color(1.0, 0.9, 0.4), 0.5)
 	visual.squash_to(Vector2(0.8, 1.25), 0.3)
 	Fx.sparks(get_parent(), global_position + Vector2(0, -12), Color(1.0, 0.85, 0.3), 24, 120.0)
@@ -132,7 +134,12 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	if not was_on_floor and is_on_floor() and not climbing:
 		_on_landed(fall_speed)
-	elif is_on_floor() and absf(velocity.x) > 60.0:
+	elif is_on_floor() and absf(velocity.x) > 30.0:
+		_step_timer -= delta
+		if _step_timer <= 0.0:
+			_step_timer = 0.28
+			AudioManager.play_sfx(_step_sound(), global_position, -6.0, 0.15)
+	if is_on_floor() and absf(velocity.x) > 60.0:
 		_run_dust_timer -= delta
 		if _run_dust_timer <= 0.0:
 			_run_dust_timer = 0.28
@@ -141,9 +148,21 @@ func _physics_process(delta: float) -> void:
 	_update_interact_hint()
 
 
+## Footstep by the tile under the feet: wood on platforms/ladders,
+## the biome's step sound on bricks.
+func _step_sound() -> StringName:
+	if level == null:
+		return &"step_stone"
+	var kind := level.kind_at(global_position + Vector2(0, 2))
+	if kind == LevelLayout.Tile.PLATFORM or LevelLayout.is_ladder(kind):
+		return &"step_wood"
+	return level.biome.step_sound if level.biome else &"step_stone"
+
+
 func _on_landed(fall_speed: float) -> void:
 	if fall_speed < 60.0:
 		return
+	AudioManager.play_sfx(&"land", global_position, -4.0)
 	var k := clampf(fall_speed / MAX_FALL_SPEED, 0.2, 1.0)
 	visual.squash_to(Vector2(1.0 + 0.35 * k, 1.0 - 0.3 * k), 0.2)
 	animator.landed()
@@ -241,6 +260,7 @@ func _walk(input_x: float, delta: float) -> void:
 		_coyote = 0.0
 		visual.squash_to(Vector2(0.75, 1.25), 0.22)
 		Fx.dust(get_parent(), global_position)
+		AudioManager.play_sfx(&"jump", global_position, -6.0)
 	if Input.is_action_just_released("jump") and velocity.y < 0.0:
 		velocity.y *= JUMP_CUT
 
@@ -285,6 +305,7 @@ func attack() -> void:
 	_attack_cooldown = interval
 	# Fists use the quick jab; weapons their own animation.
 	animator.play_action(w.animation() if w else &"attack_quick", interval * 0.95)
+	AudioManager.play_sfx(AssetPaths.WEAPON_SFX[w.weapon_type] if w else &"attack_dagger", global_position, -2.0)
 	# The hit lands on the "active" part of the swing.
 	var delay := clampf(interval * 0.35, 0.04, 0.22)
 	get_tree().create_timer(delay, false).timeout.connect(_perform_attack.bind(w, facing))
@@ -377,6 +398,7 @@ func take_damage(amount: int, from_pos: Vector2 = Vector2.INF) -> void:
 	EventBus.damage_dealt.emit(global_position + Vector2(0, -24), lost, false, true)
 	_invulnerable = INVULNERABLE_TIME
 	visual.flash(Color(1.0, 0.3, 0.3))
+	AudioManager.play_sfx(&"player_hurt", global_position)
 	if not dead:
 		animator.hurt()
 	if from_pos != Vector2.INF:
@@ -395,6 +417,7 @@ func _on_died() -> void:
 	velocity = Vector2.ZERO
 	visual.alpha = 1.0
 	animator.die()
+	AudioManager.play_sfx(&"player_death", global_position)
 	Fx.sparks(get_parent(), global_position + Vector2(0, -10), Color(0.7, 0.1, 0.1), 16, 80.0)
 	EventBus.player_died.emit()
 
@@ -409,6 +432,7 @@ func dash(speed: float, duration: float) -> void:
 		_stop_climbing()
 	velocity = Vector2(facing * speed, 0.0)
 	_dash_time = duration
+	AudioManager.play_sfx(&"dash", global_position)
 	visual.squash_to(Vector2(1.25, 0.85), duration + 0.1)
 
 
@@ -459,6 +483,7 @@ func use_skill(index: int) -> void:
 		skills.start_cooldown(index)
 		if skill.cast_animation != &"":
 			animator.play_action(skill.cast_animation, 0.4)
+		AudioManager.play_sfx(&"skill_cast", global_position, -4.0)
 
 
 func use_quick_slot(index: int) -> void:
@@ -484,6 +509,7 @@ func use_item(item: ItemData) -> bool:
 	if not usable.use(self):
 		return false
 	_item_cooldowns[item.id] = usable.cooldown
+	AudioManager.play_sfx(usable.use_sound, global_position)
 	if usable.use_animation != &"":
 		animator.play_action(usable.use_animation, 0.45)
 		visual.hold_temporarily(usable.icon, 0.45)

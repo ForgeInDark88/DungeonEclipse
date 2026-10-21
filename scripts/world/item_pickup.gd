@@ -71,6 +71,8 @@ func collect(hero: Hero) -> void:
 	var taken := count - left
 	if taken > 0:
 		EventBus.item_collected.emit(item, global_position + Vector2(0, -8))
+		var snd: StringName = [&"pickup_common", &"pickup_rare", &"pickup_epic"][item.rarity]
+		AudioManager.play_sfx(&"coin" if item.id == &"gold_coin" else snd, global_position)
 		EventBus.floating_text.emit(global_position + Vector2(0, -16), "+%d %s" % [taken, item.display_name], item.rarity_color())
 	if left > 0:
 		count = left

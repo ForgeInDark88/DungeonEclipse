@@ -17,6 +17,7 @@ var _items_row: HBoxContainer
 
 func _ready() -> void:
 	build_book(Vector2(580, 320))
+	AudioManager.play_music(&"menu")
 	left_page.add_theme_constant_override("separation", 3)
 	right_page.add_theme_constant_override("separation", 3)
 
@@ -91,6 +92,7 @@ func _toggle(text: String, group: ButtonGroup, cb: Callable) -> Button:
 	b.text = text
 	b.toggle_mode = true
 	b.button_group = group
+	b.pressed.connect(func() -> void: AudioManager.play_ui(&"ui_click"))
 	b.pressed.connect(cb)
 	return b
 

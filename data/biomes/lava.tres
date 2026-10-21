@@ -53,6 +53,8 @@ sway = true
 
 [resource]
 script = ExtResource("9_tpf2t")
+music = &"lava"
+step_sound = &"step_stone"
 id = &"lava"
 display_name = "Лавовые глубины"
 order = 3

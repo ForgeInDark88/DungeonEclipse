@@ -5,6 +5,9 @@ const SETTINGS_PATH := "user://settings.cfg"
 const META_PATH := "user://meta.cfg"
 
 var master_volume: float = 0.8
+var music_volume: float = 0.6
+var sfx_volume: float = 0.8
+var ui_volume: float = 0.7
 var fullscreen: bool = false
 
 var best_floor: int = 0
@@ -23,12 +26,18 @@ func load_settings() -> void:
 	if cfg.load(SETTINGS_PATH) != OK:
 		return
 	master_volume = cfg.get_value("audio", "master_volume", master_volume)
+	music_volume = cfg.get_value("audio", "music_volume", music_volume)
+	sfx_volume = cfg.get_value("audio", "sfx_volume", sfx_volume)
+	ui_volume = cfg.get_value("audio", "ui_volume", ui_volume)
 	fullscreen = cfg.get_value("video", "fullscreen", fullscreen)
 
 
 func save_settings() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("audio", "master_volume", master_volume)
+	cfg.set_value("audio", "music_volume", music_volume)
+	cfg.set_value("audio", "sfx_volume", sfx_volume)
+	cfg.set_value("audio", "ui_volume", ui_volume)
 	cfg.set_value("video", "fullscreen", fullscreen)
 	cfg.save(SETTINGS_PATH)
 
@@ -36,6 +45,9 @@ func save_settings() -> void:
 func apply_settings() -> void:
 	var bus := AudioServer.get_bus_index("Master")
 	AudioServer.set_bus_volume_db(bus, linear_to_db(maxf(master_volume, 0.0001)))
+	var audio := get_node_or_null("/root/AudioManager")
+	if audio:
+		audio.apply_volumes()
 	if DisplayServer.get_name() != "headless":
 		var mode := DisplayServer.WINDOW_MODE_FULLSCREEN if fullscreen else DisplayServer.WINDOW_MODE_WINDOWED
 		if DisplayServer.window_get_mode() != mode:

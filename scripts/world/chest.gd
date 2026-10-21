@@ -39,6 +39,7 @@ func interact(player: Node) -> void:
 		var hero: Hero = player.hero
 		if hero.inventory.remove_by_id(&"key", 1) == 0:
 			EventBus.message.emit("Сундук заперт. Нужен ключ.")
+			AudioManager.play_sfx(&"chest_locked", global_position)
 			_shake()
 			return
 		unlock()
@@ -52,6 +53,7 @@ func unlock() -> void:
 
 func open() -> void:
 	opened = true
+	AudioManager.play_sfx(&"chest_open", global_position)
 	sprite.play(&"opening")
 	sprite.animation_finished.connect(func() -> void: sprite.play(&"open"), CONNECT_ONE_SHOT)
 	var table := ItemDatabase.get_loot_table(TIER_TABLES[tier])

@@ -37,3 +37,9 @@ extends Resource
 @export var ore_chance: float = 0.04
 ## Item that ore veins drop.
 @export var ore_item: StringName = &"iron_ore"
+
+@export_group("Audio")
+## Music id from AssetPaths.MUSIC.
+@export var music: StringName = &"catacombs"
+## Footstep sound on bricks in this biome (platforms/ladders always use wood).
+@export var step_sound: StringName = &"step_stone"

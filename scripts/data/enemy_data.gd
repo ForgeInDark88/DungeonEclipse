@@ -35,3 +35,7 @@ enum Behavior { WALKER, FLYER, RANGED }
 ## Biome ids where it appears (empty = everywhere).
 @export var biomes: Array[StringName] = []
 @export var tint: Color = Color.WHITE
+@export_group("Sounds (ids from AssetPaths.SFX)")
+@export var sound_hurt: StringName = &"enemy_hurt"
+@export var sound_death: StringName = &"enemy_death"
+@export var sound_attack: StringName = &""

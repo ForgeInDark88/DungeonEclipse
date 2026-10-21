@@ -36,6 +36,9 @@ func setup(p_hero: Hero) -> void:
 	_build()
 	hero.inventory.changed.connect(_refresh_inventory)
 	hero.equipment.changed.connect(_refresh_equipment)
+	hero.equipment.changed.connect(func() -> void:
+		if is_open:
+			AudioManager.play_ui(&"ui_equip"))
 	hero.stats.stats_changed.connect(_refresh_stats)
 	hero.stats.hp_changed.connect(func(_a: int, _b: int) -> void: _refresh_stats())
 	hero.leveled_up.connect(func(_l: int) -> void: _refresh_stats())
@@ -71,6 +74,7 @@ func open() -> void:
 	_refresh_equipment()
 	_refresh_stats()
 	_animate_open()
+	AudioManager.play_ui(&"ui_book_open")
 	EventBus.inventory_toggled.emit(true)
 
 
@@ -81,6 +85,7 @@ func close() -> void:
 	get_tree().paused = false
 	Tooltip.hide_tip()
 	_animate_close()
+	AudioManager.play_ui(&"ui_book_close")
 	EventBus.inventory_toggled.emit(false)
 
 

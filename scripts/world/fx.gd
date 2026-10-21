@@ -25,6 +25,7 @@ static func play_once(parent: Node, pos: Vector2, sheet_path: String, layout_pat
 
 ## Bomb / fireball explosion: animated blast + flash light + sparks.
 static func explosion(parent: Node, pos: Vector2, radius: float, color: Color) -> void:
+	AudioManager.play_sfx(&"explosion", pos)
 	var sc := maxf(0.6, radius / 24.0)
 	var boom := play_once(parent, pos, AssetPaths.EXPLOSION_SHEET, AssetPaths.EXPLOSION_LAYOUT, &"boom", true, Vector2(sc, sc))
 	if boom:

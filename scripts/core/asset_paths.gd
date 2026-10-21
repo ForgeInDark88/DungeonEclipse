@@ -58,6 +58,62 @@ const HIT_LAYOUT := ANIM_DIR + "hit_layout.tres"
 const SHARD := SPRITES_DIR + "fx/shard.png"
 const FALLBACK_WEAPON := SPRITES_DIR + "items/rusty_sword.png"
 
+# --- Audio (see docs/AUDIO_LIST.md) ---
+const SFX_DIR := "res://assets/audio/sfx/"
+const MUSIC_DIR := "res://assets/audio/music/"
+## Sound id -> file. Any id used by code or data (UsableItemData.use_sound,
+## EnemyData.sound_*) must be listed here.
+const SFX := {
+	&"ui_click": SFX_DIR + "ui_click.wav",
+	&"ui_hover": SFX_DIR + "ui_hover.wav",
+	&"ui_book_open": SFX_DIR + "ui_book_open.wav",
+	&"ui_book_close": SFX_DIR + "ui_book_close.wav",
+	&"ui_equip": SFX_DIR + "ui_equip.wav",
+	&"level_up": SFX_DIR + "level_up.wav",
+	&"step_stone": SFX_DIR + "step_stone.wav",
+	&"step_wood": SFX_DIR + "step_wood.wav",
+	&"step_soft": SFX_DIR + "step_soft.wav",
+	&"jump": SFX_DIR + "jump.wav",
+	&"land": SFX_DIR + "land.wav",
+	&"dash": SFX_DIR + "dash.wav",
+	&"attack_sword": SFX_DIR + "attack_sword.wav",
+	&"attack_axe": SFX_DIR + "attack_axe.wav",
+	&"attack_spear": SFX_DIR + "attack_spear.wav",
+	&"attack_dagger": SFX_DIR + "attack_dagger.wav",
+	&"attack_bow": SFX_DIR + "attack_bow.wav",
+	&"attack_staff": SFX_DIR + "attack_staff.wav",
+	&"attack_mace": SFX_DIR + "attack_mace.wav",
+	&"hit_flesh": SFX_DIR + "hit_flesh.wav",
+	&"hit_crit": SFX_DIR + "hit_crit.wav",
+	&"player_hurt": SFX_DIR + "player_hurt.wav",
+	&"player_death": SFX_DIR + "player_death.wav",
+	&"enemy_hurt": SFX_DIR + "enemy_hurt.wav",
+	&"enemy_death": SFX_DIR + "enemy_death.wav",
+	&"enemy_shoot": SFX_DIR + "enemy_shoot.wav",
+	&"chest_open": SFX_DIR + "chest_open.wav",
+	&"chest_locked": SFX_DIR + "chest_locked.wav",
+	&"pickup_common": SFX_DIR + "pickup_common.wav",
+	&"pickup_rare": SFX_DIR + "pickup_rare.wav",
+	&"pickup_epic": SFX_DIR + "pickup_epic.wav",
+	&"coin": SFX_DIR + "coin.wav",
+	&"potion_drink": SFX_DIR + "potion_drink.wav",
+	&"item_use": SFX_DIR + "item_use.wav",
+	&"dig": SFX_DIR + "dig.wav",
+	&"explosion": SFX_DIR + "explosion.wav",
+	&"portal": SFX_DIR + "portal.wav",
+	&"skill_cast": SFX_DIR + "skill_cast.wav",
+}
+## Weapon type (WeaponItemData.WeaponType) -> swing sound id.
+const WEAPON_SFX: Array[StringName] = [&"attack_sword", &"attack_axe", &"attack_spear", &"attack_dagger", &"attack_bow", &"attack_staff", &"attack_mace"]
+const MUSIC := {
+	&"menu": MUSIC_DIR + "music_menu.wav",
+	&"catacombs": MUSIC_DIR + "music_catacombs.wav",
+	&"fungal": MUSIC_DIR + "music_fungal.wav",
+	&"ruins": MUSIC_DIR + "music_ruins.wav",
+	&"lava": MUSIC_DIR + "music_lava.wav",
+	&"boss": MUSIC_DIR + "music_boss.wav",
+}
+
 # --- Shaders ---
 const SHADER_FLASH := "res://assets/shaders/flash.gdshader"
 const SHADER_POST_FX := "res://assets/shaders/post_fx.gdshader"

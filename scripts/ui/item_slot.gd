@@ -178,6 +178,8 @@ func _hover_scale(target: float) -> void:
 func _on_mouse_entered() -> void:
 	_hovered = true
 	_hover_scale(1.08)
+	if get_item():
+		AudioManager.play_ui(&"ui_hover", -8.0)
 	refresh()
 	if get_item() == null:
 		if kind == Kind.EQUIPMENT and hint != "":

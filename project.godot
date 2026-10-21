@@ -16,6 +16,7 @@ SaveManager="*res://scripts/autoload/save_manager.gd"
 ItemDatabase="*res://scripts/autoload/item_database.gd"
 GameState="*res://scripts/autoload/game_state.gd"
 Tooltip="*res://scripts/autoload/tooltip_layer.gd"
+AudioManager="*res://scripts/autoload/audio_manager.gd"
 
 [display]
 

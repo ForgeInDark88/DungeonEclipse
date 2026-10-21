@@ -53,6 +53,8 @@ sway = true
 
 [resource]
 script = ExtResource("9_1a17a")
+music = &"fungal"
+step_sound = &"step_soft"
 id = &"fungal"
 display_name = "Грибные пещеры"
 order = 1

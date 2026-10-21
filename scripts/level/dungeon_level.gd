@@ -5,11 +5,13 @@ extends Node2D
 ## Freed as a whole when the hero goes down to the next floor.
 
 const TILE := 16
-const CHEST_SCENE := preload("res://scenes/world/chest.tscn")
-const ENEMY_SCENE := preload("res://scenes/enemies/enemy.tscn")
-const DOOR_SCENE := preload("res://scenes/world/exit_door.tscn")
-const TORCH_SCENE := preload("res://scenes/world/wall_torch.tscn")
-const DRIP_SCENE := preload("res://scenes/world/water_drip.tscn")
+# Loaded lazily (not preload): these scenes' scripts reference DungeonLevel,
+# preloading them here would create a load cycle.
+const CHEST_SCENE := "res://scenes/world/chest.tscn"
+const ENEMY_SCENE := "res://scenes/enemies/enemy.tscn"
+const DOOR_SCENE := "res://scenes/world/exit_door.tscn"
+const TORCH_SCENE := "res://scenes/world/wall_torch.tscn"
+const DRIP_SCENE := "res://scenes/world/water_drip.tscn"
 const T = LevelLayout.Tile
 
 @onready var back: TileMapLayer = $Back
@@ -187,6 +189,7 @@ func break_tile(cell: Vector2i, effects := true) -> bool:
 			EventBus.spawn_items.emit(cell_center(cell), [{"item": ore, "count": rng.randi_range(1, 2)}])
 		Fx.sparks(entities, cell_center(cell), Color(1.0, 0.85, 0.4), 12, 90.0)
 	if effects:
+		AudioManager.play_sfx(&"dig", cell_center(cell))
 		_debris(cell_center(cell))
 		Fx.shards(entities, cell_center(cell), Color(0.6, 0.45, 0.36), 8)
 		# Sometimes there is something inside the wall.
@@ -252,13 +255,13 @@ func _debris(pos: Vector2, amount: int = 10) -> void:
 
 # ----------------------------------------------------------------- spawning
 func _spawn_door() -> void:
-	var door := DOOR_SCENE.instantiate()
+	var door := (load(DOOR_SCENE) as PackedScene).instantiate()
 	add_entity(door, cell_bottom(layout.exit_cell))
 
 
 func _spawn_chests() -> void:
 	for info in layout.chests:
-		var chest := CHEST_SCENE.instantiate()
+		var chest := (load(CHEST_SCENE) as PackedScene).instantiate()
 		chest.tier = info["tier"]
 		chest.floor_number = floor_number
 		add_entity(chest, cell_bottom(info["cell"]))
@@ -274,7 +277,7 @@ func _spawn_ambience() -> void:
 				var x := rx * rw + rng.randi_range(3, rw - 4)
 				var y := (ry + 1) * rh - 4
 				if layout.get_tile(x, y) == T.EMPTY and layout.get_tile(x, y + 1) == T.EMPTY:
-					var torch: WallTorch = TORCH_SCENE.instantiate()
+					var torch: WallTorch = (load(TORCH_SCENE) as PackedScene).instantiate()
 					if biome:
 						torch.light_color = biome.torch_color
 					add_entity(torch, cell_bottom(Vector2i(x, y)))
@@ -282,7 +285,7 @@ func _spawn_ambience() -> void:
 				var x := rx * rw + rng.randi_range(2, rw - 3)
 				var y := ry * rh + 1
 				if layout.get_tile(x, y) == T.EMPTY and LevelLayout.is_solid(layout.get_tile(x, y - 1)):
-					var drip: WaterDrip = DRIP_SCENE.instantiate()
+					var drip: WaterDrip = (load(DRIP_SCENE) as PackedScene).instantiate()
 					drip.level = self
 					add_entity(drip, cell_center(Vector2i(x, y)) + Vector2(0, -6))
 
@@ -330,7 +333,7 @@ func _spawn_enemies() -> void:
 		weights.append(e.spawn_weight)
 	for cell in layout.enemy_cells:
 		var data: EnemyData = pool[LootTable._weighted_index(weights, rng)]
-		var enemy := ENEMY_SCENE.instantiate()
+		var enemy := (load(ENEMY_SCENE) as PackedScene).instantiate()
 		enemy.setup(data, floor_number)
 		var pos := cell_bottom(cell)
 		if data.behavior == EnemyData.Behavior.FLYER:

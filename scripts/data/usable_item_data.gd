@@ -12,6 +12,8 @@ extends ItemData
 ## Hero animation played on use: "use" (drink), "attack_quick" (throw),
 ## "attack_slash" (swing a tool), "interact" or "" for none.
 @export var use_animation: StringName = &"use"
+## Sound id from AssetPaths.SFX.
+@export var use_sound: StringName = &"item_use"
 
 
 func _init() -> void:
