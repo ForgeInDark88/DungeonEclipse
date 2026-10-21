@@ -12,6 +12,8 @@ var exit_cell := Vector2i.ZERO
 ## Array of {cell: Vector2i, tier: int} (0 wood, 1 iron, 2 gold/locked)
 var chests: Array[Dictionary] = []
 var enemy_cells: Array[Vector2i] = []
+## Special rooms: Array of {"type": StringName, "cell": Vector2i} (merchant, events...).
+var specials: Array[Dictionary] = []
 
 
 func _init(w: int, h: int, fill: int = Tile.BRICK) -> void:

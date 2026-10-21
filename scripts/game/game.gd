@@ -28,6 +28,7 @@ func _ready() -> void:
 		GameState.run_seed = randi()
 		GameState.floor_number = 1
 		GameState.run_active = true
+		GameState.reset_run_stats()
 	var hero := GameState.hero
 
 	player = PLAYER_SCENE.instantiate()
@@ -42,6 +43,7 @@ func _ready() -> void:
 	EventBus.screen_shake.connect(func(s: float) -> void: _shake = maxf(_shake, s))
 	EventBus.floor_changed.connect(func(_f: int) -> void: _load_floor.call_deferred())
 	EventBus.player_died.connect(_on_player_died)
+	EventBus.shop_requested.connect(_open_shop)
 	_load_floor()
 
 
@@ -128,6 +130,14 @@ func _on_floating_text(pos: Vector2, text: String, color: Color) -> void:
 	var n: DamageNumber = DAMAGE_NUMBER_SCENE.instantiate()
 	world.add_child(n)
 	n.show_text(text, color, pos)
+
+
+func _open_shop(merchant: Node, _player: Node) -> void:
+	if get_tree().paused:
+		return
+	var shop := ShopBook.new()
+	add_child(shop)
+	shop.open(merchant, GameState.hero)
 
 
 ## Damage numbers + game feel: hit-stop, camera shake, red flash on the hero.

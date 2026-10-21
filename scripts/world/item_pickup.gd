@@ -67,10 +67,20 @@ func interact(player: Node) -> void:
 func collect(hero: Hero) -> void:
 	if item == null or is_queued_for_deletion():
 		return
+	if item.currency_value > 0:
+		var amount := item.currency_value * count
+		hero.add_gold(amount)
+		EventBus.floating_text.emit(global_position + Vector2(0, -16), "+%d з." % amount, Color(1.0, 0.85, 0.3))
+		AudioManager.play_sfx(&"coin", global_position)
+		queue_free()
+		return
 	var left := hero.inventory.add_item(item, count)
 	var taken := count - left
 	if taken > 0:
 		EventBus.item_collected.emit(item, global_position + Vector2(0, -8))
+		var found: Array = GameState.run_stats.get("found", [0, 0, 0])
+		if found.size() == 3:
+			found[item.rarity] += 1
 		var snd: StringName = [&"pickup_common", &"pickup_rare", &"pickup_epic"][item.rarity]
 		AudioManager.play_sfx(&"coin" if item.id == &"gold_coin" else snd, global_position)
 		EventBus.floating_text.emit(global_position + Vector2(0, -16), "+%d %s" % [taken, item.display_name], item.rarity_color())

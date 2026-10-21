@@ -12,6 +12,8 @@ var slot_id: StringName
 var hero: Hero
 ## Tooltip of an empty equipment slot.
 var hint := ""
+## When set (ShopBook), activating the slot sells the item instead.
+var shop: Node
 ## Faded icon of an empty equipment slot.
 var placeholder: Texture2D
 var key_label := ""
@@ -146,7 +148,10 @@ func refresh() -> void:
 	_last_item = item
 	_last_count = c
 	if _hovered and item:
-		Tooltip.show_text(TooltipText.item(item, hero, kind == Kind.EQUIPMENT), self)
+		var text := TooltipText.item(item, hero, kind == Kind.EQUIPMENT)
+		if shop:
+			text += "\n[color=%s]Продать за %d з. (ПКМ)[/color]" % [UIStyle.GOOD_HEX, item.sell_price()]
+		Tooltip.show_text(text, self)
 
 
 func _process(delta: float) -> void:
@@ -216,6 +221,10 @@ func activate(right_click: bool) -> void:
 	if item == null:
 		return
 	var player := get_tree().get_first_node_in_group("player") as Player
+	if shop and kind == Kind.INVENTORY:
+		shop.sell(index)
+		Tooltip.hide_tip(self)
+		return
 	match kind:
 		Kind.INVENTORY:
 			if item is EquipmentItemData:
@@ -234,6 +243,8 @@ func activate(right_click: bool) -> void:
 
 # ------------------------------------------------------------- drag & drop
 func _get_drag_data(_at_position: Vector2) -> Variant:
+	if shop:
+		return null
 	var item := get_item()
 	if item == null:
 		return null

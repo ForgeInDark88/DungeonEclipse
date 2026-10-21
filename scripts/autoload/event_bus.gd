@@ -19,3 +19,5 @@ signal damage_dealt(world_pos: Vector2, amount: int, crit: bool, on_player: bool
 ## An item went from the world into the backpack (HUD flies its icon).
 signal item_collected(item: ItemData, world_pos: Vector2)
 signal trap_disarmed(trap: TrapData)
+## A merchant wants to open its shop UI.
+signal shop_requested(merchant: Node, player: Node)

@@ -13,6 +13,7 @@ const DOOR_SCENE := "res://scenes/world/exit_door.tscn"
 const TORCH_SCENE := "res://scenes/world/wall_torch.tscn"
 const DRIP_SCENE := "res://scenes/world/water_drip.tscn"
 const TRAP_SCENE := "res://scenes/traps/trap.tscn"
+const MERCHANT_SCENE := "res://scenes/npc/merchant.tscn"
 ## No traps this close (in cells) to the start.
 const SAFE_START_RADIUS := 8
 const T = LevelLayout.Tile
@@ -53,6 +54,7 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 				back.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(_variant(cell), AssetPaths.TILE_ROW_BACKWALL))
 			_apply_tile(cell, layout.get_tile(x, y))
 	_spawn_door()
+	_spawn_specials()
 	_spawn_chests()
 	_spawn_enemies()
 	_spawn_ambience()
@@ -263,6 +265,16 @@ func _spawn_door() -> void:
 	add_entity(door, cell_bottom(layout.exit_cell))
 
 
+## Merchant and random-event rooms reserved by the generator.
+func _spawn_specials() -> void:
+	for info in layout.specials:
+		match info["type"]:
+			&"merchant":
+				var m: Merchant = (load(MERCHANT_SCENE) as PackedScene).instantiate()
+				m.floor_number = floor_number
+				add_entity(m, cell_bottom(info["cell"]))
+
+
 func _spawn_chests() -> void:
 	for info in layout.chests:
 		var chest := (load(CHEST_SCENE) as PackedScene).instantiate()
@@ -342,6 +354,9 @@ func _spawn_traps() -> void:
 	for c in layout.chests:
 		used[c["cell"]] = true
 	used[layout.exit_cell] = true
+	for info in layout.specials:
+		for dx in range(-3, 4):
+			used[info["cell"] + Vector2i(dx, 0)] = true
 	var walls: Array[Trap] = []
 	var plates: Array[Trap] = []
 	var tries := 0

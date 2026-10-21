@@ -12,10 +12,11 @@ percent = 0.0
 
 [resource]
 script = ExtResource("4_jkweb")
-use_sound = &"potion_drink"
 effects = Array[ExtResource("1_cmgc2")]([SubResource("Resource_s2tot")])
 consume_on_use = true
 cooldown = 0.3
+use_animation = &"use"
+use_sound = &"potion_drink"
 id = &"health_potion"
 display_name = "Зелье лечения"
 description = "Горькое, но действенное."
@@ -24,3 +25,7 @@ item_type = 1
 rarity = 0
 max_stack = 10
 stat_bonuses = {}
+price = 20
+currency_value = 0
+has_durability = false
+max_durability = 100

@@ -411,6 +411,11 @@ func _die() -> void:
 	if GameState.hero:
 		GameState.hero.add_xp(data.xp_reward + floor_number - 1)
 	EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 12), "+%d XP" % (data.xp_reward + floor_number - 1), Color(1.0, 0.85, 0.3))
+	var gold := roundi(randi_range(data.gold_min, data.gold_max) * (1.0 + 0.25 * (floor_number - 1)))
+	if gold > 0:
+		var coin := ItemDatabase.get_item(&"gold_coin")
+		if coin:
+			EventBus.spawn_items.emit(global_position + Vector2(0, -8), [{"item": coin, "count": gold}])
 	if data.loot_table and randf() < data.loot_chance:
 		var loot := data.loot_table.roll(floor_number)
 		if not loot.is_empty():

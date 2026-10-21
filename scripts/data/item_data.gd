@@ -21,6 +21,10 @@ const TYPE_NAMES := ["Снаряжение", "Используемое", "Рес
 @export var stat_bonuses: Dictionary = {}
 ## Optional wear: every copy that drops is an instance that loses durability
 ## (weapons when hitting, armor when hit). Broken items give no bonuses.
+## Shop price in gold (0 = automatic from type and rarity). Sells for 40%.
+@export var price: int = 0
+## > 0: picking it up adds this much gold per piece instead of an item.
+@export var currency_value: int = 0
 @export var has_durability := false
 @export var max_durability: int = 100
 
@@ -49,6 +53,25 @@ func make_instance() -> ItemData:
 	if has_durability:
 		inst.durability = max_durability
 	return inst
+
+
+const AUTO_PRICES := {ItemType.EQUIPMENT: [30, 120, 400], ItemType.USABLE: [15, 50, 120], ItemType.MATERIAL: [4, 20, 60]}
+const SELL_FACTOR := 0.4
+
+
+## Buy price; affixes and wear change it for instances.
+func buy_price() -> int:
+	var p := price if price > 0 else int(AUTO_PRICES[item_type][rarity])
+	if self is WeaponItemData and price <= 0:
+		p = roundi(p * 1.2)
+	p = roundi(p * (1.0 + 0.25 * affixes.size()))
+	if has_durability and is_instance() and max_durability > 0:
+		p = roundi(p * (0.4 + 0.6 * float(durability) / max_durability))
+	return maxi(1, p)
+
+
+func sell_price() -> int:
+	return maxi(1, roundi(buy_price() * SELL_FACTOR))
 
 
 ## Bonuses that currently apply (none while broken).

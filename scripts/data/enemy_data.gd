@@ -29,6 +29,9 @@ enum Behavior { WALKER, FLYER, RANGED }
 @export var xp_reward: int = 10
 @export var loot_table: LootTable
 @export_range(0.0, 1.0) var loot_chance: float = 0.35
+## Gold dropped on death (scaled by floor).
+@export var gold_min: int = 1
+@export var gold_max: int = 4
 ## First floor where it may spawn, and spawn weight.
 @export var min_floor: int = 1
 @export var spawn_weight: float = 1.0

@@ -21,6 +21,7 @@ var _floor_label: Label
 var _message: Label
 var _hint: Label
 var _points_label: Label
+var _gold_label: Label
 var _portrait_holder: Control
 var _message_tween: Tween
 var _player: Player
@@ -41,6 +42,10 @@ func setup(p_hero: Hero, player: Player) -> void:
 	hero.stats.mana_changed.connect(func(m: int, mx: int) -> void: _mana.set_values(m, mx))
 	hero.xp_changed.connect(func(_x: int, _n: int) -> void: _refresh_xp())
 	hero.leveled_up.connect(_on_level_up)
+	hero.gold_changed.connect(func(g: int) -> void:
+		_gold_label.text = str(g)
+		_pulse(_gold_label))
+	_gold_label.text = str(hero.gold)
 	hero.inventory.changed.connect(_refresh_quick)
 	hero.quick_bar.changed.connect(_refresh_quick)
 	hero.skills.changed.connect(_refresh_skills)
@@ -129,6 +134,14 @@ func _build() -> void:
 	_level_label = UIStyle.label("", 7, UIStyle.INK)
 	_level_label.position = Vector2(bx, PADDING - 3)
 	panel.add_child(_level_label)
+	var coin := TextureRect.new()
+	coin.texture = AssetPaths.tex(AssetPaths.COIN_ICON)
+	coin.position = Vector2(bx + BARS_W - 40, PADDING)
+	coin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(coin)
+	_gold_label = UIStyle.label("0", 7, UIStyle.INK)
+	_gold_label.position = Vector2(bx + BARS_W - 30, PADDING - 3)
+	panel.add_child(_gold_label)
 	_hp = StatBar.create(AssetPaths.BAR_HP, Vector2(BARS_W, 12))
 	_hp.position = Vector2(bx, PADDING + 9)
 	panel.add_child(_hp)

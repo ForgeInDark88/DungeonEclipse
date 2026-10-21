@@ -11,10 +11,11 @@ amount = 30
 
 [resource]
 script = ExtResource("4_8jata")
-use_sound = &"potion_drink"
 effects = Array[ExtResource("1_mkw2v")]([SubResource("Resource_an5h0")])
 consume_on_use = true
 cooldown = 0.3
+use_animation = &"use"
+use_sound = &"potion_drink"
 id = &"mana_crystal"
 display_name = "Кристалл маны"
 description = "Раздавите — и мана вернётся."
@@ -23,3 +24,7 @@ item_type = 1
 rarity = 0
 max_stack = 10
 stat_bonuses = {}
+price = 18
+currency_value = 0
+has_durability = false
+max_durability = 100

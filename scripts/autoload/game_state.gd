@@ -12,6 +12,9 @@ var floor_number: int = 1
 var run_seed: int = 0
 var kills: int = 0
 var run_active: bool = false
+## Statistics of the current run (death screen, achievements):
+## gold, kills, floor, found_common/rare/epic, bosses, time.
+var run_stats: Dictionary = {}
 
 
 func _ready() -> void:
@@ -23,6 +26,7 @@ func start_new_run(race: RaceData, class_data: ClassData) -> void:
 	hero.give_starting_kit()
 	floor_number = 1
 	kills = 0
+	reset_run_stats()
 	run_seed = randi()
 	run_active = true
 	get_tree().paused = false
@@ -30,6 +34,10 @@ func start_new_run(race: RaceData, class_data: ClassData) -> void:
 
 
 ## Seed of the current floor: each run and each floor is different.
+func reset_run_stats() -> void:
+	run_stats = {"gold": 0, "found": [0, 0, 0], "bosses": 0, "start_ms": Time.get_ticks_msec()}
+
+
 func floor_seed() -> int:
 	return hash([run_seed, floor_number])
 

@@ -6,6 +6,7 @@ extends RefCounted
 
 signal xp_changed(xp: int, xp_to_next: int)
 signal leveled_up(level: int)
+signal gold_changed(gold: int)
 
 const INVENTORY_SIZE := 30
 
@@ -18,6 +19,7 @@ var quick_bar := QuickBar.new()
 var skills := SkillSet.new()
 var level: int = 1
 var xp: int = 0
+var gold: int = 0
 
 
 func _init(p_race: RaceData, p_class: ClassData, layout: EquipmentLayout) -> void:
@@ -53,6 +55,21 @@ func give_starting_kit() -> void:
 	stats.hp = stats.max_hp()
 	stats.mana = stats.max_mana()
 	stats.recalculate()
+
+
+func add_gold(amount: int) -> void:
+	gold = maxi(0, gold + amount)
+	if amount > 0:
+		GameState.run_stats["gold"] = int(GameState.run_stats.get("gold", 0)) + amount
+	gold_changed.emit(gold)
+
+
+func spend_gold(amount: int) -> bool:
+	if gold < amount:
+		return false
+	gold -= amount
+	gold_changed.emit(gold)
+	return true
 
 
 func xp_to_next() -> int:

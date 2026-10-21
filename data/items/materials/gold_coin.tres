@@ -7,9 +7,13 @@
 script = ExtResource("2_4pk4g")
 id = &"gold_coin"
 display_name = "Золотая монета"
-description = "Блестит. Пока что просто трофей."
+description = "Подбирается в кошелёк. Тратится у торговца."
 icon = ExtResource("1_fdetc")
 item_type = 2
 rarity = 0
-max_stack = 99
+max_stack = 999
 stat_bonuses = {}
+price = 0
+currency_value = 1
+has_durability = false
+max_durability = 100

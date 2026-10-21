@@ -144,10 +144,49 @@ def traps():
     crack.save(os.path.join(A, "sprites/traps/ceiling_crack.png"))
 
 
+# ----------------------------------------------------------------- merchant
+def merchant():
+    lay = gs.simple_layout("merchant_layout", 24, 28, (12, 28), [("idle", 4, 4, True), ("greet", 3, 8, False)])
+
+    def fn(name, i, n):
+        im = gp.new(24, 28)
+        d = ImageDraw.Draw(im)
+        robe = (70, 60, 110, 255)
+        bob = [0, 0, 1, 1][i] if name == "idle" else 0
+        d.polygon([(6, 12 + bob), (17, 12 + bob), (20, 27), (3, 27)], fill=robe)
+        d.line((4, 26, 19, 26), fill=gp.shade(robe, 0.7))
+        d.polygon([(6, 13 + bob), (9, 3 + bob), (15, 3 + bob), (18, 13 + bob)], fill=gp.shade(robe, 0.8))
+        d.rectangle((9, 7 + bob, 15, 11 + bob), fill=(225, 180, 140, 255))
+        d.point((13, 8 + bob), fill=(20, 20, 20, 255))
+        d.polygon([(9, 11 + bob), (15, 11 + bob), (14, 15 + bob), (10, 15 + bob)], fill=(200, 200, 205, 255))  # beard
+        # backpack and lantern
+        d.rectangle((2, 13 + bob, 6, 22 + bob), fill=(120, 80, 45, 255))
+        arm_y = 16 + bob - (i * 3 if name == "greet" else 0)
+        d.line((17, 14 + bob, 20, arm_y), fill=gp.shade(robe, 0.9), width=2)
+        d.rectangle((19, arm_y, 22, arm_y + 4), fill=(255, 210, 90, 255))
+        d.point((20, arm_y + 1), fill=(255, 250, 200, 255))
+        return im
+
+    gs.render_sheet(lay, fn, "sprites/npc/merchant_sheet.png")
+    # Shop rug under the merchant.
+    rug = gp.new(40, 4)
+    d = ImageDraw.Draw(rug)
+    d.rectangle((0, 1, 39, 3), fill=(120, 30, 40, 255))
+    for x in range(2, 38, 4):
+        d.point((x, 2), fill=(230, 190, 80, 255))
+    rug.save(os.path.join(A, "sprites/npc/rug.png"))
+    coin = gp.new(8, 8)
+    d = ImageDraw.Draw(coin)
+    d.ellipse((0, 0, 7, 7), fill=gp.GOLD)
+    d.ellipse((2, 2, 5, 5), outline=gp.GOLD_D)
+    coin.save(os.path.join(A, "ui/coin.png"))
+
+
 def main():
     os.makedirs(os.path.join(A, "ui/status"), exist_ok=True)
     status_icons()
     traps()
+    merchant()
     print("mechanics generated")
 
 

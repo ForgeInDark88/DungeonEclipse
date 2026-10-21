@@ -12,10 +12,11 @@ percent = 0.4
 
 [resource]
 script = ExtResource("4_67fqj")
-use_sound = &"potion_drink"
 effects = Array[ExtResource("1_jx5wo")]([SubResource("Resource_bgdyv")])
 consume_on_use = true
 cooldown = 0.3
+use_animation = &"use"
+use_sound = &"potion_drink"
 id = &"big_health_potion"
 display_name = "Большое зелье лечения"
 description = "Густое и красное, как закат."
@@ -24,3 +25,7 @@ item_type = 1
 rarity = 1
 max_stack = 5
 stat_bonuses = {}
+price = 60
+currency_value = 0
+has_durability = false
+max_durability = 100

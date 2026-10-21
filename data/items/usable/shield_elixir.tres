@@ -26,5 +26,7 @@ item_type = 1
 rarity = 1
 max_stack = 5
 stat_bonuses = {}
+price = 60
+currency_value = 0
 has_durability = false
 max_durability = 100

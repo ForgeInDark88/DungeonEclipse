@@ -209,3 +209,5 @@ rarity_weights = Array[float]([0.0, 55.0, 45.0])
 rare_bonus_per_floor = 3.0
 epic_bonus_per_floor = 3.0
 entries = Array[ExtResource("1_etyyx")]([SubResource("Resource_snvhm"), SubResource("Resource_hyghu"), SubResource("Resource_ayh7p"), SubResource("Resource_8scry"), SubResource("Resource_23i1b"), SubResource("Resource_hhakv"), SubResource("Resource_uc1h2"), SubResource("Resource_aytrr"), SubResource("Resource_q3p68"), SubResource("Resource_6dqpf"), SubResource("Resource_6nyc7"), SubResource("Resource_7tuea"), SubResource("Resource_vqrl6"), SubResource("Resource_muvx8"), SubResource("Resource_37r5y"), SubResource("Resource_bo0p6"), SubResource("Resource_68wq8"), SubResource("Resource_2y2w8"), SubResource("Resource_rh8jx"), SubResource("Resource_agykb"), SubResource("Resource_onxim"), SubResource("Resource_yg5k7")])
+gold_min = 50
+gold_max = 120

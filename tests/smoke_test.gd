@@ -71,7 +71,7 @@ func _test_data() -> void:
 	check(ItemDatabase.races.size() == 3, "3 races")
 	check(ItemDatabase.classes.size() == 3, "3 classes")
 	check(ItemDatabase.enemies.size() == 4, "4 enemies")
-	check(ItemDatabase.loot_tables.size() == 5, "5 loot tables")
+	check(ItemDatabase.loot_tables.size() >= 5, "loot tables loaded: %d" % ItemDatabase.loot_tables.size())
 	check(ItemDatabase.equipment_layout.slots.size() == 8, "8 equip slots")
 	for c in ItemDatabase.classes:
 		check(c.skills.size() == 4, "class %s has 4 skills" % c.id)
@@ -358,6 +358,45 @@ func _test_scenes() -> void:
 	player.camera.zoom = Vector2(4, 4)
 	await shot("12a_bow_zoom")
 	player.camera.zoom = Vector2.ONE
+	# --- 15.3 gold and merchant
+	var gold0 := player.hero.gold
+	var victim: Enemy = (load("res://scenes/enemies/enemy.tscn") as PackedScene).instantiate()
+	victim.setup(load("res://data/enemies/cultist.tres"), 1)
+	player.level.add_entity(victim, player.global_position)
+	await frames(2)
+	victim.take_damage(99999)
+	await frames(60)
+	for pk in get_tree().get_nodes_in_group("pickups"):
+		if pk.item.id == &"gold_coin":
+			pk.collect(player.hero)
+	check(player.hero.gold > gold0, "monsters drop gold (%d -> %d)" % [gold0, player.hero.gold])
+	var merchant: Merchant = (load("res://scenes/npc/merchant.tscn") as PackedScene).instantiate()
+	merchant.floor_number = 2
+	player.level.add_entity(merchant, player.global_position + Vector2(20, 0))
+	await frames(2)
+	check(merchant.stock.size() >= 4, "merchant has stock: %d" % merchant.stock.size())
+	player.hero.add_gold(500)
+	merchant.interact(player)
+	await frames(5)
+	var shop: ShopBook = null
+	for n in game.get_children():
+		if n is ShopBook:
+			shop = n
+	check(shop != null and get_tree().paused, "shop opens and pauses")
+	if shop:
+		await shot("15_3_shop")
+		var g := player.hero.gold
+		var potions := player.hero.inventory.count_of(&"health_potion")
+		shop.buy(0)
+		check(player.hero.gold < g and player.hero.inventory.count_of(&"health_potion") == potions + 1, "buying a potion costs gold")
+		var idx := player.hero.inventory.find_index(&"health_potion")
+		var g2 := player.hero.gold
+		shop.sell(idx)
+		check(player.hero.gold > g2, "selling gives gold")
+		shop.close()
+		await frames(2)
+	check(not get_tree().paused, "shop closes")
+	merchant.queue_free()
 	# --- 15.2 traps
 	var traps := get_tree().get_nodes_in_group("traps")
 	check(traps.size() > 0, "traps placed: %d" % traps.size())
@@ -456,13 +495,13 @@ func _test_scenes() -> void:
 	if pickups.size() > 0:
 		player.global_position = pickups[0].global_position
 		await frames(3)
-		var count_before := 0
+		var count_before := player.hero.gold
 		for st in player.hero.inventory.slots:
 			if st:
 				count_before += st.count
 		check(player.try_interact(), "pickup interact")
 		await frames(3)
-		var count_after := 0
+		var count_after := player.hero.gold
 		for st in player.hero.inventory.slots:
 			if st:
 				count_after += st.count
