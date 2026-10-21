@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="TrapData" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="1_r4ty4"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="2_i2aq2"]
+[ext_resource type="Script" path="res://scripts/data/trap_data.gd" id="3_klbxd"]
+[ext_resource type="Texture2D" path="res://assets/sprites/traps/spikes_sheet.png" id="4_4fu80"]
+[ext_resource type="Resource" path="res://data/animations/spikes_layout.tres" id="5_ry4mu"]
+
+[sub_resource type="Resource" id="Resource_mwiey"]
+script = ExtResource("2_i2aq2")
+status = &"poison"
+duration = 4.0
+power = 2.0
+chance = 1.0
+
+[resource]
+script = ExtResource("3_klbxd")
+id = &"poison_spikes"
+display_name = "Ядовитые шипы"
+kind = 0
+damage = 9
+damage_per_floor = 0.2
+damage_type = 0
+hit_effects = Array[ExtResource("1_r4ty4")]([SubResource("Resource_mwiey")])
+cooldown = 1.6
+trigger_range = 64.0
+projectile_speed = 220.0
+disarm_difficulty = 0.4
+can_disarm = true
+xp_for_disarm = 6
+sheet = ExtResource("4_4fu80")
+sheet_layout = ExtResource("5_ry4mu")
+tint = Color(0.6, 1, 0.5, 1)
+min_floor = 3
+weight = 1.0
+biomes = Array[StringName]([&"fungal", &"catacombs"])

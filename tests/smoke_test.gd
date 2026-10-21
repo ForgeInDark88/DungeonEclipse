@@ -358,6 +358,39 @@ func _test_scenes() -> void:
 	player.camera.zoom = Vector2(4, 4)
 	await shot("12a_bow_zoom")
 	player.camera.zoom = Vector2.ONE
+	# --- 15.2 traps
+	var traps := get_tree().get_nodes_in_group("traps")
+	check(traps.size() > 0, "traps placed: %d" % traps.size())
+	var spike: Trap = null
+	for t in traps:
+		if t.data.kind == TrapData.Kind.SPIKES:
+			spike = t
+	if spike == null:
+		# Floor 1 may roll only rocks: put a spike trap next to the hero.
+		spike = (load("res://scenes/traps/trap.tscn") as PackedScene).instantiate()
+		spike.setup(load("res://data/traps/spikes.tres"), 1)
+		player.level.add_entity(spike, player.global_position)
+	for e in get_tree().get_nodes_in_group("enemies"):
+		e.set_physics_process(false)
+	player.global_position = spike.global_position
+	player.status.clear()
+	player._invulnerable = 0.0
+	var hp_t := player.hero.stats.hp
+	await get_tree().create_timer(1.0).timeout
+	check(player.hero.stats.hp < hp_t, "spikes hurt the hero (%d -> %d)" % [hp_t, player.hero.stats.hp])
+	player.camera.zoom = Vector2(3, 3)
+	await shot("15_2_trap_zoom")
+	player.camera.zoom = Vector2.ONE
+	var plate: Trap = (load("res://scenes/traps/trap.tscn") as PackedScene).instantiate()
+	plate.setup(load("res://data/traps/pressure_plate.tres"), 1)
+	player.level.add_entity(plate, player.global_position + Vector2(40, 0))
+	await frames(2)
+	var hits_before := player.hero.stats.hp
+	plate.interact(player)
+	check(plate.disarmed or plate._cooldown >= 0.0, "disarm attempt resolves (disarmed=%s)" % plate.disarmed)
+	for e in get_tree().get_nodes_in_group("enemies"):
+		e.set_physics_process(true)
+	player.hero.stats.heal(9999)
 	# --- 15.1 statuses on the hero
 	var hp0 := player.hero.stats.hp
 	player.status.apply(&"poison", 1.2, 3.0)

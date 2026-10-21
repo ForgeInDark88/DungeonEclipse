@@ -9,6 +9,7 @@ const ENEMIES_DIR := "res://data/enemies"
 const LOOT_DIR := "res://data/loot_tables"
 const AFFIX_DIR := "res://data/affixes"
 const BIOME_DIR := "res://data/biomes"
+const TRAP_DIR := "res://data/traps"
 const EQUIPMENT_LAYOUT := "res://data/equipment_layout.tres"
 
 var items: Dictionary = {}  # StringName -> ItemData
@@ -18,6 +19,7 @@ var enemies: Array[EnemyData] = []
 var loot_tables: Dictionary = {}  # StringName (file name) -> LootTable
 var affixes: Array[AffixData] = []
 var biomes: Array[BiomeData] = []
+var traps: Array[TrapData] = []
 var equipment_layout: EquipmentLayout
 
 
@@ -33,6 +35,10 @@ func reload() -> void:
 	loot_tables.clear()
 	affixes.clear()
 	biomes.clear()
+	traps.clear()
+	for res in _load_dir(TRAP_DIR):
+		if res is TrapData:
+			traps.append(res)
 	for res in _load_dir(BIOME_DIR):
 		if res is BiomeData:
 			biomes.append(res)
@@ -79,6 +85,14 @@ func enemies_for_floor(floor_number: int, biome_id: StringName = &"") -> Array[E
 	for e in enemies:
 		if e.min_floor <= floor_number and (e.biomes.is_empty() or biome_id == &"" or biome_id in e.biomes):
 			list.append(e)
+	return list
+
+
+func traps_for_floor(floor_number: int, biome_id: StringName) -> Array[TrapData]:
+	var list: Array[TrapData] = []
+	for t in traps:
+		if t.min_floor <= floor_number and (t.biomes.is_empty() or biome_id in t.biomes):
+			list.append(t)
 	return list
 
 

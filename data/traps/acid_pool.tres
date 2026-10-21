@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="TrapData" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="1_u4xw1"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="2_qs8ad"]
+[ext_resource type="Script" path="res://scripts/data/trap_data.gd" id="3_mff24"]
+[ext_resource type="Texture2D" path="res://assets/sprites/traps/acid_sheet.png" id="4_qooey"]
+[ext_resource type="Resource" path="res://data/animations/acid_layout.tres" id="5_xg7hn"]
+
+[sub_resource type="Resource" id="Resource_tn3tt"]
+script = ExtResource("2_qs8ad")
+status = &"poison"
+duration = 2.0
+power = 2.0
+chance = 1.0
+
+[resource]
+script = ExtResource("3_mff24")
+id = &"acid_pool"
+display_name = "Кислотная лужа"
+kind = 3
+damage = 4
+damage_per_floor = 0.2
+damage_type = 3
+hit_effects = Array[ExtResource("1_u4xw1")]([SubResource("Resource_tn3tt")])
+cooldown = 0.5
+trigger_range = 64.0
+projectile_speed = 220.0
+disarm_difficulty = 0.4
+can_disarm = false
+xp_for_disarm = 6
+sheet = ExtResource("4_qooey")
+sheet_layout = ExtResource("5_xg7hn")
+tint = Color(1, 1, 1, 1)
+min_floor = 2
+weight = 1.0
+biomes = Array[StringName]([])

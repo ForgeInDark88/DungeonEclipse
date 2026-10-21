@@ -12,6 +12,9 @@ const ENEMY_SCENE := "res://scenes/enemies/enemy.tscn"
 const DOOR_SCENE := "res://scenes/world/exit_door.tscn"
 const TORCH_SCENE := "res://scenes/world/wall_torch.tscn"
 const DRIP_SCENE := "res://scenes/world/water_drip.tscn"
+const TRAP_SCENE := "res://scenes/traps/trap.tscn"
+## No traps this close (in cells) to the start.
+const SAFE_START_RADIUS := 8
 const T = LevelLayout.Tile
 
 @onready var back: TileMapLayer = $Back
@@ -54,6 +57,7 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	_spawn_enemies()
 	_spawn_ambience()
 	_spawn_decorations()
+	_spawn_traps()
 
 
 ## Deterministic 0..3 variant per cell.
@@ -322,6 +326,87 @@ func _spawn_decorations() -> void:
 		deco.data = data
 		add_entity(deco, pos)
 		count -= 1
+
+
+## Traps from ItemDatabase.traps_for_floor(): more on deeper floors.
+func _spawn_traps() -> void:
+	var pool := ItemDatabase.traps_for_floor(floor_number, biome.id if biome else &"")
+	if pool.is_empty():
+		return
+	var weights: Array[float] = []
+	for t in pool:
+		weights.append(t.weight)
+	var rooms := (layout.width / LevelGenerator.ROOM_W) * (layout.height / LevelGenerator.ROOM_H)
+	var count := mini(2 + floor_number, rooms + 2)
+	var used := {}
+	for c in layout.chests:
+		used[c["cell"]] = true
+	used[layout.exit_cell] = true
+	var walls: Array[Trap] = []
+	var plates: Array[Trap] = []
+	var tries := 0
+	while count > 0 and tries < 400:
+		tries += 1
+		var data: TrapData = pool[LootTable._weighted_index(weights, rng)]
+		var placed := _place_trap(data, used)
+		if placed:
+			count -= 1
+			if data.kind == TrapData.Kind.ARROW_WALL:
+				walls.append(placed)
+			elif data.kind == TrapData.Kind.PRESSURE_PLATE:
+				plates.append(placed)
+	# Plates fire the nearest arrow wall in their row.
+	for plate in plates:
+		for w in walls:
+			if absf(w.global_position.y - plate.global_position.y) < 2.0 and absf(w.global_position.x - plate.global_position.x) < TILE * 12:
+				plate.linked = w
+
+
+func _place_trap(data: TrapData, used: Dictionary) -> Trap:
+	var cell := Vector2i(rng.randi_range(2, layout.width - 3), rng.randi_range(2, layout.height - 3))
+	if used.has(cell) or layout.get_tile(cell.x, cell.y) != T.EMPTY:
+		return null
+	if Vector2(cell).distance_to(Vector2(layout.start_cell)) < SAFE_START_RADIUS:
+		return null
+	var below := layout.get_tile(cell.x, cell.y + 1)
+	var trap: Trap = (load(TRAP_SCENE) as PackedScene).instantiate()
+	trap.setup(data, floor_number)
+	var pos: Vector2
+	match data.kind:
+		TrapData.Kind.SPIKES, TrapData.Kind.PRESSURE_PLATE, TrapData.Kind.ACID_POOL:
+			if below != T.BRICK or LevelLayout.is_ladder(layout.get_tile(cell.x, cell.y - 1)):
+				trap.free()
+				return null
+			pos = cell_bottom(cell)
+		TrapData.Kind.FALLING_ROCK:
+			if not LevelLayout.is_solid(layout.get_tile(cell.x, cell.y - 1)):
+				trap.free()
+				return null
+			# Something to fall on within a few cells.
+			var floor_found := false
+			for dy in range(1, 7):
+				if LevelLayout.is_ground(layout.get_tile(cell.x, cell.y + dy)):
+					floor_found = true
+					break
+			if not floor_found:
+				trap.free()
+				return null
+			pos = to_global(Vector2(cell.x * TILE + TILE / 2.0, cell.y * TILE))
+		TrapData.Kind.ARROW_WALL:
+			# Mounted in front of a wall, on the floor level of a corridor.
+			if below != T.BRICK:
+				trap.free()
+				return null
+			var left_wall := LevelLayout.is_solid(layout.get_tile(cell.x - 1, cell.y))
+			var right_wall := LevelLayout.is_solid(layout.get_tile(cell.x + 1, cell.y))
+			if left_wall == right_wall:
+				trap.free()
+				return null
+			trap.facing = 1.0 if left_wall else -1.0
+			pos = cell_bottom(cell)
+	used[cell] = true
+	add_entity(trap, pos)
+	return trap
 
 
 func _spawn_enemies() -> void:
