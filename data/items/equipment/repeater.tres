@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/arrow.png" id="e2"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="e3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/repeater.png" id="e4"]
+
+[resource]
+script = ExtResource("e1")
+weapon_type = 7
+base_damage = 11.0
+attack_speed = 2.4
+reach = 240.0
+knockback = 120.0
+attack_pattern = 2
+two_handed = true
+damage_type = 0
+projectile_texture = ExtResource("e2")
+projectile_speed = 440.0
+projectile_pierce = 1
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("e3")]([])
+held_angle = 0.0
+grip_pixel = Vector2(8.0, 8.0)
+gender = "m"
+slot_type = &"weapon"
+id = &"repeater"
+display_name = "Многозарядный арбалет"
+description = "Механизм гномов: болт за болтом."
+icon = ExtResource("e4")
+item_type = 0
+rarity = 2
+item_level = 7
+unique = false
+max_stack = 1
+stat_bonuses = {
+"agility": 2,
+"crit_chance": 0.05
+}
+price = 0
+currency_value = 0
+has_durability = true
+max_durability = 200

@@ -373,6 +373,9 @@ func _can_see_player() -> bool:
 	var dist := to_player.length()
 	if dist > data.aggro_range:
 		return false
+	# Invisibility potion: only noticed when bumped into.
+	if _player.status.has(&"invisible") and dist > 14.0:
+		return false
 	if state == State.PATROL and dist > FEEL_RANGE and signf(to_player.x) != _facing():
 		return false
 	if data.phases_through_walls:
@@ -1404,7 +1407,8 @@ func _die() -> void:
 	if GameState.hero:
 		GameState.hero.add_xp(xp)
 	EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 12), "+%d XP" % xp, Color(1.0, 0.85, 0.3))
-	var gold := roundi(randi_range(data.gold_min, data.gold_max) * (1.0 + 0.25 * (floor_number - 1)) * (elite.gold_mult if elite else 1.0))
+	var gold_find := GameState.hero.stats.get_value(StatTypes.GOLD_FIND) if GameState.hero else 0.0
+	var gold := roundi(randi_range(data.gold_min, data.gold_max) * (1.0 + 0.25 * (floor_number - 1)) * (elite.gold_mult if elite else 1.0) * (1.0 + gold_find))
 	if gold > 0:
 		var coin := ItemDatabase.get_item(&"gold_coin")
 		if coin:

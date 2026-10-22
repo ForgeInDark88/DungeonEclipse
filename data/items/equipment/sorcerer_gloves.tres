@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/equip_leather_gloves.png" id="e2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/sorcerer_gloves.png" id="e3"]
+
+[resource]
+script = ExtResource("e1")
+slot_type = &"gloves"
+visual_sheet = ExtResource("e2")
+visual_layer = &"gloves"
+set_id = &"sorcerer"
+id = &"sorcerer_gloves"
+display_name = "Перчатки чародея"
+description = "Пальцы покалывает от силы."
+icon = ExtResource("e3")
+item_type = 0
+rarity = 1
+item_level = 4
+unique = false
+max_stack = 1
+stat_bonuses = {
+"intellect": 2,
+"res_magic": 0.05
+}
+price = 0
+currency_value = 0
+has_durability = true
+max_durability = 90

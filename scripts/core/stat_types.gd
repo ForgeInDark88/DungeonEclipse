@@ -23,11 +23,18 @@ const RES_ICE := "res_ice"
 const RES_POISON := "res_poison"
 const RES_MAGIC := "res_magic"
 
+# Special values (items, relics): HP regenerated per second, extra gold from
+# monsters (0.2 = +20%), jumps in the air.
+const HP_REGEN := "hp_regen"
+const GOLD_FIND := "gold_find"
+const EXTRA_JUMPS := "extra_jumps"
+
 const PRIMARY: Array[String] = [STRENGTH, AGILITY, INTELLECT, VITALITY]
 const RESISTANCES: Array[String] = [RES_FIRE, RES_ICE, RES_POISON, RES_MAGIC]
 ## WeaponItemData.DamageType -> resistance stat ("" = physical: armor).
 const DAMAGE_TYPE_RES: Array[String] = ["", RES_FIRE, RES_ICE, RES_POISON, RES_MAGIC]
 const DERIVED: Array[String] = [MAX_HP, MAX_MANA, DAMAGE, ARMOR, SPEED, CRIT_CHANCE]
+const SPECIAL: Array[String] = [HP_REGEN, GOLD_FIND, EXTRA_JUMPS]
 
 const LABELS := {
 	STRENGTH: "Сила",
@@ -44,6 +51,9 @@ const LABELS := {
 	RES_ICE: "Сопр. холоду",
 	RES_POISON: "Сопр. яду",
 	RES_MAGIC: "Сопр. магии",
+	HP_REGEN: "Регенерация HP/с",
+	GOLD_FIND: "Добыча золота",
+	EXTRA_JUMPS: "Доп. прыжки",
 }
 
 
@@ -54,8 +64,10 @@ static func label(stat: String) -> String:
 ## Formats a value for UI: crit chance is stored as 0..1 and shown as percent.
 static func format_value(stat: String, value: float, signed := false) -> String:
 	var text: String
-	if stat == CRIT_CHANCE or stat in RESISTANCES:
+	if stat == CRIT_CHANCE or stat == GOLD_FIND or stat in RESISTANCES:
 		text = "%d%%" % roundi(value * 100.0)
+	elif stat == HP_REGEN:
+		text = "%.1f" % value
 	else:
 		text = str(roundi(value))
 	if signed and value > 0.0:

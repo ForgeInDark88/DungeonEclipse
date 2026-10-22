@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="RelicItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/relic_item_data.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/phoenix_feather.png" id="e2"]
+
+[resource]
+script = ExtResource("e1")
+heal_on_kill = 0
+second_chance = true
+revive_percent = 0.5
+id = &"phoenix_feather"
+display_name = "Перо феникса"
+description = "Второй шанс: при гибели вы восстанете, а перо сгорит."
+icon = ExtResource("e2")
+item_type = 3
+rarity = 3
+item_level = 9
+unique = true
+max_stack = 1
+stat_bonuses = {}
+price = 0
+currency_value = 0

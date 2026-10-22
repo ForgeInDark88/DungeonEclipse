@@ -96,6 +96,8 @@ func recalculate() -> void:
 	_values[StatTypes.CRIT_CHANCE] = clampf(BASE_CRIT + agi_v * CRIT_PER_AGILITY + _flat(StatTypes.CRIT_CHANCE), 0.0, 0.75)
 	for res in StatTypes.RESISTANCES:
 		_values[res] = clampf(_flat(res), 0.0, 0.75)
+	for k in StatTypes.SPECIAL:
+		_values[k] = maxf(0.0, _flat(k))
 
 	hp = mini(hp, max_hp())
 	mana = mini(mana, max_mana())

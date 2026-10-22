@@ -46,6 +46,15 @@ static func item(item: ItemData, hero: Hero, is_equipped := false) -> String:
 	elif hero and item is EquipmentItemData and not is_equipped:
 		lines.append(_c(UIStyle.GOOD, "Слот свободен"))
 
+	if item is EquipmentItemData and (item as EquipmentItemData).set_id != &"":
+		lines.append_array(_set_lines(item as EquipmentItemData, hero))
+	if item is RelicItemData:
+		var relic := item as RelicItemData
+		if relic.heal_on_kill > 0:
+			lines.append(_c(UIStyle.GOOD, "• +%d HP за каждое убийство" % relic.heal_on_kill))
+		if relic.second_chance:
+			lines.append(_c(UIStyle.GOOD, "• Второй шанс: при гибели вернёт %d%% здоровья и сгорит" % roundi(relic.revive_percent * 100.0)))
+		lines.append(_c(UIStyle.INK_SOFT, "Действует, пока лежит в рюкзаке"))
 	if item is UsableItemData:
 		for effect in (item as UsableItemData).effects:
 			if effect and effect.describe() != "":
@@ -60,6 +69,33 @@ static func item(item: ItemData, hero: Hero, is_equipped := false) -> String:
 	elif item is UsableItemData:
 		lines.append(_c(UIStyle.INK_SOFT, "ПКМ / двойной клик — использовать"))
 	return "\n".join(lines)
+
+
+## Set block: parts (worn ones bright) and bonuses for 2/3/4 parts (reached
+## thresholds in green).
+static func _set_lines(item: EquipmentItemData, hero: Hero) -> Array[String]:
+	var lines: Array[String] = []
+	var data: ItemSetData = ItemDatabase.sets.get(item.set_id)
+	if data == null:
+		return lines
+	var worn: int = hero.worn_sets().get(item.set_id, 0) if hero else 0
+	var gold := Color(0.75, 0.5, 0.05)
+	lines.append("")
+	lines.append(_c(gold, "Комплект «%s» (%d/%d)" % [data.display_name, worn, data.items.size()]))
+	for id in data.items:
+		var part := ItemDatabase.items.get(id) as ItemData
+		var has := false
+		if hero:
+			for e: EquipmentItemData in hero.equipment.items.values():
+				if e and e.id == id:
+					has = true
+		lines.append(_c(UIStyle.INK if has else UIStyle.INK_SOFT.lightened(0.25), ("  + " if has else "  · ") + (part.display_name if part else String(id))))
+	for need in data.thresholds():
+		var parts: Array[String] = []
+		for k in data.bonuses[need]:
+			parts.append("%s %s" % [StatTypes.label(k), StatTypes.format_value(k, float(data.bonuses[need][k]), true)])
+		lines.append(_c(UIStyle.GOOD if worn >= int(need) else UIStyle.INK_SOFT, "  %d части: %s" % [int(need), ", ".join(parts)]))
+	return lines
 
 
 ## Damage per second the hero would have with this weapon.
@@ -154,6 +190,19 @@ static func hero_stats(hero: Hero) -> String:
 			res.append("%s %s" % [StatTypes.label(r), StatTypes.format_value(r, s.get_value(r))])
 	if not res.is_empty():
 		lines.append(", ".join(res))
+	for k in StatTypes.SPECIAL:
+		if s.get_value(k) > 0.0:
+			lines.append("%s: [b]%s[/b]" % [StatTypes.label(k), StatTypes.format_value(k, s.get_value(k))])
+	var worn := hero.worn_sets()
+	for id in worn:
+		var data: ItemSetData = ItemDatabase.sets.get(id)
+		if data:
+			lines.append(_c(Color(0.75, 0.5, 0.05), "Комплект «%s»: %d/%d" % [data.display_name, worn[id], data.items.size()]))
+	var relic_names: Array[String] = []
+	for r in hero.relics():
+		relic_names.append(r.display_name)
+	if not relic_names.is_empty():
+		lines.append(_c(UIStyle.INK_SOFT, "Реликвии: " + ", ".join(relic_names)))
 	lines.append("")
 	lines.append(_c(UIStyle.INK_SOFT, "Этаж %d · Убито врагов: %d" % [GameState.floor_number, GameState.kills]))
 	return "\n".join(lines)

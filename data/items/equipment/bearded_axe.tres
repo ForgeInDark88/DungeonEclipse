@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="e1"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="e2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/bearded_axe.png" id="e3"]
+
+[resource]
+script = ExtResource("e1")
+weapon_type = 1
+base_damage = 14.0
+attack_speed = 1.3
+reach = 24.0
+knockback = 200.0
+attack_pattern = 0
+two_handed = false
+damage_type = 0
+projectile_speed = 280.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("e2")]([])
+held_angle = -45.0
+grip_pixel = Vector2(3.0, 12.0)
+gender = "f"
+slot_type = &"weapon"
+id = &"bearded_axe"
+display_name = "Бородовидная секира"
+description = "Широкое лезвие цепляет щиты."
+icon = ExtResource("e3")
+item_type = 0
+rarity = 1
+item_level = 4
+unique = false
+max_stack = 1
+stat_bonuses = {
+"strength": 2
+}
+price = 0
+currency_value = 0
+has_durability = true
+max_durability = 160

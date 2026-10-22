@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/leather_scrap.png" id="e2"]
+
+[resource]
+script = ExtResource("e1")
+id = &"leather_scrap"
+display_name = "Обрывки кожи"
+description = "Пригодятся для ремонта и ремесла."
+icon = ExtResource("e2")
+item_type = 2
+rarity = 0
+item_level = 1
+unique = false
+max_stack = 20
+stat_bonuses = {}
+price = 5
+currency_value = 0

@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="UsableItemData" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/item_effect.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/fireball.png" id="e2"]
+[ext_resource type="Script" path="res://scripts/skills/projectile_skill.gd" id="e3"]
+[ext_resource type="Script" path="res://scripts/effects/cast_skill_effect.gd" id="e4"]
+[ext_resource type="Script" path="res://scripts/data/usable_item_data.gd" id="e5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/fireball_scroll.png" id="e6"]
+
+[sub_resource type="Resource" id="s1"]
+script = ExtResource("e3")
+texture = ExtResource("e2")
+speed = 240.0
+damage_multiplier = 2.5
+damage_per_level = 0.4
+count = 1
+blast_radius = 30.0
+damage_type = 1
+color = Color(1.0, 0.5, 0.15, 1.0)
+
+[sub_resource type="Resource" id="s2"]
+script = ExtResource("e4")
+level = 2
+skill_effect = SubResource("s1")
+
+[resource]
+script = ExtResource("e5")
+effects = Array[ExtResource("e1")]([SubResource("s2")])
+consume_on_use = true
+cooldown = 0.4
+use_animation = &"attack_cast"
+use_sound = &"skill_cast"
+id = &"fireball_scroll"
+display_name = "Свиток огненного шара"
+description = "Заклинание для тех, кто не учился магии."
+icon = ExtResource("e6")
+item_type = 1
+rarity = 1
+item_level = 3
+unique = false
+max_stack = 5
+stat_bonuses = {}
+price = 45
+currency_value = 0

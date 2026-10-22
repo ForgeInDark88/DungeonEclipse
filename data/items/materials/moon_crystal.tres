@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/moon_crystal.png" id="e2"]
+
+[resource]
+script = ExtResource("e1")
+id = &"moon_crystal"
+display_name = "Лунный кристалл"
+description = "Светится мягким голубым светом."
+icon = ExtResource("e2")
+item_type = 2
+rarity = 1
+item_level = 5
+unique = false
+max_stack = 20
+stat_bonuses = {}
+price = 60
+currency_value = 0

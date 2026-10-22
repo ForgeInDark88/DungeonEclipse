@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemSetData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_set_data.gd" id="e1"]
+
+[resource]
+script = ExtResource("e1")
+id = &"wanderer"
+display_name = "Странник"
+items = Array[StringName]([&"wanderer_hood", &"wanderer_coat", &"wanderer_gloves", &"wanderer_boots"])
+bonuses = {
+"2": {
+"speed": 6
+},
+"3": {
+"agility": 2
+},
+"4": {
+"crit_chance": 0.05
+}
+}

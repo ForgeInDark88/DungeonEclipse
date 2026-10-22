@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/ring_of_precision.png" id="e2"]
+
+[resource]
+script = ExtResource("e1")
+slot_type = &"ring"
+id = &"ring_of_precision"
+display_name = "Кольцо меткости"
+description = "Глаз видит слабые места."
+icon = ExtResource("e2")
+item_type = 0
+rarity = 1
+item_level = 4
+unique = false
+max_stack = 1
+stat_bonuses = {
+"crit_chance": 0.06
+}
+price = 0
+currency_value = 0

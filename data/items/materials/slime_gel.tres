@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/slime_gel.png" id="e2"]
+
+[resource]
+script = ExtResource("e1")
+id = &"slime_gel"
+display_name = "Слизь"
+description = "Липкая и подозрительно тёплая."
+icon = ExtResource("e2")
+item_type = 2
+rarity = 0
+item_level = 1
+unique = false
+max_stack = 20
+stat_bonuses = {}
+price = 4
+currency_value = 0

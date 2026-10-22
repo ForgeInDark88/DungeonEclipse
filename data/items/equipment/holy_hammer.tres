@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="e1"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="e2"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="e3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/holy_hammer.png" id="e4"]
+
+[sub_resource type="Resource" id="s1"]
+script = ExtResource("e3")
+status = &"stun"
+duration = 0.6
+power = 1.0
+chance = 0.2
+
+[resource]
+script = ExtResource("e1")
+weapon_type = 6
+base_damage = 17.0
+attack_speed = 1.3
+reach = 24.0
+knockback = 200.0
+attack_pattern = 0
+two_handed = false
+damage_type = 4
+projectile_speed = 280.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("e2")]([SubResource("s1")])
+held_angle = -45.0
+grip_pixel = Vector2(3.0, 12.0)
+gender = "m"
+slot_type = &"weapon"
+id = &"holy_hammer"
+display_name = "Молот света"
+description = "Каждый удар звенит, как колокол."
+icon = ExtResource("e4")
+item_type = 0
+rarity = 2
+item_level = 7
+unique = false
+max_stack = 1
+stat_bonuses = {
+"res_magic": 0.1,
+"vitality": 2
+}
+price = 0
+currency_value = 0
+has_durability = true
+max_durability = 170

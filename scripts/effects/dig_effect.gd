@@ -4,6 +4,8 @@ extends ItemEffect
 ## below with S/Down held, above with W/Up held.
 
 @export var reach_tiles: int = 1
+## Bricks broken per use (better pickaxes cut a short tunnel).
+@export var bricks_per_use: int = 1
 
 
 func apply(user: Node) -> bool:
@@ -18,11 +20,15 @@ func apply(user: Node) -> bool:
 	elif Input.is_action_pressed("move_up"):
 		step = Vector2i.UP
 		start = level.world_to_cell(user.global_position + Vector2(0, -18))
+	var broken := 0
 	for i in range(1, reach_tiles + 1):
 		if level.break_tile(start + step * i):
-			return true
-	return false
+			broken += 1
+			if broken >= bricks_per_use:
+				break
+	return broken > 0
 
 
 func describe() -> String:
-	return "Разбивает кирпич рядом (с S/↓ — под ногами, с W/↑ — над головой)"
+	var what := "кирпич рядом" if bricks_per_use <= 1 else "до %d кирпичей подряд" % bricks_per_use
+	return "Разбивает %s (с S/↓ — под ногами, с W/↑ — над головой)" % what

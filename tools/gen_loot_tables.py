@@ -27,28 +27,28 @@ TABLES = {
                          extra=["supplies_small"], gold=(5, 15)),
     # Iron chest: better odds, +1 item level.
     "chest_rare": dict(rolls=(1, 2), weights=[65, 32, 1.5, 0], per_floor=[0, 3.0, 1.5, 0],
-                       min_floor=[1, 1, 4, NEVER], bonus=1.0, groups={"gear": 1.0, "material": 0.3},
+                       min_floor=[1, 1, 4, NEVER], bonus=1.0, groups={"gear": 1.0, "material": 0.3, "relic": 0.25},
                        extra=["supplies_small"], gold=(15, 35)),
     # Golden chest: the best of what this floor allows (+2 levels), legendary only deep.
     "chest_epic": dict(rolls=(1, 2), weights=[35, 55, 6, 0], per_floor=[0, 3.0, 3.0, 0.15],
-                       min_floor=[1, 1, 3, 8], bonus=2.0, groups={"gear": 1.0, "unique": 0.5},
+                       min_floor=[1, 1, 3, 8], bonus=2.0, groups={"gear": 1.0, "unique": 0.5, "relic": 0.5},
                        extra=["supplies"], gold=(40, 90)),
     "enemy_common": dict(rolls=(1, 1), weights=[88, 11, 0.3, 0], per_floor=[0, 2.0, 0.6, 0],
                          min_floor=[1, 1, 6, NEVER], bonus=0.0, groups={"gear": 0.6, "supply": 1.0, "material": 1.2},
                          extra=[], gold=(0, 0)),
     "enemy_rare": dict(rolls=(1, 2), weights=[70, 27, 1.5, 0], per_floor=[0, 3.0, 1.2, 0.08],
-                       min_floor=[1, 1, 5, 9], bonus=1.0, groups={"gear": 1.0, "supply": 0.6, "material": 0.6, "unique": 0.3},
+                       min_floor=[1, 1, 5, 9], bonus=1.0, groups={"gear": 1.0, "supply": 0.6, "material": 0.6, "unique": 0.3, "relic": 0.15},
                        extra=[], gold=(0, 0)),
     "merchant": dict(rolls=(2, 3), weights=[50, 42, 4, 0], per_floor=[0, 3.0, 1.5, 0],
-                     min_floor=[1, 1, 4, NEVER], bonus=1.0, groups={"gear": 1.0, "supply": 0.5},
+                     min_floor=[1, 1, 4, NEVER], bonus=1.0, groups={"gear": 1.0, "supply": 0.5, "relic": 0.3},
                      extra=[], gold=(0, 0)),
     # Boss reward chest: strong, the main source of legendary items.
     "boss": dict(rolls=(2, 2), weights=[0, 45, 45, 6], per_floor=[0, 0, 3.0, 0.8],
-                 min_floor=[1, 1, 1, 5], bonus=3.0, groups={"gear": 1.0, "unique": 1.0},
+                 min_floor=[1, 1, 1, 5], bonus=3.0, groups={"gear": 1.0, "unique": 1.0, "relic": 0.6},
                  extra=["supplies"], gold=(80, 160)),
     # Special rooms (altar, prisoner, cursed chest).
     "special": dict(rolls=(1, 1), weights=[20, 60, 18, 1.5], per_floor=[0, 2.0, 2.0, 0.3],
-                    min_floor=[1, 1, 3, 4], bonus=2.0, groups={"gear": 1.0, "unique": 0.6},
+                    min_floor=[1, 1, 3, 4], bonus=2.0, groups={"gear": 1.0, "unique": 0.6, "relic": 0.8},
                     extra=[], gold=(20, 50)),
     # Supplies are rolled separately from gear, so a chest is never "only potions".
     "supplies": dict(rolls=(1, 1), weights=[70, 28, 2, 0], per_floor=[0, 2.0, 0.5, 0],
@@ -59,7 +59,10 @@ TABLES = {
 # Never dropped from tables: currency and boss / elite trophies.
 EXCLUDE = {"gold_coin", "eclipse_shard", "guardian_seal"}
 # Supplies that come in stacks.
-STACKS = {"bomb": (1, 2), "rope": (1, 2), "health_potion": (1, 2), "mana_crystal": (1, 2), "bone": (1, 3), "iron_ore": (1, 2)}
+STACKS = {"bomb": (1, 2), "rope": (1, 2), "health_potion": (1, 2), "mana_crystal": (1, 2), "bone": (1, 3), "iron_ore": (1, 2),
+          "small_health_potion": (1, 3), "bread": (1, 2), "cheese": (1, 2), "lockpick": (1, 2), "fire_bomb": (1, 2),
+          "ice_bomb": (1, 2), "poison_bomb": (1, 2), "sticky_bomb": (1, 2), "leather_scrap": (1, 3), "cloth_roll": (1, 2),
+          "slime_gel": (1, 3), "monster_fang": (1, 2)}
 
 
 def read_items():
@@ -76,7 +79,7 @@ def read_items():
             continue
         item_type = int(val("item_type", "0"))
         unique = val("unique", "false") == "true"
-        group = "unique" if unique else {0: "gear", 1: "supply", 2: "material"}[item_type]
+        group = "unique" if unique else {0: "gear", 1: "supply", 2: "material", 3: "relic"}[item_type]
         items.append(dict(id=item_id, path="res://" + os.path.relpath(path, ROOT).replace(os.sep, "/"),
                           rarity=int(val("rarity", "0")), level=int(val("item_level", "1")), group=group))
     return items

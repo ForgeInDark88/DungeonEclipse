@@ -3,12 +3,12 @@ extends Resource
 ## Base item resource. Specialized types: EquipmentItemData, UsableItemData.
 ## Plain ItemData with type MATERIAL is a resource / misc item.
 
-enum ItemType { EQUIPMENT, USABLE, MATERIAL }
+enum ItemType { EQUIPMENT, USABLE, MATERIAL, RELIC }
 enum Rarity { COMMON, RARE, EPIC, LEGENDARY }
 
 const RARITY_NAMES := ["Обычный", "Редкий", "Эпический", "Легендарный"]
 const RARITY_COLORS := [Color(0.85, 0.82, 0.75), Color(0.35, 0.6, 1.0), Color(0.75, 0.4, 1.0), Color(1.0, 0.6, 0.15)]
-const TYPE_NAMES := ["Снаряжение", "Используемое", "Ресурс"]
+const TYPE_NAMES := ["Снаряжение", "Используемое", "Ресурс", "Реликвия"]
 
 @export var id: StringName
 @export var display_name: String = ""
@@ -62,7 +62,7 @@ func make_instance() -> ItemData:
 	return inst
 
 
-const AUTO_PRICES := {ItemType.EQUIPMENT: [30, 120, 400, 1000], ItemType.USABLE: [15, 50, 120, 300], ItemType.MATERIAL: [4, 20, 60, 150]}
+const AUTO_PRICES := {ItemType.EQUIPMENT: [30, 120, 400, 1000], ItemType.USABLE: [15, 50, 120, 300], ItemType.MATERIAL: [4, 20, 60, 150], ItemType.RELIC: [80, 200, 500, 1200]}
 const SELL_FACTOR := 0.4
 
 

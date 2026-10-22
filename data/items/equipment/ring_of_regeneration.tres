@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/ring_of_regeneration.png" id="e2"]
+
+[resource]
+script = ExtResource("e1")
+slot_type = &"ring"
+id = &"ring_of_regeneration"
+display_name = "Кольцо восстановления"
+description = "Раны затягиваются сами."
+icon = ExtResource("e2")
+item_type = 0
+rarity = 1
+item_level = 5
+unique = false
+max_stack = 1
+stat_bonuses = {
+"hp_regen": 1.0
+}
+price = 0
+currency_value = 0

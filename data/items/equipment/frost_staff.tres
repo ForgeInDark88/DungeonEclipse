@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/magic_bolt.png" id="e2"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="e3"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="e4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/frost_staff.png" id="e5"]
+
+[sub_resource type="Resource" id="s1"]
+script = ExtResource("e4")
+status = &"slow"
+duration = 2.5
+power = 0.5
+chance = 0.5
+
+[resource]
+script = ExtResource("e1")
+weapon_type = 5
+base_damage = 11.0
+attack_speed = 1.2
+reach = 190.0
+knockback = 120.0
+attack_pattern = 2
+two_handed = true
+damage_type = 2
+projectile_texture = ExtResource("e2")
+projectile_speed = 240.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("e3")]([SubResource("s1")])
+held_angle = -45.0
+grip_pixel = Vector2(3.0, 12.0)
+gender = "m"
+slot_type = &"weapon"
+id = &"frost_staff"
+display_name = "Посох стужи"
+description = "Ледяные стрелы замедляют."
+icon = ExtResource("e5")
+item_type = 0
+rarity = 1
+item_level = 5
+unique = false
+max_stack = 1
+stat_bonuses = {
+"intellect": 3,
+"max_mana": 10
+}
+price = 0
+currency_value = 0
+has_durability = true
+max_durability = 180

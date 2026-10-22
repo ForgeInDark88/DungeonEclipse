@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemSetData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_set_data.gd" id="e1"]
+
+[resource]
+script = ExtResource("e1")
+id = &"guardian"
+display_name = "Страж"
+items = Array[StringName]([&"guardian_helm", &"guardian_plate", &"guardian_gauntlets", &"guardian_greaves"])
+bonuses = {
+"2": {
+"armor": 4
+},
+"3": {
+"max_hp": 25
+},
+"4": {
+"res_fire": 0.1,
+"res_ice": 0.1,
+"res_magic": 0.1,
+"res_poison": 0.1
+}
+}

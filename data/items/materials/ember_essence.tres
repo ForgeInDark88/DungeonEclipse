@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/ember_essence.png" id="e2"]
+
+[resource]
+script = ExtResource("e1")
+id = &"ember_essence"
+display_name = "Эссенция углей"
+description = "Сгусток огня в стеклянном шаре."
+icon = ExtResource("e2")
+item_type = 2
+rarity = 1
+item_level = 4
+unique = false
+max_stack = 20
+stat_bonuses = {}
+price = 40
+currency_value = 0

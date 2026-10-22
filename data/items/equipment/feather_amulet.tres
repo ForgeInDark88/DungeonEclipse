@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/feather_amulet.png" id="e2"]
+
+[resource]
+script = ExtResource("e1")
+slot_type = &"amulet"
+id = &"feather_amulet"
+display_name = "Амулет пера"
+description = "Лёгкий, как пух: можно прыгнуть ещё раз в воздухе."
+icon = ExtResource("e2")
+item_type = 0
+rarity = 2
+item_level = 6
+unique = false
+max_stack = 1
+stat_bonuses = {
+"agility": 2,
+"extra_jumps": 1
+}
+price = 0
+currency_value = 0
