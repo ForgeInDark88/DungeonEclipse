@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/equip_leather_boots.png" id="e2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/iron_greaves.png" id="e3"]
+
+[resource]
+script = ExtResource("e1")
+slot_type = &"boots"
+visual_sheet = ExtResource("e2")
+visual_layer = &"boots"
+id = &"iron_greaves"
+display_name = "Железные поножи"
+description = "Крепкие и тяжёлые."
+icon = ExtResource("e3")
+item_type = 0
+rarity = 0
+item_level = 3
+unique = false
+max_stack = 1
+stat_bonuses = {
+"armor": 3,
+"speed": -2
+}
+price = 0
+currency_value = 0
+has_durability = true
+max_durability = 120

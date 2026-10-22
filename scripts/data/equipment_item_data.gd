@@ -15,6 +15,8 @@ const SLOT_TYPE_NAMES := {
 }
 
 @export var slot_type: StringName = &"weapon"
+## Set this item belongs to (ItemSetData.id in data/sets/), empty = none.
+@export var set_id: StringName = &""
 ## Optional animated layer shown on the hero while equipped
 ## (same layout as the hero body sheet).
 @export var visual_sheet: Texture2D

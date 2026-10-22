@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemSetData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_set_data.gd" id="e1"]
+
+[resource]
+script = ExtResource("e1")
+id = &"eclipse"
+display_name = "Затмение"
+items = Array[StringName]([&"eclipse_helm", &"eclipse_armor", &"eclipse_gloves", &"eclipse_boots"])
+bonuses = {
+"2": {
+"crit_chance": 0.05
+},
+"3": {
+"damage": 3
+},
+"4": {
+"res_fire": 0.1,
+"res_ice": 0.1,
+"res_magic": 0.1,
+"res_poison": 0.1,
+"strength": 3
+}
+}

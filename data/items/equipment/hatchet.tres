@@ -30,6 +30,7 @@ description = "Лёгкий топор лесоруба."
 icon = ExtResource("1_1pk8p")
 item_type = 0
 rarity = 0
+item_level = 2
 max_stack = 1
 stat_bonuses = {}
 has_durability = true

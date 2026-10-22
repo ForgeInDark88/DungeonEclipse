@@ -24,6 +24,7 @@ description = "Раны затягиваются на глазах."
 icon = ExtResource("3_xb1yw")
 item_type = 1
 rarity = 1
+item_level = 3
 max_stack = 5
 stat_bonuses = {}
 price = 50

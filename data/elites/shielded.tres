@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="EliteAffixData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="1_glg2p"]
+[ext_resource type="Script" path="res://scripts/data/elite_affix_data.gd" id="2_ox6br"]
+
+[resource]
+script = ExtResource("2_ox6br")
+id = &"shielded"
+prefix_forms = {
+"f": "Щитоносная",
+"m": "Щитоносный",
+"n": "Щитоносное"
+}
+hp_mult = 1.5
+damage_mult = 1.15
+speed_mult = 0.95
+attack_cooldown_mult = 1.0
+armor_add = 2
+resistances = {}
+immunities = Array[StringName]([&"bleed"])
+hit_effects = Array[ExtResource("1_glg2p")]([])
+spawn_status = &"shield"
+spawn_status_power = 45.0
+life_steal = 0.0
+tint = Color(0.55, 0.8, 1, 1)
+xp_mult = 3.0
+gold_mult = 3.5
+weight = 1.0
+min_floor = 3

@@ -30,6 +30,8 @@ var climbing := false
 
 var _coyote := 0.0
 var _jump_buffer := 0.0
+var _air_jumps := 0
+var _regen_acc := 0.0
 var _drop_timer := 0.0
 var _invulnerable := 0.0
 var _attack_cooldown := 0.0
@@ -189,11 +191,21 @@ func _tick_timers(delta: float) -> void:
 	_coyote = COYOTE_TIME if is_on_floor() else maxf(0.0, _coyote - delta)
 	_jump_buffer = maxf(0.0, _jump_buffer - delta)
 	_attack_cooldown = maxf(0.0, _attack_cooldown - delta)
+	var regen := hero.stats.get_value(StatTypes.HP_REGEN)
+	if regen > 0.0 and not dead and hero.stats.hp < hero.stats.max_hp():
+		_regen_acc += regen * delta
+		if _regen_acc >= 1.0:
+			hero.stats.heal(int(_regen_acc))
+			_regen_acc -= int(_regen_acc)
 	if _invulnerable > 0.0:
 		_invulnerable -= delta
 		visual.alpha = 0.4 if int(_invulnerable * 20.0) % 2 == 0 else 1.0
 		if _invulnerable <= 0.0:
 			visual.alpha = 1.0
+	elif status.has(&"invisible"):
+		visual.alpha = 0.35
+	elif visual.alpha < 1.0:
+		visual.alpha = 1.0
 	if _drop_timer > 0.0:
 		_drop_timer -= delta
 		if _drop_timer <= 0.0 and not climbing:
@@ -276,6 +288,15 @@ func _walk(input_x: float, delta: float) -> void:
 
 	if Input.is_action_just_pressed("jump"):
 		_jump_buffer = JUMP_BUFFER_TIME
+	if is_on_floor():
+		_air_jumps = int(hero.stats.get_value(StatTypes.EXTRA_JUMPS))
+	if _jump_buffer > 0.0 and _coyote <= 0.0 and _air_jumps > 0 and not is_on_floor():
+		# Extra jumps in the air (relics, rings).
+		_air_jumps -= 1
+		_jump_buffer = 0.0
+		velocity.y = JUMP_VELOCITY * 0.9
+		Fx.sparks(get_parent(), global_position, Color(0.8, 0.9, 1.0), 6, 40.0)
+		AudioManager.play_sfx(&"jump", global_position, -6.0)
 	if _jump_buffer > 0.0 and _coyote > 0.0:
 		velocity.y = JUMP_VELOCITY
 		_jump_buffer = 0.0
@@ -322,6 +343,7 @@ func roll_damage(multiplier := 1.0) -> Dictionary:
 func attack() -> void:
 	if _attack_cooldown > 0.0 or climbing:
 		return
+	status.remove(&"invisible")  # attacking reveals the hero
 	var w := hero.weapon()
 	var interval := hero.attack_interval()
 	_attack_cooldown = interval
@@ -462,6 +484,11 @@ func take_damage(amount: int, from_pos: Vector2 = Vector2.INF, damage_type: int 
 
 func _on_died() -> void:
 	if dead:
+		return
+	if hero.try_second_chance():
+		_invulnerable = 2.0
+		Fx.sparks(get_parent(), global_position + Vector2(0, -10), Color(1.0, 0.75, 0.3), 24, 120.0)
+		AudioManager.play_sfx(&"level_up", global_position)
 		return
 	dead = true
 	velocity = Vector2.ZERO

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="RelicItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/relic_item_data.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/lucky_coin.png" id="e2"]
+
+[resource]
+script = ExtResource("e1")
+heal_on_kill = 0
+second_chance = false
+revive_percent = 0.5
+id = &"lucky_coin"
+display_name = "Счастливая монета"
+description = "Всегда падает орлом. Монстры роняют больше золота."
+icon = ExtResource("e2")
+item_type = 3
+rarity = 1
+item_level = 3
+unique = false
+max_stack = 1
+stat_bonuses = {
+"gold_find": 0.3
+}
+price = 0
+currency_value = 0

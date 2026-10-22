@@ -7,6 +7,8 @@ const TIER_TABLES: Array[StringName] = [&"chest_common", &"chest_rare", &"chest_
 const TIER_NAMES := ["Деревянный сундук", "Железный сундук", "Золотой сундук"]
 
 var tier: int = 0
+## Loot table id instead of the tier's table (boss reward chest: &"boss").
+var table_override: StringName = &""
 var floor_number: int = 1
 var locked := false
 var opened := false
@@ -60,7 +62,7 @@ func open() -> void:
 	AudioManager.play_sfx(&"chest_open", global_position)
 	sprite.play(&"opening")
 	sprite.animation_finished.connect(func() -> void: sprite.play(&"open"), CONNECT_ONE_SHOT)
-	var table := ItemDatabase.get_loot_table(TIER_TABLES[tier])
+	var table := ItemDatabase.get_loot_table(table_override if table_override != &"" else TIER_TABLES[tier])
 	var loot: Array = table.roll(floor_number) if table else []
 	if not loot.is_empty():
 		Fx.loot_popup(get_parent(), global_position + Vector2(0, -12), loot)

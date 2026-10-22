@@ -32,6 +32,7 @@ description = "В навершии пульсирует фиолетовый о�
 icon = ExtResource("1_mqd5x")
 item_type = 0
 rarity = 2
+item_level = 7
 max_stack = 1
 stat_bonuses = {
 "intellect": 6,

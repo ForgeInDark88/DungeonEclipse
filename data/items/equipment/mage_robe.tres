@@ -15,6 +15,7 @@ description = "Расшита защитными рунами."
 icon = ExtResource("1_ddywp")
 item_type = 0
 rarity = 1
+item_level = 3
 max_stack = 1
 stat_bonuses = {
 "armor": 3,

@@ -28,8 +28,8 @@ func _activate(player: Node) -> bool:
 	sprite.play(&"opening")
 	AudioManager.play_sfx(&"chest_open", global_position)
 	var f := level.floor_number if level else 1
-	_reward_item(&"chest_epic", f)
-	_reward_item(&"chest_rare", f)
+	_reward_item(&"special", f)
+	_reward_item(&"special", f + 2)  # the curse pays off: one roll as if deeper
 	player.status.apply(&"curse", 30.0, 1.0)
 	EventBus.message.emit("Проклятие! Из тьмы лезут твари")
 	_ambush(2 + f / 3, 0.5)

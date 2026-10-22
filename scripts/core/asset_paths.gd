@@ -120,7 +120,7 @@ const SFX := {
 	&"skill_cast": SFX_DIR + "skill_cast.wav",
 }
 ## Weapon type (WeaponItemData.WeaponType) -> swing sound id.
-const WEAPON_SFX: Array[StringName] = [&"attack_sword", &"attack_axe", &"attack_spear", &"attack_dagger", &"attack_bow", &"attack_staff", &"attack_mace"]
+const WEAPON_SFX: Array[StringName] = [&"attack_sword", &"attack_axe", &"attack_spear", &"attack_dagger", &"attack_bow", &"attack_staff", &"attack_mace", &"attack_bow", &"attack_staff"]
 const MUSIC := {
 	&"menu": MUSIC_DIR + "music_menu.wav",
 	&"catacombs": MUSIC_DIR + "music_catacombs.wav",

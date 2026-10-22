@@ -101,12 +101,12 @@ func _test_data() -> void:
 		check(passive >= 2 and c.skills.size() - passive >= 4, "class %s: active and passive skills" % c.id)
 		for id in c.starting_items:
 			check(ItemDatabase.items.has(id), "start item %s exists" % id)
-	var t: LootTable = ItemDatabase.get_loot_table(&"chest_common")
-	var rarities := [0, 0, 0]
+	var t: LootTable = ItemDatabase.get_loot_table(&"chest_epic")
+	var rarities := [0, 0, 0, 0]
 	for i in 500:
-		for e in t.roll(5):
+		for e in t.roll(8):
 			rarities[e["item"].rarity] += 1
-	print("rarity distribution chest_common floor 5: ", rarities)
+	print("rarity distribution chest_epic floor 8: ", rarities)
 	check(rarities[0] > 0 and rarities[1] > 0 and rarities[2] > 0, "all rarities can drop")
 
 

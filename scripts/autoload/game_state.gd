@@ -46,7 +46,7 @@ func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, 
 
 
 func reset_run_stats() -> void:
-	run_stats = {"gold": 0, "found": [0, 0, 0], "bosses": 0, "elites": 0, "start_ms": Time.get_ticks_msec()}
+	run_stats = {"gold": 0, "found": [0, 0, 0, 0], "bosses": 0, "elites": 0, "start_ms": Time.get_ticks_msec()}
 
 
 ## Seed of the current floor: each run and each floor is different.

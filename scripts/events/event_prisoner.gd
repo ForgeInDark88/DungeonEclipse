@@ -22,7 +22,7 @@ func _activate(player: Node) -> bool:
 			hero.add_gold(gold)
 			EventBus.message.emit("Узник благодарит и отдаёт %d золота" % gold)
 		1:
-			_reward_item(&"chest_rare", level.floor_number if level else 1)
+			_reward_item(&"special", level.floor_number if level else 1)
 			EventBus.message.emit("Узник отдаёт припрятанное снаряжение")
 		2:
 			hero.add_xp(20 + 5 * (level.floor_number if level else 1))

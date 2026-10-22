@@ -36,6 +36,7 @@ description = "Выкован в час, когда погасло солнце.
 icon = ExtResource("1_fm1ua")
 item_type = 0
 rarity = 2
+item_level = 8
 max_stack = 1
 stat_bonuses = {
 "crit_chance": 0.08,

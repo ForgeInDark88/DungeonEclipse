@@ -157,7 +157,7 @@ func refresh() -> void:
 func _process(delta: float) -> void:
 	_pulse_t += delta
 	var item := get_item()
-	var speed := 5.0 if item and item.rarity == ItemData.Rarity.EPIC else 3.0
+	var speed := 5.0 if item and item.rarity >= ItemData.Rarity.EPIC else 3.0
 	var k := (sin(_pulse_t * speed) + 1.0) * 0.5
 	_frame.modulate = _rarity_tint.lerp(_rarity_tint * 1.45, k)
 

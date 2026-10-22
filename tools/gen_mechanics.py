@@ -67,6 +67,11 @@ def status_icons():
     d.point((2, 2), fill=(20, 0, 30, 255))
     d.point((5, 2), fill=(20, 0, 30, 255))
     out["curse"] = im
+    im, d = base()  # invisibility: faded eye
+    d.ellipse((0, 2, 7, 6), outline=(200, 215, 240, 200))
+    d.point((4, 4), fill=(200, 215, 240, 255))
+    d.line((1, 7, 7, 0), fill=(200, 215, 240, 160))
+    out["invisible"] = im
     for name, im in out.items():
         gp.save(im, f"ui/status/{name}.png")
     # Shield bubble around creatures.

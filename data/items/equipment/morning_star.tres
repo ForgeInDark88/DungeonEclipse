@@ -38,6 +38,7 @@ description = "Шипастый шар на рукояти."
 icon = ExtResource("1_off25")
 item_type = 0
 rarity = 1
+item_level = 4
 max_stack = 1
 stat_bonuses = {
 "strength": 2,

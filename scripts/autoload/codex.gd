@@ -113,7 +113,7 @@ func discover_item(item: ItemData) -> void:
 	if item == null:
 		return
 	items_found[item.id] = int(items_found.get(item.id, 0)) + 1
-	if item.rarity == ItemData.Rarity.EPIC:
+	if item.rarity >= ItemData.Rarity.EPIC:
 		add(&"epic_items")
 	record_max(&"items_known", items_found.size())
 

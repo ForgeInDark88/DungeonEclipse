@@ -11,6 +11,7 @@ description = "Подбирается в кошелёк. Тратится у т�
 icon = ExtResource("1_fdetc")
 item_type = 2
 rarity = 0
+item_level = 1
 max_stack = 999
 stat_bonuses = {}
 price = 0

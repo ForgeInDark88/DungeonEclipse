@@ -25,6 +25,7 @@ description = "Бросок вперёд. Взрыв ломает кирпичн
 icon = ExtResource("3_sr70j")
 item_type = 1
 rarity = 0
+item_level = 1
 max_stack = 10
 stat_bonuses = {}
 price = 15

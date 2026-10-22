@@ -26,6 +26,7 @@ const INFO := {
 	&"regen": ["Регенерация", Color(0.4, 1.0, 0.5), false, 0],
 	&"shield": ["Щит", Color(0.6, 0.8, 1.0), false, 0],
 	&"curse": ["Проклятие", Color(0.7, 0.35, 0.9), false, 4],
+	&"invisible": ["Невидимость", Color(0.75, 0.85, 1.0), false, 0],
 }
 ## Statuses that are bad for their target (shown with a red frame in the HUD).
 const NEGATIVE: Array[StringName] = [&"poison", &"burn", &"bleed", &"stun", &"slow", &"curse"]

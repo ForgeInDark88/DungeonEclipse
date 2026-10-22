@@ -15,6 +15,7 @@ description = "Шепчет своему владельцу."
 icon = ExtResource("1_1xwnu")
 item_type = 0
 rarity = 2
+item_level = 7
 max_stack = 1
 stat_bonuses = {
 "armor": 4,

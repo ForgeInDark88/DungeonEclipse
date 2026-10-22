@@ -22,6 +22,7 @@ description = "Горькая настойка трав."
 icon = ExtResource("3_rwxq2")
 item_type = 1
 rarity = 0
+item_level = 1
 max_stack = 5
 stat_bonuses = {}
 price = 18

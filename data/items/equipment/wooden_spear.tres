@@ -30,6 +30,7 @@ description = "Обожжённое на огне остриё."
 icon = ExtResource("1_3akp2")
 item_type = 0
 rarity = 0
+item_level = 1
 max_stack = 1
 stat_bonuses = {}
 has_durability = true

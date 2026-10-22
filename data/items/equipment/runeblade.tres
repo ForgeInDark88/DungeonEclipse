@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="e1"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="e2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/runeblade.png" id="e3"]
+
+[resource]
+script = ExtResource("e1")
+weapon_type = 0
+base_damage = 15.0
+attack_speed = 2.1
+reach = 26.0
+knockback = 120.0
+attack_pattern = 0
+two_handed = false
+damage_type = 4
+projectile_speed = 280.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("e2")]([])
+held_angle = -45.0
+grip_pixel = Vector2(3.0, 12.0)
+gender = "m"
+slot_type = &"weapon"
+id = &"runeblade"
+display_name = "Рунный клинок"
+description = "Руны на лезвии горят фиолетовым."
+icon = ExtResource("e3")
+item_type = 0
+rarity = 2
+item_level = 7
+unique = false
+max_stack = 1
+stat_bonuses = {
+"intellect": 3,
+"strength": 2
+}
+price = 0
+currency_value = 0
+has_durability = true
+max_durability = 150

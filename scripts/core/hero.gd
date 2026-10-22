@@ -29,6 +29,8 @@ func _init(p_race: RaceData, p_class: ClassData, layout: EquipmentLayout) -> voi
 	equipment.changed.connect(_on_equipment_changed)
 	stats.setup(race, class_data, level)
 	skills.changed.connect(_refresh_passives)
+	inventory.changed.connect(_refresh_relics)
+	EventBus.enemy_killed.connect(func(_d: EnemyData, _p: Vector2) -> void: _on_enemy_killed_heal())
 	skills.setup(class_data.skills)
 
 
@@ -189,6 +191,7 @@ func _on_equipment_changed() -> void:
 	stats.weapon_base = w.effective_damage() if w else 0.0
 	stats.weapon_penalty = 1.0 if class_data.allows_weapon(w) else ClassData.WRONG_WEAPON_DAMAGE
 	stats.set_modifier("equipment", equipment.total_bonuses())
+	stats.set_modifier("sets", set_bonuses())
 	_refresh_passives()
 
 
@@ -212,3 +215,66 @@ func apply_passive_hits(attacker: Node, target: Node, damage: int) -> void:
 		var p := s.effect as PassiveSkill
 		if p.hit_effect and randf() < p.chance_for(skills.rank(s), s.power_with(w)):
 			p.hit_effect.on_hit(attacker, target, damage)
+
+
+# ------------------------------------------------------------------- sets
+## Parts of each set worn: set id -> count.
+func worn_sets() -> Dictionary:
+	var worn := {}
+	for item: EquipmentItemData in equipment.items.values():
+		if item and item.set_id != &"":
+			worn[item.set_id] = int(worn.get(item.set_id, 0)) + 1
+	return worn
+
+
+func set_bonuses() -> Dictionary:
+	var total := {}
+	var worn := worn_sets()
+	for id in worn:
+		var data: ItemSetData = ItemDatabase.sets.get(id)
+		if data == null:
+			continue
+		var b := data.bonuses_for(worn[id])
+		for k in b:
+			total[k] = float(total.get(k, 0.0)) + float(b[k])
+	return total
+
+
+# ----------------------------------------------------------------- relics
+## Relics in the backpack, one per id.
+func relics() -> Array[RelicItemData]:
+	var out: Array[RelicItemData] = []
+	var seen := {}
+	for stack in inventory.slots:
+		if stack and stack.item is RelicItemData and not seen.has(stack.item.id):
+			seen[stack.item.id] = true
+			out.append(stack.item)
+	return out
+
+
+func _refresh_relics() -> void:
+	var total := {}
+	for r in relics():
+		for k in r.stat_bonuses:
+			total[k] = float(total.get(k, 0.0)) + float(r.stat_bonuses[k])
+	stats.set_modifier("relics", total)
+
+
+func _on_enemy_killed_heal() -> void:
+	var heal := 0
+	for r in relics():
+		heal += r.heal_on_kill
+	if heal > 0 and stats.hp > 0:
+		stats.heal(heal)
+
+
+## A "second chance" relic saves the hero once: returns true if it did.
+func try_second_chance() -> bool:
+	for r in relics():
+		if r.second_chance:
+			inventory.remove_by_id(r.id, 1)
+			stats.hp = maxi(1, roundi(stats.max_hp() * r.revive_percent))
+			stats.hp_changed.emit(stats.hp, stats.max_hp())
+			EventBus.message.emit("%s сгорает — вы снова на ногах!" % r.display_name)
+			return true
+	return false

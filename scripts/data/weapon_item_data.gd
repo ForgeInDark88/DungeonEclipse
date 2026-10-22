@@ -3,18 +3,18 @@ extends EquipmentItemData
 ## A weapon: it is drawn in the hero's hand and defines how the hero attacks
 ## (damage, speed, reach, pattern, damage type, projectile, on-hit effects).
 
-enum WeaponType { SWORD, AXE, SPEAR, DAGGER, BOW, STAFF, MACE }
+enum WeaponType { SWORD, AXE, SPEAR, DAGGER, BOW, STAFF, MACE, CROSSBOW, WAND }
 ## ARC = swing in front, THRUST = narrow long poke, SHOOT = projectile,
 ## THROW = thrown projectile that falls with gravity.
 enum Pattern { ARC, THRUST, SHOOT, THROW }
 enum DamageType { PHYSICAL, FIRE, ICE, POISON, MAGIC }
 
-const WEAPON_TYPE_NAMES := ["Меч", "Топор", "Копьё", "Кинжал", "Лук", "Посох", "Булава"]
+const WEAPON_TYPE_NAMES := ["Меч", "Топор", "Копьё", "Кинжал", "Лук", "Посох", "Булава", "Арбалет", "Жезл"]
 const DAMAGE_TYPE_NAMES := ["Физический", "Огонь", "Лёд", "Яд", "Магия"]
 const DAMAGE_TYPE_COLORS := [Color(0.95, 0.95, 1.0), Color(1.0, 0.5, 0.15), Color(0.5, 0.8, 1.0), Color(0.45, 0.9, 0.3), Color(0.8, 0.45, 1.0)]
 ## Default hero animation per weapon type.
-const TYPE_ANIMATIONS := [&"attack_slash", &"attack_heavy", &"attack_thrust", &"attack_quick", &"attack_shoot", &"attack_cast", &"attack_heavy"]
-const TYPE_PATTERNS := [Pattern.ARC, Pattern.ARC, Pattern.THRUST, Pattern.THRUST, Pattern.SHOOT, Pattern.SHOOT, Pattern.ARC]
+const TYPE_ANIMATIONS := [&"attack_slash", &"attack_heavy", &"attack_thrust", &"attack_quick", &"attack_shoot", &"attack_cast", &"attack_heavy", &"attack_shoot", &"attack_cast"]
+const TYPE_PATTERNS := [Pattern.ARC, Pattern.ARC, Pattern.THRUST, Pattern.THRUST, Pattern.SHOOT, Pattern.SHOOT, Pattern.ARC, Pattern.SHOOT, Pattern.SHOOT]
 
 @export var weapon_type: WeaponType = WeaponType.SWORD
 ## Damage before attribute scaling (see Stats.damage()).

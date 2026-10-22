@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemSetData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_set_data.gd" id="e1"]
+
+[resource]
+script = ExtResource("e1")
+id = &"sorcerer"
+display_name = "Чародей"
+items = Array[StringName]([&"sorcerer_hat", &"sorcerer_robe", &"sorcerer_gloves"])
+bonuses = {
+"2": {
+"max_mana": 20
+},
+"3": {
+"intellect": 4,
+"res_magic": 0.1
+}
+}

@@ -15,6 +15,7 @@ description = "Не дают натереть руки киркой."
 icon = ExtResource("1_3li03")
 item_type = 0
 rarity = 0
+item_level = 1
 max_stack = 1
 stat_bonuses = {
 "agility": 1,

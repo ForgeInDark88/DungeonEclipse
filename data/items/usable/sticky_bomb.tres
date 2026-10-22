@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="UsableItemData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/item_effect.gd" id="e1"]
+[ext_resource type="Script" path="res://scripts/effects/throw_bomb_effect.gd" id="e2"]
+[ext_resource type="Script" path="res://scripts/data/usable_item_data.gd" id="e3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/sticky_bomb.png" id="e4"]
+
+[sub_resource type="Resource" id="s1"]
+script = ExtResource("e2")
+damage = 40
+radius_tiles = 2.2
+sticky = true
+breaks_tiles = true
+
+[resource]
+script = ExtResource("e3")
+effects = Array[ExtResource("e1")]([SubResource("s1")])
+consume_on_use = true
+cooldown = 0.4
+use_animation = &"attack_quick"
+use_sound = &"item_use"
+id = &"sticky_bomb"
+display_name = "Липкая бомба"
+description = "Прилипает к первой поверхности — удобно для стен и потолка."
+icon = ExtResource("e4")
+item_type = 1
+rarity = 0
+item_level = 2
+unique = false
+max_stack = 10
+stat_bonuses = {}
+price = 20
+currency_value = 0
