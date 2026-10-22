@@ -191,6 +191,8 @@ def make_music():
     save(os.path.join(MUSIC, "music_boss.wav"), chord_loop(73.4, True, 16, 0.25, "boss"), 0.45)
     save(os.path.join(MUSIC, "music_boss_bone_king.wav"), chord_loop(65.4, True, 16, 0.3, "boss"), 0.45)
     save(os.path.join(MUSIC, "music_boss_flame_witch.wav"), chord_loop(82.4, True, 16, 0.2, "boss"), 0.45)
+    save(os.path.join(MUSIC, "music_mirror_halls.wav"), chord_loop(123.5, False, 16, 0.42), 0.35)
+    save(os.path.join(MUSIC, "music_boss_illusionist.wav"), chord_loop(77.8, True, 16, 0.22, "boss"), 0.45)
     # Stings (not looped): victory — rising major arpeggio, death — falling minor line.
     save(os.path.join(MUSIC, "music_victory.wav"), sting([261.6, 329.6, 392.0, 523.3, 659.3], 4.0), 0.45)
     save(os.path.join(MUSIC, "music_death.wav"), sting([220.0, 196.0, 174.6, 164.8, 110.0], 4.5, "sine"), 0.45)

@@ -70,7 +70,7 @@ func _ambush(count: int, elite_chance: float) -> void:
 	if level == null:
 		return
 	var pool := ItemDatabase.enemies_for_floor(level.floor_number, level.biome.id if level.biome else &"")
-	pool = pool.filter(func(e: EnemyData) -> bool: return not e.ceiling_ambush)
+	pool.assign(pool.filter(func(e: EnemyData) -> bool: return not e.ceiling_ambush))
 	if pool.is_empty():
 		return
 	for i in count:

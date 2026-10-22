@@ -132,9 +132,11 @@ const MUSIC := {
 	&"fungal": MUSIC_DIR + "music_fungal.wav",
 	&"ruins": MUSIC_DIR + "music_ruins.wav",
 	&"lava": MUSIC_DIR + "music_lava.wav",
+	&"mirror_halls": MUSIC_DIR + "music_mirror_halls.wav",
 	&"boss": MUSIC_DIR + "music_boss.wav",
 	&"boss_bone_king": MUSIC_DIR + "music_boss_bone_king.wav",
 	&"boss_flame_witch": MUSIC_DIR + "music_boss_flame_witch.wav",
+	&"boss_illusionist": MUSIC_DIR + "music_boss_illusionist.wav",
 	&"victory": MUSIC_DIR + "music_victory.wav",
 	&"death": MUSIC_DIR + "music_death.wav",
 }
@@ -142,6 +144,8 @@ const MUSIC := {
 const MUSIC_FALLBACK := {
 	&"boss_bone_king": &"boss",
 	&"boss_flame_witch": &"boss",
+	&"boss_illusionist": &"boss",
+	&"mirror_halls": &"ruins",
 }
 ## Tracks played once (not looped): AudioManager.play_sting().
 const MUSIC_ONE_SHOT: Array[StringName] = [&"victory", &"death"]

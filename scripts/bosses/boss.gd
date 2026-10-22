@@ -147,7 +147,7 @@ func _choose_attack() -> void:
 				var ground := _ground_below(Vector2(x, _player.global_position.y - 20.0), lvl)
 				_rain_spots.append(ground)
 				Telegraph.circle(parent, ground, _attack.radius, _attack.windup + 0.6)
-		BossAttack.Kind.TELEPORT:
+		BossAttack.Kind.TELEPORT, BossAttack.Kind.ILLUSIONS:
 			var tw := create_tween()
 			tw.tween_property(sprite, "modulate:a", 0.2, _attack.windup)
 	_enter(Act.WINDUP, _attack.windup)
@@ -194,6 +194,10 @@ func _start_attack() -> void:
 		BossAttack.Kind.FIRE_RAIN:
 			for spot in _rain_spots:
 				_drop_fire(spot, a, dmg)
+			_end_attack()
+		BossAttack.Kind.ILLUSIONS:
+			_illusions(a)
+			_fan(a, dmg)
 			_end_attack()
 
 
@@ -268,7 +272,7 @@ func _drop_fire(spot: Vector2, a: BossAttack, dmg: int) -> void:
 
 
 func _summon(a: BossAttack) -> void:
-	_summons = _summons.filter(func(n: Node) -> bool: return is_instance_valid(n) and not n.is_dead())
+	_summons.assign(_summons.filter(func(n) -> bool: return is_instance_valid(n) and not n.is_dead()))
 	var lvl := _level()
 	if a.summon == null or lvl == null:
 		return
@@ -279,6 +283,41 @@ func _summon(a: BossAttack) -> void:
 		lvl.add_entity(e, global_position + Vector2(side * (30.0 + i * 12.0), -8.0))
 		Fx.sparks(lvl.entities, e.global_position + Vector2(0, -8), Color(0.7, 0.4, 1.0), 12, 70.0)
 		_summons.append(e)
+
+
+## The boss and its copies appear on a ring around the hero; nobody can tell
+## which one is real (the copies die from one hit and give nothing).
+func _illusions(a: BossAttack) -> void:
+	_summons.assign(_summons.filter(func(n) -> bool: return is_instance_valid(n) and not n.is_dead()))
+	var lvl := _level()
+	if lvl == null or _player == null:
+		sprite.modulate.a = 1.0
+		return
+	var n := mini(a.count, a.max_summons - _summons.size()) if a.summon else 0
+	var center := _player.global_position + Vector2(0, -20)
+	var spots: Array[Vector2] = []
+	var turn := randf() * TAU
+	for i in n + 1:
+		var ang := turn + TAU * i / (n + 1)
+		var p := center + Vector2(cos(ang) * 110.0, -40.0 - absf(sin(ang)) * 40.0)
+		spots.append(LineOfSight.safe_point(self, center, p))
+	spots.shuffle()
+	var parent := get_parent()
+	Fx.sparks(parent, global_position + Vector2(0, -20), Color(0.8, 0.5, 1.0), 20, 90.0)
+	global_position = spots.pop_back()
+	sprite.modulate.a = 1.0
+	for p in spots:
+		var e: Enemy = (load("res://scenes/enemies/enemy.tscn") as PackedScene).instantiate()
+		e.setup(a.summon, floor_number)
+		lvl.add_entity(e, p)
+		e.modulate = sprite.modulate
+		Fx.sparks(lvl.entities, p + Vector2(0, -20), Color(0.8, 0.5, 1.0), 12, 70.0)
+		_summons.append(e)
+		get_tree().create_timer(a.lifetime, false).timeout.connect(func() -> void:
+			if is_instance_valid(e) and not e.is_dead():
+				Fx.sparks(e.get_parent(), e.global_position + Vector2(0, -20), Color(0.8, 0.5, 1.0), 10, 60.0)
+				e.queue_free())
+	EventBus.screen_shake.emit(3.0)
 
 
 func _apply_attack_effects(a: BossAttack, target: Node) -> void:

@@ -845,12 +845,9 @@ def main() -> None:
              "dwarf": ((215, 160, 120, 255), (120, 70, 40, 255), False, (120, 70, 40, 255)),
              "elf": ((240, 215, 185, 255), None, True, (230, 220, 150, 255)),
              "orc": ((110, 160, 80, 255), None, False, (30, 30, 30, 255))}
-    for name, (skin, beard, ears, hair) in skins.items():
-        save(portrait_face(skin, beard, ears, hair), f"sprites/portraits/race_{name}.png")
-    save(portrait_overlay("warrior", (110, 85, 50, 255)), "sprites/portraits/class_warrior.png")
-    save(portrait_overlay("rogue", (50, 75, 50, 255)), "sprites/portraits/class_rogue.png")
-    save(portrait_overlay("mage", (70, 50, 150, 255)), "sprites/portraits/class_mage.png")
-    save(portrait_overlay("warrior", (225, 215, 170, 255)), "sprites/portraits/class_paladin.png")
+    # Portraits: detailed 48x48 layers from gen_portraits.py (skins above are legacy).
+    import gen_portraits
+    gen_portraits.main()
     save(char_sprite((220, 220, 230, 255), (230, 190, 150, 255), (220, 180, 60, 255), "helm"), "sprites/player/paladin.png")
     shard = new(16, 16)
     ds = ImageDraw.Draw(shard)

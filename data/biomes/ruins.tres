@@ -11,6 +11,9 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/ruins_near.png" id="9_ctfa8"]
 [ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="10_0ie7r"]
 [ext_resource type="Texture2D" path="res://assets/sprites/tiles/tiles_ruins.png" id="11_jgxml"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/vase.png" id="dx_vase"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/banner.png" id="dx_banner"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/rubble.png" id="dx_rubble"]
 
 [sub_resource type="Resource" id="Resource_mbtgo"]
 script = ExtResource("1_ase3j")
@@ -62,6 +65,36 @@ light_scale = 0.25
 unshaded = true
 sway = false
 
+[sub_resource type="Resource" id="Decor_vase"]
+script = ExtResource("1_ase3j")
+texture = ExtResource("dx_vase")
+placement = 0
+weight = 1.2
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Decor_banner"]
+script = ExtResource("1_ase3j")
+texture = ExtResource("dx_banner")
+placement = 1
+weight = 1.0
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = true
+
+[sub_resource type="Resource" id="Decor_rubble"]
+script = ExtResource("1_ase3j")
+texture = ExtResource("dx_rubble")
+placement = 0
+weight = 1.5
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
 [resource]
 script = ExtResource("10_0ie7r")
 music = &"ruins"
@@ -82,7 +115,7 @@ fog_amount = 0.06
 grade_tint = Color(1.05, 1, 0.92, 1)
 saturation = 0.95
 contrast = 1.08
-decorations = Array[ExtResource("1_ase3j")]([SubResource("Resource_mbtgo"), SubResource("Resource_5po7i"), SubResource("Resource_juyo7"), SubResource("Resource_37t48"), SubResource("Resource_yvy1r")])
+decorations = Array[ExtResource("1_ase3j")]([SubResource("Resource_mbtgo"), SubResource("Resource_5po7i"), SubResource("Resource_juyo7"), SubResource("Resource_37t48"), SubResource("Resource_yvy1r"), SubResource("Decor_vase"), SubResource("Decor_banner"), SubResource("Decor_rubble")])
 decor_per_room = 3.0
 ore_chance = 0.04
 ore_item = &"gold_coin"

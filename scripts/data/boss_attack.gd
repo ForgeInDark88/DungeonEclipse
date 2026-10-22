@@ -3,7 +3,10 @@ extends Resource
 ## One telegraphed boss attack. The boss shows a warning (red marker / glow)
 ## for `windup` seconds, then acts.
 
-enum Kind { CHARGE, JUMP_SLAM, PROJECTILE_FAN, SUMMON, TELEPORT, FIRE_RAIN }
+## ILLUSIONS: the boss vanishes and reappears among `count` copies of itself
+## (`summon`, usually a no_rewards fake) around the hero; copies fade after
+## `lifetime` seconds.
+enum Kind { CHARGE, JUMP_SLAM, PROJECTILE_FAN, SUMMON, TELEPORT, FIRE_RAIN, ILLUSIONS }
 
 @export var kind: Kind = Kind.CHARGE
 @export var windup: float = 0.8
@@ -22,5 +25,7 @@ enum Kind { CHARGE, JUMP_SLAM, PROJECTILE_FAN, SUMMON, TELEPORT, FIRE_RAIN }
 @export var speed: float = 260.0
 @export var summon: EnemyData
 @export var max_summons: int = 4
+## ILLUSIONS: seconds before the copies fade.
+@export var lifetime: float = 10.0
 ## Applied to the hero on hit.
 @export var hit_effects: Array[HitEffect] = []
