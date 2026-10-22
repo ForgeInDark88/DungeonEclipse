@@ -476,6 +476,9 @@ def main():
             gp.save(face(expr=expr, **kw), OUT_DIR + "race_%s%s.png" % (name, suffix), do_outline=False)
     for name, fn in (("warrior", warrior), ("paladin", paladin), ("rogue", rogue), ("mage", mage)):
         gp.save(fn(), OUT_DIR + "class_%s.png" % name, do_outline=False)
+    # Heroic close-ups per race x class (preferred when present): gen_hero_portraits.py.
+    import gen_hero_portraits
+    gen_hero_portraits.main()
     print("portraits generated")
 
 
