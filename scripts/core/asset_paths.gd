@@ -32,6 +32,10 @@ const SHIELD_BUBBLE := SPRITES_DIR + "fx/shield_bubble.png"
 const TRAP_ROCK := SPRITES_DIR + "traps/rock.png"
 const TRAP_CRACK := SPRITES_DIR + "traps/ceiling_crack.png"
 const MERCHANT_SHEET := SPRITES_DIR + "npc/merchant_sheet.png"
+## Heroic close-up portraits per race x class (tools/gen_hero_portraits.py):
+## hero_<race>_<class>[_<expression>].png over bg_<class>.png. When a pair has
+## none, the old layers (RaceData.portrait + ClassData.portrait_overlay) are used.
+const PORTRAITS_DIR := SPRITES_DIR + "portraits/"
 ## Pets: one sheet per pet (PetData.sheet), shared frame layout.
 const PET_SCENE := "res://scenes/pets/pet.tscn"
 const PET_LAYOUT := "res://data/animations/pet_layout.tres"
@@ -185,6 +189,15 @@ static func flash_material() -> ShaderMaterial:
 	var m := ShaderMaterial.new()
 	m.shader = load(SHADER_FLASH)
 	return m
+
+
+static func hero_portrait_path(race_id: StringName, class_id: StringName, expression := "") -> String:
+	var suffix := "" if expression == "" else "_" + expression
+	return PORTRAITS_DIR + "hero_%s_%s%s.png" % [race_id, class_id, suffix]
+
+
+static func portrait_bg_path(class_id: StringName) -> String:
+	return PORTRAITS_DIR + "bg_%s.png" % class_id
 
 
 static func tex(path: String) -> Texture2D:
