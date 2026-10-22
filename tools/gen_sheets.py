@@ -108,6 +108,7 @@ RACES = {
     # height differences come from RaceData.sprite_scale in the game.
     "dwarf": dict(skin=(215, 160, 120), hair=(120, 70, 40), beard=(130, 75, 40), ears=False, leg=7, torso=8, wide=0),
     "elf": dict(skin=(240, 215, 185), hair=(230, 220, 150), beard=None, ears=True, leg=7, torso=8, wide=0),
+    "orc": dict(skin=(110, 160, 80), hair=(30, 30, 30), beard=None, ears=False, leg=7, torso=8, wide=0, tusks=True),
 }
 PANTS = (70, 62, 66)
 SHIRT = (120, 110, 100)
@@ -235,6 +236,9 @@ def draw_body(p, race):
             d.polygon([(hx - 1, hy + 1), (hx + 3, hy + 1), (hx + 2, hy + 5), (hx, hy + 5)], fill=rgba(race["beard"]))
     if race["ears"]:
         d.polygon([(hx - 2, hy), (hx - 6, hy - 3), (hx - 2, hy - 2)], fill=skin)
+    if race.get("tusks") and not p["back"]:
+        d.point((hx + 2, hy + 2), fill=(240, 240, 220, 255))
+        d.point((hx, hy + 2), fill=(240, 240, 220, 255))
     _arm(d, s, "r", skin, skin)
     return im
 
@@ -250,6 +254,7 @@ OUTFITS = {
     "warrior": dict(torso=(140, 40, 40), trim=(90, 60, 30), boots=(80, 55, 35), sleeve=(150, 50, 45), robe=False),
     "rogue": dict(torso=(50, 90, 50), trim=(40, 60, 40), boots=(55, 45, 35), sleeve=(45, 80, 45), robe=False),
     "mage": dict(torso=(60, 50, 140), trim=(200, 170, 60), boots=(50, 40, 70), sleeve=(70, 60, 155), robe=True),
+    "paladin": dict(torso=(220, 220, 230), trim=(220, 180, 60), boots=(120, 120, 135), sleeve=(200, 200, 215), robe=False),
 }
 
 
@@ -277,6 +282,7 @@ HEADGEAR = {
     "warrior": ("miner", (110, 85, 50)),
     "rogue": ("hood", (50, 75, 50)),
     "mage": ("wizard", (70, 50, 150)),
+    "paladin": ("helm", (225, 215, 170)),
     "leather_cap": ("cap", (140, 95, 55)),
     "iron_helm": ("helm", (165, 170, 180)),
     "crown_of_shadows": ("crown", (200, 170, 40)),

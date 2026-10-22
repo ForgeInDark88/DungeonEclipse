@@ -15,3 +15,6 @@ extends Resource
 @export var body_sheet: Texture2D
 ## Size of the in-world hero (dwarves are short and wide, elves are tall).
 @export var sprite_scale: Vector2 = Vector2.ONE
+## Price in the Sanctum of the Eclipse; 0/0 = available from the start.
+@export var unlock_shards: int = 0
+@export var unlock_gold: int = 0

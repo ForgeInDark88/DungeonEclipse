@@ -4,6 +4,7 @@ extends Node
 const MAIN_MENU := "res://scenes/ui/main_menu.tscn"
 const CHARACTER_CREATION := "res://scenes/ui/character_creation.tscn"
 const GAME := "res://scenes/game/game.tscn"
+const SANCTUM := "res://scenes/ui/sanctum.tscn"
 ## A new biome every N floors (see data/biomes, BiomeData.order).
 const FLOORS_PER_BIOME := 3
 ## Every N-th floor is a boss arena.
@@ -27,6 +28,7 @@ func _ready() -> void:
 func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1) -> void:
 	hero = Hero.new(race, class_data, ItemDatabase.equipment_layout)
 	hero.give_starting_kit()
+	MetaProgress.apply_to(hero)
 	floor_number = 1
 	kills = 0
 	reset_run_stats()
@@ -36,11 +38,11 @@ func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1) 
 	get_tree().change_scene_to_file(GAME)
 
 
-## Seed of the current floor: each run and each floor is different.
 func reset_run_stats() -> void:
 	run_stats = {"gold": 0, "found": [0, 0, 0], "bosses": 0, "start_ms": Time.get_ticks_msec()}
 
 
+## Seed of the current floor: each run and each floor is different.
 func floor_seed() -> int:
 	return hash([run_seed, floor_number])
 
@@ -58,14 +60,19 @@ func next_floor() -> void:
 	EventBus.floor_changed.emit(floor_number)
 
 
-func end_run() -> void:
+## Records the run and pays the Sanctum rewards. Safe to call twice: the
+## second call returns {} (death screen first, then "back to menu").
+func end_run() -> Dictionary:
+	var reward := {}
 	if run_active:
 		SaveManager.record_run(floor_number, kills)
+		reward = MetaProgress.finish_run(hero, floor_number, run_stats)
 	run_active = false
-	hero = null
+	return reward
 
 
 func go_to_menu() -> void:
 	end_run()
+	hero = null
 	get_tree().paused = false
 	get_tree().change_scene_to_file(MAIN_MENU)

@@ -16,6 +16,7 @@ from __future__ import annotations
 import math
 import os
 import random
+import zlib
 
 from PIL import Image, ImageDraw
 
@@ -179,7 +180,7 @@ def tileset(name, b):
 # ------------------------------------------------------------------ parallax
 def parallax(name, b):
     w, h = 320, 180
-    rnd = random.Random(hash(name) & 0xFFFF)
+    rnd = random.Random(zlib.crc32(name.encode()) & 0xFFFF)
     # far: big dark silhouettes (cavern walls / distant arches)
     far = Image.new("RGBA", (w, h), c4(b["sky"]))
     d = ImageDraw.Draw(far)

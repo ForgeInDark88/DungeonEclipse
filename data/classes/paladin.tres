@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="ClassData" load_steps=11 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/portraits/class_paladin.png" id="1_portrait"]
+[ext_resource type="Script" path="res://scripts/data/class_data.gd" id="2_script"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="3_skill"]
+[ext_resource type="Resource" path="res://data/skills/holy_light.tres" id="4_holy"]
+[ext_resource type="Resource" path="res://data/skills/power_strike.tres" id="5_strike"]
+[ext_resource type="Resource" path="res://data/skills/iron_skin.tres" id="6_skin"]
+[ext_resource type="Resource" path="res://data/skills/arcane_shield.tres" id="7_shield"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/paladin.png" id="8_sprite"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/head_paladin.png" id="sheet_head"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/outfit_paladin.png" id="sheet_outfit"]
+
+[resource]
+script = ExtResource("2_script")
+id = &"paladin"
+display_name = "Паладин"
+order = 3
+description = "Рыцарь света с булавой. Медленнее воина, но лечит себя и стойко держит стихии. Урон зависит от Силы."
+portrait_overlay = ExtResource("1_portrait")
+sprite = ExtResource("8_sprite")
+outfit_sheet = ExtResource("sheet_outfit")
+head_sheet = ExtResource("sheet_head")
+base_stats = {
+"agility": 3,
+"intellect": 5,
+"strength": 7,
+"vitality": 7
+}
+growth_per_level = {
+"agility": 0,
+"intellect": 1,
+"strength": 2,
+"vitality": 2
+}
+main_attribute = "strength"
+base_damage = 4
+attack_range = 18.0
+attack_cooldown = 0.42
+starting_items = {
+"antidote": 1,
+"club": 1,
+"health_potion": 3,
+"leather_armor": 1,
+"mana_crystal": 2,
+"pickaxe": 1,
+"rope": 1,
+"torch": 2,
+"whetstone": 1
+}
+starting_equipment = Array[StringName]([&"club", &"leather_armor"])
+starting_quick_bar = Array[StringName]([&"pickaxe", &"torch", &"mana_crystal", &"health_potion", &"rope"])
+skills = Array[ExtResource("3_skill")]([ExtResource("4_holy"), ExtResource("5_strike"), ExtResource("6_skin"), ExtResource("7_shield")])
+allowed_weapon_types = Array[int]([6, 0])
+unlock_shards = 20
+unlock_gold = 300

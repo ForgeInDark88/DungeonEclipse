@@ -15,5 +15,6 @@ max_stack = 10
 stat_bonuses = {}
 price = 150
 currency_value = 0
+shard_value = 5
 has_durability = false
 max_durability = 100

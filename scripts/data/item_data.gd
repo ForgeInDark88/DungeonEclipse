@@ -19,12 +19,14 @@ const TYPE_NAMES := ["Снаряжение", "Используемое", "Рес
 @export_range(1, 999) var max_stack: int = 1
 ## Bonuses keyed by StatTypes names (only applied while equipped).
 @export var stat_bonuses: Dictionary = {}
-## Optional wear: every copy that drops is an instance that loses durability
-## (weapons when hitting, armor when hit). Broken items give no bonuses.
 ## Shop price in gold (0 = automatic from type and rarity). Sells for 40%.
 @export var price: int = 0
 ## > 0: picking it up adds this much gold per piece instead of an item.
 @export var currency_value: int = 0
+## Eclipse shards this item turns into when the run ends (kept in the backpack).
+@export var shard_value: int = 0
+## Optional wear: every copy that drops is an instance that loses durability
+## (weapons when hitting, armor when hit). Broken items give no bonuses.
 @export var has_durability := false
 @export var max_durability: int = 100
 

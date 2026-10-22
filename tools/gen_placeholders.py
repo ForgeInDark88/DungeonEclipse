@@ -591,6 +591,9 @@ def portrait_face(skin, beard=None, ears=False, hair=(70, 45, 30, 255)):
     d.point((19, 14), fill=(30, 20, 20, 255))
     d.line((14, 18, 17, 18), fill=shade(skin, 0.7))
     d.arc((8, 4, 23, 16), 180, 360, fill=hair, width=3)
+    if skin[1] > skin[0]:  # green skin: orc tusks
+        d.rectangle((12, 19, 13, 21), fill=(240, 240, 220, 255))
+        d.rectangle((18, 19, 19, 21), fill=(240, 240, 220, 255))
     if beard:
         d.polygon([(8, 16), (23, 16), (21, 27), (16, 30), (10, 27)], fill=beard)
         d.line((13, 20, 18, 20), fill=shade(skin, 0.6))
@@ -834,12 +837,21 @@ def main() -> None:
 
     skins = {"human": ((230, 185, 145, 255), None, False, (90, 55, 30, 255)),
              "dwarf": ((215, 160, 120, 255), (120, 70, 40, 255), False, (120, 70, 40, 255)),
-             "elf": ((240, 215, 185, 255), None, True, (230, 220, 150, 255))}
+             "elf": ((240, 215, 185, 255), None, True, (230, 220, 150, 255)),
+             "orc": ((110, 160, 80, 255), None, False, (30, 30, 30, 255))}
     for name, (skin, beard, ears, hair) in skins.items():
         save(portrait_face(skin, beard, ears, hair), f"sprites/portraits/race_{name}.png")
     save(portrait_overlay("warrior", (110, 85, 50, 255)), "sprites/portraits/class_warrior.png")
     save(portrait_overlay("rogue", (50, 75, 50, 255)), "sprites/portraits/class_rogue.png")
     save(portrait_overlay("mage", (70, 50, 150, 255)), "sprites/portraits/class_mage.png")
+    save(portrait_overlay("warrior", (225, 215, 170, 255)), "sprites/portraits/class_paladin.png")
+    save(char_sprite((220, 220, 230, 255), (230, 190, 150, 255), (220, 180, 60, 255), "helm"), "sprites/player/paladin.png")
+    shard = new(16, 16)
+    ds = ImageDraw.Draw(shard)
+    ds.polygon([(8, 1), (12, 7), (9, 15), (5, 9)], fill=(170, 80, 240, 255))
+    ds.polygon([(8, 1), (9, 15), (5, 9)], fill=(120, 50, 190, 255))
+    ds.line((8, 3, 9, 10), fill=(230, 200, 255, 255))
+    save(shard, "sprites/items/eclipse_shard.png")
 
     save(book_panel(), "ui/book_panel.png", do_outline=False)
     save(slot_tex(), "ui/slot.png", do_outline=False)

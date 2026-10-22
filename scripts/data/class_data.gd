@@ -35,6 +35,9 @@ extends Resource
 ## WeaponItemData.WeaponType values this class is trained in (empty = all).
 ## Other weapons still work but with WRONG_WEAPON_* penalties.
 @export var allowed_weapon_types: Array[int] = []
+## Price in the Sanctum of the Eclipse; 0/0 = available from the start.
+@export var unlock_shards: int = 0
+@export var unlock_gold: int = 0
 
 const WRONG_WEAPON_DAMAGE := 0.6
 const WRONG_WEAPON_SPEED := 0.75

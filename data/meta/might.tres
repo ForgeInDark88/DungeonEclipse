@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MetaUpgradeData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/meta_upgrade_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/meta/might.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"might"
+display_name = "Тёмная закалка"
+description = "Удары становятся тяжелее."
+icon = ExtResource("2_icon")
+order = 1
+max_level = 4
+shard_costs = Array[int]([4, 7, 11, 16])
+gold_costs = Array[int]([0, 50, 100, 200])
+stat_bonuses = {
+"damage": 1
+}
+start_gold = 0
+starting_items = {}

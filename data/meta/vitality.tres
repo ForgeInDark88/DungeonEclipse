@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MetaUpgradeData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/meta_upgrade_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/meta/vitality.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"vitality"
+display_name = "Кровь Затмения"
+description = "Каждый новый герой рождается крепче."
+icon = ExtResource("2_icon")
+order = 0
+max_level = 5
+shard_costs = Array[int]([3, 5, 8, 12, 16])
+gold_costs = Array[int]([0, 0, 50, 100, 150])
+stat_bonuses = {
+"max_hp": 8
+}
+start_gold = 0
+starting_items = {}

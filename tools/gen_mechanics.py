@@ -593,6 +593,50 @@ def events():
     gs.render_sheet(lay, cage, out + "cage_sheet.png")
 
 
+# ----------------------------------------------------- sanctum (meta) icons
+def meta_icons():
+    os.makedirs(os.path.join(A, "sprites/meta"), exist_ok=True)
+
+    def icon(name, draw):
+        im = gp.new(16, 16)
+        d = ImageDraw.Draw(im)
+        d.ellipse((0, 0, 15, 15), fill=(40, 25, 55, 255), outline=(150, 90, 210, 255))
+        draw(d)
+        gp.save(im, "sprites/meta/%s.png" % name)
+
+    icon("vitality", lambda d: (d.ellipse((3, 4, 8, 9), fill=(200, 40, 50, 255)),
+                                d.ellipse((7, 4, 12, 9), fill=(200, 40, 50, 255)),
+                                d.polygon([(3, 7), (12, 7), (8, 12)], fill=(200, 40, 50, 255)),
+                                d.point((5, 5), fill=(255, 160, 160, 255))))
+    icon("might", lambda d: (d.line((4, 11, 11, 4), fill=(210, 210, 225, 255), width=2),
+                             d.line((4, 8, 7, 11), fill=(150, 110, 60, 255), width=2)))
+    icon("wisdom", lambda d: (d.ellipse((4, 4, 11, 11), fill=(60, 110, 230, 255)),
+                              d.ellipse((5, 5, 7, 7), fill=(190, 220, 255, 255))))
+    icon("eye", lambda d: (d.ellipse((2, 5, 13, 10), fill=(230, 220, 180, 255)),
+                           d.ellipse((6, 5, 9, 10), fill=(150, 60, 200, 255)),
+                           d.point((7, 7), fill=(0, 0, 0, 255))))
+    icon("bulwark", lambda d: (d.polygon([(4, 3), (11, 3), (11, 8), (7, 13), (4, 8)], fill=(140, 140, 160, 255)),
+                               d.line((7, 4, 7, 11), fill=(220, 180, 60, 255))))
+    icon("purse", lambda d: (d.ellipse((3, 5, 12, 13), fill=(150, 100, 50, 255)),
+                             d.rectangle((6, 3, 9, 5), fill=(120, 80, 40, 255)),
+                             d.ellipse((6, 8, 9, 11), fill=(240, 200, 60, 255))))
+    icon("satchel", lambda d: (d.rectangle((4, 4, 11, 12), fill=(200, 40, 60, 255)),
+                               d.rectangle((6, 2, 9, 4), fill=(160, 140, 120, 255)),
+                               d.point((6, 6), fill=(255, 190, 190, 255))))
+    icon("explorer", lambda d: (d.rectangle((3, 4, 12, 11), fill=(225, 205, 160, 255)),
+                                d.line((5, 6, 10, 9), fill=(120, 80, 40, 255)),
+                                d.point((10, 9), fill=(200, 40, 40, 255))))
+    # Paladin skill: holy light
+    im = gp.new(16, 16)
+    d = ImageDraw.Draw(im)
+    d.rectangle((0, 0, 15, 15), fill=(60, 50, 20, 255))
+    for a in range(8):
+        ang = a * math.pi / 4
+        d.line((8, 8, 8 + 7 * math.cos(ang), 8 + 7 * math.sin(ang)), fill=(255, 230, 140, 255))
+    d.ellipse((5, 5, 10, 10), fill=(255, 250, 220, 255))
+    gp.save(im, "sprites/skills/holy_light.png")
+
+
 def main():
     os.makedirs(os.path.join(A, "ui/status"), exist_ok=True)
     status_icons()
@@ -601,6 +645,7 @@ def main():
     bosses()
     new_monsters()
     events()
+    meta_icons()
     print("mechanics generated")
 
 

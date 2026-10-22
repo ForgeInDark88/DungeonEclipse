@@ -65,6 +65,8 @@ func load_meta() -> void:
 
 func save_meta() -> void:
 	var cfg := ConfigFile.new()
+	if FileAccess.file_exists(META_PATH):
+		cfg.load(META_PATH)  # keep the other sections (sanctum, achievements...)
 	cfg.set_value("meta", "best_floor", best_floor)
 	cfg.set_value("meta", "total_runs", total_runs)
 	cfg.set_value("meta", "total_kills", total_kills)

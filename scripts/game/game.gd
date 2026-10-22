@@ -199,5 +199,11 @@ func _on_player_died() -> void:
 	overlay.add_text("Герой погиб", 14)
 	overlay.add_text("%s %s, уровень %d\nДостигнут этаж: %d\nУбито врагов: %d" % [
 		hero.race.display_name, hero.class_data.display_name, hero.level, GameState.floor_number, GameState.kills])
+	var reward := GameState.end_run()
+	if not reward.is_empty():
+		var text := "Святилище Затмения: +%d осколков, +%d золота" % [reward["shards"], reward["gold"]]
+		if not reward["parts"].is_empty():
+			text += "\n(" + ", ".join(reward["parts"]) + ")"
+		overlay.add_text(text, 8)
 	overlay.add_button("В главное меню", func() -> void: GameState.go_to_menu()).grab_focus()
 	overlay.visible = true

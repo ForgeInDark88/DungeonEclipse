@@ -34,6 +34,8 @@ const TRAP_CRACK := SPRITES_DIR + "traps/ceiling_crack.png"
 const MERCHANT_SHEET := SPRITES_DIR + "npc/merchant_sheet.png"
 const MERCHANT_LAYOUT := ANIM_DIR + "merchant_layout.tres"
 const COIN_ICON := UI_DIR + "coin.png"
+## Sanctum of the Eclipse currency (meta progression).
+const ECLIPSE_SHARD_ICON := SPRITES_DIR + "items/eclipse_shard.png"
 const BARRIER_SHEET := SPRITES_DIR + "events/barrier_sheet.png"
 const BARRIER_LAYOUT := ANIM_DIR + "barrier_layout.tres"
 const LEVER_SHEET := SPRITES_DIR + "events/lever_sheet.png"

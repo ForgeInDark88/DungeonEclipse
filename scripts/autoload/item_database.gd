@@ -45,41 +45,41 @@ func reload() -> void:
 	bosses.clear()
 	elites.clear()
 	room_events.clear()
-	for res in _load_dir(EVENT_DIR):
+	for res in load_dir(EVENT_DIR):
 		if res is RoomEventData:
 			room_events.append(res)
-	for res in _load_dir(ELITE_DIR):
+	for res in load_dir(ELITE_DIR):
 		if res is EliteAffixData:
 			elites.append(res)
-	for res in _load_dir(BOSS_DIR):
+	for res in load_dir(BOSS_DIR):
 		if res is BossData:
 			bosses.append(res)
 	bosses.sort_custom(func(a: BossData, b: BossData) -> bool: return a.order < b.order)
-	for res in _load_dir(TRAP_DIR):
+	for res in load_dir(TRAP_DIR):
 		if res is TrapData:
 			traps.append(res)
-	for res in _load_dir(BIOME_DIR):
+	for res in load_dir(BIOME_DIR):
 		if res is BiomeData:
 			biomes.append(res)
 	biomes.sort_custom(func(a: BiomeData, b: BiomeData) -> bool: return a.order < b.order)
-	for res in _load_dir(AFFIX_DIR):
+	for res in load_dir(AFFIX_DIR):
 		if res is AffixData:
 			affixes.append(res)
-	for res in _load_dir(ITEMS_DIR):
+	for res in load_dir(ITEMS_DIR):
 		if res is ItemData:
 			if items.has(res.id):
 				push_warning("Duplicate item id: %s" % res.id)
 			items[res.id] = res
-	for res in _load_dir(RACES_DIR):
+	for res in load_dir(RACES_DIR):
 		if res is RaceData:
 			races.append(res)
-	for res in _load_dir(CLASSES_DIR):
+	for res in load_dir(CLASSES_DIR):
 		if res is ClassData:
 			classes.append(res)
-	for res in _load_dir(ENEMIES_DIR):
+	for res in load_dir(ENEMIES_DIR):
 		if res is EnemyData:
 			enemies.append(res)
-	for res in _load_dir(LOOT_DIR):
+	for res in load_dir(LOOT_DIR):
 		if res is LootTable:
 			loot_tables[StringName(res.resource_path.get_file().get_basename())] = res
 	races.sort_custom(func(a: RaceData, b: RaceData) -> bool: return a.order < b.order)
@@ -130,7 +130,7 @@ func biome_for_floor(floor_number: int) -> BiomeData:
 
 
 ## Recursively loads resources. Handles ".remap" names of exported builds.
-func _load_dir(path: String) -> Array[Resource]:
+func load_dir(path: String) -> Array[Resource]:
 	var result: Array[Resource] = []
 	var dir := DirAccess.open(path)
 	if dir == null:
@@ -146,5 +146,5 @@ func _load_dir(path: String) -> Array[Resource]:
 	var dirs := dir.get_directories()
 	dirs.sort()
 	for sub in dirs:
-		result.append_array(_load_dir(path.path_join(sub)))
+		result.append_array(load_dir(path.path_join(sub)))
 	return result

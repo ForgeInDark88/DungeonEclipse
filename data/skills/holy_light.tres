@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/buff_skill.gd" id="1_buff"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/holy_light.png" id="2_icon"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="3_skill"]
+
+[sub_resource type="Resource" id="Resource_holy"]
+script = ExtResource("1_buff")
+key = "holy_light"
+bonuses = {
+"res_fire": 0.15,
+"res_magic": 0.15,
+"res_poison": 0.15
+}
+bonuses_per_level = {
+"res_magic": 0.05
+}
+duration = 6.0
+duration_per_level = 1.0
+tint = Color(1, 0.95, 0.6, 1)
+heal_percent = 0.3
+
+[resource]
+script = ExtResource("3_skill")
+id = &"holy_light"
+display_name = "Священный свет"
+description = "Свет исцеляет раны и ненадолго защищает от стихий."
+icon = ExtResource("2_icon")
+mana_cost = 22
+cooldown = 16.0
+max_level = 4
+effect = SubResource("Resource_holy")

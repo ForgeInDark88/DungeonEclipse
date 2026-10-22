@@ -24,6 +24,8 @@ extends Resource
 @export var tint: Color = Color(1.0, 0.85, 0.4)
 @export var xp_mult: float = 2.5
 @export var gold_mult: float = 3.0
+## Eclipse shards dropped on death (Sanctum currency, MetaProgress.SHARD_ITEM).
+@export var shard_drop: int = 1
 @export var weight: float = 1.0
 @export var min_floor: int = 1
 

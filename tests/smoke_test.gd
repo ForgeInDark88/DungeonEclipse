@@ -57,7 +57,17 @@ func _ready() -> void:
 	_test_weapons()
 	_test_audio()
 	_test_statuses()
+	# The player's real Sanctum progress must neither affect nor be changed by the test.
+	var meta_backup := [MetaProgress.shards, MetaProgress.gold, MetaProgress.levels.duplicate(), MetaProgress.unlocked.duplicate()]
+	_test_meta()
+	MetaProgress.apply_upgrades = false
 	await _test_scenes()
+	MetaProgress.shards = meta_backup[0]
+	MetaProgress.gold = meta_backup[1]
+	MetaProgress.levels = meta_backup[2]
+	MetaProgress.unlocked = meta_backup[3]
+	MetaProgress.apply_upgrades = true
+	MetaProgress.save_progress()
 	if not _finished:
 		failures.append("scenario did not reach the end (script error?)")
 	print("FAILURES: ", failures.size())
@@ -68,8 +78,8 @@ func _ready() -> void:
 
 func _test_data() -> void:
 	check(ItemDatabase.items.size() >= 30, "items loaded: %d" % ItemDatabase.items.size())
-	check(ItemDatabase.races.size() == 3, "3 races")
-	check(ItemDatabase.classes.size() == 3, "3 classes")
+	check(ItemDatabase.races.size() == 4, "4 races")
+	check(ItemDatabase.classes.size() == 4, "4 classes")
 	check(ItemDatabase.enemies.size() >= 8, "monster types: %d" % ItemDatabase.enemies.size())
 	check(ItemDatabase.elites.size() >= 5, "elite affixes: %d" % ItemDatabase.elites.size())
 	check(ItemDatabase.loot_tables.size() >= 5, "loot tables loaded: %d" % ItemDatabase.loot_tables.size())
@@ -85,6 +95,43 @@ func _test_data() -> void:
 			rarities[e["item"].rarity] += 1
 	print("rarity distribution chest_common floor 5: ", rarities)
 	check(rarities[0] > 0 and rarities[1] > 0 and rarities[2] > 0, "all rarities can drop")
+
+
+func _test_meta() -> void:
+	MetaProgress.reset()
+	check(MetaProgress.upgrades.size() >= 8, "sanctum upgrades: %d" % MetaProgress.upgrades.size())
+	var orc: RaceData = null
+	for r in ItemDatabase.races:
+		if r.id == &"orc":
+			orc = r
+	check(orc != null and not MetaProgress.is_unlocked(orc), "orc is locked at first")
+	check(not MetaProgress.unlock(orc), "cannot unlock without shards")
+	var vit: MetaUpgradeData = null
+	for up in MetaProgress.upgrades:
+		if up.id == &"vitality":
+			vit = up
+	var race: RaceData = ItemDatabase.races[0]
+	var cls: ClassData = ItemDatabase.classes[0]
+	var plain := Hero.new(race, cls, ItemDatabase.equipment_layout)
+	plain.give_starting_kit()
+	var base_hp := plain.stats.max_hp()
+	# A run with a seal and two shards in the backpack, 2 bosses, floor 13, 200 gold.
+	plain.inventory.add_item(ItemDatabase.get_item(&"guardian_seal"), 1)
+	plain.inventory.add_item(ItemDatabase.get_item(MetaProgress.SHARD_ITEM), 2)
+	var reward := MetaProgress.finish_run(plain, 13, {"bosses": 2, "gold": 200})
+	check(reward["shards"] == 5 + 2 + 6 + 6 and reward["gold"] == 50, "run rewards: %s" % reward)
+	check(MetaProgress.shards == 19 and MetaProgress.gold == 50, "rewards banked")
+	check(MetaProgress.buy_upgrade(vit) and MetaProgress.level_of(&"vitality") == 1, "bought vitality 1")
+	check(MetaProgress.unlock(orc) and MetaProgress.is_unlocked(orc), "orc unlocked for shards")
+	check(not MetaProgress.unlock(orc), "no double unlock")
+	var h := Hero.new(race, cls, ItemDatabase.equipment_layout)
+	h.give_starting_kit()
+	MetaProgress.apply_to(h)
+	check(h.stats.max_hp() == base_hp + 8 and h.stats.hp == h.stats.max_hp(), "meta HP bonus applied (%d -> %d)" % [base_hp, h.stats.max_hp()])
+	var cfg := ConfigFile.new()
+	check(cfg.load(SaveManager.META_PATH) == OK and cfg.get_value("sanctum", "levels", {}).get(&"vitality", 0) == 1, "sanctum saved to meta.cfg")
+	check(cfg.has_section_key("meta", "total_runs") or SaveManager.total_runs == 0, "meta section kept")
+	MetaProgress.reset()
 
 
 func _test_generator() -> void:
@@ -256,6 +303,22 @@ func _test_scenes() -> void:
 	get_tree().change_scene_to_file("res://scenes/ui/character_creation.tscn")
 	await frames(10)
 	await shot("02_character_creation")
+	# Unlocked race + class from the Sanctum are selectable.
+	MetaProgress.unlocked.assign([&"orc", &"paladin"])
+	get_tree().change_scene_to_file("res://scenes/ui/character_creation.tscn")
+	await frames(10)
+	var cc := get_tree().current_scene
+	cc._select_race(ItemDatabase.races[3])
+	cc._select_class(ItemDatabase.classes[3])
+	check(not cc._race_buttons[3].disabled and cc._class.id == &"paladin", "unlocked orc paladin selectable")
+	await frames(3)
+	await shot("02a_orc_paladin")
+	MetaProgress.unlocked.clear()
+	MetaProgress.shards = 25
+	MetaProgress.gold = 320
+	get_tree().change_scene_to_file("res://scenes/ui/sanctum.tscn")
+	await frames(10)
+	await shot("02b_sanctum")
 	# Fixed seeds: the scripted play-through is reproducible (variety is
 	# covered by the generator test above).
 	seed(4242)
@@ -787,4 +850,5 @@ func _test_scenes() -> void:
 	await frames(10)
 	check(get_tree().current_scene.name == "MainMenu", "back to menu after death")
 	check(SaveManager.total_runs >= 1, "run recorded")
+	check(MetaProgress.shards > 25, "death paid sanctum shards (%d)" % MetaProgress.shards)
 	_finished = true

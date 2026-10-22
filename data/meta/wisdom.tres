@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="MetaUpgradeData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/meta_upgrade_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/meta/wisdom.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"wisdom"
+display_name = "Звёздный колодец"
+description = "Больше маны для навыков."
+icon = ExtResource("2_icon")
+order = 2
+max_level = 4
+shard_costs = Array[int]([3, 5, 8, 12])
+gold_costs = Array[int]([0, 0, 50, 100])
+stat_bonuses = {
+"max_mana": 6
+}
+start_gold = 0
+starting_items = {}
