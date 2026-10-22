@@ -85,7 +85,13 @@ func _load_floor() -> void:
 	if GameState.is_daily():
 		seed(seed_value)  # loot and monster rolls repeat for every player of the day
 	var gen := LevelGenerator.new()
-	var layout := gen.generate_arena(floor_number, seed_value) if GameState.is_boss_floor() else gen.generate(floor_number, seed_value)
+	var layout: LevelLayout
+	if GameState.is_town():
+		layout = TownBuilder.build()
+	elif GameState.is_boss_floor():
+		layout = gen.generate_arena(floor_number, seed_value)
+	else:
+		layout = gen.generate(floor_number, seed_value)
 	var biome := GameState.current_biome()
 	level = LEVEL_SCENE.instantiate()
 	world.add_child(level)
@@ -97,7 +103,9 @@ func _load_floor() -> void:
 	_sync_pet()
 	for b in get_tree().get_nodes_in_group("bosses"):
 		AudioManager.play_music((b as Boss).boss.music)
-	if GameState.is_boss_floor():
+	if GameState.is_town():
+		EventBus.message.emit("%s. Вход в подземелье — в конце улицы." % biome.display_name)
+	elif GameState.is_boss_floor():
 		EventBus.message.emit("Этаж %d — логово стража!" % floor_number)
 	else:
 		EventBus.message.emit("Этаж %d — %s" % [floor_number, biome.display_name] if biome else "Этаж %d" % floor_number)

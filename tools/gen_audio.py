@@ -627,6 +627,10 @@ def compose(spec):
 TRACKS = {
     "menu": dict(key="A", scale="dorian", bpm=76, prog=[0, 5, 3, 4], pad="pad", bass="roots", arp="pluck",
                  lead="flute", sevenths=True, seed=3),
+    # Town before the dungeon: warm major key, lute-like plucks and a flute.
+    "town": dict(key="F", scale="major", bpm=96, beats=3, prog=[0, 3, 4, 0, 5, 3, 1, 4], pad="pad", bright=0.7,
+                 bass="waltz", arp="pluck", arp_rate=1, drums="shaker", drums_from=1, lead="flute", density=0.55,
+                 lead_octave=1, sevenths=True, bars=32, seed=23),
     "catacombs": dict(key="D", scale="phrygian", bpm=64, prog=[0, 1, 0, 6], pad="choir", bass="roots", toll=True,
                       drums="heartbeat", lead="box", density=0.35, lead_octave=1, seed=5),
     "fungal": dict(key="E", scale="dorian", bpm=92, prog=[0, 3, 5, 4], pad="pad", bright=0.8, bass="roots", arp="bell",

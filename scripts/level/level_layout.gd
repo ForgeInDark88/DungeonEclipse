@@ -18,6 +18,10 @@ var specials: Array[Dictionary] = []
 ## door appears only after the boss is defeated.
 var is_arena := false
 var boss_cell := Vector2i.ZERO
+## The town before the dungeon (TownBuilder): no back wall, props instead of rooms.
+var is_town := false
+## Array of {"tex": String, "cell": Vector2i, "z": int, "lamp": bool}.
+var town_props: Array[Dictionary] = []
 
 
 func _init(w: int, h: int, fill: int = Tile.BRICK) -> void:

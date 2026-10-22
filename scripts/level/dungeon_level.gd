@@ -63,8 +63,9 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 		back.modulate = biome.back_wall_modulate
 		back_detail.modulate = biome.back_wall_modulate
 	explored.resize(layout.width * layout.height)
-	explored.fill(0)
-	_place_ore()
+	explored.fill(1 if layout.is_town else 0)
+	if not layout.is_town:
+		_place_ore()
 	nav = LevelNav.new(layout)
 	# Back wall with gaps: through them the parallax cave is visible.
 	var noise := FastNoiseLite.new()
@@ -73,12 +74,15 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	for y in layout.height:
 		for x in layout.width:
 			var cell := Vector2i(x, y)
-			if noise.get_noise_2d(x, y) > -0.25 or _near_solid(cell):
+			if not layout.is_town and (noise.get_noise_2d(x, y) > -0.25 or _near_solid(cell)):
 				back.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(_back_variant(cell), AssetPaths.TILE_ROW_BACKWALL))
 			_apply_tile(cell, layout.get_tile(x, y))
 	for y in layout.height:
 		for x in layout.width:
 			_apply_detail(Vector2i(x, y))
+	if layout.is_town:
+		_spawn_town()
+		return
 	if layout.is_arena:
 		_spawn_boss()
 		_spawn_ambience()
@@ -92,6 +96,48 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	_spawn_decorations()
 	_spawn_traps()
 	nav._apply_dangers()
+
+
+## Town: buildings and props along the street, lamps, the merchant and the
+## blacksmith, the dungeon gate with two torches, fireflies.
+func _spawn_town() -> void:
+	for p in layout.town_props:
+		var tex: Texture2D = load(AssetPaths.TOWN_DIR + String(p["tex"]) + ".png")
+		var s := Sprite2D.new()
+		s.texture = tex
+		s.centered = false
+		s.offset = Vector2(-floorf(tex.get_width() / 2.0), -tex.get_height())
+		s.z_index = p["z"]
+		add_entity(s, cell_bottom(p["cell"]))
+		if p["lamp"]:
+			var light := PointLight2D.new()
+			light.texture = AssetPaths.tex(AssetPaths.LIGHT)
+			light.color = Color(1.0, 0.8, 0.5)
+			light.energy = 1.1
+			light.texture_scale = 0.7
+			light.position = Vector2(0, -tex.get_height() + 6)
+			s.add_child(light)
+	_spawn_specials()
+	var gate := DungeonGate.new()
+	add_entity(gate, cell_bottom(layout.exit_cell))
+	for dx in [-28, 28]:
+		var torch := (load(TORCH_SCENE) as PackedScene).instantiate()
+		add_entity(torch, cell_bottom(layout.exit_cell) + Vector2(dx, -30))
+	var flies := CPUParticles2D.new()
+	flies.amount = 40
+	flies.lifetime = 6.0
+	flies.preprocess = 6.0
+	flies.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	flies.emission_rect_extents = Vector2(layout.width * TILE / 2.0, 40)
+	flies.gravity = Vector2.ZERO
+	flies.direction = Vector2(0, -1)
+	flies.spread = 180.0
+	flies.initial_velocity_min = 3.0
+	flies.initial_velocity_max = 10.0
+	flies.scale_amount_min = 1.0
+	flies.scale_amount_max = 2.0
+	flies.color = biome.ambient_particles if biome else Color(0.85, 1, 0.55)
+	add_entity(flies, to_global(Vector2(layout.width * TILE / 2.0, (TownBuilder.GROUND - 3) * TILE)))
 
 
 ## Arena: the boss; door and reward chest appear when it dies.
@@ -425,7 +471,7 @@ func _spawn_specials() -> void:
 		match info["type"]:
 			&"merchant":
 				var m: Merchant = (load(MERCHANT_SCENE) as PackedScene).instantiate()
-				m.floor_number = floor_number
+				m.floor_number = maxi(1, floor_number)  # the town shop sells first-floor goods
 				add_entity(m, cell_bottom(info["cell"]))
 			&"smith":
 				add_entity((load(SMITH_SCENE) as PackedScene).instantiate(), cell_bottom(info["cell"]))

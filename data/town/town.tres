@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="BiomeData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="1_biome"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/tiles_town.png" id="2_tiles"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/town_far.png" id="3_far"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/town_mid.png" id="4_mid"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/town_near.png" id="5_near"]
+
+[resource]
+script = ExtResource("1_biome")
+id = &"town"
+display_name = "Город Затмения"
+order = -1
+tileset_texture = ExtResource("2_tiles")
+parallax_far = ExtResource("3_far")
+parallax_mid = ExtResource("4_mid")
+parallax_near = ExtResource("5_near")
+ambient = Color(0.8, 0.82, 0.98, 1)
+back_wall_modulate = Color(0.85, 0.85, 0.9, 1)
+torch_color = Color(1, 0.78, 0.45, 1)
+ambient_particles = Color(0.85, 1, 0.55, 1)
+particle_style = &"pollen"
+floor_fringe = 0.7
+ceiling_fringe = 0.0
+wall_details = 0.0
+fog_color = Color(0.4, 0.4, 0.6, 1)
+fog_amount = 0.04
+grade_tint = Color(0.98, 0.98, 1.06, 1)
+saturation = 1.0
+contrast = 1.05
+decor_per_room = 0.0
+ore_chance = 0.0
+music = &"town"
+step_sound = &"step_stone"
