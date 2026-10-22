@@ -22,6 +22,8 @@ var _used: Dictionary = {}
 var _reserved: Dictionary = {}
 ## Chance that a floor has a merchant room.
 const MERCHANT_CHANCE := 0.4
+## Event rooms per floor: 1, sometimes 2.
+const SECOND_EVENT_CHANCE := 0.4
 
 
 func generate(floor_number: int, seed_value: int) -> LevelLayout:
@@ -266,6 +268,16 @@ func _place_specials(_floor_number: int) -> void:
 		var cell: Variant = _take_spot(room, true)
 		if cell != null:
 			layout.specials.append({"type": &"merchant", "cell": cell})
+			_reserved[room] = true
+	# Random event rooms (altar, fountain, cursed chest, puzzle, prisoner...).
+	var events := 1 + (1 if rng.randf() < SECOND_EVENT_CHANCE else 0)
+	for i in events:
+		if rooms.is_empty():
+			break
+		var room: Vector2i = rooms.pop_back()
+		var cell: Variant = _take_spot(room, true)
+		if cell != null:
+			layout.specials.append({"type": &"event", "cell": cell, "room": _room_rect(room), "roll": rng.randi()})
 			_reserved[room] = true
 
 

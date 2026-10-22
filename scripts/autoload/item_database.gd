@@ -12,6 +12,7 @@ const BIOME_DIR := "res://data/biomes"
 const TRAP_DIR := "res://data/traps"
 const BOSS_DIR := "res://data/bosses"
 const ELITE_DIR := "res://data/elites"
+const EVENT_DIR := "res://data/events"
 const EQUIPMENT_LAYOUT := "res://data/equipment_layout.tres"
 
 var items: Dictionary = {}  # StringName -> ItemData
@@ -24,6 +25,7 @@ var biomes: Array[BiomeData] = []
 var traps: Array[TrapData] = []
 var bosses: Array[BossData] = []
 var elites: Array[EliteAffixData] = []
+var room_events: Array[RoomEventData] = []
 var equipment_layout: EquipmentLayout
 
 
@@ -42,6 +44,10 @@ func reload() -> void:
 	traps.clear()
 	bosses.clear()
 	elites.clear()
+	room_events.clear()
+	for res in _load_dir(EVENT_DIR):
+		if res is RoomEventData:
+			room_events.append(res)
 	for res in _load_dir(ELITE_DIR):
 		if res is EliteAffixData:
 			elites.append(res)

@@ -307,6 +307,26 @@ func _spawn_specials() -> void:
 				var m: Merchant = (load(MERCHANT_SCENE) as PackedScene).instantiate()
 				m.floor_number = floor_number
 				add_entity(m, cell_bottom(info["cell"]))
+			&"event":
+				_spawn_event(info)
+
+
+func _spawn_event(info: Dictionary) -> void:
+	var pool: Array[RoomEventData] = []
+	var weights: Array[float] = []
+	for e in ItemDatabase.room_events:
+		if e.min_floor <= floor_number and e.scene != "":
+			pool.append(e)
+			weights.append(e.weight)
+	if pool.is_empty():
+		return
+	var pick_rng := RandomNumberGenerator.new()
+	pick_rng.seed = info.get("roll", 0)
+	var data: RoomEventData = pool[LootTable._weighted_index(weights, pick_rng)]
+	var node: Node2D = (load(data.scene) as PackedScene).instantiate()
+	if node.has_method("setup_event"):
+		node.setup_event(self, info)
+	add_entity(node, cell_bottom(info["cell"]))
 
 
 func _spawn_chests() -> void:

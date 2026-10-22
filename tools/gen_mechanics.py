@@ -487,6 +487,112 @@ def new_monsters():
         sheet.crop((0, 0, lay_w, lay_h)).save(os.path.join(A, f"sprites/enemies/{name}.png"))
 
 
+# ------------------------------------------------------------------ events
+def events():
+    out = "sprites/events/"
+    # Altar 20x16
+    lay = gs.simple_layout("altar_layout", 20, 18, (10, 18), [("idle", 4, 6, True), ("used", 1, 1, False)])
+
+    def altar(name, i, n):
+        im = gp.new(20, 18)
+        d = ImageDraw.Draw(im)
+        stone = (90, 85, 95, 255)
+        d.rectangle((2, 10, 17, 17), fill=stone)
+        d.rectangle((0, 8, 19, 10), fill=gp.shade(stone, 1.2))
+        d.rectangle((4, 12, 15, 15), fill=gp.shade(stone, 0.8))
+        if name == "idle":
+            glow = (200, 40, 60, 255) if i % 2 == 0 else (255, 80, 90, 255)
+            d.polygon([(10, 1 + (i % 2)), (13, 5), (10, 8), (7, 5)], fill=glow)
+            d.line((7, 13, 12, 14), fill=glow)
+        else:
+            d.line((7, 13, 12, 14), fill=(60, 50, 60, 255))
+        return im
+
+    gs.render_sheet(lay, altar, out + "altar_sheet.png")
+    # Fountain 24x28
+    lay = gs.simple_layout("fountain_layout", 24, 28, (12, 28), [("flow", 4, 8, True), ("dry", 1, 1, False)])
+
+    def fountain(name, i, n):
+        im = gp.new(24, 28)
+        d = ImageDraw.Draw(im)
+        stone = (140, 135, 130, 255)
+        d.rectangle((1, 20, 22, 27), fill=stone)
+        d.rectangle((0, 19, 23, 21), fill=gp.shade(stone, 1.2))
+        d.rectangle((10, 6, 13, 20), fill=stone)
+        d.ellipse((6, 3, 17, 9), fill=gp.shade(stone, 1.1))
+        if name == "flow":
+            w = (90, 170, 240, 255)
+            d.rectangle((3, 21, 20, 23), fill=w)
+            for k in range(3):
+                y = 4 + ((i + k) % 4) * 4
+                d.point((5 + k, y + 6), fill=(200, 230, 255, 255))
+                d.point((18 - k, y + 6), fill=(200, 230, 255, 255))
+            d.arc((2, 4, 21, 26), 200, 340, fill=w)
+        return im
+
+    gs.render_sheet(lay, fountain, out + "fountain_sheet.png")
+    # Lever 10x14
+    lay = gs.simple_layout("lever_layout", 10, 14, (5, 14), [("up", 1, 1, False), ("down", 1, 1, False)])
+
+    def lever(name, i, n):
+        im = gp.new(10, 14)
+        d = ImageDraw.Draw(im)
+        d.rectangle((1, 10, 8, 13), fill=(90, 85, 95, 255))
+        if name == "up":
+            d.line((5, 10, 2, 2), fill=(150, 110, 70, 255), width=2)
+            d.ellipse((0, 0, 3, 3), fill=(200, 60, 60, 255))
+        else:
+            d.line((5, 10, 8, 2), fill=(150, 110, 70, 255), width=2)
+            d.ellipse((6, 0, 9, 3), fill=(80, 220, 90, 255))
+        return im
+
+    gs.render_sheet(lay, lever, out + "lever_sheet.png")
+    # Rune symbols 8x8 (puzzle)
+    runes = gp.new(8 * 4, 8)
+    d = ImageDraw.Draw(runes)
+    c = (120, 220, 255, 255)
+    d.line((1, 1, 6, 6), fill=c)
+    d.line((6, 1, 1, 6), fill=c)  # X
+    d.ellipse((8 + 1, 1, 8 + 6, 6), outline=c)  # O
+    d.polygon([(16 + 3, 0), (16 + 7, 7), (16 + 0, 7)], outline=c)  # triangle
+    d.rectangle((24 + 1, 1, 24 + 6, 6), outline=c)  # square
+    runes.save(os.path.join(A, out + "runes.png"))
+    # Barrier 16x32
+    lay = gs.simple_layout("barrier_layout", 16, 32, (8, 32), [("hum", 4, 8, True)])
+
+    def barrier(name, i, n):
+        im = gp.new(16, 32)
+        d = ImageDraw.Draw(im)
+        for y in range(0, 32, 2):
+            a = 90 + int(60 * math.sin(y * 0.4 + i * 1.5))
+            d.line((1, y, 14, y), fill=(140, 90, 255, a))
+        d.rectangle((0, 0, 15, 31), outline=(200, 160, 255, 220))
+        return im
+
+    gs.render_sheet(lay, barrier, out + "barrier_sheet.png", do_outline=False)
+    # Cage with a prisoner 20x26
+    lay = gs.simple_layout("cage_layout", 20, 26, (10, 26), [("idle", 2, 2, True), ("open", 1, 1, False)])
+
+    def cage(name, i, n):
+        im = gp.new(20, 26)
+        d = ImageDraw.Draw(im)
+        if name == "idle":
+            # prisoner
+            d.rectangle((7, 12 + i, 12, 22), fill=(110, 100, 90, 255))
+            d.ellipse((7, 6 + i, 12, 11 + i), fill=(220, 180, 150, 255))
+            d.point((11, 8 + i), fill=(20, 20, 20, 255))
+            for x in range(1, 20, 4):
+                d.line((x, 2, x, 24), fill=(120, 120, 130, 255))
+        else:
+            for x in (1, 17):
+                d.line((x, 2, x, 24), fill=(120, 120, 130, 255))
+        d.rectangle((0, 0, 19, 2), fill=(90, 90, 100, 255))
+        d.rectangle((0, 24, 19, 25), fill=(90, 90, 100, 255))
+        return im
+
+    gs.render_sheet(lay, cage, out + "cage_sheet.png")
+
+
 def main():
     os.makedirs(os.path.join(A, "ui/status"), exist_ok=True)
     status_icons()
@@ -494,6 +600,7 @@ def main():
     merchant()
     bosses()
     new_monsters()
+    events()
     print("mechanics generated")
 
 

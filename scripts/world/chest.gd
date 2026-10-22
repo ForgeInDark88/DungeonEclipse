@@ -12,6 +12,8 @@ var locked := false
 var opened := false
 ## Golden chests are locked unless this is set (boss rewards).
 var unlocked_by_default := false
+## Behind a puzzle barrier: cannot be opened until the puzzle is solved.
+var sealed := false
 
 @onready var sprite: AnimatedSprite2D = $Sprite
 
@@ -25,7 +27,7 @@ func _ready() -> void:
 
 
 func can_interact() -> bool:
-	return not opened
+	return not opened and not sealed
 
 
 func get_prompt() -> String:

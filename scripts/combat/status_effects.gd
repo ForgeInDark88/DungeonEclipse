@@ -85,7 +85,7 @@ func remove(id: StringName) -> void:
 
 
 ## Removes all negative statuses of the given ids (antidote, cleansing).
-func cure(ids: Array[StringName]) -> bool:
+func cure(ids: Array) -> bool:
 	var any := false
 	for id in ids:
 		if active.erase(id):

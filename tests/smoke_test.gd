@@ -363,6 +363,72 @@ func _test_scenes() -> void:
 	player.camera.zoom = Vector2(4, 4)
 	await shot("12a_bow_zoom")
 	player.camera.zoom = Vector2.ONE
+	# --- 15.6 random events
+	check(ItemDatabase.room_events.size() >= 5, "room events: %d" % ItemDatabase.room_events.size())
+	var ev_count := 0
+	for k in 10:
+		var lay := LevelGenerator.new().generate(3, 1000 + k)
+		for sp in lay.specials:
+			if sp["type"] == &"event":
+				ev_count += 1
+	check(ev_count >= 10, "every floor has event rooms (%d in 10 floors)" % ev_count)
+	for e in get_tree().get_nodes_in_group("enemies"):
+		e.set_physics_process(false)
+	var lv2 := player.level
+	var here := lv2.world_to_cell(player.global_position)
+	var fountain: Node = (load("res://scenes/events/fountain.tscn") as PackedScene).instantiate()
+	fountain.setup_event(lv2, {"cell": here})
+	lv2.add_entity(fountain, player.global_position + Vector2(30, 0))
+	player.hero.stats.lose_hp(40)
+	var hp_f := player.hero.stats.hp
+	await frames(2)
+	fountain.interact(player)
+	check(player.hero.stats.hp > hp_f and fountain.used, "fountain heals once")
+	var altar: Node = (load("res://scenes/events/altar.tscn") as PackedScene).instantiate()
+	altar.setup_event(lv2, {"cell": here})
+	lv2.add_entity(altar, player.global_position + Vector2(-30, 0))
+	await frames(2)
+	var hp_a := player.hero.stats.hp
+	altar.interact(player)
+	check(altar.used and player.hero.stats.hp < hp_a, "altar takes blood for a gift")
+	var enemies_before := get_tree().get_nodes_in_group("enemies").size()
+	var cursed: Node = (load("res://scenes/events/cursed_chest.tscn") as PackedScene).instantiate()
+	cursed.setup_event(lv2, {"cell": here})
+	lv2.add_entity(cursed, player.global_position + Vector2(50, 0))
+	await frames(2)
+	cursed.interact(player)
+	await frames(2)
+	check(player.status.has(&"curse") and get_tree().get_nodes_in_group("enemies").size() > enemies_before, "cursed chest curses and summons an ambush")
+	player.camera.zoom = Vector2(2, 2)
+	await shot("15_6_events")
+	player.camera.zoom = Vector2.ONE
+	var cage: Node = (load("res://scenes/events/prisoner.tscn") as PackedScene).instantiate()
+	cage.setup_event(lv2, {"cell": here})
+	lv2.add_entity(cage, player.global_position + Vector2(70, 0))
+	await frames(2)
+	cage.interact(player)
+	check(cage.used, "prisoner can be freed")
+	var puzzle: Node2D = (load("res://scenes/events/puzzle.tscn") as PackedScene).instantiate()
+	var room_rect := Rect2i(here - Vector2i(8, 6), Vector2i(17, 7))
+	puzzle.setup_event(lv2, {"cell": here, "room": room_rect})
+	lv2.add_entity(puzzle, player.global_position)
+	await frames(2)
+	check(puzzle.levers.size() >= 2 and puzzle.chest.sealed, "puzzle: levers placed, chest sealed (%d levers)" % puzzle.levers.size())
+	if puzzle.levers.size() >= 2:
+		for rune in puzzle.order:
+			for l in puzzle.levers:
+				if l.rune == rune:
+					puzzle.pull(l, player)
+		check(puzzle.solved and not puzzle.chest.sealed, "right rune order opens the barrier")
+	for n in [fountain, altar, cursed, cage, puzzle]:
+		n.queue_free()
+	for e in get_tree().get_nodes_in_group("enemies"):
+		if e.global_position.distance_to(player.global_position) < 120.0:
+			e.queue_free()
+		else:
+			e.set_physics_process(true)
+	player.status.clear()
+	player.hero.stats.heal(9999)
 	# --- 15.5 new monsters and elites
 	var showcase := []
 	var x_off := 30.0
