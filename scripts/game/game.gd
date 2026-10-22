@@ -60,6 +60,11 @@ func _ready() -> void:
 	EventBus.player_died.connect(_on_player_died)
 	SaveManager.settings_changed.connect(_apply_brightness)
 	EventBus.shop_requested.connect(_open_shop)
+	EventBus.smith_requested.connect(func(_s: Node, _p: Node) -> void:
+		if not get_tree().paused:
+			var forge := SmithBook.new()
+			add_child(forge)
+			forge.open(GameState.hero))
 	EventBus.boss_spawned.connect(func(b: Node) -> void: AudioManager.play_music((b as Boss).boss.music))
 	# Boss defeated: a victory sting, then back to the floor's music.
 	EventBus.boss_defeated.connect(func(_b: BossData, _p: Vector2) -> void:

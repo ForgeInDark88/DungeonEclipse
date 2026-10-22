@@ -730,6 +730,15 @@ def slow_throwers():
     gp.save(goo, "sprites/fx/goo.png")
 
 
+def anvil():
+    im = gp.new(16, 10)
+    d = ImageDraw.Draw(im)
+    d.polygon([(0, 1), (13, 1), (15, 3), (10, 4), (10, 7), (12, 9), (3, 9), (5, 7), (5, 4), (2, 4)], fill=(70, 72, 80, 255))
+    d.line((1, 1, 13, 1), fill=(140, 145, 155, 255))
+    d.point((7, 5), fill=(255, 140, 50, 255))
+    gp.save(im, "sprites/npc/anvil.png")
+
+
 def main():
     os.makedirs(os.path.join(A, "ui/status"), exist_ok=True)
     status_icons()
@@ -741,6 +750,7 @@ def main():
     meta_icons()
     achievement_icons()
     slow_throwers()
+    anvil()
     print("mechanics generated")
 
 

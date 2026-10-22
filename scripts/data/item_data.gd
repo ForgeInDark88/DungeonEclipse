@@ -42,6 +42,9 @@ const TYPE_NAMES := ["Снаряжение", "Используемое", "Рес
 var template: ItemData
 var durability: int = -1
 var affixes: Array[AffixData] = []
+## Blacksmith: upgrade +N and the enchantment bonus (already in stat_bonuses).
+var upgrade_level: int = 0
+var enchant_bonuses: Dictionary = {}
 
 
 func is_instance() -> bool:
@@ -71,7 +74,7 @@ func buy_price() -> int:
 	var p := price if price > 0 else int(AUTO_PRICES[item_type][rarity])
 	if self is WeaponItemData and price <= 0:
 		p = roundi(p * 1.2)
-	p = roundi(p * (1.0 + 0.25 * affixes.size()))
+	p = roundi(p * (1.0 + 0.25 * affixes.size() + 0.2 * upgrade_level + (0.3 if not enchant_bonuses.is_empty() else 0.0)))
 	if has_durability and is_instance() and max_durability > 0:
 		p = roundi(p * (0.4 + 0.6 * float(durability) / max_durability))
 	return maxi(1, p)

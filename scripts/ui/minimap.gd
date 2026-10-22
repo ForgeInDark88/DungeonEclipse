@@ -160,7 +160,7 @@ func _collect_marks() -> void:
 			color = Color(0.8, 0.4, 1.0)
 		elif n is Chest and not n.opened:
 			color = Color(1.0, 0.85, 0.2)
-		elif n is Merchant:
+		elif n is Merchant or n is Blacksmith:
 			color = Color(0.3, 1.0, 0.4)
 		elif n is EventObject and not n.used:
 			color = Color(0.3, 0.9, 1.0)

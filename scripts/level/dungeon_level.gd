@@ -14,6 +14,7 @@ const TORCH_SCENE := "res://scenes/world/wall_torch.tscn"
 const DRIP_SCENE := "res://scenes/world/water_drip.tscn"
 const TRAP_SCENE := "res://scenes/traps/trap.tscn"
 const MERCHANT_SCENE := "res://scenes/npc/merchant.tscn"
+const SMITH_SCENE := "res://scenes/npc/blacksmith.tscn"
 const BOSS_SCENE := "res://scenes/bosses/boss.tscn"
 ## No traps this close (in cells) to the start.
 const SAFE_START_RADIUS := 8
@@ -370,6 +371,8 @@ func _spawn_specials() -> void:
 				var m: Merchant = (load(MERCHANT_SCENE) as PackedScene).instantiate()
 				m.floor_number = floor_number
 				add_entity(m, cell_bottom(info["cell"]))
+			&"smith":
+				add_entity((load(SMITH_SCENE) as PackedScene).instantiate(), cell_bottom(info["cell"]))
 			&"event":
 				_spawn_event(info)
 

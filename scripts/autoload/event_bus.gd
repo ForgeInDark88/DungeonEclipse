@@ -21,6 +21,8 @@ signal item_collected(item: ItemData, world_pos: Vector2)
 signal trap_disarmed(trap: TrapData)
 ## A merchant wants to open its shop UI.
 signal shop_requested(merchant: Node, player: Node)
+## A blacksmith wants to open the forge UI.
+signal smith_requested(smith: Node, player: Node)
 signal boss_spawned(boss: Node)
 signal boss_hp_changed(hp: int, max_hp: int)
 signal boss_defeated(boss: BossData, world_pos: Vector2)

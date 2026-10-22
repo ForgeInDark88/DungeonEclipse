@@ -1,0 +1,29 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/blacksmith.gd" id="1_merchant"]
+[ext_resource type="Texture2D" path="res://assets/sprites/npc/anvil.png" id="2_anvil"]
+
+[sub_resource type="RectangleShape2D" id="Shape_m"]
+size = Vector2(24, 26)
+
+[node name="Blacksmith" type="Area2D"]
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("1_merchant")
+
+[node name="Anvil" type="Sprite2D" parent="."]
+position = Vector2(14, -5)
+texture = ExtResource("2_anvil")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+position = Vector2(8, -14)
+color = Color(1, 0.55, 0.25, 1)
+energy = 1.1
+texture_scale = 0.8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -13)
+shape = SubResource("Shape_m")
