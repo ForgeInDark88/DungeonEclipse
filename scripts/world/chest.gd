@@ -10,6 +10,8 @@ var tier: int = 0
 var floor_number: int = 1
 var locked := false
 var opened := false
+## Golden chests are locked unless this is set (boss rewards).
+var unlocked_by_default := false
 
 @onready var sprite: AnimatedSprite2D = $Sprite
 
@@ -17,7 +19,7 @@ var opened := false
 func _ready() -> void:
 	add_to_group("interactable")
 	add_to_group("chests")
-	locked = tier == 2
+	locked = tier == 2 and not unlocked_by_default
 	AssetPaths.layout(AssetPaths.CHEST_LAYOUT).apply_to(sprite, AssetPaths.tex(AssetPaths.CHEST_SHEETS[tier]))
 	sprite.play(&"closed")
 

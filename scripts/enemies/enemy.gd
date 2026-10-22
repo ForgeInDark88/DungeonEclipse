@@ -71,6 +71,7 @@ func _ready() -> void:
 		motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
 
 
+
 func _physics_process(delta: float) -> void:
 	if _player == null or not is_instance_valid(_player):
 		_player = get_tree().get_first_node_in_group("player") as Player
@@ -321,7 +322,8 @@ func _shoot() -> void:
 func resistance(damage_type: int) -> float:
 	if damage_type <= 0 or damage_type >= StatTypes.DAMAGE_TYPE_RES.size():
 		return 0.0
-	return clampf(float(data.resistances.get(StatTypes.DAMAGE_TYPE_RES[damage_type], 0.0)), 0.0, 1.0)
+	# Negative values are weaknesses (extra damage).
+	return clampf(float(data.resistances.get(StatTypes.DAMAGE_TYPE_RES[damage_type], 0.0)), -1.0, 1.0)
 
 
 func status_resistance(id: StringName) -> float:

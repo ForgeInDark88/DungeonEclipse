@@ -14,6 +14,7 @@ const TORCH_SCENE := "res://scenes/world/wall_torch.tscn"
 const DRIP_SCENE := "res://scenes/world/water_drip.tscn"
 const TRAP_SCENE := "res://scenes/traps/trap.tscn"
 const MERCHANT_SCENE := "res://scenes/npc/merchant.tscn"
+const BOSS_SCENE := "res://scenes/bosses/boss.tscn"
 ## No traps this close (in cells) to the start.
 const SAFE_START_RADIUS := 8
 const T = LevelLayout.Tile
@@ -53,6 +54,11 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 			if noise.get_noise_2d(x, y) > -0.25 or _near_solid(cell):
 				back.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(_variant(cell), AssetPaths.TILE_ROW_BACKWALL))
 			_apply_tile(cell, layout.get_tile(x, y))
+	if layout.is_arena:
+		_spawn_boss()
+		_spawn_ambience()
+		_spawn_decorations()
+		return
 	_spawn_door()
 	_spawn_specials()
 	_spawn_chests()
@@ -60,6 +66,34 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	_spawn_ambience()
 	_spawn_decorations()
 	_spawn_traps()
+
+
+## Arena: the boss; door and reward chest appear when it dies.
+func _spawn_boss() -> void:
+	var data := ItemDatabase.boss_for_floor(floor_number)
+	if data == null:
+		_spawn_door()
+		return
+	var b: Boss = (load(BOSS_SCENE) as PackedScene).instantiate()
+	b.setup(data, floor_number)
+	var pos := cell_bottom(layout.boss_cell)
+	if data.behavior == EnemyData.Behavior.FLYER:
+		pos.y -= TILE * 4
+	add_entity(b, pos)
+	EventBus.boss_defeated.connect(_on_boss_defeated, CONNECT_ONE_SHOT)
+
+
+func _on_boss_defeated(_boss: BossData, _pos: Vector2) -> void:
+	if not is_inside_tree():
+		return
+	_spawn_door()
+	var chest: Chest = (load(CHEST_SCENE) as PackedScene).instantiate()
+	chest.tier = 2
+	chest.floor_number = floor_number
+	chest.unlocked_by_default = true
+	add_entity(chest, cell_bottom(Vector2i(layout.width / 2, layout.boss_cell.y)))
+	Fx.sparks(entities, cell_bottom(layout.exit_cell) + Vector2(0, -16), Color(0.7, 0.4, 1.0), 30, 120.0)
+	EventBus.message.emit("Страж повержен! Открылся проход.")
 
 
 ## Deterministic 0..3 variant per cell.

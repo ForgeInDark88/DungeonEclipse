@@ -6,6 +6,8 @@ const CHARACTER_CREATION := "res://scenes/ui/character_creation.tscn"
 const GAME := "res://scenes/game/game.tscn"
 ## A new biome every N floors (see data/biomes, BiomeData.order).
 const FLOORS_PER_BIOME := 3
+## Every N-th floor is a boss arena.
+const BOSS_EVERY := 5
 
 var hero: Hero
 var floor_number: int = 1
@@ -41,6 +43,10 @@ func reset_run_stats() -> void:
 
 func floor_seed() -> int:
 	return hash([run_seed, floor_number])
+
+
+func is_boss_floor(f: int = -1) -> bool:
+	return (floor_number if f < 0 else f) % BOSS_EVERY == 0
 
 
 func current_biome() -> BiomeData:

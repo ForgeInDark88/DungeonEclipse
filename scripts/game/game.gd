@@ -44,6 +44,11 @@ func _ready() -> void:
 	EventBus.floor_changed.connect(func(_f: int) -> void: _load_floor.call_deferred())
 	EventBus.player_died.connect(_on_player_died)
 	EventBus.shop_requested.connect(_open_shop)
+	EventBus.boss_spawned.connect(func(b: Node) -> void: AudioManager.play_music((b as Boss).boss.music))
+	EventBus.boss_defeated.connect(func(_b: BossData, _p: Vector2) -> void:
+		var biome := GameState.current_biome()
+		if biome:
+			AudioManager.play_music(biome.music))
 	_load_floor()
 
 
@@ -53,7 +58,8 @@ func _load_floor() -> void:
 		level.queue_free()
 	var floor_number := GameState.floor_number
 	var seed_value := GameState.floor_seed()
-	var layout := LevelGenerator.new().generate(floor_number, seed_value)
+	var gen := LevelGenerator.new()
+	var layout := gen.generate_arena(floor_number, seed_value) if GameState.is_boss_floor() else gen.generate(floor_number, seed_value)
 	var biome := GameState.current_biome()
 	level = LEVEL_SCENE.instantiate()
 	world.add_child(level)
@@ -62,7 +68,12 @@ func _load_floor() -> void:
 	player.global_position = level.start_position()
 	player.set_level(level)
 	_apply_biome(biome)
-	EventBus.message.emit("Этаж %d — %s" % [floor_number, biome.display_name] if biome else "Этаж %d" % floor_number)
+	for b in get_tree().get_nodes_in_group("bosses"):
+		AudioManager.play_music((b as Boss).boss.music)
+	if GameState.is_boss_floor():
+		EventBus.message.emit("Этаж %d — логово стража!" % floor_number)
+	else:
+		EventBus.message.emit("Этаж %d — %s" % [floor_number, biome.display_name] if biome else "Этаж %d" % floor_number)
 
 
 ## Palette, light, parallax and post effects of the biome.

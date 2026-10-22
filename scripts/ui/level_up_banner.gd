@@ -16,9 +16,10 @@ func _ready() -> void:
 		l.anchor_left = 0.0
 		l.anchor_right = 1.0
 		add_child(l)
-	title.position.y = 92
-	sub.position.y = 114
-	title.size.y = 20
+	title.offset_top = 92
+	title.offset_bottom = 112
+	sub.offset_top = 114
+	sub.offset_bottom = 128
 	pivot_offset = Vector2(320, 105)
 	scale = Vector2(0.3, 0.3)
 	modulate.a = 0.0

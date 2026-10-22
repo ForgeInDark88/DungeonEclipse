@@ -27,6 +27,9 @@ var _message_tween: Tween
 var _player: Player
 var _status_row: HBoxContainer
 var _status_keys: Array[String] = []
+var _boss_box: Control
+var _boss_bar: StatBar
+var _boss_name: Label
 
 
 func _ready() -> void:
@@ -51,6 +54,10 @@ func setup(p_hero: Hero, player: Player) -> void:
 	hero.skills.changed.connect(_refresh_skills)
 	EventBus.message.connect(show_message)
 	EventBus.item_collected.connect(_fly_item)
+	EventBus.boss_spawned.connect(_on_boss_spawned)
+	EventBus.boss_hp_changed.connect(func(hp: int, mx: int) -> void: _boss_bar.set_values(hp, mx))
+	EventBus.boss_defeated.connect(func(_b: BossData, _p: Vector2) -> void: _boss_box.visible = false)
+	EventBus.floor_changed.connect(func(_f: int) -> void: _boss_box.visible = false)
 	EventBus.floor_changed.connect(func(_f: int) -> void: _refresh_floor())
 	player.interact_hint_changed.connect(func(t: String) -> void: _hint.text = t)
 	_hp.set_values(hero.stats.hp, hero.stats.max_hp())
@@ -175,13 +182,40 @@ func _build() -> void:
 	_hint.offset_top = -panel_size.y - 16
 	_hint.offset_bottom = -panel_size.y - 4
 	root.add_child(_hint)
+	# Boss health bar (top centre).
+	_boss_box = Control.new()
+	_boss_box.anchor_left = 0.5
+	_boss_box.anchor_right = 0.5
+	_boss_box.offset_left = -140
+	_boss_box.offset_right = 140
+	_boss_box.offset_top = 22
+	_boss_box.offset_bottom = 48
+	_boss_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_boss_box.visible = false
+	root.add_child(_boss_box)
+	_boss_name = UIStyle.outlined_label("", 9, UIStyle.GOLD)
+	_boss_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_boss_name.size = Vector2(280, 12)
+	_boss_box.add_child(_boss_name)
+	_boss_bar = StatBar.create(AssetPaths.BAR_HP, Vector2(280, 12))
+	_boss_bar.position = Vector2(0, 13)
+	_boss_box.add_child(_boss_bar)
 	_message = UIStyle.outlined_label("", 9, Color.WHITE)
 	_message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_message.anchor_left = 0.0
 	_message.anchor_right = 1.0
-	_message.offset_top = 22
-	_message.offset_bottom = 36
+	_message.offset_top = 52
+	_message.offset_bottom = 66
 	root.add_child(_message)
+
+
+func _on_boss_spawned(b: Node) -> void:
+	var boss := b as Boss
+	_boss_name.text = boss.boss.title
+	_boss_box.visible = true
+	_boss_bar.set_values(boss.hp, boss.max_hp)
+	_boss_box.modulate.a = 0.0
+	create_tween().tween_property(_boss_box, "modulate:a", 1.0, 0.6)
 
 
 func _refresh_quick() -> void:

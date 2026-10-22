@@ -14,6 +14,10 @@ var chests: Array[Dictionary] = []
 var enemy_cells: Array[Vector2i] = []
 ## Special rooms: Array of {"type": StringName, "cell": Vector2i} (merchant, events...).
 var specials: Array[Dictionary] = []
+## Boss arena floors: one big room, the boss spawns at boss_cell and the exit
+## door appears only after the boss is defeated.
+var is_arena := false
+var boss_cell := Vector2i.ZERO
 
 
 func _init(w: int, h: int, fill: int = Tile.BRICK) -> void:

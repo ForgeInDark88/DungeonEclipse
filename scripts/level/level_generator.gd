@@ -54,6 +54,31 @@ func generate(floor_number: int, seed_value: int) -> LevelLayout:
 	return layout
 
 
+## Boss arena: one wide hall with platforms on two tiers.
+func generate_arena(floor_number: int, seed_value: int) -> LevelLayout:
+	rng.seed = seed_value
+	var w := 46
+	var h := 16
+	layout = LevelLayout.new(w, h, T.BRICK)
+	_make_border()
+	for y in range(1, h - 2):
+		for x in range(1, w - 1):
+			layout.set_tile(x, y, T.EMPTY)
+	var fy := h - 2  # floor row
+	for seg in [[7, 12, fy - 4], [w - 13, w - 8, fy - 4], [w / 2 - 4, w / 2 + 3, fy - 7]]:
+		for x in range(seg[0], seg[1] + 1):
+			layout.set_tile(x, seg[2], T.PLATFORM)
+	# Pillars at the walls so the boss cannot be cheesed in a corner.
+	for y in range(fy - 2, fy):
+		layout.set_tile(1, y, T.BRICK)
+		layout.set_tile(w - 2, y, T.BRICK)
+	layout.start_cell = Vector2i(4, fy - 1)
+	layout.exit_cell = Vector2i(w - 5, fy - 1)
+	layout.boss_cell = Vector2i(w / 2 + 6, fy - 1)
+	layout.is_arena = true
+	return layout
+
+
 # ------------------------------------------------------------------ geometry
 func _room_rect(room: Vector2i) -> Rect2i:
 	# Interior cells (walls are shared between neighbours).

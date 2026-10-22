@@ -616,6 +616,36 @@ func _test_scenes() -> void:
 		player.camera.reset_smoothing()
 		await frames(2)
 		await shot("13_biome_%s" % GameState.current_biome().id)
+	# --- 15.4 bosses
+	for f in [5, 10]:
+		GameState.floor_number = f
+		game._load_floor()
+		await frames(5)
+		var boss_nodes := get_tree().get_nodes_in_group("bosses")
+		check(boss_nodes.size() == 1 and player.level.layout.is_arena, "floor %d is a boss arena" % f)
+		if boss_nodes.is_empty():
+			continue
+		var b: Boss = boss_nodes[0]
+		var boss_hud: HUD = game.get_node("HUD")
+		check(boss_hud._boss_box.visible, "boss bar shown for %s" % b.boss.display_name)
+		player.status.apply(&"shield", 30.0, 99999.0)
+		await get_tree().create_timer(3.5).timeout
+		player.camera.reset_smoothing()
+		await shot("15_4_boss_%d" % f)
+		b.take_damage(roundi(b.max_hp * 0.5), false, Vector2.INF, 0)
+		await frames(3)
+		check(b.phase_index >= 1, "boss enters phase 2 at half HP (phase %d)" % b.phase_index)
+		b.take_damage(999999)
+		await frames(60)
+		var boss_doors := 0
+		var boss_chests := 0
+		for n in player.level.entities.get_children():
+			if n is ExitDoor:
+				boss_doors += 1
+			if n is Chest and n.tier == 2 and not n.locked:
+				boss_chests += 1
+		check(boss_doors == 1 and boss_chests == 1, "boss death opens the door and drops an epic chest")
+		player.status.clear()
 	GameState.floor_number = 1
 	game._load_floor()
 	await frames(5)

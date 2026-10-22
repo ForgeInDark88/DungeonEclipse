@@ -10,6 +10,7 @@ const LOOT_DIR := "res://data/loot_tables"
 const AFFIX_DIR := "res://data/affixes"
 const BIOME_DIR := "res://data/biomes"
 const TRAP_DIR := "res://data/traps"
+const BOSS_DIR := "res://data/bosses"
 const EQUIPMENT_LAYOUT := "res://data/equipment_layout.tres"
 
 var items: Dictionary = {}  # StringName -> ItemData
@@ -20,6 +21,7 @@ var loot_tables: Dictionary = {}  # StringName (file name) -> LootTable
 var affixes: Array[AffixData] = []
 var biomes: Array[BiomeData] = []
 var traps: Array[TrapData] = []
+var bosses: Array[BossData] = []
 var equipment_layout: EquipmentLayout
 
 
@@ -36,6 +38,11 @@ func reload() -> void:
 	affixes.clear()
 	biomes.clear()
 	traps.clear()
+	bosses.clear()
+	for res in _load_dir(BOSS_DIR):
+		if res is BossData:
+			bosses.append(res)
+	bosses.sort_custom(func(a: BossData, b: BossData) -> bool: return a.order < b.order)
 	for res in _load_dir(TRAP_DIR):
 		if res is TrapData:
 			traps.append(res)
@@ -94,6 +101,13 @@ func traps_for_floor(floor_number: int, biome_id: StringName) -> Array[TrapData]
 		if t.min_floor <= floor_number and (t.biomes.is_empty() or biome_id in t.biomes):
 			list.append(t)
 	return list
+
+
+## Bosses take turns: floor 5 -> first, floor 10 -> second, ...
+func boss_for_floor(floor_number: int) -> BossData:
+	if bosses.is_empty():
+		return null
+	return bosses[(floor_number / GameState.BOSS_EVERY - 1) % bosses.size()]
 
 
 ## Biome of a floor: they rotate every GameState.FLOORS_PER_BIOME floors.

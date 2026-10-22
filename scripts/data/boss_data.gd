@@ -1,0 +1,16 @@
+class_name BossData
+extends EnemyData
+## A boss: an enemy with phases of telegraphed attacks. Arenas appear every
+## GameState.BOSS_EVERY floors; bosses from data/bosses/ take turns by `order`.
+
+@export var title: String = ""
+@export var order: int = 0
+@export var phases: Array[BossPhase] = []
+@export var music: StringName = &"boss"
+## Contact damage multiplier while touching the hero.
+@export var contact_damage_mult: float = 0.5
+## Reward: item ids dropped on death (besides the epic chest).
+@export var reward_items: Array[StringName] = [&"guardian_seal"]
+## Own light so the boss reads well in any biome (alpha 0 = none).
+@export var glow_color: Color = Color(1.0, 0.8, 0.6, 1.0)
+@export var glow_scale: float = 1.0
