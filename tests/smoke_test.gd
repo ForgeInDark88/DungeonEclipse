@@ -255,7 +255,10 @@ func _test_scenes() -> void:
 	get_tree().change_scene_to_file("res://scenes/ui/character_creation.tscn")
 	await frames(10)
 	await shot("02_character_creation")
-	GameState.start_new_run(ItemDatabase.races[1], ItemDatabase.classes[0])
+	# Fixed seeds: the scripted play-through is reproducible (variety is
+	# covered by the generator test above).
+	seed(4242)
+	GameState.start_new_run(ItemDatabase.races[1], ItemDatabase.classes[0], 777)
 	await frames(30)
 	var game := get_tree().current_scene
 	check(game != null and game.name == "Game", "game scene loaded")
@@ -264,7 +267,8 @@ func _test_scenes() -> void:
 	var player := get_tree().get_first_node_in_group("player") as Player
 	check(player != null and player.level != null, "player in level")
 	await frames(30)
-	check(player.is_on_floor(), "player standing on floor")
+	check(player.is_on_floor(), "player standing on floor (pos %s, start %s, tile below %d, vel %s, climbing %s)" % [player.global_position,
+			player.level.start_position(), player.level.kind_at(player.global_position + Vector2(0, 4)), player.velocity, player.climbing])
 	await shot("03_game_start")
 	var x0 := player.global_position.x
 	Input.action_press("move_right")
@@ -435,6 +439,9 @@ func _test_scenes() -> void:
 	player.status.apply(&"poison", 1.2, 3.0)
 	await get_tree().create_timer(1.3).timeout
 	check(player.hero.stats.hp < hp0, "poison ticks on the hero (%d -> %d)" % [hp0, player.hero.stats.hp])
+	player.velocity = Vector2.ZERO
+	await frames(20)
+	player.velocity = Vector2.ZERO
 	player.status.apply(&"stun", 0.5)
 	var px := player.global_position.x
 	Input.action_press("move_right")
@@ -563,6 +570,8 @@ func _test_scenes() -> void:
 			if lvl.layout.get_tile(x, y) == LevelLayout.Tile.LADDER_TOP and not found:
 				found = true
 				player.global_position = lvl.cell_bottom(Vector2i(x, y - 1))
+				player.velocity = Vector2.ZERO
+				player._invulnerable = 2.0
 	if found:
 		await frames(20)
 		var ly := player.global_position.y

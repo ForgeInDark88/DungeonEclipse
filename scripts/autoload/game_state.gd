@@ -21,13 +21,14 @@ func _ready() -> void:
 	EventBus.enemy_killed.connect(func(_d: EnemyData, _p: Vector2) -> void: kills += 1)
 
 
-func start_new_run(race: RaceData, class_data: ClassData) -> void:
+## `seed_value` >= 0 makes the whole run reproducible (daily runs, tests).
+func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1) -> void:
 	hero = Hero.new(race, class_data, ItemDatabase.equipment_layout)
 	hero.give_starting_kit()
 	floor_number = 1
 	kills = 0
 	reset_run_stats()
-	run_seed = randi()
+	run_seed = randi() if seed_value < 0 else seed_value
 	run_active = true
 	get_tree().paused = false
 	get_tree().change_scene_to_file(GAME)

@@ -218,6 +218,14 @@ func _update_ladder_state() -> void:
 	if climbing:
 		if not on_ladder:
 			_stop_climbing()
+		elif velocity.y < 0.0 and not level.is_ladder_at(global_position + Vector2(0, -6)) \
+				and level.kind_at(global_position + Vector2(0, 1)) == LevelLayout.Tile.LADDER_TOP:
+			# Reached the top: stand on the ladder top platform instead of
+			# stopping a few pixels inside it and falling back through.
+			var top := level.cell_bottom(level.world_to_cell(global_position + Vector2(0, 1))).y - DungeonLevel.TILE
+			global_position.y = top
+			velocity.y = 0.0
+			_stop_climbing()
 		return
 	if on_ladder and Input.is_action_pressed("move_up"):
 		_start_climbing()
