@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/r_poison_dart.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/projectile_skill.gd" id="eff"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/knife.png" id="tex"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+texture = ExtResource("tex")
+speed = 320.0
+damage_multiplier = 1.3
+damage_per_level = 0.3
+count = 1
+extra_every_levels = 0
+spread_degrees = 10.0
+pierce = 1
+blast_radius = 0.0
+damage_type = 3
+color = Color(0.5, 0.9, 0.3, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"r_poison_dart"
+display_name = "Отравленный дротик"
+description = "Яд и пробивание."
+icon = ExtResource("icon")
+mana_cost = 8
+cooldown = 2.5
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+synergy_weapons = Array[int]([7])
+synergy_power = 0.3

@@ -1,7 +1,9 @@
 class_name SkillTreeBook
 extends CanvasLayer
-## Skill tree on the open book (K). Left page: the class tree — tiers from
-## SkillData.tree_row, columns in ClassData.skills order, lines to prerequisites.
+## Skill tree on the open book (K). Left page: the class tree — with
+## ClassData.tree_layout three branches (columns) of tiers; deeper tiers need
+## points spent in the branch, paired nodes are a choice of one. Old classes
+## without a layout: tiers from SkillData.tree_row, lines to prerequisites.
 ## Right page: the selected skill and the learn / upgrade button.
 ## The game is paused while the book is open.
 
@@ -9,6 +11,8 @@ const BOOK_SIZE := Vector2(500, 262)
 const BOOK_MARGIN := 15
 const NODE_SIZE := Vector2(28, 28)
 const ROW_GAP := 62.0
+## Tier step in the branch layout.
+const BRANCH_ROW_GAP := 34.0
 const PASSIVE_TINT := Color(0.75, 0.6, 1.0)
 
 var hero: Hero
@@ -21,6 +25,7 @@ var _title: Label
 var _icon: TextureRect
 var _text: RichTextLabel
 var _learn: Button
+var _respec: Button
 var _reason: Label
 var _selected: SkillData
 var _nodes: Dictionary = {}  # skill id -> Control
@@ -156,10 +161,15 @@ func _build() -> void:
 	_learn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	buttons.add_child(_learn)
 	buttons.add_child(BookPageScreen.button("Закрыть", close))
+	_respec = BookPageScreen.button("", respec)
+	_respec.add_theme_font_size_override("font_size", 7)
+	right.add_child(_respec)
 
 
 ## Positions of the tree nodes: rows by tree_row, columns spread evenly.
 func _layout() -> Dictionary:
+	if hero.skills.has_branches():
+		return _branch_layout()
 	var rows := {}
 	for s in hero.skills.all:
 		if not rows.has(s.tree_row):
@@ -174,14 +184,60 @@ func _layout() -> Dictionary:
 	return pos
 
 
+## Branch columns; two skills on one tier of a branch (a choice) side by side.
+func _branch_layout() -> Dictionary:
+	var sk := hero.skills
+	var cols := maxi(1, sk.branch_names.size())
+	var groups := {}  # "branch:row" -> [skills]
+	for s in sk.all:
+		var key := "%d:%d" % [sk.branch_of(s), sk.row_of(s)]
+		if not groups.has(key):
+			groups[key] = []
+		groups[key].append(s)
+	var pos := {}
+	for key: String in groups:
+		var list: Array = groups[key]
+		var b := int(key.get_slice(":", 0))
+		var row := int(key.get_slice(":", 1))
+		var cx := _tree_area.size.x * (b + 0.5) / cols
+		for i in list.size():
+			var dx := (i - (list.size() - 1) / 2.0) * (NODE_SIZE.x + 6.0)
+			pos[list[i].id] = Vector2(cx + dx, 20.0 + row * BRANCH_ROW_GAP + NODE_SIZE.y / 2.0)
+	return pos
+
+
+func _line(a: Vector2, b: Vector2, lit: bool) -> void:
+	var line := Line2D.new()
+	line.width = 2.0
+	line.default_color = UIStyle.GOOD if lit else UIStyle.INK_SOFT.lightened(0.3)
+	line.add_point(a + Vector2(0, NODE_SIZE.y / 2.0))
+	line.add_point(b - Vector2(0, NODE_SIZE.y / 2.0))
+	_tree_area.add_child(line)
+
+
 func _refresh() -> void:
 	for c in _tree_area.get_children():
 		c.queue_free()
 	_nodes.clear()
 	var pos := _layout()
 	var sk := hero.skills
+	if sk.has_branches():
+		var cols := maxi(1, sk.branch_names.size())
+		for b in sk.branch_names.size():
+			var head := UIStyle.label("%s · %d" % [sk.branch_names[b], sk.spent_in(b)], 7, UIStyle.INK)
+			head.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			head.position = Vector2(_tree_area.size.x * b / cols, 0)
+			head.size = Vector2(_tree_area.size.x / cols, 12)
+			_tree_area.add_child(head)
+		# Each tier is linked to the tier above in the same branch.
+		for s in sk.all:
+			for o in sk.all:
+				if sk.branch_of(o) == sk.branch_of(s) and sk.row_of(o) == sk.row_of(s) - 1:
+					_line(pos[o.id], pos[s.id], sk.is_learned(o) and sk.is_learned(s))
 	# Prerequisite lines first, so the nodes are drawn over them.
 	for s in sk.all:
+		if sk.has_branches():
+			break
 		for r in s.requires:
 			if r == null or not pos.has(r.id):
 				continue
@@ -197,6 +253,9 @@ func _refresh() -> void:
 		_tree_area.add_child(node)
 		_nodes[s.id] = node
 	_points.text = "Очков навыков: %d · уровень героя %d" % [sk.skill_points, hero.level]
+	var cost := sk.respec_cost(hero.level)
+	_respec.text = "Сбросить навыки — %d з." % cost
+	_respec.disabled = sk.spent_total() <= 0 or hero.gold < cost
 	_show(_selected)
 
 
@@ -224,6 +283,9 @@ func _node(s: SkillData) -> Control:
 	var lvl := UIStyle.outlined_label("%d/%d" % [rank, s.max_level], 6, UIStyle.GOLD if rank > 0 else UIStyle.PARCHMENT)
 	lvl.position = Vector2(NODE_SIZE.x - 14, NODE_SIZE.y - 9)
 	box.add_child(lvl)
+	if rank <= 0 and sk.chosen_rival(s) != null:
+		frame.modulate = Color(0.5, 0.45, 0.45)
+		icon.modulate = Color(0.3, 0.25, 0.25, 0.7)
 	if available:
 		var plus := UIStyle.outlined_label("+", 9, Color(0.4, 1.0, 0.4))
 		plus.position = Vector2(NODE_SIZE.x - 7, -4)
@@ -255,9 +317,19 @@ func _show(s: SkillData) -> void:
 	_icon.texture = s.icon
 	_title.text = "Пассивный навык" if s.is_passive() else "Активный навык"
 	var text := TooltipText.skill(s, rank, 0)
-	if s.required_level > 1:
-		text += "\n[color=#%s]Требуется уровень героя: %d[/color]" % [UIStyle.INK_SOFT.to_html(false), s.required_level]
-	if not s.requires.is_empty():
+	var soft := UIStyle.INK_SOFT.to_html(false)
+	if sk.required_level(s) > 1:
+		text += "\n[color=#%s]Требуется уровень героя: %d[/color]" % [soft, sk.required_level(s)]
+	if sk.required_points(s) > 0:
+		var b := sk.branch_of(s)
+		text += "\n[color=#%s]Нужно вложить в ветвь «%s»: %d (сейчас %d)[/color]" % [soft, sk.branch_names[b], sk.required_points(s), sk.spent_in(b)]
+	if sk.choice_of(s) != "":
+		var rivals: Array[String] = []
+		for o in sk.all:
+			if o != s and sk.choice_of(o) == sk.choice_of(s):
+				rivals.append(o.display_name)
+		text += "\n[color=#%s]Выбор пути: или этот навык, или %s (до сброса)[/color]" % [UIStyle.GOLD.darkened(0.4).to_html(false), ", ".join(rivals)]
+	if not sk.has_branches() and not s.requires.is_empty():
 		var names: Array[String] = []
 		for r in s.requires:
 			if r:
@@ -275,6 +347,19 @@ func _show(s: SkillData) -> void:
 	_reason.text = reason
 	_learn.text = "Изучить" if rank == 0 else "Улучшить"
 	_learn.disabled = reason != ""
+
+
+## Forget every learned skill for gold; the points come back.
+func respec() -> void:
+	var sk := hero.skills
+	var cost := sk.respec_cost(hero.level)
+	if sk.spent_total() <= 0 or not hero.spend_gold(cost):
+		AudioManager.play_ui(&"chest_locked")
+		return
+	var back := sk.reset()
+	EventBus.message.emit("Навыки сброшены: возвращено %d очк." % back)
+	AudioManager.play_ui(&"ui_equip")
+	_refresh()
 
 
 func learn(s: SkillData) -> bool:

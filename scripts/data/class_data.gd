@@ -32,6 +32,15 @@ extends Resource
 ## Item ids placed into the quick bar at start, in order.
 @export var starting_quick_bar: Array[StringName] = []
 @export var skills: Array[SkillData] = []
+@export_group("Skill tree")
+## Branches of the tree (columns), e.g. ["Оружие", "Стойкость", "Ярость"].
+## Empty = old layout by SkillData.tree_row / requires.
+@export var branch_names: Array[String] = []
+## skill id -> {"branch": column, "row": tier, "points": points that must be
+## spent in this branch first, "level": hero level, "choice": group — only
+## one skill of a group can be learned ("" = none)}.
+@export var tree_layout: Dictionary = {}
+@export_group("")
 ## WeaponItemData.WeaponType values this class is trained in (empty = all).
 ## Other weapons still work but with WRONG_WEAPON_* penalties.
 @export var allowed_weapon_types: Array[int] = []

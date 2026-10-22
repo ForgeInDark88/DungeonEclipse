@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/r_phantom.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/dash_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+speed = 460.0
+duration = 0.2
+duration_per_level = 0.03
+damage_multiplier = 1.6
+
+[resource]
+script = ExtResource("skill")
+id = &"r_phantom"
+display_name = "Фантомный рывок"
+description = "Проходит сквозь врагов, раня их."
+icon = ExtResource("icon")
+mana_cost = 14
+cooldown = 4.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &""
+synergy_weapons = Array[int]([])
+synergy_power = 0.3

@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/r_deadly_dance.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/area_blast_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+radius = 42.0
+radius_per_level = 5.0
+damage_multiplier = 2.0
+damage_per_level = 0.35
+knockback = 40.0
+breaks_tiles = false
+stun_time = 0.0
+damage_type = 0
+color = Color(0.9, 0.9, 0.7, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"r_deadly_dance"
+display_name = "Смертельный танец"
+description = "Вихрь клинков вокруг разбойника."
+icon = ExtResource("icon")
+mana_cost = 22
+cooldown = 10.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_heavy"
+synergy_weapons = Array[int]([3, 4])
+synergy_power = 0.3

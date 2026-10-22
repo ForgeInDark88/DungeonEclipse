@@ -31,7 +31,7 @@ func _init(p_race: RaceData, p_class: ClassData, layout: EquipmentLayout) -> voi
 	skills.changed.connect(_refresh_passives)
 	inventory.changed.connect(_refresh_relics)
 	EventBus.enemy_killed.connect(func(_d: EnemyData, _p: Vector2) -> void: _on_enemy_killed_heal())
-	skills.setup(class_data.skills)
+	skills.setup(class_data.skills, class_data.tree_layout, class_data.branch_names)
 
 
 ## Fills inventory / equipment / quick bar from ClassData.starting_* fields.

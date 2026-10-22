@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/w_rage_leech.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/passive_skill.gd" id="eff"]
+[ext_resource type="Script" path="res://scripts/combat/life_steal_hit_effect.gd" id="hit"]
+
+[sub_resource type="Resource" id="Hit"]
+script = ExtResource("hit")
+percent = 0.15
+chance = 1.0
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+bonuses = {}
+bonuses_per_level = {}
+hit_chance = 0.25
+hit_chance_per_level = 0.1
+hit_effect = SubResource("Hit")
+
+[resource]
+script = ExtResource("skill")
+id = &"w_rage_leech"
+display_name = "Кровавая ярость"
+description = "Удары возвращают часть урона здоровьем."
+icon = ExtResource("icon")
+mana_cost = 0
+cooldown = 0.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3

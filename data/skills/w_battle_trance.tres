@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/w_battle_trance.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/buff_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+key = "trance"
+bonuses = {
+"crit_chance": 0.15,
+"speed": 30
+}
+bonuses_per_level = {
+"crit_chance": 0.03
+}
+duration = 10.0
+duration_per_level = 1.0
+tint = Color(0.8, 0.7, 1.0, 1)
+heal_percent = 0.0
+
+[resource]
+script = ExtResource("skill")
+id = &"w_battle_trance"
+display_name = "Боевой транс"
+description = "Время замедляется: точность и скорость."
+icon = ExtResource("icon")
+mana_cost = 25
+cooldown = 28.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3

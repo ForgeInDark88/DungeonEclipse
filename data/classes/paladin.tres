@@ -14,6 +14,27 @@
 [ext_resource type="Resource" path="res://data/skills/holy_strike.tres" id="sk_holy_strike"]
 [ext_resource type="Resource" path="res://data/skills/light_aura.tres" id="sk_light_aura"]
 [ext_resource type="Resource" path="res://data/skills/righteous_wrath.tres" id="sk_righteous_wrath"]
+[ext_resource type="Resource" path="res://data/skills/holy_light.tres" id="tree_holy_light"]
+[ext_resource type="Resource" path="res://data/skills/blessing.tres" id="tree_blessing"]
+[ext_resource type="Resource" path="res://data/skills/light_aura.tres" id="tree_light_aura"]
+[ext_resource type="Resource" path="res://data/skills/p_healer.tres" id="tree_p_healer"]
+[ext_resource type="Resource" path="res://data/skills/p_sanctuary.tres" id="tree_p_sanctuary"]
+[ext_resource type="Resource" path="res://data/skills/p_saint.tres" id="tree_p_saint"]
+[ext_resource type="Resource" path="res://data/skills/p_divine_shield.tres" id="tree_p_divine_shield"]
+[ext_resource type="Resource" path="res://data/skills/iron_skin.tres" id="tree_iron_skin"]
+[ext_resource type="Resource" path="res://data/skills/p_bulwark.tres" id="tree_p_bulwark"]
+[ext_resource type="Resource" path="res://data/skills/arcane_shield.tres" id="tree_arcane_shield"]
+[ext_resource type="Resource" path="res://data/skills/p_guardian.tres" id="tree_p_guardian"]
+[ext_resource type="Resource" path="res://data/skills/p_fortress.tres" id="tree_p_fortress"]
+[ext_resource type="Resource" path="res://data/skills/p_aegis.tres" id="tree_p_aegis"]
+[ext_resource type="Resource" path="res://data/skills/p_martyr.tres" id="tree_p_martyr"]
+[ext_resource type="Resource" path="res://data/skills/power_strike.tres" id="tree_power_strike"]
+[ext_resource type="Resource" path="res://data/skills/p_zeal.tres" id="tree_p_zeal"]
+[ext_resource type="Resource" path="res://data/skills/holy_strike.tres" id="tree_holy_strike"]
+[ext_resource type="Resource" path="res://data/skills/p_smite_bolt.tres" id="tree_p_smite_bolt"]
+[ext_resource type="Resource" path="res://data/skills/p_judgment.tres" id="tree_p_judgment"]
+[ext_resource type="Resource" path="res://data/skills/righteous_wrath.tres" id="tree_righteous_wrath"]
+[ext_resource type="Resource" path="res://data/skills/p_crusader.tres" id="tree_p_crusader"]
 
 [resource]
 script = ExtResource("2_script")
@@ -53,7 +74,31 @@ starting_items = {
 }
 starting_equipment = Array[StringName]([&"club", &"leather_armor"])
 starting_quick_bar = Array[StringName]([&"bomb", &"mana_crystal", &"health_potion", &"rope"])
-skills = Array[ExtResource("3_skill")]([ExtResource("4_holy"), ExtResource("5_strike"), ExtResource("6_skin"), ExtResource("7_shield"), ExtResource("sk_blessing"), ExtResource("sk_holy_strike"), ExtResource("sk_light_aura"), ExtResource("sk_righteous_wrath")])
+skills = Array[ExtResource("3_skill")]([ExtResource("tree_holy_light"), ExtResource("tree_blessing"), ExtResource("tree_light_aura"), ExtResource("tree_p_healer"), ExtResource("tree_p_sanctuary"), ExtResource("tree_p_saint"), ExtResource("tree_p_divine_shield"), ExtResource("tree_iron_skin"), ExtResource("tree_p_bulwark"), ExtResource("tree_arcane_shield"), ExtResource("tree_p_guardian"), ExtResource("tree_p_fortress"), ExtResource("tree_p_aegis"), ExtResource("tree_p_martyr"), ExtResource("tree_power_strike"), ExtResource("tree_p_zeal"), ExtResource("tree_holy_strike"), ExtResource("tree_p_smite_bolt"), ExtResource("tree_p_judgment"), ExtResource("tree_righteous_wrath"), ExtResource("tree_p_crusader")])
 allowed_weapon_types = Array[int]([6, 0])
 unlock_shards = 20
 unlock_gold = 300
+branch_names = Array[String](["Свет", "Щит", "Кара"])
+tree_layout = {
+"holy_light": {"branch": 0, "row": 0, "points": 0, "level": 1, "choice": ""},
+"blessing": {"branch": 0, "row": 1, "points": 1, "level": 2, "choice": ""},
+"light_aura": {"branch": 0, "row": 2, "points": 3, "level": 4, "choice": "paladin_0_2"},
+"p_healer": {"branch": 0, "row": 2, "points": 3, "level": 4, "choice": "paladin_0_2"},
+"p_sanctuary": {"branch": 0, "row": 3, "points": 6, "level": 6, "choice": ""},
+"p_saint": {"branch": 0, "row": 4, "points": 9, "level": 9, "choice": "paladin_0_4"},
+"p_divine_shield": {"branch": 0, "row": 4, "points": 9, "level": 9, "choice": "paladin_0_4"},
+"iron_skin": {"branch": 1, "row": 0, "points": 0, "level": 1, "choice": ""},
+"p_bulwark": {"branch": 1, "row": 1, "points": 1, "level": 2, "choice": ""},
+"arcane_shield": {"branch": 1, "row": 2, "points": 3, "level": 4, "choice": "paladin_1_2"},
+"p_guardian": {"branch": 1, "row": 2, "points": 3, "level": 4, "choice": "paladin_1_2"},
+"p_fortress": {"branch": 1, "row": 3, "points": 6, "level": 6, "choice": ""},
+"p_aegis": {"branch": 1, "row": 4, "points": 9, "level": 9, "choice": "paladin_1_4"},
+"p_martyr": {"branch": 1, "row": 4, "points": 9, "level": 9, "choice": "paladin_1_4"},
+"power_strike": {"branch": 2, "row": 0, "points": 0, "level": 1, "choice": ""},
+"p_zeal": {"branch": 2, "row": 1, "points": 1, "level": 2, "choice": ""},
+"holy_strike": {"branch": 2, "row": 2, "points": 3, "level": 4, "choice": "paladin_2_2"},
+"p_smite_bolt": {"branch": 2, "row": 2, "points": 3, "level": 4, "choice": "paladin_2_2"},
+"p_judgment": {"branch": 2, "row": 3, "points": 6, "level": 6, "choice": ""},
+"righteous_wrath": {"branch": 2, "row": 4, "points": 9, "level": 9, "choice": "paladin_2_4"},
+"p_crusader": {"branch": 2, "row": 4, "points": 9, "level": 9, "choice": "paladin_2_4"}
+}

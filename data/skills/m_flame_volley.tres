@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/m_flame_volley.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/projectile_skill.gd" id="eff"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/fireball.png" id="tex"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+texture = ExtResource("tex")
+speed = 230.0
+damage_multiplier = 1.1
+damage_per_level = 0.25
+count = 3
+extra_every_levels = 0
+spread_degrees = 14.0
+pierce = 0
+blast_radius = 18.0
+damage_type = 1
+color = Color(1.0, 0.5, 0.15, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"m_flame_volley"
+display_name = "Огненный залп"
+description = "Три огненных шара веером."
+icon = ExtResource("icon")
+mana_cost = 18
+cooldown = 5.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3
