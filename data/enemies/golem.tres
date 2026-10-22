@@ -1,0 +1,60 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=9 format=3]
+
+[ext_resource type="Resource" path="res://data/loot_tables/enemy_rare.tres" id="1_gupwi"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_uvnl5"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="3_2htdl"]
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="4_kit7j"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/golem_sheet.png" id="5_as0sq"]
+[ext_resource type="Resource" path="res://data/animations/golem_layout.tres" id="6_6y21x"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/golem.png" id="7_hlrkk"]
+
+[sub_resource type="Resource" id="Resource_oe7sd"]
+script = ExtResource("3_2htdl")
+status = &"stun"
+duration = 0.8
+power = 1.0
+chance = 0.35
+
+[resource]
+script = ExtResource("4_kit7j")
+id = &"golem"
+display_name = "Каменный голем"
+texture = ExtResource("7_hlrkk")
+sheet = ExtResource("5_as0sq")
+sheet_layout = ExtResource("6_6y21x")
+behavior = 0
+collision_size = Vector2(18, 26)
+max_hp = 80
+damage = 16
+armor = 4
+speed = 20.0
+chase_speed = 35.0
+aggro_range = 120.0
+attack_range = 22.0
+attack_cooldown = 2.4
+jumps = false
+projectile_speed = 140.0
+xp_reward = 30
+loot_table = ExtResource("1_gupwi")
+loot_chance = 0.6
+gold_min = 5
+gold_max = 12
+min_floor = 3
+spawn_weight = 0.7
+biomes = Array[StringName]([])
+tint = Color(1, 1, 1, 1)
+gender = "m"
+phases_through_walls = false
+ceiling_ambush = false
+aoe_radius = 36.0
+max_summons = 3
+resistances = {
+"res_fire": 0.3,
+"res_ice": -0.25,
+"res_poison": 1.0
+}
+status_immunities = Array[StringName]([&"poison", &"bleed"])
+on_hit_effects = Array[ExtResource("2_uvnl5")]([SubResource("Resource_oe7sd")])
+sound_hurt = &"enemy_hurt"
+sound_death = &"enemy_death"
+sound_attack = &""

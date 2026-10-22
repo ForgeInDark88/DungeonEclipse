@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=9 format=3]
+
+[ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="1_vx4a0"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_l7asn"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="3_v8c5q"]
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="4_twsag"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/ghost_sheet.png" id="5_8bmuw"]
+[ext_resource type="Resource" path="res://data/animations/ghost_layout.tres" id="6_oe5gy"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/ghost.png" id="7_dy1md"]
+
+[sub_resource type="Resource" id="Resource_3d3ub"]
+script = ExtResource("3_v8c5q")
+status = &"curse"
+duration = 5.0
+power = 1.0
+chance = 0.35
+
+[resource]
+script = ExtResource("4_twsag")
+id = &"ghost"
+display_name = "Призрак"
+texture = ExtResource("7_dy1md")
+sheet = ExtResource("5_8bmuw")
+sheet_layout = ExtResource("6_oe5gy")
+behavior = 1
+collision_size = Vector2(12, 16)
+max_hp = 22
+damage = 8
+armor = 0
+speed = 25.0
+chase_speed = 60.0
+aggro_range = 170.0
+attack_range = 12.0
+attack_cooldown = 1.6
+jumps = false
+projectile_speed = 140.0
+xp_reward = 16
+loot_table = ExtResource("1_vx4a0")
+loot_chance = 0.35
+gold_min = 1
+gold_max = 4
+min_floor = 4
+spawn_weight = 0.8
+biomes = Array[StringName]([&"catacombs", &"ruins"])
+tint = Color(1, 1, 1, 0.9)
+gender = "m"
+phases_through_walls = true
+ceiling_ambush = false
+aoe_radius = 0.0
+max_summons = 3
+resistances = {
+"res_ice": 0.5,
+"res_magic": -0.5
+}
+status_immunities = Array[StringName]([&"bleed", &"poison"])
+on_hit_effects = Array[ExtResource("2_l7asn")]([SubResource("Resource_3d3ub")])
+sound_hurt = &"enemy_hurt"
+sound_death = &"enemy_death"
+sound_attack = &""

@@ -15,13 +15,12 @@ var _attack: BossAttack
 var _last_attack: BossAttack
 var _target_pos := Vector2.ZERO
 var _contact_cd := 0.0
-var _summons: Array[Node] = []
 var _jump_from := Vector2.ZERO
 var _jump_t := 0.0
 
 
-func setup(p_data: EnemyData, p_floor: int) -> void:
-	super(p_data, p_floor)
+func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null) -> void:
+	super(p_data, p_floor, p_elite)
 	boss = p_data as BossData
 
 

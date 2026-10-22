@@ -226,9 +226,20 @@ SUMMON (призыв монстров), TELEPORT (исчезает и появл
 Затем добавьте навык в `skills` класса (до 8; первые 4 вызываются клавишами Q/E/R/F).
 
 ### Новый монстр
-`EnemyData` в `data/enemies/`: `behavior` (WALKER, FLYER, RANGED), `texture`, `collision_size`,
-HP, урон, броня, скорости, дальности, `xp_reward`, `loot_table`, `loot_chance`, `min_floor`,
-`spawn_weight`. Отдельная сцена не нужна: все монстры используют `scenes/enemies/enemy.tscn`.
+`EnemyData` в `data/enemies/`: `behavior` (WALKER, FLYER, RANGED), `texture`/`sheet`/`sheet_layout`,
+`collision_size`, HP, урон, броня, скорости, дальности, `xp_reward`, `loot_table`, `loot_chance`,
+золото, `min_floor`, `spawn_weight`, `biomes`, `resistances`, `status_immunities`,
+`on_hit_effects`, звуки, `gender` (для имён элиты). Особые умения включаются флагами:
+`phases_through_walls` (призрак), `ceiling_ambush` (паук ждёт на потолке), `aoe_radius`
+(удар по площади, голем), `summon` + `max_summons` (некромант). Отдельная сцена не нужна:
+все монстры используют `scenes/enemies/enemy.tscn`.
+
+### Элитные монстры
+`EliteAffixData` в `data/elites/`: префикс по родам, множители HP/урона/скорости/перезарядки,
+броня, сопротивления, иммунитеты, эффекты при ударе, постоянный статус (регенерация), кража
+жизни, цвет свечения, множители опыта и золота, `min_floor`. Шанс элиты — 5% на 1-м этаже,
++2% за этаж (максимум 30%); элита крупнее, светится, подписана («Огненный каменный голем») и
+всегда роняет лут.
 
 ### Новый слот экипировки
 Добавьте `EquipSlotDef` в `data/equipment_layout.tres`: `id`, `slot_type`, `label`, `placeholder`,

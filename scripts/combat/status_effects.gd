@@ -14,6 +14,8 @@ signal changed
 signal applied(id: StringName)
 
 const TICK := 0.5
+## Cursed creatures take this much more damage.
+const CURSE_DAMAGE_MULT := 1.25
 ## id -> [name, color, is_damage_over_time, damage type (WeaponItemData.DamageType)]
 const INFO := {
 	&"poison": ["Яд", Color(0.45, 0.9, 0.3), true, 3],

@@ -465,10 +465,21 @@ func _spawn_enemies() -> void:
 	var weights: Array[float] = []
 	for e in pool:
 		weights.append(e.spawn_weight)
+	# Elites: 5% on floor 1, +2% per floor, at most 30%.
+	var elite_chance := minf(0.05 + 0.02 * (floor_number - 1), 0.3)
+	var elite_pool: Array[EliteAffixData] = []
+	var elite_weights: Array[float] = []
+	for e in ItemDatabase.elites:
+		if e.min_floor <= floor_number:
+			elite_pool.append(e)
+			elite_weights.append(e.weight)
 	for cell in layout.enemy_cells:
 		var data: EnemyData = pool[LootTable._weighted_index(weights, rng)]
 		var enemy := (load(ENEMY_SCENE) as PackedScene).instantiate()
-		enemy.setup(data, floor_number)
+		var elite: EliteAffixData = null
+		if not elite_pool.is_empty() and rng.randf() < elite_chance:
+			elite = elite_pool[LootTable._weighted_index(elite_weights, rng)]
+		enemy.setup(data, floor_number, elite)
 		var pos := cell_bottom(cell)
 		if data.behavior == EnemyData.Behavior.FLYER:
 			pos.y -= TILE * 2

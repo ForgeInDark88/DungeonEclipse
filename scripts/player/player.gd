@@ -416,6 +416,8 @@ func take_damage(amount: int, from_pos: Vector2 = Vector2.INF, damage_type: int 
 		return
 	if damage_type > 0:
 		amount = roundi(amount * (1.0 - hero.stats.resistance(damage_type)))
+	if status.has(&"curse"):
+		amount = roundi(amount * StatusEffects.CURSE_DAMAGE_MULT)
 	amount = status.absorb(amount)
 	if amount <= 0:
 		visual.flash(Color(0.6, 0.8, 1.0), 0.12)

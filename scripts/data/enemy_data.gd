@@ -38,6 +38,19 @@ enum Behavior { WALKER, FLYER, RANGED }
 ## Biome ids where it appears (empty = everywhere).
 @export var biomes: Array[StringName] = []
 @export var tint: Color = Color.WHITE
+## Russian gender of the name (m/f/n) for elite prefixes.
+@export var gender: String = "m"
+
+@export_group("Special abilities")
+## Flies through walls (ghosts): no world collision, no line-of-sight checks.
+@export var phases_through_walls: bool = false
+## Waits on the ceiling and drops on the hero passing below (spiders).
+@export var ceiling_ambush: bool = false
+## Melee hits damage everything in this radius (golem slam). 0 = normal hit.
+@export var aoe_radius: float = 0.0
+## Summoners: raise these instead of shooting every other attack.
+@export var summon: EnemyData
+@export var max_summons: int = 3
 @export_group("Statuses and elements")
 ## Resistances by stat key: {"res_fire": 0.5, "res_poison": 1.0}.
 @export var resistances: Dictionary = {}

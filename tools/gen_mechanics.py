@@ -306,12 +306,194 @@ def bosses():
     gp.save(seal, "sprites/items/guardian_seal.png")
 
 
+# ------------------------------------------------------------ new monsters
+def new_monsters():
+    # Spider 22x14
+    fw, fh = 22, 14
+    lay = gs.monster_layout("spider_layout", fw, fh, (11, 14), counts={"windup": 3, "attack": 3, "death": 5})
+
+    def spider(leg=0, crouch=0, eyes=(255, 40, 40), alpha=255, flat=0, open_jaw=False):
+        im = gp.new(fw, fh)
+        d = ImageDraw.Draw(im)
+        body = (60, 40, 55, alpha)
+        cy = 8 + crouch + flat
+        for k, side in enumerate((-1, 1)):
+            for j in range(3):
+                x0 = 11 + side * (3 + j)
+                lift = ((leg + j + k) % 2) * 2
+                d.line((x0, cy, x0 + side * 5, cy - 3 - lift + flat), fill=body)
+                d.line((x0 + side * 5, cy - 3 - lift + flat, x0 + side * 7, 13), fill=body)
+        d.ellipse((5, cy - 4 + flat, 14, cy + 3), fill=(80, 55, 75, alpha))
+        d.ellipse((12, cy - 3 + flat, 18, cy + 2), fill=(70, 45, 65, alpha))
+        d.point((16, cy - 1 + flat), fill=(eyes[0], eyes[1], eyes[2], alpha))
+        d.point((17, cy - 2 + flat), fill=(eyes[0], eyes[1], eyes[2], alpha))
+        if open_jaw:
+            d.line((18, cy, 20, cy + 2), fill=(220, 220, 200, alpha))
+        d.point((8, cy - 3 + flat), fill=(200, 60, 60, alpha))
+        return im
+
+    def sp(name, i, n):
+        if name == "idle":
+            return spider(leg=i % 2)
+        if name == "walk":
+            return spider(leg=i)
+        if name == "windup":
+            return spider(crouch=1 + i // 2, eyes=(255, 200, 40))
+        if name == "attack":
+            return spider(open_jaw=True)
+        if name == "hurt":
+            return spider(eyes=(255, 255, 255))
+        return spider(flat=min(4, i + 1), alpha=255 - i * 45)
+
+    gs.render_sheet(lay, sp, "sprites/enemies/spider_sheet.png")
+    lay.write_tres()
+
+    # Golem 28x30
+    fw, fh = 28, 30
+    lay = gs.monster_layout("golem_layout", fw, fh, (14, 30), counts={"windup": 3, "attack": 3, "death": 6})
+
+    def golem(step=0, arms_up=0, crouch=0, core=(80, 220, 255), alpha=255, crumble=0):
+        im = gp.new(fw, fh)
+        d = ImageDraw.Draw(im)
+        stone = (110, 105, 100, alpha)
+        if crumble:
+            for k in range(crumble + 3):
+                x = 3 + (k * 7) % 20
+                y = 29 - (k % 3) * 2
+                d.rectangle((x, y - 3, x + 4, y), fill=gp.shade(stone, 0.8 + (k % 2) * 0.2))
+            return im
+        y0 = crouch
+        d.rectangle((7 + step, 22 + y0, 12 + step, 29), fill=gp.shade(stone, 0.85))
+        d.rectangle((15 - step, 22 + y0, 20 - step, 29), fill=stone)
+        d.rectangle((5, 9 + y0, 22, 23 + y0), fill=stone)
+        d.rectangle((9, 3 + y0, 18, 10 + y0), fill=gp.shade(stone, 1.1))
+        d.rectangle((14, 5 + y0, 16, 6 + y0), fill=(core[0], core[1], core[2], alpha))
+        d.ellipse((11, 13 + y0, 16, 18 + y0), fill=(core[0], core[1], core[2], alpha))
+        ay = 12 + y0 - arms_up * 8
+        d.rectangle((1, ay, 5, ay + 10), fill=gp.shade(stone, 0.9))
+        d.rectangle((22, ay, 26, ay + 10), fill=gp.shade(stone, 0.9))
+        d.line((7, 12 + y0, 11, 20 + y0), fill=gp.shade(stone, 0.7))
+        return im
+
+    def gm(name, i, n):
+        if name == "idle":
+            return golem(crouch=[0, 0, 1, 1][i])
+        if name == "walk":
+            return golem(step=[-1, 0, 1, 1, 0, -1][i], crouch=i % 2)
+        if name == "windup":
+            return golem(arms_up=1, crouch=-i, core=(255, 200, 80))
+        if name == "attack":
+            return golem(arms_up=0, crouch=[2, 3, 1][i], core=(255, 120, 60))
+        if name == "hurt":
+            return golem(core=(255, 255, 255))
+        return golem(crumble=i, alpha=255) if i > 1 else golem(crouch=2 + i * 2, core=(60, 60, 60))
+
+    gs.render_sheet(lay, gm, "sprites/enemies/golem_sheet.png")
+    lay.write_tres()
+
+    # Ghost 18x22 (flyer)
+    fw, fh = 18, 22
+    lay = gs.monster_layout("ghost_layout", fw, fh, (9, 18), "fly", {"idle": 4, "fly": 4, "windup": 3, "attack": 3, "death": 5})
+
+    def ghost(phase=0.0, alpha=170, mouth=False, eyes=(180, 230, 255), dissolve=0):
+        im = gp.new(fw, fh)
+        d = ImageDraw.Draw(im)
+        c = (200, 220, 240, alpha)
+        d.pieslice((2, 1, 15, 16), 180, 360, fill=c)
+        d.rectangle((2, 8, 15, 15), fill=c)
+        for k in range(4):
+            x = 2 + k * 4
+            off = int(math.sin(phase + k) * 2)
+            d.polygon([(x, 15), (x + 4, 15), (x + 2, 19 + off)], fill=c)
+        d.rectangle((5, 6, 6, 8), fill=(eyes[0], eyes[1], eyes[2], 255))
+        d.rectangle((10, 6, 11, 8), fill=(eyes[0], eyes[1], eyes[2], 255))
+        if mouth:
+            d.ellipse((7, 10, 10, 13), fill=(20, 20, 40, 230))
+        if dissolve:
+            px = im.load()
+            for y in range(fh):
+                for x in range(fw):
+                    if (x * 5 + y * 9) % 10 < dissolve:
+                        px[x, y] = (0, 0, 0, 0)
+        return im
+
+    def gh(name, i, n):
+        if name in ("idle", "fly"):
+            return ghost(i * 1.5)
+        if name == "windup":
+            return ghost(i, 200 + i * 15, False, (255, 120, 120))
+        if name == "attack":
+            return ghost(i, 240, True, (255, 80, 80))
+        if name == "hurt":
+            return ghost(0, 255, True, (255, 255, 255))
+        return ghost(i, 170 - i * 30, dissolve=1 + i * 2)
+
+    gs.render_sheet(lay, gh, "sprites/enemies/ghost_sheet.png", do_outline=False)
+    lay.write_tres()
+
+    # Summoner 24x28
+    fw, fh = 24, 28
+    lay = gs.monster_layout("summoner_layout", fw, fh, (12, 28), counts={"windup": 4, "attack": 3})
+
+    def summoner(sway=0, staff_up=0, glow=0, alpha=255, dissolve=0):
+        im = gp.new(fw, fh)
+        d = ImageDraw.Draw(im)
+        robe = (40, 70, 50, alpha)
+        d.polygon([(8, 10), (15, 10), (18 + sway, 27), (5 + sway, 27)], fill=robe)
+        d.polygon([(8, 11), (10, 2), (15, 3), (16, 11)], fill=gp.shade(robe, 0.8))
+        d.rectangle((11, 5, 15, 9), fill=(20, 25, 20, alpha))
+        d.point((12, 7), fill=(120, 255, 140, alpha))
+        d.point((14, 7), fill=(120, 255, 140, alpha))
+        sy = 6 - staff_up * 4
+        d.line((19, sy, 19, 27), fill=(110, 80, 50, alpha), width=1)
+        d.ellipse((17, sy - 3, 21, sy + 1), fill=(225, 220, 200, alpha))  # skull
+        if glow:
+            d.ellipse((19 - glow, sy - 1 - glow, 19 + glow, sy - 1 + glow), outline=(140, 255, 160, alpha))
+        if dissolve:
+            px = im.load()
+            for y in range(fh):
+                for x in range(fw):
+                    if (x * 7 + y * 13) % 10 < dissolve:
+                        px[x, y] = (0, 0, 0, 0)
+        return im
+
+    def sm(name, i, n):
+        if name == "idle":
+            return summoner(sway=[0, 1, 0, -1][i])
+        if name == "walk":
+            return summoner(sway=[1, 2, 1, -1, -2, -1][i])
+        if name == "windup":
+            return summoner(staff_up=1, glow=1 + i)
+        if name == "attack":
+            return summoner(staff_up=1, glow=[5, 3, 1][i])
+        if name == "hurt":
+            return summoner(sway=-2)
+        return summoner(dissolve=2 + i * 2 if i < 4 else 9, alpha=255 - i * 30)
+
+    gs.render_sheet(lay, sm, "sprites/enemies/summoner_sheet.png")
+    lay.write_tres()
+    web = gp.new(8, 8)
+    d = ImageDraw.Draw(web)
+    d.line((0, 4, 7, 4), fill=(230, 230, 240, 255))
+    d.line((4, 0, 4, 7), fill=(230, 230, 240, 255))
+    d.line((1, 1, 6, 6), fill=(230, 230, 240, 200))
+    d.line((6, 1, 1, 6), fill=(230, 230, 240, 200))
+    d.ellipse((2, 2, 5, 5), outline=(255, 255, 255, 255))
+    web.save(os.path.join(A, "sprites/fx/web.png"))
+    for name, src in (("spider", "spider_sheet"), ("golem", "golem_sheet"), ("ghost", "ghost_sheet"), ("summoner", "summoner_sheet")):
+        sheet = Image.open(os.path.join(A, f"sprites/enemies/{src}.png"))
+        lay_w = {"spider": 22, "golem": 28, "ghost": 18, "summoner": 24}[name]
+        lay_h = {"spider": 14, "golem": 30, "ghost": 22, "summoner": 28}[name]
+        sheet.crop((0, 0, lay_w, lay_h)).save(os.path.join(A, f"sprites/enemies/{name}.png"))
+
+
 def main():
     os.makedirs(os.path.join(A, "ui/status"), exist_ok=True)
     status_icons()
     traps()
     merchant()
     bosses()
+    new_monsters()
     print("mechanics generated")
 
 

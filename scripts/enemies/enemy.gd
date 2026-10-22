@@ -35,6 +35,14 @@ var _dead := false
 ## Remaining time of the one-shot "attack" animation after a hit/shot.
 var _attack_anim_left := 0.0
 var _flash_tween: Tween
+## Elite modifier (null for normal monsters).
+var elite: EliteAffixData
+var _speed_mult := 1.0
+var _cooldown_mult := 1.0
+var _summons: Array[Node] = []
+var _summon_next := true
+var _ambushing := false
+var _name_label: Label
 
 @onready var sprite: AnimatedSprite2D = $Sprite
 @onready var shape: CollisionShape2D = $CollisionShape2D
@@ -42,13 +50,26 @@ var _flash_tween: Tween
 @onready var status: StatusEffects = $StatusEffects
 
 
-func setup(p_data: EnemyData, p_floor: int) -> void:
+func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null) -> void:
 	data = p_data
 	floor_number = p_floor
+	elite = p_elite
 	var f := float(p_floor - 1)
 	max_hp = roundi(data.max_hp * (1.0 + HP_SCALE_PER_FLOOR * f))
 	damage = roundi(data.damage * (1.0 + DMG_SCALE_PER_FLOOR * f))
+	if elite:
+		max_hp = roundi(max_hp * elite.hp_mult)
+		damage = roundi(damage * elite.damage_mult)
+		_speed_mult = elite.speed_mult
+		_cooldown_mult = elite.attack_cooldown_mult
 	hp = max_hp
+
+
+func display_name() -> String:
+	if elite:
+		var base := data.display_name
+		return "%s %s" % [elite.prefix(data.gender), base.left(1).to_lower() + base.substr(1)]
+	return data.display_name
 
 
 func _ready() -> void:
@@ -69,12 +90,81 @@ func _ready() -> void:
 	_float_t = randf() * TAU
 	if data.behavior == EnemyData.Behavior.FLYER:
 		motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
+	if data.phases_through_walls:
+		collision_mask = 0
+		sprite.self_modulate.a = 0.85
+	if elite:
+		_setup_elite()
+	if data.ceiling_ambush:
+		_ambushing = true
+		call_deferred("_hang_from_ceiling")
+
+
+func _setup_elite() -> void:
+	add_to_group("elites")
+	scale = Vector2(1.2, 1.2)
+	var imm: Array[StringName] = status.immunities.duplicate()
+	imm.append_array(elite.immunities)
+	status.immunities = imm
+	if elite.spawn_status != &"":
+		status.apply(elite.spawn_status, 9999.0, elite.spawn_status_power + floor_number * 0.5)
+	var glow := PointLight2D.new()
+	glow.texture = AssetPaths.tex(AssetPaths.LIGHT)
+	glow.color = elite.tint
+	glow.texture_scale = 0.35
+	glow.energy = 0.9
+	glow.position = Vector2(0, -data.collision_size.y / 2.0)
+	add_child(glow)
+	sprite.modulate = data.tint * elite.tint.lightened(0.3)
+	_name_label = Label.new()
+	_name_label.text = display_name()
+	_name_label.add_theme_font_size_override("font_size", 6)
+	_name_label.add_theme_color_override("font_color", elite.tint)
+	_name_label.add_theme_color_override("font_outline_color", Color(0.05, 0.03, 0.02))
+	_name_label.add_theme_constant_override("outline_size", 3)
+	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_name_label.size = Vector2(80, 10)
+	_name_label.position = Vector2(-40, -data.collision_size.y - 16)
+	_name_label.scale = Vector2.ONE / 1.2
+	var m := CanvasItemMaterial.new()
+	m.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+	_name_label.material = m
+	add_child(_name_label)
+
+
+## Spiders: stick to the ceiling above the spawn point, upside down.
+func _hang_from_ceiling() -> void:
+	var q := PhysicsRayQueryParameters2D.create(global_position + Vector2(0, -4), global_position + Vector2(0, -200), 1)
+	var hit := get_world_2d().direct_space_state.intersect_ray(q)
+	if hit.is_empty():
+		_ambushing = false
+		return
+	global_position = hit["position"] + Vector2(0, data.collision_size.y + 1)
+	sprite.flip_v = true
+
+
+func _update_ambush() -> bool:
+	if not _ambushing:
+		return false
+	velocity = Vector2.ZERO
+	_play(&"idle")
+	if _player and not _player.dead:
+		var rel := _player.global_position - global_position
+		if absf(rel.x) < 26.0 and rel.y > 0.0 and rel.y < 220.0:
+			_ambushing = false
+			sprite.flip_v = false
+			velocity = Vector2(0, 60)
+			_set_flash(0.5, Color(1.0, 0.3, 0.2))
+			get_tree().create_timer(0.2).timeout.connect(func() -> void: _set_flash(0.0))
+	return true
 
 
 
 func _physics_process(delta: float) -> void:
 	if _player == null or not is_instance_valid(_player):
 		_player = get_tree().get_first_node_in_group("player") as Player
+	if _update_ambush():
+		return
 	if status.is_stunned():
 		# Stunned: no thinking, no attacks, just physics.
 		if data.behavior != EnemyData.Behavior.FLYER:
@@ -99,8 +189,8 @@ func _physics_process(delta: float) -> void:
 			_fly(delta)
 		_:
 			_walk(delta)
-	var slow := status.speed_multiplier()
-	if slow < 1.0:
+	var slow := status.speed_multiplier() * _speed_mult
+	if slow != 1.0:
 		velocity.x *= slow
 		if data.behavior == EnemyData.Behavior.FLYER:
 			velocity.y *= slow
@@ -168,6 +258,8 @@ func _player_visible() -> bool:
 		return false
 	if data.behavior == EnemyData.Behavior.WALKER and absf(to_player.y) > 56.0:
 		return false
+	if data.phases_through_walls:
+		return true
 	# Line of sight against the world layer.
 	var query := PhysicsRayQueryParameters2D.create(global_position + Vector2(0, -6), _player.global_position + Vector2(0, -10), 1)
 	return get_world_2d().direct_space_state.intersect_ray(query).is_empty()
@@ -278,19 +370,31 @@ func _update_attack(delta: float) -> void:
 	if _windup > 0.0:
 		return
 	_set_flash(0.0)
-	_attack_timer = data.attack_cooldown
+	_attack_timer = data.attack_cooldown * _cooldown_mult
 	state = State.CHASE
 	_attack_anim_left = 0.25
 	if _player == null or _player.dead:
 		return
 	if data.behavior == EnemyData.Behavior.RANGED:
-		_shoot()
+		if data.summon and _summon_next and _alive_summons() < data.max_summons:
+			_raise_summons()
+		else:
+			_shoot()
+		_summon_next = not _summon_next
 		return
 	if data.behavior == EnemyData.Behavior.FLYER:
 		velocity = (_player.global_position + Vector2(0, -10) - global_position).normalized() * data.chase_speed * 2.2
 	elif data.behavior == EnemyData.Behavior.WALKER:
 		velocity.x = dir * data.chase_speed * 1.8  # lunge
-	if _distance_to_player() <= data.attack_range + 14.0:
+	if data.aoe_radius > 0.0:
+		# Ground slam: hurts everything around, telegraphed by the wind-up.
+		EventBus.screen_shake.emit(4.0)
+		Fx.dust(get_parent(), global_position, true)
+		Fx.explosion(get_parent(), global_position + Vector2(0, -4), data.aoe_radius, Color(0.8, 0.75, 0.65))
+		if _player.global_position.distance_to(global_position) <= data.aoe_radius:
+			_player.take_damage(damage, global_position)
+			_apply_hit_effects(_player, damage)
+	elif _distance_to_player() <= data.attack_range + 14.0:
 		_player.take_damage(damage, global_position)
 		_apply_hit_effects(_player, damage)
 
@@ -301,6 +405,41 @@ func _apply_hit_effects(target: Node, dmg: int) -> void:
 	for e in data.on_hit_effects:
 		if e:
 			e.try_apply(self, target, dmg)
+	if elite:
+		for e in elite.hit_effects:
+			if e:
+				e.try_apply(self, target, dmg)
+		if elite.life_steal > 0.0 and hp > 0:
+			var heal := maxi(1, roundi(dmg * elite.life_steal))
+			hp = mini(max_hp, hp + heal)
+			hp_bar.value = hp
+			EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 6), "+%d" % heal, Color(0.9, 0.2, 0.3))
+
+
+func _alive_summons() -> int:
+	_summons = _summons.filter(func(n: Node) -> bool: return is_instance_valid(n) and not n.is_dead())
+	return _summons.size()
+
+
+func _raise_summons() -> void:
+	var level := _level()
+	if level == null:
+		return
+	for i in mini(2, data.max_summons - _alive_summons()):
+		var e: Enemy = (load("res://scenes/enemies/enemy.tscn") as PackedScene).instantiate()
+		e.setup(data.summon, floor_number)
+		level.add_entity(e, global_position + Vector2((i * 2 - 1) * 16.0, -4.0))
+		Fx.sparks(level.entities, e.global_position + Vector2(0, -8), Color(0.5, 1.0, 0.6), 12, 70.0)
+		_summons.append(e)
+	AudioManager.play_sfx(&"skill_cast", global_position)
+
+
+## Elite / regen: statuses can heal monsters too.
+func heal_status(amount: int) -> void:
+	if _dead or hp >= max_hp:
+		return
+	hp = mini(max_hp, hp + amount)
+	hp_bar.value = hp
 
 
 func _shoot() -> void:
@@ -322,8 +461,12 @@ func _shoot() -> void:
 func resistance(damage_type: int) -> float:
 	if damage_type <= 0 or damage_type >= StatTypes.DAMAGE_TYPE_RES.size():
 		return 0.0
+	var key: String = StatTypes.DAMAGE_TYPE_RES[damage_type]
+	var r := float(data.resistances.get(key, 0.0))
+	if elite:
+		r += float(elite.resistances.get(key, 0.0))
 	# Negative values are weaknesses (extra damage).
-	return clampf(float(data.resistances.get(StatTypes.DAMAGE_TYPE_RES[damage_type], 0.0)), -1.0, 1.0)
+	return clampf(r, -1.0, 1.0)
 
 
 func status_resistance(id: StringName) -> float:
@@ -334,7 +477,10 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 	if hp <= 0:
 		return
 	# Physical damage is reduced by armor, elemental by resistances.
-	var dealt := maxi(1, amount - data.armor) if damage_type == 0 else roundi(amount * (1.0 - resistance(damage_type)))
+	var armor := data.armor + (elite.armor_add if elite else 0)
+	var dealt := maxi(1, amount - armor) if damage_type == 0 else roundi(amount * (1.0 - resistance(damage_type)))
+	if status.has(&"curse"):
+		dealt = roundi(dealt * StatusEffects.CURSE_DAMAGE_MULT)
 	if dealt <= 0:
 		EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 4), "Иммунитет", Color(0.7, 0.7, 0.7))
 		return
@@ -410,15 +556,18 @@ func _die() -> void:
 	shape.set_deferred("disabled", true)
 	hp_bar.visible = false
 	EventBus.enemy_killed.emit(data, global_position)
+	var xp := roundi((data.xp_reward + floor_number - 1) * (elite.xp_mult if elite else 1.0))
 	if GameState.hero:
-		GameState.hero.add_xp(data.xp_reward + floor_number - 1)
-	EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 12), "+%d XP" % (data.xp_reward + floor_number - 1), Color(1.0, 0.85, 0.3))
-	var gold := roundi(randi_range(data.gold_min, data.gold_max) * (1.0 + 0.25 * (floor_number - 1)))
+		GameState.hero.add_xp(xp)
+	EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 12), "+%d XP" % xp, Color(1.0, 0.85, 0.3))
+	var gold := roundi(randi_range(data.gold_min, data.gold_max) * (1.0 + 0.25 * (floor_number - 1)) * (elite.gold_mult if elite else 1.0))
 	if gold > 0:
 		var coin := ItemDatabase.get_item(&"gold_coin")
 		if coin:
 			EventBus.spawn_items.emit(global_position + Vector2(0, -8), [{"item": coin, "count": gold}])
-	if data.loot_table and randf() < data.loot_chance:
+	if _name_label:
+		_name_label.visible = false
+	if data.loot_table and (elite != null or randf() < data.loot_chance):
 		var loot := data.loot_table.roll(floor_number)
 		if not loot.is_empty():
 			EventBus.spawn_items.emit(global_position + Vector2(0, -8), loot)

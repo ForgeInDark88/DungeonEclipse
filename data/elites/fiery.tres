@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="EliteAffixData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="1_5o3wh"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="2_yl2h8"]
+[ext_resource type="Script" path="res://scripts/data/elite_affix_data.gd" id="3_i4xc0"]
+
+[sub_resource type="Resource" id="Resource_vre56"]
+script = ExtResource("2_yl2h8")
+status = &"burn"
+duration = 3.0
+power = 3.0
+chance = 0.6
+
+[resource]
+script = ExtResource("3_i4xc0")
+id = &"fiery"
+prefix_forms = {
+"f": "Огненная",
+"m": "Огненный",
+"n": "Огненное"
+}
+hp_mult = 1.5
+damage_mult = 1.2
+speed_mult = 1.0
+attack_cooldown_mult = 1.0
+armor_add = 0
+resistances = {
+"res_fire": 0.6
+}
+immunities = Array[StringName]([&"burn"])
+hit_effects = Array[ExtResource("1_5o3wh")]([SubResource("Resource_vre56")])
+spawn_status = &""
+spawn_status_power = 0.0
+life_steal = 0.0
+tint = Color(1, 0.55, 0.25, 1)
+xp_mult = 2.5
+gold_mult = 3.0
+weight = 1.0
+min_floor = 1

@@ -70,7 +70,8 @@ func _test_data() -> void:
 	check(ItemDatabase.items.size() >= 30, "items loaded: %d" % ItemDatabase.items.size())
 	check(ItemDatabase.races.size() == 3, "3 races")
 	check(ItemDatabase.classes.size() == 3, "3 classes")
-	check(ItemDatabase.enemies.size() == 4, "4 enemies")
+	check(ItemDatabase.enemies.size() >= 8, "monster types: %d" % ItemDatabase.enemies.size())
+	check(ItemDatabase.elites.size() >= 5, "elite affixes: %d" % ItemDatabase.elites.size())
 	check(ItemDatabase.loot_tables.size() >= 5, "loot tables loaded: %d" % ItemDatabase.loot_tables.size())
 	check(ItemDatabase.equipment_layout.slots.size() == 8, "8 equip slots")
 	for c in ItemDatabase.classes:
@@ -362,6 +363,38 @@ func _test_scenes() -> void:
 	player.camera.zoom = Vector2(4, 4)
 	await shot("12a_bow_zoom")
 	player.camera.zoom = Vector2.ONE
+	# --- 15.5 new monsters and elites
+	var showcase := []
+	var x_off := 30.0
+	for id in ["spider", "golem", "ghost", "summoner"]:
+		var m: Enemy = (load("res://scenes/enemies/enemy.tscn") as PackedScene).instantiate()
+		var elite: EliteAffixData = ItemDatabase.elites[showcase.size() % ItemDatabase.elites.size()] if id == "golem" else null
+		var d: EnemyData = load("res://data/enemies/%s.tres" % id)
+		if d.ceiling_ambush:
+			d = d.duplicate()
+			d.ceiling_ambush = false
+		m.setup(d, 3, elite)
+		player.level.add_entity(m, player.global_position + Vector2(x_off, 0))
+		x_off += 26.0
+		showcase.append(m)
+	await frames(3)
+	for m in showcase:
+		m.set_physics_process(false)
+	check(showcase[2].collision_mask == 0, "ghost flies through walls")
+	check(showcase[1].elite != null and showcase[1].max_hp > 80 and " " in showcase[1].display_name(), "elite golem: %s, %d HP" % [showcase[1].display_name(), showcase[1].max_hp])
+	showcase[3]._raise_summons()
+	await frames(2)
+	check(showcase[3]._alive_summons() >= 1, "necromancer raises skeletons")
+	player.camera.zoom = Vector2(2.5, 2.5)
+	player.camera.reset_smoothing()
+	await frames(2)
+	await shot("15_5_monsters")
+	player.camera.zoom = Vector2.ONE
+	for m in showcase:
+		for sm in m._summons:
+			if is_instance_valid(sm):
+				sm.queue_free()
+		m.queue_free()
 	# --- 15.3 gold and merchant
 	var gold0 := player.hero.gold
 	var victim: Enemy = (load("res://scenes/enemies/enemy.tscn") as PackedScene).instantiate()
@@ -442,12 +475,15 @@ func _test_scenes() -> void:
 	player.velocity = Vector2.ZERO
 	await frames(20)
 	player.velocity = Vector2.ZERO
-	player.status.apply(&"stun", 0.5)
+	player.status.apply(&"stun", 3.0)
+	# Time-based: on slow (software) rendering one frame can be several physics ticks.
+	await get_tree().create_timer(0.2).timeout  # leftover knockback slides out
 	var px := player.global_position.x
 	Input.action_press("move_right")
-	await frames(10)
+	await get_tree().create_timer(0.4).timeout
 	Input.action_release("move_right")
-	check(absf(player.global_position.x - px) < 2.0, "stunned hero cannot move")
+	check(player.status.is_stunned() and absf(player.global_position.x - px) < 2.0, "stunned hero cannot move (%f -> %f)" % [px, player.global_position.x])
+	player.status.remove(&"stun")
 	await get_tree().create_timer(0.6).timeout
 	player.status.apply(&"shield", 5.0, 999.0)
 	var hp1 := player.hero.stats.hp
@@ -487,6 +523,11 @@ func _test_scenes() -> void:
 		if not c.locked:
 			player.global_position = c.global_position
 			break
+	# Nothing else interactable next to the chest (traps, merchant).
+	for t in get_tree().get_nodes_in_group("traps"):
+		if t.global_position.distance_to(player.global_position) < 40.0:
+			t.queue_free()
+	player.velocity = Vector2.ZERO
 	await frames(5)
 	check(player.try_interact(), "interact with chest")
 	await frames(3)
