@@ -74,7 +74,7 @@ func set_layer(layer_name: StringName, sheet: Texture2D) -> void:
 ## Rebuilds all layers from the hero's race, class and equipment.
 func refresh_from(hero: Hero) -> void:
 	base_scale = hero.race.sprite_scale
-	set_layer(&"body", hero.race.body_sheet)
+	set_layer(&"body", hero.body_sheet())
 	set_layer(&"outfit", hero.class_data.outfit_sheet)
 	var sheets := {&"armor": null, &"boots": null, &"gloves": null, &"head": hero.class_data.head_sheet}
 	for item: EquipmentItemData in hero.equipment.items.values():

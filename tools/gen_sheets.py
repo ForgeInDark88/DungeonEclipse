@@ -110,6 +110,14 @@ RACES = {
     "elf": dict(skin=(240, 215, 185), hair=(230, 220, 150), beard=None, ears=True, leg=7, torso=8, wide=0),
     "orc": dict(skin=(110, 160, 80), hair=(30, 30, 30), beard=None, ears=False, leg=7, torso=8, wide=0, tusks=True),
 }
+# Heroines: same skeleton (equipment layers line up), long hair behind the
+# head that swings against the lean (ponytail / braids / war braid).
+RACES_F = {
+    "human": dict(skin=(234, 186, 150), hair=(128, 54, 34), beard=None, ears=False, leg=7, torso=8, wide=0, female="tail"),
+    "dwarf": dict(skin=(218, 160, 122), hair=(176, 90, 40), beard=None, ears=False, leg=7, torso=8, wide=0, female="braids"),
+    "elf": dict(skin=(244, 220, 194), hair=(240, 232, 196), beard=None, ears=True, leg=7, torso=8, wide=0, female="long"),
+    "orc": dict(skin=(118, 166, 88), hair=(44, 34, 48), beard=None, ears=False, leg=7, torso=8, wide=0, tusks=True, female="tail"),
+}
 PANTS = (70, 62, 66)
 SHIRT = (120, 110, 100)
 GLOVE = (96, 64, 40)
@@ -232,6 +240,20 @@ def _head(d, p, race, s):
     hx, hy = s["head"]
     skin = rgba(race["skin"])
     hair = rgba(race["hair"])
+    style = race.get("female")
+    if style:
+        # Long hair behind the head; the tip trails behind when leaning / running.
+        trail = -1 - max(0, p["lean"])
+        if p["back"]:
+            d.rectangle((hx - 3, hy, hx + 2, hy + 6), fill=hair)
+            d.line((hx - 1, hy + 1, hx - 1, hy + 6), fill=shade(hair, 0.7))
+        elif style == "braids":
+            d.line((hx - 3, hy, hx - 4 + trail // 2, hy + 6), fill=hair, width=2)
+            d.point((hx - 4 + trail // 2, hy + 4), fill=(220, 180, 70, 255))
+        else:
+            tip = (hx - 4 + trail, hy + (7 if style == "long" else 5))
+            d.polygon([(hx - 3, hy - 3), (hx - 1, hy - 2), (tip[0] + 1, tip[1]), tip], fill=hair)
+            d.line((hx - 3, hy - 1, tip[0], tip[1] - 1), fill=shade(hair, 0.7))
     d.ellipse((hx - 3, hy - 3, hx + 3, hy + 3), fill=skin)
     d.line((hx - 3, hy - 1, hx - 3, hy + 2), fill=shade(skin, 0.78))  # back of the head
     d.point((hx - 2, hy + 3), fill=shade(skin, 0.75))
@@ -251,7 +273,14 @@ def _head(d, p, race, s):
         d.point((hx + 2, hy), fill=(25, 18, 18, 255))
         d.line((hx + 1, hy - 1, hx + 2, hy - 1), fill=shade(hair, 0.8))
         d.point((hx + 3, hy + 1), fill=shade(skin, 0.82))
-        d.point((hx + 2, hy + 2), fill=(150, 75, 70, 255))
+        d.point((hx + 2, hy + 2), fill=(196, 84, 90, 255) if style else (150, 75, 70, 255))
+        if style:
+            d.point((hx + 3, hy - 1), fill=(30, 20, 24, 255))  # lashes
+            d.point((hx - 3, hy + 3), fill=hair)  # hair down to the jaw
+            d.point((hx - 2, hy + 3), fill=shade(hair, 0.8))
+            if style == "braids":
+                d.line((hx + 1, hy + 2, hx + 1, hy + 6), fill=hair)  # front braid
+                d.point((hx + 1, hy + 5), fill=(220, 180, 70, 255))
         if race["beard"]:
             beard = rgba(race["beard"])
             d.polygon([(hx - 1, hy + 1), (hx + 3, hy + 1), (hx + 2, hy + 5), (hx, hy + 5)], fill=beard)
@@ -491,6 +520,8 @@ def gen_hero():
 
     for race_id, race in RACES.items():
         render_sheet(lay, frame_fn(lambda pz, r=race: draw_body(pz, r)), f"sprites/player/body_{race_id}.png")
+    for race_id, race in RACES_F.items():
+        render_sheet(lay, frame_fn(lambda pz, r=race: draw_body(pz, r)), f"sprites/player/body_{race_id}_f.png")
     for cls, o in OUTFITS.items():
         render_sheet(lay, frame_fn(lambda pz, o=o: draw_outfit(pz, o)), f"sprites/player/outfit_{cls}.png", do_outline=False)
     for key, (kind, color) in HEADGEAR.items():

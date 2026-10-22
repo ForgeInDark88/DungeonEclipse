@@ -48,9 +48,10 @@ func _ready() -> void:
 
 
 ## `seed_value` >= 0 makes the whole run reproducible (daily runs, tests).
-func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, daily := "") -> void:
+func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, daily := "", female := false) -> void:
 	daily_date = daily
 	hero = Hero.new(race, class_data, ItemDatabase.equipment_layout)
+	hero.female = female
 	hero.give_starting_kit()
 	MetaProgress.apply_to(hero, daily == "")
 	floor_number = 1
@@ -134,15 +135,17 @@ static func daily_setup(date: String) -> Dictionary:
 	rng.seed = hash("eclipse-daily:" + date)
 	var races := ItemDatabase.races.filter(func(r: RaceData) -> bool: return r.unlock_shards <= 0 and r.unlock_gold <= 0)
 	var classes := ItemDatabase.classes.filter(func(c: ClassData) -> bool: return c.unlock_shards <= 0 and c.unlock_gold <= 0)
-	return {"seed": rng.randi() & 0x7FFFFFFF, "race": races[rng.randi() % races.size()],
+	var setup := {"seed": rng.randi() & 0x7FFFFFFF, "race": races[rng.randi() % races.size()],
 		"class": classes[rng.randi() % classes.size()]}
+	setup["female"] = rng.randi() % 2 == 1  # drawn last: older days keep their seed
+	return setup
 
 
 func start_daily_run(date: String = "") -> void:
 	if date == "":
 		date = today()
 	var d := daily_setup(date)
-	start_new_run(d["race"], d["class"], d["seed"], date)
+	start_new_run(d["race"], d["class"], d["seed"], date, d["female"])
 
 
 func is_daily() -> bool:

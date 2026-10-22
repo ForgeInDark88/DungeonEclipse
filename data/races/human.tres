@@ -3,10 +3,12 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/player/body_human.png" id="sheet_body"]
 [ext_resource type="Texture2D" path="res://assets/sprites/portraits/race_human.png" id="1_juhia"]
 [ext_resource type="Script" path="res://scripts/data/race_data.gd" id="2_y7kln"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/body_human_f.png" id="sheet_body_f"]
 
 [resource]
 script = ExtResource("2_y7kln")
 body_sheet = ExtResource("sheet_body")
+body_sheet_female = ExtResource("sheet_body_f")
 sprite_scale = Vector2(1, 1)
 id = &"human"
 display_name = "Человек"

@@ -3,10 +3,12 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/player/body_elf.png" id="sheet_body"]
 [ext_resource type="Texture2D" path="res://assets/sprites/portraits/race_elf.png" id="1_ocp41"]
 [ext_resource type="Script" path="res://scripts/data/race_data.gd" id="2_7qfea"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/body_elf_f.png" id="sheet_body_f"]
 
 [resource]
 script = ExtResource("2_7qfea")
 body_sheet = ExtResource("sheet_body")
+body_sheet_female = ExtResource("sheet_body_f")
 sprite_scale = Vector2(0.95, 1.06)
 id = &"elf"
 display_name = "Эльф"

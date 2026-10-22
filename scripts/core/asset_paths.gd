@@ -195,8 +195,14 @@ static func flash_material() -> ShaderMaterial:
 	return m
 
 
-static func hero_portrait_path(race_id: StringName, class_id: StringName) -> String:
-	return PORTRAITS_DIR + "hero_%s_%s.png" % [race_id, class_id]
+## Close-up sheet; a heroine uses hero_<race>_<class>_f.png (the male one if missing).
+static func hero_portrait_path(race_id: StringName, class_id: StringName, female := false) -> String:
+	var path := PORTRAITS_DIR + "hero_%s_%s.png" % [race_id, class_id]
+	if female:
+		var f := PORTRAITS_DIR + "hero_%s_%s_f.png" % [race_id, class_id]
+		if ResourceLoader.exists(f):
+			return f
+	return path
 
 
 ## One frame of a hero portrait sheet (see HERO_PORTRAIT_FRAMES).

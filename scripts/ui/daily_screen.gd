@@ -20,12 +20,12 @@ func _ready() -> void:
 	var frame_box := Control.new()
 	frame_box.custom_minimum_size = Vector2(72, 72)
 	frame_box.add_child(UIStyle.frame(AssetPaths.SLOT, 5))
-	var p := UIStyle.portrait(d["race"], d["class"], Vector2(64, 64))
+	var p := UIStyle.portrait(d["race"], d["class"], Vector2(64, 64), d["female"])
 	p.position = Vector2(4, 4)
 	p.size = Vector2(64, 64)
 	frame_box.add_child(p)
 	head.add_child(frame_box)
-	var info := UIStyle.label("Герой дня:\n%s · %s\nЗерно: %d" % [d["race"].display_name, d["class"].display_name, d["seed"]], 8)
+	var info := UIStyle.label("%s дня:\n%s · %s\nЗерно: %d" % ["Героиня" if d["female"] else "Герой", d["race"].display_name, d["class"].display_name, d["seed"]], 8)
 	head.add_child(info)
 	var rules := UIStyle.label("Сегодня у всех одинаковое подземелье, тот же герой и та же добыча. "
 		+ "Улучшения Святилища не действуют. Очки: этаж ×100, страж ×300, враг ×5, "
