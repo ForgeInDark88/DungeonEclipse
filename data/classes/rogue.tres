@@ -49,10 +49,9 @@ starting_items = {
 "leather_boots": 1,
 "pickaxe": 1,
 "rope": 2,
-"torch": 1,
 "whetstone": 1
 }
 starting_equipment = Array[StringName]([&"dagger", &"leather_boots"])
-starting_quick_bar = Array[StringName]([&"pickaxe", &"torch", &"bomb", &"health_potion", &"rope", &"key"])
+starting_quick_bar = Array[StringName]([&"pickaxe", &"bomb", &"health_potion", &"rope", &"key"])
 skills = Array[ExtResource("3_j5d85")]([ExtResource("4_dc6po"), ExtResource("5_8yl4t"), ExtResource("6_bf3fw"), ExtResource("7_3b8my"), ExtResource("sk_keen_eye"), ExtResource("sk_venom_blades"), ExtResource("sk_shadow_step"), ExtResource("sk_knife_fan")])
 allowed_weapon_types = Array[int]([3, 4, 0, 2])

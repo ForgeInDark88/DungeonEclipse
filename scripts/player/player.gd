@@ -20,7 +20,6 @@ const DROP_THROUGH_TIME := 0.25
 const CLIMB_SPEED := 75.0
 const INVULNERABLE_TIME := 0.7
 const PLATFORM_LAYER := 2
-const BASE_LIGHT_SCALE := 1.4
 const PROJECTILE_SCENE := preload("res://scenes/world/projectile.tscn")
 
 var hero: Hero
@@ -41,7 +40,6 @@ var _casting_icon: Texture2D
 ## Multiplier of the skill being cast (weapon synergy, SkillData.power_with); read by skill effects.
 var skill_power := 1.0
 var _external_velocity := Vector2.ZERO
-var _light_tween: Tween
 var _hint := ""
 var _dash_time := 0.0
 var _afterimage_timer := 0.0
@@ -54,15 +52,12 @@ const REVEAL_RADIUS := 7
 @onready var visual: HeroVisual = $Visual
 @onready var animator: HeroAnimator = $Animator
 @onready var camera: Camera2D = $Camera2D
-@onready var light: PointLight2D = $PointLight2D
 @onready var interact_area: Area2D = $InteractArea
 @onready var status: StatusEffects = $StatusEffects
 
 
 func _ready() -> void:
 	add_to_group("player")
-	light.texture = AssetPaths.tex(AssetPaths.LIGHT)
-	light.texture_scale = BASE_LIGHT_SCALE
 	animator.setup(visual)
 	var sv := StatusVisual.new()
 	add_child(sv)
@@ -82,7 +77,6 @@ func setup(p_hero: Hero, p_level: DungeonLevel) -> void:
 
 
 func apply_biome(biome: BiomeData) -> void:
-	light.color = biome.hero_light_color
 	($AmbientDust as CPUParticles2D).color = biome.ambient_particles
 
 
@@ -529,15 +523,6 @@ func get_buffs() -> Array[Dictionary]:
 		out.append({"key": key, "left": _buffs[key], "duration": info.get("duration", 1.0),
 				"icon": info.get("icon"), "tint": info.get("tint", Color.WHITE)})
 	return out
-
-
-func boost_light(scale_mult: float, duration: float) -> void:
-	if _light_tween:
-		_light_tween.kill()
-	_light_tween = create_tween()
-	_light_tween.tween_property(light, "texture_scale", BASE_LIGHT_SCALE * scale_mult, 0.5)
-	_light_tween.tween_interval(duration)
-	_light_tween.tween_property(light, "texture_scale", BASE_LIGHT_SCALE, 2.0)
 
 
 # ------------------------------------------------------- skills and items

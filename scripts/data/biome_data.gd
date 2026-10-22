@@ -16,18 +16,19 @@ extends Resource
 @export var parallax_near: Texture2D
 
 @export_group("Light and color")
-## CanvasModulate of the world (how dark the dungeon is).
-@export var darkness: Color = Color(0.15, 0.13, 0.19)
-@export var back_wall_modulate: Color = Color(0.6, 0.55, 0.65)
+## Soft general light of the biome (CanvasModulate of the world). Bright on
+## purpose: monsters, traps and items must always be readable.
+@export var ambient: Color = Color(1.0, 0.98, 0.95)
+## Background (back wall, parallax) is a bit darker: depth, not darkness.
+@export var back_wall_modulate: Color = Color(0.85, 0.8, 0.84)
+## Warm glow of the decorative wall torches (they do not change visibility).
 @export var torch_color: Color = Color(1.0, 0.62, 0.3)
-@export var hero_light_color: Color = Color(1.0, 0.86, 0.65)
 @export var ambient_particles: Color = Color(0.8, 0.75, 0.7)
 @export var fog_color: Color = Color(0.5, 0.5, 0.6)
 @export_range(0.0, 1.0) var fog_amount: float = 0.08
 @export var grade_tint: Color = Color.WHITE
 @export var saturation: float = 1.0
 @export var contrast: float = 1.0
-@export_range(0.0, 1.0) var vignette: float = 0.35
 
 @export_group("Decorations")
 @export var decorations: Array[DecorData] = []

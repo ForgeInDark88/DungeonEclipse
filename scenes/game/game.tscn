@@ -30,8 +30,8 @@ shader_parameter/noise_tex = SubResource("Tex_fog")
 [node name="Game" type="Node2D"]
 script = ExtResource("1_game")
 
-[node name="Darkness" type="CanvasModulate" parent="."]
-color = Color(0.15, 0.13, 0.19, 1)
+[node name="Ambient" type="CanvasModulate" parent="."]
+color = Color(0.95, 0.93, 0.9, 1)
 
 [node name="Parallax" type="ParallaxBackground" parent="."]
 

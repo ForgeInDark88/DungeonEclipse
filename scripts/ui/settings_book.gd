@@ -50,6 +50,7 @@ func _build() -> void:
 	left.add_child(UIStyle.label("Настройки", 12))
 	for entry in [["Общая", "master_volume"], ["Музыка", "music_volume"], ["Звуки", "sfx_volume"], ["Интерфейс", "ui_volume"]]:
 		left.add_child(_volume_row(entry[0], entry[1]))
+	left.add_child(_slider_row("Яркость", "brightness", 0.6, 1.5))
 	_fullscreen = _check("Полный экран", SaveManager.fullscreen, func(on: bool) -> void:
 		SaveManager.fullscreen = on
 		SaveManager.apply_settings())
@@ -104,13 +105,17 @@ func _build() -> void:
 
 
 func _volume_row(text: String, property: String) -> Control:
+	return _slider_row(text, property, 0.0, 1.0)
+
+
+func _slider_row(text: String, property: String, min_v: float, max_v: float) -> Control:
 	var row := HBoxContainer.new()
 	var l := UIStyle.label(text, 7)
 	l.custom_minimum_size = Vector2(60, 0)
 	row.add_child(l)
 	var slider := HSlider.new()
-	slider.min_value = 0.0
-	slider.max_value = 1.0
+	slider.min_value = min_v
+	slider.max_value = max_v
 	slider.step = 0.05
 	slider.value = SaveManager.get(property)
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
