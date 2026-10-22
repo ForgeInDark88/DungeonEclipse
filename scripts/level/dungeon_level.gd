@@ -30,6 +30,9 @@ var biome: BiomeData
 var rng := RandomNumberGenerator.new()
 ## Cells of glowing ore veins (break them for loot).
 var ore_cells: Dictionary = {}
+## Minimap fog of war: 1 = explored.
+var explored := PackedByteArray()
+var explored_version := 0
 
 
 func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeData = null) -> void:
@@ -43,6 +46,8 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	glow.tile_set = ts
 	if biome:
 		back.modulate = biome.back_wall_modulate
+	explored.resize(layout.width * layout.height)
+	explored.fill(0)
 	_place_ore()
 	# Back wall with gaps: through them the parallax cave is visible.
 	var noise := FastNoiseLite.new()
@@ -168,6 +173,31 @@ func _refresh_around(cell: Vector2i) -> void:
 		var c: Vector2i = cell + d
 		if layout.in_bounds(c.x, c.y):
 			_apply_tile(c, layout.get_tile(c.x, c.y))
+
+
+# ------------------------------------------------------------- exploration
+## Marks cells around a world position as explored (minimap).
+func reveal_around(world_pos: Vector2, radius: int) -> void:
+	var c := world_to_cell(world_pos)
+	var changed := false
+	for y in range(c.y - radius, c.y + radius + 1):
+		for x in range(c.x - radius, c.x + radius + 1):
+			if layout.in_bounds(x, y) and (x - c.x) * (x - c.x) + (y - c.y) * (y - c.y) <= radius * radius:
+				var i := y * layout.width + x
+				if explored[i] == 0:
+					explored[i] = 1
+					changed = true
+	if changed:
+		explored_version += 1
+
+
+func reveal_all() -> void:
+	explored.fill(1)
+	explored_version += 1
+
+
+func is_explored(cell: Vector2i) -> bool:
+	return layout.in_bounds(cell.x, cell.y) and explored[cell.y * layout.width + cell.x] == 1
 
 
 # ------------------------------------------------------------- coordinates

@@ -45,6 +45,9 @@ var _dash_time := 0.0
 var _afterimage_timer := 0.0
 var _run_dust_timer := 0.0
 var _step_timer := 0.0
+var _reveal_timer := 0.0
+## Minimap reveal radius in cells.
+const REVEAL_RADIUS := 7
 
 @onready var visual: HeroVisual = $Visual
 @onready var animator: HeroAnimator = $Animator
@@ -183,6 +186,10 @@ func _on_landed(fall_speed: float) -> void:
 
 
 func _tick_timers(delta: float) -> void:
+	_reveal_timer -= delta
+	if _reveal_timer <= 0.0 and level:
+		_reveal_timer = 0.15
+		level.reveal_around(global_position + Vector2(0, -10), REVEAL_RADIUS)
 	_coyote = COYOTE_TIME if is_on_floor() else maxf(0.0, _coyote - delta)
 	_jump_buffer = maxf(0.0, _jump_buffer - delta)
 	_attack_cooldown = maxf(0.0, _attack_cooldown - delta)

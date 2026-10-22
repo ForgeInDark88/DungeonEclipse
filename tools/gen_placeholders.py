@@ -297,6 +297,18 @@ def icon_club(c, spikes=False):
     return im
 
 
+def icon_scroll():
+    im = new(16, 16)
+    d = ImageDraw.Draw(im)
+    d.rectangle((3, 3, 12, 12), fill=(230, 210, 160, 255))
+    d.rectangle((2, 2, 13, 4), fill=(180, 150, 100, 255))
+    d.rectangle((2, 11, 13, 13), fill=(180, 150, 100, 255))
+    d.line((5, 6, 9, 8), fill=(150, 60, 50, 255))
+    d.line((9, 8, 7, 10), fill=(150, 60, 50, 255))
+    d.point((10, 6), fill=(150, 60, 50, 255))
+    return im
+
+
 def icon_whetstone():
     im = new(16, 16)
     d = ImageDraw.Draw(im)
@@ -763,6 +775,7 @@ def main() -> None:
         "antidote": icon_potion((90, 210, 80, 255)),
         "regen_potion": icon_potion((240, 120, 170, 255)),
         "shield_elixir": icon_potion((90, 140, 255, 255)),
+        "map_scroll": icon_scroll(),
     }
     for name, im in items.items():
         save(im, f"sprites/items/{name}.png")

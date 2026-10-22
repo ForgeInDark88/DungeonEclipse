@@ -363,6 +363,19 @@ func _test_scenes() -> void:
 	player.camera.zoom = Vector2(4, 4)
 	await shot("12a_bow_zoom")
 	player.camera.zoom = Vector2.ONE
+	# --- 15.7 minimap
+	var minimap: Minimap = game.get_node("Minimap")
+	var explored := 0
+	for v in player.level.explored:
+		explored += v
+	check(explored > 20, "minimap reveals around the hero (%d cells)" % explored)
+	await press("minimap")
+	check(minimap.is_big_open(), "M opens the big map")
+	player.level.reveal_all()
+	await frames(3)
+	await shot("15_7_minimap")
+	await press("minimap")
+	check(not minimap.is_big_open(), "M closes the big map")
 	# --- 15.6 random events
 	check(ItemDatabase.room_events.size() >= 5, "room events: %d" % ItemDatabase.room_events.size())
 	var ev_count := 0

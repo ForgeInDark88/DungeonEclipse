@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="LootTable" load_steps=95 format=3]
+[gd_resource type="Resource" script_class="LootTable" load_steps=97 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/loot_entry.gd" id="1_7kyt3"]
 [ext_resource type="Resource" path="res://data/items/usable/health_potion.tres" id="2_n2u17"]
@@ -48,6 +48,7 @@
 [ext_resource type="Resource" path="res://data/items/usable/antidote.tres" id="45_dc78k"]
 [ext_resource type="Resource" path="res://data/items/usable/regen_potion.tres" id="46_h6i4b"]
 [ext_resource type="Resource" path="res://data/items/usable/shield_elixir.tres" id="47_uwj57"]
+[ext_resource type="Resource" path="res://data/items/usable/map_scroll.tres" id="48_1gwwu"]
 
 [sub_resource type="Resource" id="Resource_bigki"]
 script = ExtResource("1_7kyt3")
@@ -417,6 +418,14 @@ min_count = 1
 max_count = 1
 min_floor = 1
 
+[sub_resource type="Resource" id="Resource_mfjih"]
+script = ExtResource("1_7kyt3")
+item = ExtResource("48_1gwwu")
+weight = 1.0
+min_count = 1
+max_count = 1
+min_floor = 1
+
 [resource]
 script = ExtResource("33_vwcfh")
 rolls_min = 2
@@ -424,6 +433,6 @@ rolls_max = 3
 rarity_weights = Array[float]([40.0, 50.0, 10.0])
 rare_bonus_per_floor = 3.0
 epic_bonus_per_floor = 1.5
-entries = Array[ExtResource("1_7kyt3")]([SubResource("Resource_bigki"), SubResource("Resource_wurll"), SubResource("Resource_6sk5b"), SubResource("Resource_p1ws8"), SubResource("Resource_a7i6n"), SubResource("Resource_5gdqm"), SubResource("Resource_it5o0"), SubResource("Resource_354if"), SubResource("Resource_mpqrk"), SubResource("Resource_snvhm"), SubResource("Resource_sas5h"), SubResource("Resource_hyghu"), SubResource("Resource_7gfyx"), SubResource("Resource_n8ul7"), SubResource("Resource_ayh7p"), SubResource("Resource_8wvar"), SubResource("Resource_8scry"), SubResource("Resource_23i1b"), SubResource("Resource_hhakv"), SubResource("Resource_uc1h2"), SubResource("Resource_aytrr"), SubResource("Resource_q3p68"), SubResource("Resource_dkufu"), SubResource("Resource_6dqpf"), SubResource("Resource_6nyc7"), SubResource("Resource_bn360"), SubResource("Resource_7tuea"), SubResource("Resource_0luu1"), SubResource("Resource_4j0ok"), SubResource("Resource_biffp"), SubResource("Resource_k4nc3"), SubResource("Resource_vqrl6"), SubResource("Resource_muvx8"), SubResource("Resource_37r5y"), SubResource("Resource_xmdel"), SubResource("Resource_bo0p6"), SubResource("Resource_qc5d4"), SubResource("Resource_68wq8"), SubResource("Resource_he4gh"), SubResource("Resource_2y2w8"), SubResource("Resource_rh8jx"), SubResource("Resource_agykb"), SubResource("Resource_b65ru"), SubResource("Resource_eklk6"), SubResource("Resource_yueuk"), SubResource("Resource_o8c2m")])
+entries = Array[ExtResource("1_7kyt3")]([SubResource("Resource_bigki"), SubResource("Resource_wurll"), SubResource("Resource_6sk5b"), SubResource("Resource_p1ws8"), SubResource("Resource_a7i6n"), SubResource("Resource_5gdqm"), SubResource("Resource_it5o0"), SubResource("Resource_354if"), SubResource("Resource_mpqrk"), SubResource("Resource_snvhm"), SubResource("Resource_sas5h"), SubResource("Resource_hyghu"), SubResource("Resource_7gfyx"), SubResource("Resource_n8ul7"), SubResource("Resource_ayh7p"), SubResource("Resource_8wvar"), SubResource("Resource_8scry"), SubResource("Resource_23i1b"), SubResource("Resource_hhakv"), SubResource("Resource_uc1h2"), SubResource("Resource_aytrr"), SubResource("Resource_q3p68"), SubResource("Resource_dkufu"), SubResource("Resource_6dqpf"), SubResource("Resource_6nyc7"), SubResource("Resource_bn360"), SubResource("Resource_7tuea"), SubResource("Resource_0luu1"), SubResource("Resource_4j0ok"), SubResource("Resource_biffp"), SubResource("Resource_k4nc3"), SubResource("Resource_vqrl6"), SubResource("Resource_muvx8"), SubResource("Resource_37r5y"), SubResource("Resource_xmdel"), SubResource("Resource_bo0p6"), SubResource("Resource_qc5d4"), SubResource("Resource_68wq8"), SubResource("Resource_he4gh"), SubResource("Resource_2y2w8"), SubResource("Resource_rh8jx"), SubResource("Resource_agykb"), SubResource("Resource_b65ru"), SubResource("Resource_eklk6"), SubResource("Resource_yueuk"), SubResource("Resource_o8c2m"), SubResource("Resource_mfjih")])
 gold_min = 20
 gold_max = 50

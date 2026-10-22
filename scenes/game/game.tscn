@@ -5,6 +5,7 @@
 [ext_resource type="Script" path="res://scripts/ui/inventory_book.gd" id="3_book"]
 [ext_resource type="Script" path="res://scripts/ui/overlay_panel.gd" id="4_overlay"]
 [ext_resource type="Shader" path="res://assets/shaders/post_fx.gdshader" id="5_post"]
+[ext_resource type="Script" path="res://scripts/ui/minimap.gd" id="6_minimap"]
 
 [sub_resource type="FastNoiseLite" id="Noise_fog"]
 frequency = 0.02
@@ -86,6 +87,9 @@ color = Color(1, 0, 0, 0)
 
 [node name="HUD" type="CanvasLayer" parent="."]
 script = ExtResource("2_hud")
+
+[node name="Minimap" type="CanvasLayer" parent="."]
+script = ExtResource("6_minimap")
 
 [node name="InventoryBook" type="CanvasLayer" parent="."]
 script = ExtResource("3_book")
