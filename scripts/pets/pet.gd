@@ -42,7 +42,9 @@ func _physics_process(delta: float) -> void:
 	_bob += delta * 3.0
 	_cooldown -= delta
 	_scan -= delta
-	if _target != null and not is_instance_valid(_target):
+	# The target may be freed at any moment (dead monster, picked up coin):
+	# a freed object is not "== null", so only is_instance_valid() is safe.
+	if _act != Act.FOLLOW and not is_instance_valid(_target):
 		_target = null
 		_act = Act.FOLLOW
 	if _act == Act.FOLLOW and _scan <= 0.0:
