@@ -9,12 +9,18 @@ var _life := 0.16
 var _t := 0.0
 
 
-static func spawn(parent: Node, pos: Vector2, dir: float, p_reach: float, p_thrust: bool, p_color: Color) -> void:
+## `aim`: direction of the strike (any angle; the crescent stays the right
+## way up when striking to the left).
+static func spawn(parent: Node, pos: Vector2, aim: Vector2, p_reach: float, p_thrust: bool, p_color: Color) -> void:
 	var s := SlashTrail.new()
 	s.reach = p_reach
 	s.thrust = p_thrust
 	s.color = p_color
-	s.scale.x = dir
+	if aim.x < 0.0:
+		s.scale.x = -1.0
+		s.rotation = atan2(-aim.y, -aim.x)
+	else:
+		s.rotation = atan2(aim.y, aim.x)
 	var m := CanvasItemMaterial.new()
 	m.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
 	m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD

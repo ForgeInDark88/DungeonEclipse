@@ -428,8 +428,10 @@ func attack() -> void:
 		return
 	status.remove(&"invisible")  # attacking reveals the hero
 	var w := hero.weapon()
-	if w and w.is_ranged():
-		face_aim()
+	# Melee and ranged alike: turn to the cursor and strike toward it
+	# (keyboard / gamepad: straight ahead, as before).
+	face_aim()
+	var aim := aim_vector(_attack_origin())
 	var interval := hero.attack_interval()
 	_attack_cooldown = interval
 	# Fists use the quick jab; weapons their own animation.
@@ -437,55 +439,60 @@ func attack() -> void:
 	AudioManager.play_sfx(AssetPaths.WEAPON_SFX[w.weapon_type] if w else &"attack_dagger", global_position, -2.0)
 	# The hit lands on the "active" part of the swing.
 	var delay := clampf(interval * 0.35, 0.04, 0.22)
-	get_tree().create_timer(delay, false).timeout.connect(_perform_attack.bind(w, facing))
+	get_tree().create_timer(delay, false).timeout.connect(_perform_attack.bind(w, aim))
 
 
-func _perform_attack(w: WeaponItemData, dir: float) -> void:
+## `aim`: unit direction of the strike (to the cursor, or straight ahead).
+func _perform_attack(w: WeaponItemData, aim: Vector2) -> void:
 	if dead or not is_inside_tree():
 		return
 	if w and w.is_ranged():
-		_shoot(w, dir)
+		_shoot(w, signf(aim.x) if absf(aim.x) > 0.01 else facing)
 		return
 	var reach := w.reach if w else 16.0
 	var thrust := w != null and w.attack_pattern == WeaponItemData.Pattern.THRUST
 	var color := w.damage_color() if w else Color.WHITE
+	var origin := _attack_origin()
 	# The weapon stops at the wall: shorter swing, sparks where it hits the brick.
-	var free := LineOfSight.free_length(self, _attack_origin(), Vector2(dir, 0), reach + 4.0)
+	var free := LineOfSight.free_length(self, origin, aim, reach + 4.0)
 	if free < reach:
 		reach = maxf(free, 4.0)
-		Fx.sparks(get_parent(), _attack_origin() + Vector2(dir * free, 0), Color(1.0, 0.9, 0.6), 4, 50.0)
+		Fx.sparks(get_parent(), origin + aim * free, Color(1.0, 0.9, 0.6), 4, 50.0)
 		AudioManager.play_sfx(&"dig", global_position, -10.0)
-	SlashTrail.spawn(get_parent(), global_position + Vector2(dir * 4.0, -12.0), dir, reach, thrust, color)
-	var hits := _melee_targets(reach, thrust, dir)
+	SlashTrail.spawn(get_parent(), origin + aim * 4.0, aim, reach, thrust, color)
+	var hits := _melee_targets(reach, thrust, aim)
 	for enemy in hits:
 		hit_enemy(enemy, w, 1.0)
 	if not hits.is_empty() and w:
 		hero.wear_weapon(1)
 
 
-## Enemies inside the weapon hit shape: a long narrow box for thrusts,
-## a half circle in front for swings.
-func _melee_targets(reach: float, thrust: bool, dir: float) -> Array[Node]:
+## Enemies inside the weapon hit shape, turned toward `aim`: a long narrow
+## box for thrusts, a half circle in front for swings.
+func _melee_targets(reach: float, thrust: bool, aim: Vector2) -> Array[Node]:
 	var query := PhysicsShapeQueryParameters2D.new()
 	query.collision_mask = 8
 	query.collide_with_bodies = true
+	var origin := _attack_origin()
 	var center: Vector2
+	var angle := 0.0
 	if thrust:
 		var rect := RectangleShape2D.new()
 		rect.size = Vector2(reach, 14)
 		query.shape = rect
-		center = global_position + Vector2(dir * (reach / 2.0 + 3.0), -11.0)
+		center = origin + aim * (reach / 2.0 + 3.0)
+		angle = aim.angle()
 	else:
 		var circle := CircleShape2D.new()
 		circle.radius = reach
 		query.shape = circle
-		center = global_position + Vector2(dir * reach * 0.3, -12.0)
-	query.transform = Transform2D(0.0, center)
+		center = origin + aim * reach * 0.3
+	query.transform = Transform2D(angle, center)
 	var result: Array[Node] = []
 	for hit in get_world_2d().direct_space_state.intersect_shape(query, 16):
 		var body: Node = hit["collider"]
 		if body.is_in_group("enemies") and body not in result:
-			if (thrust or (body.global_position.x - global_position.x) * dir > -6.0) \
+			if (thrust or (body.global_position + Vector2(0, -8) - origin).dot(aim) > -6.0) \
 					and LineOfSight.can_hit(self, _attack_origin(), body):
 				result.append(body)
 	return result
@@ -654,6 +661,7 @@ func use_skill(index: int) -> void:
 		EventBus.message.emit("Недостаточно маны")
 		return
 	_casting_icon = skill.icon
+	face_aim()  # skills that act in front of the hero turn to the cursor too
 	skill_power = skill.power_with(hero.weapon())
 	var fired := skill.effect.execute(self, skills.get_level(index))
 	skill_power = 1.0
