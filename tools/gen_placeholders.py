@@ -52,7 +52,11 @@ def outline(img: Image.Image, color=OUT) -> Image.Image:
 def save(img: Image.Image, rel: str, do_outline: bool = True) -> None:
     path = os.path.join(A, rel)
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    (outline(img) if do_outline else img).save(path)
+    img = outline(img) if do_outline else img
+    if rel.startswith("sprites/items/"):
+        import icon_detail  # volume, glints and selective outline on item icons
+        img = icon_detail.detail(img)
+    img.save(path)
 
 
 def shade(c, f):
@@ -714,6 +718,11 @@ def doll():
     d.rectangle((13, 40, 18, 62), fill=c)
     d.rectangle((21, 40, 26, 62), fill=c)
     return im
+
+
+# Detailed item shapes (same signatures) over the placeholder ones above.
+from item_art import (icon_amulet, icon_armor, icon_axe, icon_boots, icon_bow, icon_club, icon_crown,  # noqa: E402,F811
+                      icon_dagger, icon_gloves, icon_helmet, icon_potion, icon_ring, icon_spear, icon_staff, icon_sword)
 
 
 def main() -> None:

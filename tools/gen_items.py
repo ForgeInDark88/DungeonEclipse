@@ -454,6 +454,11 @@ def ic_ore(c):
     return im
 
 
+# Detailed versions (tools/item_art.py) over the placeholder shapes above.
+from item_art import icon_bomb as ic_bomb, icon_crossbow as ic_crossbow, icon_hammer as ic_hammer  # noqa: E402,F811
+from item_art import icon_hood as ic_hood, icon_plate as ic_plate, icon_robe as ic_robe  # noqa: E402,F811
+from item_art import icon_saber as ic_saber, icon_trident as ic_trident, icon_wand as ic_wand  # noqa: E402,F811
+
 SHAPES = {
     "sword": lambda c, g=None: gp.icon_sword(col(c), guard=col(g) if g else gp.GOLD_D),
     "saber": ic_saber, "dagger": lambda c: gp.icon_dagger(col(c)), "axe": lambda c: gp.icon_axe(col(c)),
