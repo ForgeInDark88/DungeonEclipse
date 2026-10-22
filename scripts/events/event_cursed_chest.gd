@@ -5,7 +5,6 @@ extends EventObject
 
 func _ready() -> void:
 	super()
-	sprite.modulate = Color(0.75, 0.5, 1.0)
 	var p := CPUParticles2D.new()
 	p.amount = 12
 	p.lifetime = 1.2

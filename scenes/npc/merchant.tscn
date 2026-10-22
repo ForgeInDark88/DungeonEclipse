@@ -13,7 +13,7 @@ monitoring = false
 script = ExtResource("1_merchant")
 
 [node name="Rug" type="Sprite2D" parent="."]
-position = Vector2(0, -2)
+position = Vector2(0, -3)
 texture = ExtResource("2_rug")
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]

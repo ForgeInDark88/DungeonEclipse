@@ -9,8 +9,7 @@ extends Area2D
 func _ready() -> void:
 	add_to_group("interactable")
 	add_to_group("smiths")
-	AssetPaths.layout(AssetPaths.MERCHANT_LAYOUT).apply_to(sprite, AssetPaths.tex(AssetPaths.MERCHANT_SHEET))
-	sprite.modulate = Color(0.75, 0.6, 0.5)  # soot and leather apron
+	AssetPaths.layout(AssetPaths.MERCHANT_LAYOUT).apply_to(sprite, AssetPaths.tex(AssetPaths.BLACKSMITH_SHEET))
 	sprite.play(&"idle")
 
 

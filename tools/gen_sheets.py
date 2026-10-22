@@ -901,6 +901,8 @@ def main():
     gen_chests()
     gen_portal()
     gen_fx()
+    import gen_structures  # detailed chests, torch, portal over the ones above
+    gen_structures.main()
     print("sheets generated")
 
 

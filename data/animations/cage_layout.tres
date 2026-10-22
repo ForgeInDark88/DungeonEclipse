@@ -4,9 +4,9 @@
 
 [resource]
 script = ExtResource("1_layout")
-frame_size = Vector2i(20, 26)
-origin = Vector2(10, 26)
+frame_size = Vector2i(24, 32)
+origin = Vector2(12, 32)
 animations = {
-"idle": {"fps": 2.0, "frames": 2, "loop": true, "row": 0},
+"idle": {"fps": 3.0, "frames": 4, "loop": true, "row": 0},
 "open": {"fps": 1.0, "frames": 1, "loop": false, "row": 1}
 }

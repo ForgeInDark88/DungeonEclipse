@@ -32,11 +32,6 @@ func _pool(kind: RunPactData.Kind, floor_number: int) -> Array:
 		return p.kind == kind and p.min_floor <= floor_number and not GameState.pacts.has(p))
 
 
-func _ready() -> void:
-	super()
-	sprite.modulate = Color(0.75, 0.8, 1.3)
-
-
 func get_prompt() -> String:
 	return "Алтарь судьбы: выбрать дар"
 

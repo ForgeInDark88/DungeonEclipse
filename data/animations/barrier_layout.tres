@@ -7,5 +7,5 @@ script = ExtResource("1_layout")
 frame_size = Vector2i(16, 32)
 origin = Vector2(8, 32)
 animations = {
-"hum": {"fps": 8.0, "frames": 4, "loop": true, "row": 0}
+"hum": {"fps": 9.0, "frames": 6, "loop": true, "row": 0}
 }

@@ -4,8 +4,8 @@
 
 [resource]
 script = ExtResource("1_layout")
-frame_size = Vector2i(10, 14)
-origin = Vector2(5, 14)
+frame_size = Vector2i(12, 16)
+origin = Vector2(6, 16)
 animations = {
 "up": {"fps": 1.0, "frames": 1, "loop": false, "row": 0},
 "down": {"fps": 1.0, "frames": 1, "loop": false, "row": 1}
