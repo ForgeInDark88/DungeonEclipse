@@ -135,6 +135,9 @@ func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null) -> v
 		damage = roundi(damage * elite.damage_mult)
 		_speed_mult = elite.speed_mult
 		_cooldown_mult = elite.attack_cooldown_mult
+	# Curses of the altars of fate.
+	max_hp = maxi(1, roundi(max_hp * (1.0 + GameState.run_effect("enemy_hp"))))
+	damage = maxi(1, roundi(damage * (1.0 + GameState.run_effect("enemy_damage"))))
 	hp = max_hp
 
 
@@ -1439,12 +1442,12 @@ func _die() -> void:
 	if _mark:
 		_mark.visible = false
 	EventBus.enemy_killed.emit(data, global_position)
-	var xp := roundi((data.xp_reward + floor_number - 1) * (elite.xp_mult if elite else 1.0))
+	var xp := roundi((data.xp_reward + floor_number - 1) * (elite.xp_mult if elite else 1.0) * maxf(0.0, 1.0 + GameState.run_effect("xp")))
 	if GameState.hero:
 		GameState.hero.add_xp(xp)
 	EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 12), "+%d XP" % xp, Color(1.0, 0.85, 0.3))
 	var gold_find := GameState.hero.stats.get_value(StatTypes.GOLD_FIND) if GameState.hero else 0.0
-	var gold := roundi(randi_range(data.gold_min, data.gold_max) * (1.0 + 0.25 * (floor_number - 1)) * (elite.gold_mult if elite else 1.0) * (1.0 + gold_find))
+	var gold := roundi(randi_range(data.gold_min, data.gold_max) * (1.0 + 0.25 * (floor_number - 1)) * (elite.gold_mult if elite else 1.0) * (1.0 + gold_find) * maxf(0.0, 1.0 + GameState.run_effect("gold")))
 	if gold > 0:
 		var coin := ItemDatabase.get_item(&"gold_coin")
 		if coin:

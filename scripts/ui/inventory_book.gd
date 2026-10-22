@@ -28,6 +28,8 @@ var _bag_page: Control
 var _craft_page: Control
 var _craft_list: VBoxContainer
 var _tab_buttons: Array[Button] = []
+## Blessings / curses of the altars of fate (hover = details).
+var _pacts_label: Label
 
 
 func _ready() -> void:
@@ -228,6 +230,32 @@ func _build_left_page(page: Control) -> void:
 	help.size = Vector2(page.size.x, 30)
 	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	page.add_child(help)
+	_pacts_label = UIStyle.label("", 6, UIStyle.INK)
+	_pacts_label.position = Vector2(0, DOLL_AREA.y + 54)
+	_pacts_label.size = Vector2(page.size.x, 24)
+	_pacts_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_pacts_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	_pacts_label.mouse_entered.connect(func() -> void:
+		if not GameState.pacts.is_empty():
+			Tooltip.show_text(_pacts_tooltip(), _pacts_label))
+	_pacts_label.mouse_exited.connect(func() -> void: Tooltip.hide_tip(_pacts_label))
+	page.add_child(_pacts_label)
+	EventBus.pact_taken.connect(func(_p: RunPactData) -> void: _refresh_pacts())
+	_refresh_pacts()
+
+
+func _refresh_pacts() -> void:
+	var names: Array[String] = []
+	for p in GameState.pacts:
+		names.append(p.display_name)
+	_pacts_label.text = "Судьба: " + ", ".join(names) if not names.is_empty() else ""
+
+
+func _pacts_tooltip() -> String:
+	var lines: Array[String] = ["[b]Алтари судьбы (до конца забега)[/b]"]
+	for p in GameState.pacts:
+		lines.append("[color=%s]%s[/color] — %s" % ["#c04030" if p.is_curse() else UIStyle.GOOD_HEX, p.display_name, p.description])
+	return "\n".join(lines)
 
 
 func _build_right_page(page: Control) -> void:

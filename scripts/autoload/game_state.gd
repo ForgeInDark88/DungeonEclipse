@@ -22,6 +22,8 @@ var run_active: bool = false
 var run_stats: Dictionary = {}
 ## Non-empty during a daily run: its date "YYYY-MM-DD" (seed and leaderboard key).
 var daily_date: String = ""
+## Blessings and curses of the altars of fate taken this run (RunPactData).
+var pacts: Array[RunPactData] = []
 
 
 func _ready() -> void:
@@ -38,6 +40,7 @@ func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, 
 	MetaProgress.apply_to(hero, daily == "")
 	floor_number = 1
 	kills = 0
+	pacts.clear()
 	reset_run_stats()
 	run_seed = randi() if seed_value < 0 else seed_value
 	run_active = true
@@ -47,6 +50,22 @@ func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, 
 
 func reset_run_stats() -> void:
 	run_stats = {"gold": 0, "found": [0, 0, 0, 0], "bosses": 0, "elites": 0, "start_ms": Time.get_ticks_msec()}
+
+
+## Takes a blessing / curse until the end of the run.
+func add_pact(pact: RunPactData) -> void:
+	pacts.append(pact)
+	if hero and not pact.stats.is_empty():
+		hero.stats.set_modifier("pact_%s_%d" % [pact.id, pacts.size()], pact.stats)
+	EventBus.pact_taken.emit(pact)
+
+
+## Sum of a run multiplier over every pact (see RunPactData.effects).
+func run_effect(key: String) -> float:
+	var v := 0.0
+	for p in pacts:
+		v += float(p.effects.get(key, 0.0))
+	return v
 
 
 ## Seed of the current floor: each run and each floor is different.

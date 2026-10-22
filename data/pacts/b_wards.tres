@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RunPactData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/run_pact_data.gd" id="e1"]
+
+[resource]
+script = ExtResource("e1")
+id = &"b_wards"
+display_name = "Обереги"
+description = "+15% ко всем сопротивлениям"
+kind = 0
+stats = {
+"res_fire": 0.15,
+"res_ice": 0.15,
+"res_magic": 0.15,
+"res_poison": 0.15
+}
+effects = {}
+min_floor = 2

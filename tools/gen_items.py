@@ -794,9 +794,46 @@ def recipes():
             ("count", count), ("ingredients", ingredients), ("gold", gold), ("order", order)])
 
 
+BLESSING, CURSE = 0, 1
+PACTS = [  # id, kind, name, description, stats, effects, min_floor
+    ("b_might", BLESSING, "Сила предков", "+2 к урону", {"damage": 2}, {}, 1),
+    ("b_stone", BLESSING, "Каменная кожа", "+6 к броне", {"armor": 6}, {}, 1),
+    ("b_vigor", BLESSING, "Живучесть", "+25 к здоровью", {"max_hp": 25}, {}, 1),
+    ("b_swift", BLESSING, "Лёгкие ноги", "+15 к скорости", {"speed": 15}, {}, 1),
+    ("b_eagle", BLESSING, "Глаз орла", "+8% к шансу крита", {"crit_chance": 0.08}, {}, 1),
+    ("b_greed", BLESSING, "Дар жадности", "+40% золота с монстров", {}, {"gold": 0.4}, 1),
+    ("b_wisdom", BLESSING, "Мудрость", "+30% опыта", {}, {"xp": 0.3}, 1),
+    ("b_spring", BLESSING, "Источник жизни", "+0.6 HP в секунду", {"hp_regen": 0.6}, {}, 2),
+    ("b_wings", BLESSING, "Крылья", "Ещё один прыжок в воздухе", {"extra_jumps": 1}, {}, 3),
+    ("b_wards", BLESSING, "Обереги", "+15% ко всем сопротивлениям",
+     {"res_fire": 0.15, "res_ice": 0.15, "res_poison": 0.15, "res_magic": 0.15}, {}, 2),
+    ("b_mind", BLESSING, "Ясный ум", "+3 к интеллекту, +15 маны", {"intellect": 3, "max_mana": 15}, {}, 1),
+    ("b_titan", BLESSING, "Мощь титана", "+3 к силе и выносливости", {"strength": 3, "vitality": 3}, {}, 4),
+    ("c_frail", CURSE, "Хрупкость", "−20 к здоровью", {"max_hp": -20}, {}, 1),
+    ("c_brittle", CURSE, "Ржавые доспехи", "−5 к броне", {"armor": -5}, {}, 1),
+    ("c_heavy", CURSE, "Тяжесть", "−12 к скорости", {"speed": -12}, {}, 1),
+    ("c_rage", CURSE, "Ярость тьмы", "Монстры бьют на 20% сильнее", {}, {"enemy_damage": 0.2}, 1),
+    ("c_hide", CURSE, "Толстокожие враги", "У монстров на 25% больше здоровья", {}, {"enemy_hp": 0.25}, 1),
+    ("c_poverty", CURSE, "Нищета", "−35% золота с монстров", {}, {"gold": -0.35}, 1),
+    ("c_fog", CURSE, "Туман разума", "−25% опыта", {}, {"xp": -0.25}, 1),
+    ("c_weak", CURSE, "Слабость", "−2 к силе и ловкости", {"strength": -2, "agility": -2}, {}, 1),
+    ("c_drain", CURSE, "Иссушение", "−20 маны, −2 к интеллекту", {"max_mana": -20, "intellect": -2}, {}, 1),
+]
+
+
+def pacts():
+    for pid, kind, name, desc, stats, effects, min_floor in PACTS:
+        t = Tres("RunPactData")
+        t.write(os.path.join(DATA, "pacts", pid + ".tres"), [
+            ("script", t.ext_res("Script", "res://scripts/data/run_pact_data.gd")), ("id", SN(pid)),
+            ("display_name", name), ("description", desc), ("kind", kind), ("stats", stats),
+            ("effects", effects), ("min_floor", min_floor)])
+
+
 def main():
     build()
     recipes()
+    pacts()
     for item_id, im in ICONS.items():
         gp.save(im, "sprites/items/%s.png" % item_id)
     print("items generated: %d" % len(ICONS))
