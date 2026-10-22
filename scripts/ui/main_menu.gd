@@ -16,6 +16,12 @@ func _ready() -> void:
 	var meta := UIStyle.label("Лучший этаж: %d\nЗабегов: %d\nВсего убито: %d" % [SaveManager.best_floor, SaveManager.total_runs, SaveManager.total_kills], 8)
 	meta.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	left_page.add_child(meta)
+	var fill := Control.new()
+	fill.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	left_page.add_child(fill)
+	var version := UIStyle.label("Версия %s" % ProjectSettings.get_setting("application/config/version", "0.1"), 7, UIStyle.INK_SOFT)
+	version.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	left_page.add_child(version)
 
 	right_page.add_theme_constant_override("separation", 4)
 	right_page.add_child(_spacer(4))

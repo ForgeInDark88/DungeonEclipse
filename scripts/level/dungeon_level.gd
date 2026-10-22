@@ -655,7 +655,8 @@ func _spawn_enemies() -> void:
 	for e in pool:
 		weights.append(e.spawn_weight)
 	# Elites: 6% on floor 1, +2.5% per floor, at most 35%.
-	var elite_chance := minf(0.06 + 0.025 * (floor_number - 1), 0.35)
+	# Difficulty scales the chance (at most 60%).
+	var elite_chance := minf(minf(0.06 + 0.025 * (floor_number - 1), 0.35) * GameState.elite_chance_mult(), 0.6)
 	var elite_pool: Array[EliteAffixData] = []
 	var elite_weights: Array[float] = []
 	for e in ItemDatabase.elites:

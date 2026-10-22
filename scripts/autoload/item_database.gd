@@ -17,6 +17,7 @@ const SET_DIR := "res://data/sets"
 const RECIPE_DIR := "res://data/recipes"
 const PACT_DIR := "res://data/pacts"
 const PET_DIR := "res://data/pets"
+const DIFFICULTY_DIR := "res://data/difficulties"
 const EQUIPMENT_LAYOUT := "res://data/equipment_layout.tres"
 
 var items: Dictionary = {}  # StringName -> ItemData
@@ -34,6 +35,7 @@ var sets: Dictionary = {}  # StringName -> ItemSetData
 var recipes: Array[RecipeData] = []
 var pacts: Array[RunPactData] = []
 var pets: Dictionary = {}  # StringName -> PetData
+var difficulties: Array[DifficultyData] = []  # by order
 var equipment_layout: EquipmentLayout
 
 
@@ -57,6 +59,11 @@ func reload() -> void:
 	recipes.clear()
 	pacts.clear()
 	pets.clear()
+	difficulties.clear()
+	for res in load_dir(DIFFICULTY_DIR):
+		if res is DifficultyData:
+			difficulties.append(res)
+	difficulties.sort_custom(func(a: DifficultyData, b: DifficultyData) -> bool: return a.order < b.order)
 	for res in load_dir(PET_DIR):
 		if res is PetData:
 			pets[res.id] = res
@@ -148,6 +155,17 @@ func boss_for_floor(floor_number: int) -> BossData:
 
 
 ## Biome of a floor: they rotate every GameState.FLOORS_PER_BIOME floors.
+## Difficulty by id (falls back to «normal», then to the first one).
+func difficulty(id: StringName) -> DifficultyData:
+	var fallback: DifficultyData = null
+	for d in difficulties:
+		if d.id == id:
+			return d
+		if d.id == &"normal":
+			fallback = d
+	return fallback if fallback or difficulties.is_empty() else difficulties[0]
+
+
 func biome_for_floor(floor_number: int) -> BiomeData:
 	if biomes.is_empty():
 		return null

@@ -40,4 +40,4 @@ enum Kind { SPIKES, FALLING_ROCK, ARROW_WALL, ACID_POOL, PRESSURE_PLATE }
 
 
 func damage_for_floor(floor_number: int) -> int:
-	return roundi(damage * (1.0 + damage_per_floor * maxi(0, floor_number - 1)))
+	return maxi(1, roundi(damage * (1.0 + damage_per_floor * maxi(0, floor_number - 1)) * GameState.trap_damage_mult()))
