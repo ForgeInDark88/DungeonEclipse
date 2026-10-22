@@ -76,7 +76,7 @@ func setup(p_hero: Hero, p_player: Player) -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var race_id: StringName = hero.race.id if hero.race else &""
 	var class_id: StringName = hero.class_data.id if hero.class_data else &""
-	var hero_path := AssetPaths.hero_portrait_path(race_id, class_id)
+	var hero_path := AssetPaths.hero_portrait_path(race_id, class_id, hero.female)
 	_sheet = ResourceLoader.exists(hero_path)
 	if _sheet:
 		var bg_path := AssetPaths.portrait_bg_path(class_id)

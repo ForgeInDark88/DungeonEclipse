@@ -4,7 +4,8 @@ three-quarter view turned to the right, a warm key light from the front right,
 cool shadows, a rim light in the class colour on the back edge, a tight crop.
 
 Writes assets/sprites/portraits/:
-  hero_<race>_<class>.png   sheet of FRAMES (64x64 each, transparent background):
+  hero_<race>_<class>.png   sheet of FRAMES (64x64 each, transparent background);
+  hero_<race>_<class>_f.png the heroine (RACES_F);
                             breathing, blink, glance, hurt, wounded, fierce
   bg_<class>.png            class background (glow, rays, fog, runes)
 Body and head are separate layers: breathing lifts the shoulders, pain throws
@@ -170,6 +171,17 @@ RACES = {
                 wide=True),
 }
 
+# Heroines: softer jaw, fuller lips, lashes, thinner arched brows, long hair
+# that shows from under helmets and hoods (ponytail, braids, war braid).
+RACES_F = {
+    "human": dict(skin=(232, 184, 150), hair=(128, 54, 34), style="ponytail", eyes=(80, 140, 90), female=True),
+    "dwarf": dict(skin=(218, 160, 122), hair=(176, 90, 40), style="braids", eyes=(110, 80, 40), female=True),
+    "elf": dict(skin=(244, 220, 194), hair=(240, 232, 196), style="long", eyes=(110, 170, 230), ears="long", slim=True,
+                female=True),
+    "orc": dict(skin=(118, 166, 88), hair=(44, 34, 48), style="warbraid", eyes=(240, 150, 40), tusks="small", female=True),
+}
+
+
 # ------------------------------------------------------------------- classes
 CLASSES = {
     "warrior": dict(rim=(255, 150, 70), shadow=(60, 40, 50), glow=(255, 120, 40), bg=(48, 22, 16), cloth=(120, 40, 36)),
@@ -253,6 +265,31 @@ def body_layer(r, cls_id, cfg):
 # ---------------------------------------------------------------- head layer
 def back_hair(r, cfg, sway):
     im = new()
+    sh = cfg["shadow"]
+    hair = r["hair"]
+    if r["style"] in ("ponytail", "warbraid"):
+        # A tail from the back of the head down behind the neck; it swings.
+        top = (22, 8) if r["style"] == "ponytail" else (26, 4)
+        tail = mask(lambda d: d.polygon([top, (top[0] + 5, top[1] + 2), (18, 22), (16 - sway, 40), (12 - sway, 54), (7 - sway, 52),
+                                         (9 - sway, 38), (12, 20)], fill=FULL))
+        lit(im, tail, tone(hair, 0.9)[:3], 14, 26, 8, 24, shadow=sh)
+        d = ImageDraw.Draw(im)
+        if r["style"] == "warbraid":
+            for y in range(20, 52, 4):  # plaits and rings
+                x = 15 - sway * (y - 20) // 32 - (y - 20) // 8
+                d.line((x - 2, y, x + 2, y + 2), fill=tone(hair, 0.6, sh))
+                d.line((x - 2, y + 2, x + 2, y), fill=tone(hair, 1.3))
+            d.rectangle((11 - sway, 44, 15 - sway, 45), fill=(200, 170, 90, 255))
+        else:
+            for k in range(3):
+                d.line((15 + k, 20, 10 + k - sway, 52), fill=tone(hair, 0.7 + 0.3 * (k % 2), sh))
+            d.rectangle((14, 19, 18, 21), fill=(60, 40, 70, 255))  # hair tie
+    if r["style"] == "braids":
+        for bx in (15,):  # the braid behind (the front one is on the head layer)
+            for y in range(24, 56, 4):
+                x = bx - sway * (y - 24) // 32
+                d = ImageDraw.Draw(im)
+                d.ellipse((x - 3, y, x + 2, y + 4), fill=tone(hair, 0.85, sh), outline=tone(hair, 0.55, sh))
     if r["style"] == "long":
         sw = sway
         back = mask(lambda d: d.polygon([(14, 14), (24, 6), (30, 8), (26, 30), (30 - sw, 50), (22 - sw, 58), (12 - sw, 52), (10, 34)],
@@ -305,6 +342,17 @@ def eyes(d, im, r, skin, sh, eye, look, knit):
     d.rectangle((ex2 + 1 + look, ey + top, ex2 + 2 + look, ey + 1), fill=c4(r["eyes"]))
     d.point((ex2 + 1 + look, ey + max(top, 0)), fill=(12, 8, 12, 255))
     d.line((ex2 - 2, ey - 2 + max(top, 0), ex2 + 2, ey - 2 + max(top, 0)), fill=c4(lid))
+    if r.get("female") and eye not in ("closed", "squeeze"):
+        d.point((ex1 - 5, ey - 2), fill=c4(lid))  # lashes
+        d.point((ex1 - 5, ey - 3), fill=c4(lid))
+        d.point((ex1 - 3, ey - 3), fill=c4(lid))
+        d.point((ex2 + 3, ey - 2), fill=c4(lid))
+    if r.get("female"):
+        # thin arched brows
+        brow = tone(r["hair"], 0.75)
+        d.line((ex1 - 5, ey - 4, ex1 - 2, ey - 6 + knit, ex1 + 3, ey - 5 + knit), fill=brow)
+        d.line((ex2 - 2, ey - 5 + knit, ex2 + 1, ey - 6, ex2 + 3, ey - 5), fill=brow)
+        return
     # brows
     brow = tone(r["hair"], 0.85) if not r.get("heavy") else tone(r["hair"], 0.7)
     th = 2 if r.get("heavy") else 1
@@ -363,6 +411,11 @@ def nose_and_mouth(d, im, r, skin, sh, mouth):
         d.line((39 + m, 41, 44 + m, 41), fill=(196, 104, 100, 255))
         d.point((41 + m, 41), fill=(225, 150, 140, 255))  # lip light
         d.line((40 + m, 42, 43 + m, 42), fill=tone(skin, 0.82, sh, True))
+        if r.get("female"):
+            d.line((39 + m, 39, 44 + m, 39), fill=(186, 92, 96, 255))  # fuller upper lip
+            d.line((39 + m, 41, 44 + m, 41), fill=(206, 110, 112, 255))
+            d.line((40 + m, 42, 43 + m, 42), fill=(196, 104, 104, 255))  # fuller lower lip
+            d.point((41 + m, 42), fill=(236, 160, 160, 255))
     d.line((37, 47, 39, 47), fill=tone(skin, 1.12))  # chin light
 
 
@@ -386,7 +439,7 @@ def head_layer(r, cls_id, cfg, eye="open", look=0, mouth="neutral", knit=0, woun
         d.arc((17, 26, 22, 33), 100, 280, fill=tone(skin, 0.6, sh, True))
         d.point((20, 30), fill=tone(skin, 0.5, sh, True))  # ear canal
     # ---- head volume
-    hm = head_mask(r.get("slim"), r.get("wide"))
+    hm = head_mask(r.get("slim") or r.get("female"), r.get("wide"))
     lit(im, hm, skin, HC[0], HC[1], 17, 23, warm=True, shadow=sh)
     d = ImageDraw.Draw(im)
     for x in range(27, 36):
@@ -415,13 +468,14 @@ def head_layer(r, cls_id, cfg, eye="open", look=0, mouth="neutral", knit=0, woun
             d.point((28 + (y - 19) // 2, y), fill=tone(skin, 0.45, sh, True))
     if r.get("tusks"):
         up = 1 if mouth in ("roar", "grimace") else 0
-        for (bx, by, h) in ((31, 44, 6), (40, 44, 6)):
+        tall = 3 if r.get("tusks") == "small" else 6
+        for (bx, by, h) in ((31, 44, tall), (40, 44, tall)):
             d.polygon([(bx, by - up), (bx + 2, by - up), (bx + 2, by - h - up), (bx, by - h + 2 - up)], fill=(238, 232, 206, 255))
             d.point((bx + 2, by - h - up), fill=(255, 255, 248, 255))
             d.point((bx, by - 1 - up), fill=(190, 180, 150, 255))
     # ---- hair
     st = r["style"]
-    if st in ("short", "long"):
+    if st in ("short", "long", "ponytail", "braids"):
         cap = mask(lambda dd: dd.polygon([(17, 24), (17, 15), (21, 8), (29, 3), (38, 3), (44, 7), (47, 13), (46, 16), (40, 13),
                                           (32, 13), (26, 16), (22, 22), (21, 30), (18, 31)], fill=FULL))
         lit(im, cap, hair, 30, 10, 16, 12, shadow=sh)
@@ -436,7 +490,7 @@ def head_layer(r, cls_id, cfg, eye="open", look=0, mouth="neutral", knit=0, woun
         for x0 in (41, 44):
             d.polygon([(x0 + sway, 12), (x0 + 3 + sway, 12), (x0 + 2 + sway, 17 + rnd.randint(0, 1))], fill=c4(hair))
         d.polygon([(19, 22), (22, 22), (21, 30), (19, 31)], fill=tone(hair, 0.8, sh))
-    elif st == "mohawk":
+    elif st in ("mohawk", "warbraid"):
         mh = mask(lambda dd: dd.polygon([(20, 14), (25 - sway, 3), (33 - sway, -1), (41, 1), (44, 6), (36, 9), (28, 12), (23, 19)],
                                         fill=FULL))
         lit(im, mh, hair, 32, 4, 12, 8, shadow=sh)
@@ -445,6 +499,25 @@ def head_layer(r, cls_id, cfg, eye="open", look=0, mouth="neutral", knit=0, woun
             d.line((24 + k * 3 - sway, 4 + (k % 2), 22 + k * 3, 12), fill=tone(hair, 1.6 if k % 2 else 0.7, sh))
         for x, y in ((24, 20), (28, 16), (34, 12), (39, 11), (22, 26)):
             put(im, x, y, tone(skin, 0.75, sh, True), 0.7)
+    if st == "braids":
+        # A thick braid in front of the ear down over the shoulder, gold clasps.
+        d = ImageDraw.Draw(im)
+        for k, y in enumerate(range(28, 60, 4)):
+            x = 21 - sway * k // 8
+            d.ellipse((x - 3, y, x + 2, y + 4), fill=c4(hair), outline=tone(hair, 0.55, sh))
+            d.point((x - 1, y + 1), fill=tone(hair, 1.35))
+        for y in (40, 52):
+            d.rectangle((17 - sway * (y - 28) // 32, y, 23 - sway * (y - 28) // 32, y + 1), fill=(228, 186, 72, 255))
+    if r.get("female"):
+        for x, y in ((27, 33), (28, 33), (28, 34), (29, 34), (40, 33), (41, 33)):
+            put(im, x, y, (215, 105, 110), 0.3)  # blush
+        if st in ("ponytail", "long", "warbraid"):
+            # A lock framing the face from the temple down to the jaw.
+            lock = mask(lambda dd: dd.polygon([(19, 18), (24, 17), (25, 28), (24 + sway, 40), (21 + sway, 44), (19, 34)], fill=FULL))
+            lit(im, lock, hair, 20, 24, 5, 14, shadow=sh)
+            d = ImageDraw.Draw(im)
+            d.line((22, 19, 23 + sway, 40), fill=tone(hair, 1.35))
+            d.line((20, 22, 20, 36), fill=tone(hair, 0.65, sh))
     # ---- beard (dwarf), mustache, braids with clasps
     if r.get("beard"):
         bd = r["beard"]
@@ -571,8 +644,8 @@ def head_gear(im, cls_id, cfg, r, sway):
                     px[x, y] = (clamp(r_ + (150 - r_) * k), clamp(g_ + (110 - g_) * k * 0.5), clamp(b_ + (255 - b_) * k), a_)
 
 
-def frame(race_id, cls_id, breath=0, sway=0, head=(0, 0), **kw):
-    r = RACES[race_id]
+def frame(race_id, cls_id, breath=0, sway=0, head=(0, 0), female=False, **kw):
+    r = (RACES_F if female else RACES)[race_id]
     cfg = CLASSES[cls_id]
     im = new()
     im.alpha_composite(shift(back_hair(r, cfg, sway), *head))
@@ -582,10 +655,10 @@ def frame(race_id, cls_id, breath=0, sway=0, head=(0, 0), **kw):
     return gp.outline(im, (14, 10, 16, 255))
 
 
-def sheet(race_id, cls_id):
+def sheet(race_id, cls_id, female=False):
     out = Image.new("RGBA", (S * len(FRAMES), S), (0, 0, 0, 0))
     for i, (_name, params) in enumerate(FRAMES):
-        out.alpha_composite(frame(race_id, cls_id, **params), (i * S, 0))
+        out.alpha_composite(frame(race_id, cls_id, female=female, **params), (i * S, 0))
     return out
 
 
@@ -646,6 +719,7 @@ def main():
     for race_id in RACES:
         for cls_id in CLASSES:
             gp.save(sheet(race_id, cls_id), OUT + "hero_%s_%s.png" % (race_id, cls_id), do_outline=False)
+            gp.save(sheet(race_id, cls_id, True), OUT + "hero_%s_%s_f.png" % (race_id, cls_id), do_outline=False)
     print("hero portraits generated")
 
 

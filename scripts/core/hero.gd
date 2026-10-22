@@ -22,6 +22,17 @@ var xp: int = 0
 var gold: int = 0
 
 
+## A heroine: female body layer and portrait (no effect on stats).
+var female := false
+
+
+## Body sheet for the hero's sex (falls back to RaceData.body_sheet).
+func body_sheet() -> Texture2D:
+	if female and race.body_sheet_female:
+		return race.body_sheet_female
+	return race.body_sheet
+
+
 func _init(p_race: RaceData, p_class: ClassData, layout: EquipmentLayout) -> void:
 	race = p_race
 	class_data = p_class

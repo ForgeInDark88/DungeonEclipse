@@ -806,10 +806,8 @@ def slow_throwers():
         im.save(os.path.join(A, dst))
     icy = lambda r, g, b, a: (min(255, int(b * 0.6 + 40)), min(255, int(g * 0.8 + 60)), min(255, int(r * 0.4 + g * 0.3 + 120)), a)
     mud = lambda r, g, b, a: (min(255, int(g * 0.55 + 40)), min(255, int(g * 0.6 + 30)), min(255, int(b * 0.3 + 15)), a)
-    recolor("sprites/enemies/cultist_sheet.png", "sprites/enemies/frost_imp_sheet.png", icy)
-    recolor("sprites/enemies/cultist.png", "sprites/enemies/frost_imp.png", icy)
-    recolor("sprites/enemies/slime_sheet.png", "sprites/enemies/bog_spitter_sheet.png", mud)
-    recolor("sprites/enemies/slime.png", "sprites/enemies/bog_spitter.png", mud)
+    # The imp and the toad themselves are drawn in gen_monsters.py now
+    # (recolor / icy / mud stay for reference).
     snow = gp.new(8, 8)
     d = ImageDraw.Draw(snow)
     d.ellipse((1, 1, 6, 6), fill=(230, 245, 255, 255))
@@ -930,10 +928,14 @@ def main():
     meta_icons()
     achievement_icons()
     slow_throwers()
+    import gen_monsters  # detailed monster sheets over the ones above
+    gen_monsters.main()
     anvil()
     pets()
     crosshair()
     illusionist()
+    import gen_structures  # detailed altars, cage, traps, merchant... over the ones above
+    gen_structures.main()
     print("mechanics generated")
 
 

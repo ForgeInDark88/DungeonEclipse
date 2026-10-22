@@ -4,6 +4,8 @@ extends BookPageScreen
 
 var _race: RaceData
 var _class: ClassData
+## Hero or heroine (portrait and body layer only, no effect on stats).
+var _female := false
 var _race_buttons: Array[Button] = []
 var _class_buttons: Array[Button] = []
 var _race_desc: Label
@@ -51,6 +53,7 @@ func _ready() -> void:
 	right_page.add_child(head)
 	var frame_box := Control.new()
 	frame_box.custom_minimum_size = Vector2(72, 72)
+	frame_box.size_flags_vertical = Control.SIZE_SHRINK_BEGIN  # stays square next to the taller text
 	frame_box.add_child(UIStyle.frame(AssetPaths.SLOT, 5))
 	head.add_child(frame_box)
 	_portrait_box = frame_box
@@ -58,6 +61,16 @@ func _ready() -> void:
 	head.add_child(head_text)
 	_name_label = UIStyle.label("", 11)
 	head_text.add_child(_name_label)
+	var sex_row := HBoxContainer.new()
+	sex_row.add_theme_constant_override("separation", 4)
+	head_text.add_child(sex_row)
+	var sex_group := ButtonGroup.new()
+	var male := _toggle("Мужчина", sex_group, func() -> void: _select_sex(false))
+	var female := _toggle("Женщина", sex_group, func() -> void: _select_sex(true))
+	for b in [male, female]:
+		b.add_theme_font_size_override("font_size", 8)
+		sex_row.add_child(b)
+	male.button_pressed = true
 	_stats_label = UIStyle.label("", 7)
 	head_text.add_child(_stats_label)
 
@@ -78,7 +91,7 @@ func _ready() -> void:
 	buttons.add_theme_constant_override("separation", 8)
 	right_page.add_child(buttons)
 	buttons.add_child(BookPageScreen.button("Назад", func() -> void: get_tree().change_scene_to_file(GameState.MAIN_MENU)))
-	var go := BookPageScreen.button("В подземелье!", func() -> void: GameState.start_new_run(_race, _class))
+	var go := BookPageScreen.button("В подземелье!", func() -> void: GameState.start_new_run(_race, _class, -1, "", _female))
 	buttons.add_child(go)
 
 	if not _race_buttons.is_empty():
@@ -129,6 +142,11 @@ func _select_race(r: RaceData) -> void:
 	_refresh_preview()
 
 
+func _select_sex(female: bool) -> void:
+	_female = female
+	_refresh_preview()
+
+
 func _select_class(c: ClassData) -> void:
 	_class = c
 	_class_desc.text = c.description
@@ -142,7 +160,7 @@ func _refresh_preview() -> void:
 	for child in _portrait_box.get_children():
 		if not (child is PixelFrame):
 			child.queue_free()
-	var p := UIStyle.portrait(_race, _class, Vector2(64, 64))
+	var p := UIStyle.portrait(_race, _class, Vector2(64, 64), _female)
 	p.position = Vector2(4, 4)
 	p.size = Vector2(64, 64)
 	_portrait_box.add_child(p)

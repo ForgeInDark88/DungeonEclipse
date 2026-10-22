@@ -55,13 +55,13 @@ static func texture_box(path: String, margin: int) -> StyleBoxTexture:
 	return sb
 
 
-static func portrait(race: RaceData, class_data: ClassData, size_px: Vector2) -> Control:
+static func portrait(race: RaceData, class_data: ClassData, size_px: Vector2, female := false) -> Control:
 	var root := Control.new()
 	root.custom_minimum_size = size_px
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var layers: Array = [race.portrait if race else null, class_data.portrait_overlay if class_data else null]
 	if race and class_data:
-		var hero_path := AssetPaths.hero_portrait_path(race.id, class_data.id)
+		var hero_path := AssetPaths.hero_portrait_path(race.id, class_data.id, female)
 		if ResourceLoader.exists(hero_path):
 			var bg_path := AssetPaths.portrait_bg_path(class_data.id)
 			layers = [load(bg_path) if ResourceLoader.exists(bg_path) else null,

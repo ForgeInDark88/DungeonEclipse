@@ -3,10 +3,12 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/player/body_orc.png" id="sheet_body"]
 [ext_resource type="Texture2D" path="res://assets/sprites/portraits/race_orc.png" id="1_portrait"]
 [ext_resource type="Script" path="res://scripts/data/race_data.gd" id="2_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/body_orc_f.png" id="sheet_body_f"]
 
 [resource]
 script = ExtResource("2_script")
 body_sheet = ExtResource("sheet_body")
+body_sheet_female = ExtResource("sheet_body_f")
 sprite_scale = Vector2(1.08, 1.04)
 id = &"orc"
 display_name = "Орк"

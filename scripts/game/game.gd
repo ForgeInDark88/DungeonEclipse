@@ -272,7 +272,7 @@ func _on_player_died() -> void:
 	var reward := GameState.end_run()
 	overlay.clear()
 	overlay.set_panel_size(Vector2(340, 236))
-	overlay.add_text("Герой погиб", 14)
+	overlay.add_text("Героиня погибла" if hero.female else "Герой погиб", 14)
 	overlay.add_text("%s %s · уровень %d" % [hero.race.display_name, hero.class_data.display_name, hero.level], 8)
 	var found: Array = stats.get("found", [0, 0, 0])
 	overlay.add_control(_stats_grid([

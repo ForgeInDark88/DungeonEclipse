@@ -32,6 +32,7 @@ const SHIELD_BUBBLE := SPRITES_DIR + "fx/shield_bubble.png"
 const TRAP_ROCK := SPRITES_DIR + "traps/rock.png"
 const TRAP_CRACK := SPRITES_DIR + "traps/ceiling_crack.png"
 const MERCHANT_SHEET := SPRITES_DIR + "npc/merchant_sheet.png"
+const BLACKSMITH_SHEET := SPRITES_DIR + "npc/blacksmith_sheet.png"
 ## Heroic close-up portraits per race x class (tools/gen_hero_portraits.py):
 ## hero_<race>_<class>.png is a sheet of HERO_PORTRAIT_FRAMES (64x64 each)
 ## over bg_<class>.png. When a pair has none, the old layers
@@ -195,8 +196,14 @@ static func flash_material() -> ShaderMaterial:
 	return m
 
 
-static func hero_portrait_path(race_id: StringName, class_id: StringName) -> String:
-	return PORTRAITS_DIR + "hero_%s_%s.png" % [race_id, class_id]
+## Close-up sheet; a heroine uses hero_<race>_<class>_f.png (the male one if missing).
+static func hero_portrait_path(race_id: StringName, class_id: StringName, female := false) -> String:
+	var path := PORTRAITS_DIR + "hero_%s_%s.png" % [race_id, class_id]
+	if female:
+		var f := PORTRAITS_DIR + "hero_%s_%s_f.png" % [race_id, class_id]
+		if ResourceLoader.exists(f):
+			return f
+	return path
 
 
 ## One frame of a hero portrait sheet (see HERO_PORTRAIT_FRAMES).

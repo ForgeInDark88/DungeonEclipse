@@ -4,8 +4,8 @@
 
 [resource]
 script = ExtResource("1_layout")
-frame_size = Vector2i(24, 32)
-origin = Vector2(12, 32)
+frame_size = Vector2i(28, 32)
+origin = Vector2(14, 32)
 animations = {
 "swirl": {"fps": 10.0, "frames": 8, "loop": true, "row": 0}
 }
