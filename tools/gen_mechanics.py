@@ -814,6 +814,18 @@ def pets():
         gs.render_sheet(lay, fn, "sprites/pets/%s_sheet.png" % nm)
 
 
+def crosshair():
+    """Mouse cursor in the game (screen pixels, not scaled): 21x21 ring and ticks."""
+    im = Image.new("RGBA", (21, 21), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    for col, w in (((20, 15, 10, 255), 3), ((255, 235, 170, 255), 1)):
+        d.ellipse((4, 4, 16, 16), outline=col, width=w)
+        for a, b in (((10, 0), (10, 5)), ((10, 15), (10, 20)), ((0, 10), (5, 10)), ((15, 10), (20, 10))):
+            d.line((a, b), fill=col, width=w)
+    d.point((10, 10), fill=(255, 90, 60, 255))
+    im.save(os.path.join(A, "ui/crosshair.png"))
+
+
 def main():
     os.makedirs(os.path.join(A, "ui/status"), exist_ok=True)
     status_icons()
@@ -827,6 +839,7 @@ def main():
     slow_throwers()
     anvil()
     pets()
+    crosshair()
     print("mechanics generated")
 
 

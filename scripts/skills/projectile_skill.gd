@@ -25,11 +25,15 @@ func execute(caster: Node, level: int) -> bool:
 		return false
 	var n := count + (int((level - 1) / extra_every_levels) if extra_every_levels > 0 else 0)
 	var mult := damage_multiplier + damage_per_level * (level - 1)
+	var origin: Vector2 = caster.global_position + Vector2(0, -11.0)
+	if caster.has_method("face_aim"):
+		caster.face_aim()
+	var aim: Vector2 = caster.aim_vector(origin) if caster.has_method("aim_vector") else Vector2(caster.facing, 0)
 	for i in n:
 		var angle := 0.0
 		if n > 1:
 			angle = deg_to_rad(lerpf(-spread_degrees, spread_degrees, float(i) / (n - 1)))
-		var dir := Vector2(caster.facing, 0).rotated(angle * caster.facing)
+		var dir := aim.rotated(angle)
 		var p: Projectile = PROJECTILE_SCENE.instantiate()
 		var d: Dictionary = caster.roll_damage(mult)
 		p.setup(texture, dir, speed, d["amount"], "enemies")
@@ -38,8 +42,7 @@ func execute(caster: Node, level: int) -> bool:
 		p.pierce = pierce
 		p.blast_radius = blast_radius
 		p.blast_color = color
-		var origin: Vector2 = caster.global_position + Vector2(0, -11.0)
-		level_node.add_entity(p, LineOfSight.safe_point(caster, origin, origin + Vector2(caster.facing * 8.0, 0)))
+		level_node.add_entity(p, LineOfSight.safe_point(caster, origin, origin + dir * 8.0))
 	return true
 
 

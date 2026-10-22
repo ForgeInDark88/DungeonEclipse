@@ -47,6 +47,8 @@ const LEVER_LAYOUT := ANIM_DIR + "lever_layout.tres"
 const RUNES := SPRITES_DIR + "events/runes.png"
 const EXIT_DOOR := SPRITES_DIR + "props/exit_door.png"
 const LIGHT := SPRITES_DIR + "fx/light.png"
+## Mouse cursor during the run (aiming).
+const CROSSHAIR := "res://assets/ui/crosshair.png"
 const PIXEL := SPRITES_DIR + "fx/pixel.png"
 const FIREBALL := SPRITES_DIR + "fx/fireball.png"
 const KNIFE := SPRITES_DIR + "fx/knife.png"

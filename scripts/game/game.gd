@@ -23,6 +23,8 @@ var _rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
 	get_tree().paused = false
+	Input.set_custom_mouse_cursor(AssetPaths.tex(AssetPaths.CROSSHAIR), Input.CURSOR_ARROW, Vector2(10, 10))
+	tree_exiting.connect(func() -> void: Input.set_custom_mouse_cursor(null))
 	if GameState.hero == null:
 		# Started directly from the editor: use the first race and class.
 		GameState.hero = Hero.new(ItemDatabase.races[0], ItemDatabase.classes[0], ItemDatabase.equipment_layout)
