@@ -118,13 +118,15 @@ def rim(im, color, strength=0.85):
 
 
 # ------------------------------------------------------------------ geometry
-# Face profile on the right: brow, a soft dip at the bridge, ONE nose (the
-# silhouette), lips, chin. Inside the face the nose is only soft shading.
-HEAD = [(17, 23), (18, 15), (22, 9), (29, 5), (37, 5), (43, 9), (46, 15), (47, 21), (46, 25), (45, 27), (46, 29), (48, 32),
-        (50, 35), (49, 37), (47, 37), (46, 39), (46, 41), (45, 43), (44, 47), (40, 51), (33, 50), (24, 43), (20, 37), (18, 30)]
+# Face outline: the cheek on the right is smooth; the nose sits in the middle
+# of the face, between and below the eyes (NOSE), and the mouth under it.
+HEAD = [(17, 23), (18, 15), (22, 9), (29, 5), (37, 5), (43, 9), (46, 15), (47, 21), (47, 27), (47, 33), (46, 38),
+        (45, 42), (43, 46), (39, 50), (33, 50), (24, 43), (20, 37), (18, 30)]
 HC = (33, 26)  # ellipsoid centre for lighting
 EYE_NEAR = (31, 27)
 EYE_FAR = (41, 27)
+NOSE = (37, 34)  # tip
+MOUTH_X = -4  # mouth shift from the old profile layout
 
 # Animation frames of one portrait sheet (left to right). AnimatedPortrait
 # knows these names (AssetPaths.HERO_PORTRAIT_FRAMES).
@@ -312,43 +314,53 @@ def eyes(d, im, r, skin, sh, eye, look, knit):
 
 
 def nose_and_mouth(d, im, r, skin, sh, mouth):
-    # Nose: only shading inside the face — a soft shadow on the cheek side,
-    # a highlight at the tip, the nostril wing, the shadow under the nose.
-    for x, y, a in ((43, 30, 0.25), (43, 31, 0.3), (44, 32, 0.35), (44, 33, 0.35), (45, 34, 0.3), (42, 33, 0.15), (43, 34, 0.2)):
-        put(im, x, y, tone(skin, 0.6, sh, True), a)
-    put(im, 48, 34, tone(skin, 1.3), 0.9)
-    put(im, 47, 33, tone(skin, 1.18), 0.6)
-    d.arc((44, 34, 48, 38), 160, 300, fill=tone(skin, 0.62, sh, True))  # nostril wing
-    d.point((47, 36), fill=tone(skin, 0.45, sh, True))  # nostril
-    for x in (43, 44, 45, 46):
-        put(im, x, 38, tone(skin, 0.6, sh, True), 0.45)  # under the nose
-    d.point((45, 38), fill=tone(skin, 0.8, sh, True))  # philtrum
+    # Nose between the eyes: the bridge starts between them, the tip below.
+    # Light comes from the right: lit right flank, soft shadow on the left
+    # flank, a highlight on the tip, two nostrils, a shadow under the nose.
+    nx, ny = NOSE
+    wide = 1 if r.get("tusks") or r.get("wide") else 0
+    for y in range(ny - 6, ny + 1):
+        put(im, nx - 2 - (1 if y > ny - 2 else 0) - wide, y, tone(skin, 0.6, sh, True), 0.3 + 0.05 * (y - ny + 6))
+    for y in range(ny - 6, ny - 1):
+        put(im, nx + 1, y, tone(skin, 1.18), 0.55)  # bridge light
+    put(im, nx, ny, tone(skin, 1.3), 0.9)  # tip
+    put(im, nx + 1, ny - 1, tone(skin, 1.2), 0.6)
+    d.point((nx - 2 - wide, ny + 1), fill=tone(skin, 0.5, sh, True))  # nostrils
+    d.point((nx + 2 + wide, ny + 1), fill=tone(skin, 0.55, sh, True))
+    d.point((nx - 3 - wide, ny), fill=tone(skin, 0.7, sh, True))  # wings
+    d.point((nx + 3 + wide, ny), fill=tone(skin, 0.78, sh, True))
+    for x in range(nx - 2 - wide, nx + 3 + wide):
+        put(im, x, ny + 2, tone(skin, 0.62, sh, True), 0.45)  # under the nose
+    d.point((nx, ny + 3), fill=tone(skin, 0.82, sh, True))  # philtrum
+    m = MOUTH_X
     if mouth == "grimace":
-        d.polygon([(38, 40), (46, 39), (46, 42), (38, 43)], fill=(60, 18, 22, 255))
-        d.line((39, 40, 45, 40), fill=(238, 232, 214, 255))
-        d.line((39, 42, 45, 41), fill=(220, 210, 196, 255))
-        d.line((37, 41, 38, 40), fill=tone(skin, 0.5, sh, True))
-        d.line((36, 40, 37, 38), fill=tone(skin, 0.7, sh, True))  # strained cheek
+        d.polygon([(38 + m, 40), (46 + m, 39), (46 + m, 42), (38 + m, 43)], fill=(60, 18, 22, 255))
+        d.line((39 + m, 40, 45 + m, 40), fill=(238, 232, 214, 255))
+        d.line((39 + m, 42, 45 + m, 41), fill=(220, 210, 196, 255))
+        d.line((37 + m, 41, 38 + m, 40), fill=tone(skin, 0.5, sh, True))
+        d.line((36 + m, 40, 37 + m, 38), fill=tone(skin, 0.7, sh, True))  # strained cheeks
+        d.line((47 + m, 40, 46 + m, 38), fill=tone(skin, 0.7, sh, True))
     elif mouth == "roar":
-        d.polygon([(37, 39), (46, 39), (46, 45), (39, 46)], fill=(52, 12, 18, 255))
-        d.line((38, 40, 45, 40), fill=(240, 234, 216, 255))
-        d.line((40, 45, 45, 44), fill=(224, 214, 198, 255))
-        d.point((43, 43), fill=(150, 40, 50, 255))  # tongue
-        d.line((37, 39, 46, 39), fill=tone(skin, 0.5, sh, True))
-        d.line((35, 38, 36, 36), fill=tone(skin, 0.68, sh, True))
+        d.polygon([(37 + m, 39), (46 + m, 39), (46 + m, 45), (39 + m, 46)], fill=(52, 12, 18, 255))
+        d.line((38 + m, 40, 45 + m, 40), fill=(240, 234, 216, 255))
+        d.line((40 + m, 45, 45 + m, 44), fill=(224, 214, 198, 255))
+        d.point((43 + m, 43), fill=(150, 40, 50, 255))  # tongue
+        d.line((37 + m, 39, 46 + m, 39), fill=tone(skin, 0.5, sh, True))
+        d.line((35 + m, 38, 36 + m, 36), fill=tone(skin, 0.68, sh, True))
     elif mouth == "open_small":
-        d.polygon([(38, 40), (45, 40), (45, 42), (39, 42)], fill=(70, 22, 26, 255))
-        d.line((39, 40, 44, 40), fill=(232, 226, 210, 255))
-        d.line((38, 39, 45, 39), fill=(120, 52, 52, 255))
-        d.line((39, 43, 44, 43), fill=(196, 104, 100, 255))
+        d.polygon([(38 + m, 40), (45 + m, 40), (45 + m, 42), (39 + m, 42)], fill=(70, 22, 26, 255))
+        d.line((39 + m, 40, 44 + m, 40), fill=(232, 226, 210, 255))
+        d.line((38 + m, 39, 45 + m, 39), fill=(120, 52, 52, 255))
+        d.line((39 + m, 43, 44 + m, 43), fill=(196, 104, 100, 255))
     else:
         frown = 1 if mouth == "frown" else 0
-        d.line((37, 41 + frown, 38, 40), fill=tone(skin, 0.5, sh, True))
-        d.line((38, 40, 45, 40), fill=(120, 52, 52, 255))
-        d.line((39, 41, 44, 41), fill=(196, 104, 100, 255))
-        d.point((41, 41), fill=(225, 150, 140, 255))  # lip light
-        d.line((40, 42, 43, 42), fill=tone(skin, 0.82, sh, True))
-    d.line((40, 46, 42, 46), fill=tone(skin, 1.12))  # chin light
+        d.line((37 + m, 41 + frown, 38 + m, 40), fill=tone(skin, 0.5, sh, True))
+        d.line((38 + m, 40, 45 + m, 40), fill=(120, 52, 52, 255))
+        d.line((45 + m, 40, 46 + m, 41 + frown), fill=tone(skin, 0.55, sh, True))
+        d.line((39 + m, 41, 44 + m, 41), fill=(196, 104, 100, 255))
+        d.point((41 + m, 41), fill=(225, 150, 140, 255))  # lip light
+        d.line((40 + m, 42, 43 + m, 42), fill=tone(skin, 0.82, sh, True))
+    d.line((37, 47, 39, 47), fill=tone(skin, 1.12))  # chin light
 
 
 def head_layer(r, cls_id, cfg, eye="open", look=0, mouth="neutral", knit=0, wounded=False, sway=0):
@@ -400,7 +412,7 @@ def head_layer(r, cls_id, cfg, eye="open", look=0, mouth="neutral", knit=0, woun
             d.point((28 + (y - 19) // 2, y), fill=tone(skin, 0.45, sh, True))
     if r.get("tusks"):
         up = 1 if mouth in ("roar", "grimace") else 0
-        for (bx, by, h) in ((35, 44, 6), (44, 44, 5)):
+        for (bx, by, h) in ((31, 44, 6), (40, 44, 6)):
             d.polygon([(bx, by - up), (bx + 2, by - up), (bx + 2, by - h - up), (bx, by - h + 2 - up)], fill=(238, 232, 206, 255))
             d.point((bx + 2, by - h - up), fill=(255, 255, 248, 255))
             d.point((bx, by - 1 - up), fill=(190, 180, 150, 255))
@@ -440,11 +452,11 @@ def head_layer(r, cls_id, cfg, eye="open", look=0, mouth="neutral", knit=0, woun
         for x0 in range(23, 45, 2):
             d.line((x0, 44 + (x0 % 3), x0 - 1 - sway, 60), fill=tone(bd, 0.7, sh))
             d.point((x0, 47), fill=tone(bd, 1.35))
-        d.polygon([(36, 38), (44, 37), (48, 39), (46, 41), (40, 40), (34, 41)], fill=tone(bd, 1.12))
-        d.line((37, 39, 46, 38), fill=tone(bd, 1.4))
+        d.polygon([(30, 39), (37, 37), (44, 39), (42, 41), (37, 40), (31, 41)], fill=tone(bd, 1.12))
+        d.line((32, 39, 42, 38), fill=tone(bd, 1.4))
         if mouth in ("roar", "grimace", "open_small"):
-            d.polygon([(38, 41), (45, 41), (45, 43), (39, 43)], fill=(60, 18, 22, 255))
-            d.line((39, 41, 44, 41), fill=(236, 230, 212, 255))
+            d.polygon([(34, 41), (41, 41), (41, 43), (35, 43)], fill=(60, 18, 22, 255))
+            d.line((35, 41, 40, 41), fill=(236, 230, 212, 255))
         for by in (54, 58):
             d.rectangle((30 - sway, by, 35 - sway, by + 1), fill=(228, 186, 72, 255))
             d.point((31 - sway, by), fill=(255, 242, 170, 255))
@@ -523,12 +535,12 @@ def head_gear(im, cls_id, cfg, r, sway):
                 if a_ and (r_, g_, b_) != base:
                     k = 0.45 if y < 22 else 0.22
                     px[x, y] = (clamp(r_ * (1 - k)), clamp(g_ * (1 - k)), clamp(b_ * (1 - k) + 6), a_)
-        mk = mask(lambda dd: dd.polygon([(24, 34), (44, 32), (51, 36), (47, 46), (40, 52), (28, 50), (24, 42)], fill=FULL))
+        mk = mask(lambda dd: dd.polygon([(24, 33), (37, 30), (45, 31), (49, 35), (46, 45), (40, 51), (28, 50), (24, 42)], fill=FULL))
         lit(im, mk, (40, 42, 48), 40, 36, 14, 10, shadow=sh, flat=0.5)
         d = ImageDraw.Draw(im)
         for x0 in (30, 35, 40, 45):
             d.line((x0, 35, x0 - 2, 49), fill=(28, 28, 34, 255))
-        d.line((24, 34, 44, 32, 51, 36), fill=(82, 82, 96, 255))
+        d.line((24, 33, 37, 30, 45, 31, 49, 35), fill=(82, 82, 96, 255))
     elif cls_id == "mage":
         robe = cfg["cloth"]
         gold = (224, 184, 74)
