@@ -5,6 +5,8 @@ extends CanvasLayer
 var _panel: PanelContainer
 var _text: RichTextLabel
 var _visible_for: Object
+## The tooltip belongs to an object (a freed one is not "== null").
+var _has_owner := false
 
 
 func _ready() -> void:
@@ -30,6 +32,7 @@ func _ready() -> void:
 
 func show_text(bbcode: String, owner_obj: Object = null) -> void:
 	_visible_for = owner_obj
+	_has_owner = owner_obj != null
 	_text.text = bbcode
 	_panel.visible = true
 	_panel.reset_size()
@@ -41,6 +44,7 @@ func hide_tip(owner_obj: Object = null) -> void:
 	if owner_obj == null or owner_obj == _visible_for:
 		_panel.visible = false
 		_visible_for = null
+		_has_owner = false
 
 
 func is_shown_for(owner_obj: Object) -> bool:
@@ -49,7 +53,7 @@ func is_shown_for(owner_obj: Object) -> bool:
 
 func _process(_delta: float) -> void:
 	if _panel.visible:
-		if _visible_for != null and not is_instance_valid(_visible_for):
+		if _has_owner and not is_instance_valid(_visible_for):
 			hide_tip()
 			return
 		if _visible_for is Control and not (_visible_for as Control).is_visible_in_tree():
