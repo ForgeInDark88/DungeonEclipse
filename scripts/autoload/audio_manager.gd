@@ -23,6 +23,10 @@ var _world: Array[AudioStreamPlayer2D] = []
 var _ui: Array[AudioStreamPlayer] = []
 var _music: Array[AudioStreamPlayer] = []
 var _music_index := 0
+## Running fade tween of each music player. A new fade kills the old one:
+## otherwise a quick double switch (biome track, then the boss track in the
+## same frame) left a fade-out running that stopped the new track.
+var _fades: Array[Tween] = [null, null]
 var _music_id: StringName = &""
 ## Track to return to when the current sting ends (&"" = stay silent).
 var _after_sting: StringName = &""
@@ -148,12 +152,17 @@ func current_music() -> StringName:
 
 
 ## The stream for `id`, following AssetPaths.MUSIC_FALLBACK when a file is missing.
+## OGG tracks loop seamlessly in the stream itself; stings never loop.
 func _music_stream(id: StringName) -> AudioStream:
 	var tried := {}
+	var one_shot := id in AssetPaths.MUSIC_ONE_SHOT
 	while id != &"" and not tried.has(id):
 		tried[id] = true
 		var stream := _stream(AssetPaths.MUSIC.get(id, ""))
 		if stream:
+			# WAV files loop through _on_music_finished instead.
+			if stream is AudioStreamOggVorbis:
+				(stream as AudioStreamOggVorbis).loop = not one_shot
 			return stream
 		id = AssetPaths.MUSIC_FALLBACK.get(id, &"")
 	return null
@@ -163,13 +172,17 @@ func _switch_music(id: StringName) -> void:
 	if id == _music_id:
 		return
 	_music_id = id
-	var old := _music[_music_index]
+	var old_i := _music_index
+	var old := _music[old_i]
 	_music_index = 1 - _music_index
 	var new := _music[_music_index]
+	_kill_fade(old_i)
+	_kill_fade(_music_index)
 	if old.playing:
 		var tw := create_tween()
 		tw.tween_property(old, "volume_db", -80.0, MUSIC_FADE)
 		tw.tween_callback(old.stop)
+		_fades[old_i] = tw
 	new.stop()
 	var stream := _music_stream(id)
 	if stream == null:
@@ -177,7 +190,15 @@ func _switch_music(id: StringName) -> void:
 	new.stream = stream
 	new.volume_db = -40.0
 	new.play()
-	create_tween().tween_property(new, "volume_db", 0.0, MUSIC_FADE)
+	var fade_in := create_tween()
+	fade_in.tween_property(new, "volume_db", 0.0, MUSIC_FADE)
+	_fades[_music_index] = fade_in
+
+
+func _kill_fade(i: int) -> void:
+	if _fades[i] and _fades[i].is_valid():
+		_fades[i].kill()
+	_fades[i] = null
 
 
 func _on_music_finished(p: AudioStreamPlayer) -> void:
@@ -195,5 +216,6 @@ func _on_music_finished(p: AudioStreamPlayer) -> void:
 
 func stop_music() -> void:
 	_music_id = &""
-	for p in _music:
-		p.stop()
+	for i in _music.size():
+		_kill_fade(i)
+		_music[i].stop()
