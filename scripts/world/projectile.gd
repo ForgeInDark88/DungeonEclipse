@@ -1,7 +1,8 @@
 class_name Projectile
 extends Area2D
 ## Straight-flying projectile. `target_group` is "enemies" (hero shots) or
-## "player" (enemy shots). Dies on walls.
+## "player" (enemy shots). Dies on walls (bricks, bedrock): nothing flies
+## through them, explosions on impact hit only targets in plain view.
 
 var direction := Vector2.RIGHT
 var speed: float = 200.0
@@ -19,6 +20,7 @@ var blast_color := Color(1.0, 0.5, 0.2)
 var on_hit: Callable
 
 var _hit: Array[Node] = []
+var _finished := false
 
 @onready var sprite: Sprite2D = $Sprite2D
 
@@ -48,7 +50,17 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	position += direction * speed * delta
+	# Walls are checked with a ray along this frame's step: no tunnelling and
+	# no reliance on Area2D overlaps with the tile layer.
+	var step := direction * speed * delta
+	var q := PhysicsRayQueryParameters2D.create(global_position, global_position + step, LineOfSight.WORLD_MASK)
+	q.hit_from_inside = true
+	var hit := get_world_2d().direct_space_state.intersect_ray(q)
+	if not hit.is_empty():
+		global_position = hit["position"] - direction
+		_finish()
+		return
+	position += step
 	lifetime -= delta
 	if lifetime <= 0.0:
 		queue_free()
@@ -77,9 +89,15 @@ func _damage(body: Node) -> void:
 
 
 func _finish() -> void:
+	if _finished:
+		return
+	_finished = true
 	if blast_radius > 0.0:
+		# The blast reaches only what it can see: a brick between shields.
+		var center := global_position - direction * 3.0
 		for enemy in get_tree().get_nodes_in_group(target_group):
-			if enemy not in _hit and enemy.global_position.distance_to(global_position) <= blast_radius:
+			if enemy not in _hit and enemy.global_position.distance_to(global_position) <= blast_radius \
+					and LineOfSight.can_hit(self, center, enemy):
 				_damage(enemy)
 		Fx.explosion(get_parent(), global_position, blast_radius, blast_color)
 	else:

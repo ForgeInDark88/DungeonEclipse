@@ -378,8 +378,7 @@ func _can_see_player() -> bool:
 ## True when no brick / wall is between the monster's eyes and `target`.
 func has_line_to(target: Vector2) -> bool:
 	var eye := global_position + Vector2(0, -minf(10.0, data.collision_size.y * 0.6))
-	var query := PhysicsRayQueryParameters2D.create(eye, target, WORLD_MASK)
-	return get_world_2d().direct_space_state.intersect_ray(query).is_empty()
+	return LineOfSight.clear(self, eye, target)
 
 
 func _facing() -> float:

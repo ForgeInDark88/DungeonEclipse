@@ -16,7 +16,8 @@ func execute(caster: Node, level: int) -> bool:
 		var reach := speed * (duration + duration_per_level * (level - 1))
 		for enemy in caster.get_tree().get_nodes_in_group("enemies"):
 			var rel: Vector2 = enemy.global_position - start
-			if absf(rel.y) < 20.0 and signf(rel.x) == caster.facing and absf(rel.x) <= reach:
+			if absf(rel.y) < 20.0 and signf(rel.x) == caster.facing and absf(rel.x) <= reach \
+					and LineOfSight.can_hit(caster, start + Vector2(0, -10), enemy):
 				var d: Dictionary = caster.roll_damage(damage_multiplier)
 				enemy.take_damage(d["amount"], d["crit"], start)
 	return true

@@ -614,14 +614,16 @@ func _test_scenes() -> void:
 	await frames(2)
 	check(player.visual._held_default == bow.icon, "bow in hand after equip")
 	player._attack_cooldown = 0.0
+	# Counted on creation: next to a wall the arrow bursts in its first frame.
+	var arrows := [0]
+	var count_arrow := func(n: Node) -> void:
+		if n is Projectile:
+			arrows[0] += 1
+	player.level.entities.child_entered_tree.connect(count_arrow)
 	player.attack()
-	var arrows := 0
-	for i in 30:
-		await frames(1)
-		for n in player.level.entities.get_children():
-			if n is Projectile:
-				arrows += 1
-	check(arrows > 0, "bow shoots an arrow")
+	await frames(30)
+	player.level.entities.child_entered_tree.disconnect(count_arrow)
+	check(arrows[0] > 0, "bow shoots an arrow")
 	player.camera.zoom = Vector2(4, 4)
 	await shot("12a_bow_zoom")
 	player.camera.zoom = Vector2.ONE

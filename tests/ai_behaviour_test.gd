@@ -1,5 +1,6 @@
 extends Node
-## Scripted monster-AI scenarios on small hand-made levels:
+## Scripted monster-AI and "no hits through walls" scenarios on small
+## hand-made levels:
 ##   godot --headless --fixed-fps 60 --path . res://tests/ai_behaviour_test.tscn
 ## Each scenario builds a LevelLayout in code, places a hero and a monster and
 ## checks one behaviour (navigation, sight, memory, hearing, no hits through walls).
@@ -34,6 +35,10 @@ func _ready() -> void:
 	await _scenario("no slam through a wall", _wall_slam)
 	await _scenario("deep floors: calling allies", _coordination)
 	await _scenario("anti-stuck: repath, maneuver, teleport", _anti_stuck)
+	await _scenario("hero melee does not pass walls", _wall_melee)
+	await _scenario("weapon stops at the wall", _wall_clip)
+	await _scenario("skills and bombs do not pass walls", _wall_skills)
+	await _scenario("projectiles stop at bricks", _wall_projectiles)
 	print("FAILURES: ", failures.size())
 	for f in failures:
 		print("  - ", f)
@@ -282,3 +287,101 @@ func _anti_stuck() -> void:
 	check(AIDebug.count("repath") > 0 and AIDebug.count("maneuver") > 0, "repath and maneuver tried first")
 	check(AIDebug.count("teleport") > 0, "then teleported to a safe node")
 	check(e.global_position.is_finite() and level.nav.standable(level.world_to_cell(e.global_position + Vector2(0, -2)).x, level.world_to_cell(e.global_position + Vector2(0, -2)).y, 2), "landed on a standable cell")
+
+
+# ------------------------------------------------- no attacks through walls
+## Hero at cell 10, a one-brick wall at 11, a monster at 12 (inside weapon reach).
+func _wall_setup(with_wall: bool) -> Enemy:
+	var l := _room()
+	if with_wall:
+		for y in range(1, 10):
+			l.set_tile(11, y, T.BRICK)
+	await _build(l, Vector2i(10, 9))
+	var e := _enemy(&"skeleton", Vector2i(12, 9))
+	e.max_hp = 9999
+	e.hp = 9999
+	e.set_physics_process(false)  # a training dummy
+	await get_tree().physics_frame
+	return e
+
+
+func _wall_melee() -> void:
+	var glaive: WeaponItemData = ItemFactory.create(ItemDatabase.get_item(&"glaive"))
+	for with_wall in [true, false]:
+		var e := await _wall_setup(with_wall)
+		var hp := e.hp
+		player._perform_attack(glaive, 1.0)
+		var sword: WeaponItemData = ItemFactory.create(ItemDatabase.get_item(&"iron_sword"))
+		player._perform_attack(sword, 1.0)
+		await get_tree().physics_frame
+		if with_wall:
+			check(e.hp == hp, "glaive and sword: no damage through the wall")
+		else:
+			check(e.hp < hp, "same monster without the wall is hit (%d → %d)" % [hp, e.hp])
+		player.queue_free()
+		level.queue_free()
+		await get_tree().physics_frame
+
+
+func _wall_clip() -> void:
+	await _wall_setup(true)
+	var free := LineOfSight.free_length(player, player._attack_origin(), Vector2.RIGHT, 46.0)
+	check(free < 12.0, "the glaive thrust is cut at the wall (%.1f px of 46)" % free)
+	var q := player._melee_targets(free, true, 1.0)
+	check(q.is_empty(), "nothing inside the cut hitbox")
+
+
+func _wall_skills() -> void:
+	var e := await _wall_setup(true)
+	var hp := e.hp
+	var blast := AreaBlastSkill.new()
+	blast.radius = 80.0
+	blast.execute(player, 1)
+	await get_tree().physics_frame
+	check(e.hp == hp, "area blast: no damage behind the wall")
+	var bomb: Bomb = (load("res://scenes/world/bomb.tscn") as PackedScene).instantiate()
+	level.add_entity(bomb, player.global_position + Vector2(4, -2))
+	bomb.explode()
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	check(e.hp == hp, "bomb: no damage behind the wall")
+	check(level.layout.get_tile(11, 9) == T.EMPTY, "the bomb still broke the brick in its radius")
+	var hp2 := e.hp
+	var bomb2: Bomb = (load("res://scenes/world/bomb.tscn") as PackedScene).instantiate()
+	level.add_entity(bomb2, player.global_position + Vector2(4, -2))
+	bomb2.explode()
+	await get_tree().physics_frame
+	check(e.hp < hp2, "with the wall gone the next bomb hits")
+	# Power strike: hits nothing behind the wall, but breaks the bricks in front.
+	player.queue_free()
+	level.queue_free()
+	await get_tree().physics_frame
+	e = await _wall_setup(true)
+	hp = e.hp
+	var strike := PowerStrikeSkill.new()
+	strike.reach = 40.0
+	strike.execute(player, 1)
+	await get_tree().physics_frame
+	check(e.hp == hp and level.layout.get_tile(11, 9) == T.EMPTY, "power strike: no damage through the wall, the brick breaks")
+
+
+func _wall_projectiles() -> void:
+	var e := await _wall_setup(true)
+	var hp := e.hp
+	var bow: WeaponItemData = ItemFactory.create(ItemDatabase.get_item(&"hunter_bow"))
+	player._perform_attack(bow, 1.0)
+	var fb := ProjectileSkill.new()
+	fb.texture = AssetPaths.tex(AssetPaths.SHARD)
+	fb.blast_radius = 40.0
+	fb.execute(player, 1)
+	await _run(1.0)
+	check(e.hp == hp, "arrows and fireballs stop at the brick (no damage, no blast through)")
+	# Monster shot at the hero through the wall: the projectile dies on it.
+	var p: Projectile = (load("res://scenes/world/projectile.tscn") as PackedScene).instantiate()
+	p.setup(AssetPaths.tex(AssetPaths.SHARD), Vector2.LEFT, 200.0, 10, "player")
+	level.add_entity(p, e.global_position + Vector2(-6, -12))
+	var php := player.hero.stats.hp
+	for i in 60:
+		player._invulnerable = 0.0
+		await get_tree().physics_frame
+	check(player.hero.stats.hp == php and not is_instance_valid(p), "a monster's shot dies on the wall")

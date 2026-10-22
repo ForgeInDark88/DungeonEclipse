@@ -348,6 +348,12 @@ func _perform_attack(w: WeaponItemData, dir: float) -> void:
 	var reach := w.reach if w else 16.0
 	var thrust := w != null and w.attack_pattern == WeaponItemData.Pattern.THRUST
 	var color := w.damage_color() if w else Color.WHITE
+	# The weapon stops at the wall: shorter swing, sparks where it hits the brick.
+	var free := LineOfSight.free_length(self, _attack_origin(), Vector2(dir, 0), reach + 4.0)
+	if free < reach:
+		reach = maxf(free, 4.0)
+		Fx.sparks(get_parent(), _attack_origin() + Vector2(dir * free, 0), Color(1.0, 0.9, 0.6), 4, 50.0)
+		AudioManager.play_sfx(&"dig", global_position, -10.0)
 	SlashTrail.spawn(get_parent(), global_position + Vector2(dir * 4.0, -12.0), dir, reach, thrust, color)
 	var hits := _melee_targets(reach, thrust, dir)
 	for enemy in hits:
@@ -378,9 +384,15 @@ func _melee_targets(reach: float, thrust: bool, dir: float) -> Array[Node]:
 	for hit in get_world_2d().direct_space_state.intersect_shape(query, 16):
 		var body: Node = hit["collider"]
 		if body.is_in_group("enemies") and body not in result:
-			if thrust or (body.global_position.x - global_position.x) * dir > -6.0:
+			if (thrust or (body.global_position.x - global_position.x) * dir > -6.0) \
+					and LineOfSight.can_hit(self, _attack_origin(), body):
 				result.append(body)
 	return result
+
+
+## Where the weapon starts: the hero's hands.
+func _attack_origin() -> Vector2:
+	return global_position + Vector2(0, -12)
 
 
 ## Applies damage, knockback and the weapon's on-hit effects.
@@ -419,7 +431,7 @@ func _shoot(w: WeaponItemData, dir: float) -> void:
 			if is_instance_valid(enemy) and not enemy.is_dead():
 				hero.apply_passive_hits(self, enemy, _dmg)
 		hero.wear_weapon(1)
-	level.add_entity(p, global_position + Vector2(dir * 10.0, -13.0))
+	level.add_entity(p, LineOfSight.safe_point(self, global_position + Vector2(0, -13.0), global_position + Vector2(dir * 10.0, -13.0)))
 
 
 ## Called by enemies, enemy projectiles and traps. Elemental damage
