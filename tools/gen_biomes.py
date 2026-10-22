@@ -10,6 +10,9 @@ Tileset atlas (16x16 cells, 4 columns x 7 rows) — see docs/ANIMATION_GUIDE.md:
   row 4: platform left, middle, right, ladder
   row 5: back wall variants 0-3
   row 6: glow overlay for ORE (drawn unshaded on top), rest empty
+  row 7: floor fringe (grass, pebbles, tiny crystals) in the cell above a floor
+  row 8: ceiling fringe (roots, vines, cobwebs, icicles) under a ceiling
+  row 9: back wall details (crack, stain, protruding stone, biome sign)
 """
 from __future__ import annotations
 
@@ -296,14 +299,6 @@ def backwall(b, seed):
             d.point((8, 13), fill=(255, 200, 90, 255))
         elif kind == "crystal":
             d.polygon([(6, 14), (8, 10), (10, 14)], fill=c4(b["ore"]))
-    elif seed == 1:
-        carve = gp.shade(base, 0.6)
-        if kind == "grass" or kind == "crystal":
-            d.line((5, 3, 8, 3), fill=carve)
-            d.line((6, 2, 6, 5), fill=carve)
-            d.point((9, 5), fill=carve)
-        elif kind == "magma":
-            d.line((3, 12, 7, 10, 11, 13), fill=(160, 60, 30, 255))
     return im
 
 
@@ -318,8 +313,157 @@ def ore_glow(b):
     return im
 
 
+# ------------------------------------------------- detail rows (no collision)
+# row 7: floor fringe (drawn in the empty cell above a floor brick, bottom part)
+# row 8: ceiling fringe (in the empty cell below a ceiling brick, top part)
+# row 9: wall details (over the back wall: cracks, moss, runes, stains)
+def floor_fringe(b, v):
+    im = gp.new(16, 16)
+    d = ImageDraw.Draw(im)
+    rnd = random.Random(100 + v)
+    kind = b["top_kind"]
+    t = c4(b["top"])
+    if kind == "grass":
+        for _ in range(6 + v):
+            x = rnd.randint(0, 15)
+            h = rnd.randint(2, 5)
+            lean = rnd.choice((-1, 0, 1))
+            d.line((x, 15, x + lean, 15 - h), fill=gp.shade(t, rnd.uniform(0.8, 1.25)))
+        if v % 2 == 0:
+            x = rnd.randint(3, 12)
+            d.line((x, 15, x, 10), fill=gp.shade(t, 0.8))
+            col = ((240, 220, 90), (230, 120, 150), (170, 150, 240))[v % 3]
+            d.point((x, 9), fill=c4(col))
+            d.point((x - 1, 10), fill=c4(col))
+            d.point((x + 1, 10), fill=c4(col))
+    elif kind == "moss":
+        for _ in range(5):
+            x = rnd.randint(0, 15)
+            d.line((x, 15, x, 15 - rnd.randint(1, 3)), fill=gp.shade(t, 0.75))
+        for _ in range(1 + v % 2):
+            x = rnd.randint(2, 13)
+            h = rnd.randint(2, 4)
+            d.line((x, 15, x, 15 - h), fill=(215, 225, 205, 255))
+            d.ellipse((x - 2, 13 - h, x + 2, 16 - h), fill=c4((90, 240, 210) if v % 2 else (200, 120, 240)))
+            d.point((x - 1, 14 - h), fill=(240, 255, 255, 255))
+    elif kind == "magma":
+        for _ in range(4):
+            x = rnd.randint(0, 14)
+            d.ellipse((x, 13, x + 2, 15), fill=gp.shade(c4(b["stone"]), 0.6))
+        for _ in range(2 + v % 2):
+            x = rnd.randint(1, 14)
+            d.point((x, 14), fill=(255, 150, 50, 255))
+            d.point((x, 13 - rnd.randint(0, 3)), fill=(255, 200, 90, 200))
+    elif kind == "crystal":
+        for _ in range(2 + v % 2):
+            x = rnd.randint(2, 13)
+            h = rnd.randint(3, 6)
+            col = c4(b["ore"]) if rnd.random() < 0.5 else c4((170, 230, 255))
+            d.polygon([(x - 1, 15), (x, 15 - h), (x + 1, 15)], fill=col)
+            d.point((x, 16 - h), fill=(255, 255, 255, 255))
+    else:  # dust: pebbles, a bone bit, dust
+        for _ in range(3 + v):
+            x = rnd.randint(0, 14)
+            d.point((x, 15), fill=gp.shade(c4(b["stone"]), 1.25))
+            d.point((x + 1, 15), fill=gp.shade(c4(b["stone"]), 0.8))
+        if v % 2 == 1:
+            x = rnd.randint(2, 10)
+            d.line((x, 15, x + 3, 14), fill=(220, 215, 195, 255))
+            d.point((x + 3, 13), fill=(220, 215, 195, 255))
+    return im
+
+
+def ceil_fringe(b, v):
+    im = gp.new(16, 16)
+    d = ImageDraw.Draw(im)
+    rnd = random.Random(200 + v)
+    kind = b["top_kind"]
+    t = c4(b["top"])
+    stone = c4(b["stone"])
+    if kind in ("grass", "moss"):
+        for _ in range(2 + v % 2):
+            x = rnd.randint(1, 14)
+            ln = rnd.randint(4, 11)
+            for y in range(ln):
+                d.point((x + (y // 3) % 2, y), fill=gp.shade(t, 0.65 if kind == "grass" else 0.75))
+            if kind == "moss":
+                d.point((x, ln), fill=(160, 255, 230, 255))
+            elif rnd.random() < 0.6:
+                d.point((x + 1, ln // 2), fill=gp.shade(t, 1.2))  # leaf
+    elif kind == "magma":
+        for _ in range(2):
+            x = rnd.randint(2, 13)
+            ln = rnd.randint(3, 7)
+            d.polygon([(x - 2, 0), (x + 2, 0), (x, ln)], fill=gp.shade(stone, 0.55))
+            d.point((x, ln), fill=(255, 140, 40, 255))
+    elif kind == "crystal":
+        for _ in range(2 + v % 2):
+            x = rnd.randint(2, 13)
+            ln = rnd.randint(3, 7)
+            d.polygon([(x - 1, 0), (x + 1, 0), (x, ln)], fill=c4((200, 180, 250)))
+            d.point((x, 1), fill=(255, 255, 255, 255))
+    else:  # dust: cobweb corner or a small stalactite
+        if v % 2 == 0:
+            web = (220, 220, 230, 140)
+            x0 = 0 if v < 2 else 15
+            sx = 1 if x0 == 0 else -1
+            for k in range(0, 9, 3):
+                d.line((x0, k, x0 + sx * (8 - k), 0), fill=web)
+            d.line((x0, 0, x0 + sx * 6, 6), fill=web)
+        else:
+            x = rnd.randint(3, 12)
+            d.polygon([(x - 2, 0), (x + 2, 0), (x, rnd.randint(4, 7))], fill=gp.shade(stone, 0.7))
+            d.point((x - 1, 1), fill=gp.shade(stone, 1.1))
+    return im
+
+
+def wall_detail(b, v):
+    im = gp.new(16, 16)
+    d = ImageDraw.Draw(im)
+    rnd = random.Random(300 + v)
+    back = c4(b["back"])
+    kind = b["top_kind"]
+    if v == 0:  # crack
+        x, y = rnd.randint(3, 8), rnd.randint(2, 5)
+        pts = [(x, y)]
+        for _ in range(4):
+            x += rnd.choice((-1, 0, 1))
+            y += 2
+            pts.append((x, y))
+        d.line(pts, fill=gp.shade(back, 0.45))
+        d.line((pts[2][0], pts[2][1], pts[2][0] + 3, pts[2][1] + 1), fill=gp.shade(back, 0.5))
+    elif v == 1:  # stain / moss / soot patch
+        col = {"moss": (60, 150, 120), "grass": (80, 130, 60), "magma": (30, 20, 20), "crystal": (150, 120, 220)}.get(
+            kind, (80, 70, 60))
+        for _ in range(14):
+            x, y = rnd.randint(3, 12), rnd.randint(4, 12)
+            d.point((x, y), fill=c4(col, 170))
+    elif v == 2:  # protruding stone
+        d.rectangle((4, 6, 11, 10), fill=gp.shade(back, 1.15))
+        d.line((4, 6, 11, 6), fill=gp.shade(back, 1.35))
+        d.line((4, 10, 11, 10), fill=gp.shade(back, 0.6))
+        d.line((11, 6, 11, 10), fill=gp.shade(back, 0.7))
+    else:  # biome sign: rune / scratch marks / ember vein / spores
+        if kind == "crystal":
+            col = (220, 180, 255, 255)
+            d.line((8, 3, 8, 12), fill=col)
+            d.line((5, 6, 11, 6), fill=col)
+            d.line((5, 10, 8, 12, 11, 10), fill=col)
+        elif kind == "magma":
+            d.line((2, 12, 6, 9, 10, 11, 14, 7), fill=(200, 80, 30, 255))
+            d.point((6, 9), fill=(255, 190, 80, 255))
+        elif kind == "moss":
+            for x, y in ((5, 5), (9, 8), (6, 11), (11, 4)):
+                d.point((x, y), fill=(140, 255, 220, 255))
+        else:
+            for k in range(4):
+                d.line((5 + k * 2, 5, 5 + k * 2, 10), fill=gp.shade(back, 0.55))  # tally marks
+            d.line((4, 9, 12, 6), fill=gp.shade(back, 0.55))
+    return im
+
+
 def tileset(name, b):
-    atlas = gp.new(16 * 4, 16 * 7)
+    atlas = gp.new(16 * 4, 16 * 10)
     rows = [
         [bedrock(b, i) for i in range(4)],
         [brick(b, 0), brick(b, 1), brick(b, 2, cracked=True), brick(b, 3, ore=True)],
@@ -328,6 +472,9 @@ def tileset(name, b):
         [platform(b, 0), platform(b, 1), platform(b, 2), gp.tile_ladder()],
         [backwall(b, i) for i in range(4)],
         [ore_glow(b)],
+        [floor_fringe(b, i) for i in range(4)],
+        [ceil_fringe(b, i) for i in range(4)],
+        [wall_detail(b, i) for i in range(4)],
     ]
     for y, row in enumerate(rows):
         for x, t in enumerate(row):
@@ -647,8 +794,129 @@ def decor_all():
         d.rectangle((x - 2, ln, x + 2, ln + 6), fill=(245, 240, 230, 255), outline=(60, 40, 70, 255))
         d.point((x, ln + 3), fill=(200, 30, 50, 255) if red else (30, 30, 40, 255))
     D["cards"] = im
+    # ---- wall props (placement WALL: hang on the back wall at eye level)
+    im, d = img(16, 16)  # shelf with skulls
+    d.rectangle((1, 11, 14, 12), fill=(110, 75, 45, 255))
+    d.line((1, 11, 14, 11), fill=(150, 105, 65, 255))
+    d.line((3, 13, 3, 15), fill=(90, 60, 35, 255))
+    d.line((12, 13, 12, 15), fill=(90, 60, 35, 255))
+    for x in (3, 9):
+        d.ellipse((x, 5, x + 4, 10), fill=bone)
+        d.point((x + 1, 7), fill=(30, 20, 20, 255))
+        d.point((x + 3, 7), fill=(30, 20, 20, 255))
+    D["wall_skull_shelf"] = im
+    im, d = img(16, 16)  # shackles on chains
+    for x in (4, 11):
+        for y in range(0, 8, 2):
+            d.point((x, y), fill=(130, 130, 140, 255))
+        d.ellipse((x - 2, 8, x + 2, 12), outline=(150, 150, 160, 255))
+    d.rectangle((2, 0, 13, 1), fill=(90, 90, 100, 255))
+    D["wall_shackles"] = im
+    im, d = img(16, 16)  # bracket fungi (glow)
+    for x, y, w in ((3, 4, 7), (7, 8, 8), (4, 12, 6)):
+        d.pieslice((x, y - 3, x + w, y + 3), 180, 360, fill=(220, 150, 80, 255))
+        d.line((x, y, x + w, y), fill=(170, 100, 50, 255))
+        d.point((x + 2, y - 2), fill=(255, 230, 150, 255))
+    D["wall_fungi"] = im
+    im, d = img(16, 16)  # roots through the wall
+    for x0 in (3, 9, 13):
+        x = x0
+        for y in range(16):
+            x += random.Random(x0 * 7 + y).choice((-1, 0, 0, 1))
+            d.point((x, y), fill=(100, 75, 50, 255))
+    D["wall_roots"] = im
+    im, d = img(32, 16)  # faded fresco
+    d.rectangle((0, 0, 31, 15), fill=(160, 140, 105, 255))
+    d.rectangle((1, 1, 30, 14), fill=(190, 170, 130, 255))
+    d.ellipse((5, 3, 11, 9), fill=(170, 80, 60, 255))
+    d.line((8, 9, 8, 14), fill=(120, 90, 160, 255), width=2)
+    d.polygon([(16, 13), (21, 4), (26, 13)], fill=(90, 130, 90, 255))
+    d.point((21, 3), fill=(230, 190, 70, 255))
+    for x in (2, 13, 29):
+        d.line((x, 2, x + 2, 6), fill=(140, 120, 90, 255))  # cracks / missing paint
+    D["wall_fresco"] = im
+    im, d = img(16, 16)  # ivy patch
+    for _ in range(26):
+        rr = random.Random(_ * 13)
+        x, y = rr.randint(1, 14), rr.randint(0, 15)
+        d.point((x, y), fill=(70, 140, 55, 255) if _ % 3 else (110, 180, 80, 255))
+    D["wall_ivy"] = im
+    im, d = img(16, 16)  # glowing lava crack (glow)
+    d.line((2, 2, 6, 6, 5, 10, 9, 14), fill=(255, 120, 40, 255), width=2)
+    d.line((6, 6, 12, 5), fill=(255, 150, 60, 255))
+    d.point((6, 7), fill=(255, 240, 160, 255))
+    D["wall_lava_crack"] = im
+    im, d = img(16, 16)  # small round mirror (glow)
+    d.ellipse((2, 2, 13, 13), fill=(210, 170, 70, 255))
+    d.ellipse((4, 4, 11, 11), fill=(180, 170, 220, 255))
+    d.line((5, 9, 9, 5), fill=(245, 240, 255, 255))
+    D["wall_mirror"] = im
+    im, d = img(16, 16)  # theatre masks
+    d.ellipse((1, 3, 8, 12), fill=(240, 236, 230, 255))
+    d.ellipse((8, 4, 15, 13), fill=(40, 30, 50, 255))
+    d.point((3, 6), fill=(30, 25, 35, 255))
+    d.point((6, 6), fill=(30, 25, 35, 255))
+    d.arc((3, 7, 7, 11), 20, 160, fill=(30, 25, 35, 255))
+    d.point((10, 7), fill=(230, 220, 240, 255))
+    d.point((13, 7), fill=(230, 220, 240, 255))
+    d.arc((10, 10, 14, 13), 200, 340, fill=(230, 220, 240, 255))
+    D["wall_masks"] = im
+    # ---- wide floor set pieces (two cells)
+    im, d = img(32, 16)  # sarcophagus
+    stone = (125, 120, 130, 255)
+    d.rectangle((1, 6, 30, 15), fill=stone)
+    d.rectangle((0, 3, 31, 7), fill=gp.shade(stone, 1.15))
+    d.line((0, 3, 31, 3), fill=gp.shade(stone, 1.35))
+    d.line((1, 15, 30, 15), fill=gp.shade(stone, 0.6))
+    d.ellipse((12, 4, 19, 7), fill=gp.shade(stone, 0.85))  # carved face
+    d.line((4, 10, 27, 10), fill=gp.shade(stone, 0.75))
+    d.line((24, 3, 27, 7), fill=gp.shade(stone, 0.5))  # crack in the lid
+    D["sarcophagus"] = im
+    im, d = img(32, 32)  # glowing mushroom cluster (glow)
+    for x, h, r, col in ((8, 18, 7, (70, 220, 200)), (20, 26, 9, (90, 200, 230)), (27, 12, 4, (200, 120, 240))):
+        d.rectangle((x - 1, 31 - h, x + 1, 31), fill=(215, 220, 205, 255))
+        d.pieslice((x - r, 31 - h - r, x + r, 31 - h + r), 180, 360, fill=c4(col))
+        d.arc((x - r, 31 - h - r, x + r, 31 - h + r), 200, 290, fill=gp.shade(c4(col), 1.4))
+        for k in range(-r + 2, r - 1, 3):
+            d.point((x + k, 31 - h - 2), fill=(240, 255, 255, 255))
+    D["mushroom_cluster"] = im
+    im, d = img(32, 32)  # broken arch
+    stone = (165, 152, 125, 255)
+    d.rectangle((2, 10, 7, 31), fill=stone)
+    d.rectangle((25, 18, 30, 31), fill=stone)
+    d.arc((2, 0, 30, 28), 180, 270, fill=stone, width=5)
+    d.line((2, 10, 2, 31), fill=gp.shade(stone, 1.25))
+    d.line((7, 10, 7, 31), fill=gp.shade(stone, 0.7))
+    for y in (16, 23):
+        d.line((2, y, 7, y), fill=gp.shade(stone, 0.75))
+        d.line((25, y + 3, 30, y + 3), fill=gp.shade(stone, 0.75))
+    for x, y in ((14, 29), (18, 30), (21, 28)):
+        d.rectangle((x, y, x + 2, 31), fill=gp.shade(stone, 0.9))  # fallen stones
+    d.line((3, 12, 5, 30), fill=(80, 140, 60, 255))  # ivy
+    D["broken_arch"] = im
+    im, d = img(32, 16)  # charred bone pile
+    for k in range(9):
+        x = 2 + (k * 7) % 26
+        d.line((x, 15 - (k % 3), x + 6, 13 - (k % 2)), fill=(70, 60, 55, 255), width=2)
+    d.ellipse((12, 6, 19, 13), fill=(80, 70, 65, 255))
+    d.point((14, 9), fill=(255, 120, 40, 255))
+    d.point((17, 9), fill=(255, 120, 40, 255))
+    for x in (5, 22, 27):
+        d.point((x, 14), fill=(255, 150, 50, 255))
+    D["charred_bones"] = im
+    im, d = img(32, 32)  # grand mirror (glow)
+    gold = (215, 175, 70, 255)
+    d.rectangle((4, 1, 27, 27), fill=gold)
+    d.pieslice((4, -6, 27, 10), 180, 360, fill=gold)
+    d.rectangle((7, 4, 24, 25), fill=(150, 140, 200, 255))
+    d.line((9, 21, 21, 7), fill=(240, 235, 255, 255), width=2)
+    d.line((10, 24, 22, 13), fill=(210, 200, 245, 255))
+    d.ellipse((14, -3, 17, 0), fill=(255, 80, 120, 255))
+    d.rectangle((12, 28, 19, 31), fill=gold)
+    d.line((6, 31, 25, 31), fill=gp.shade(gold, 0.7))
+    D["grand_mirror"] = im
     for name, im in D.items():
-        gp.save(im, f"sprites/decor/{name}.png", do_outline=name not in ("cobweb",))
+        gp.save(im, f"sprites/decor/{name}.png", do_outline=name not in ("cobweb", "wall_roots", "wall_ivy"))
 
 
 # ------------------------------------------------- hero gloves/boots layers
@@ -715,18 +983,26 @@ def misc_ui():
 
 # ----------------------------------------------------------- biome .tres
 DATA = os.path.join(os.path.dirname(__file__), "..", "data", "biomes")
-# biome -> extra decorations: (name, placement 0 floor / 1 ceiling, weight, light rgb or None, unshaded, sway)
+# biome -> extra decorations: (name, placement 0 floor / 1 ceiling / 2 wall, weight, light rgb or None, unshaded, sway)
 EXTRA_DECOR = {
-    "catacombs": [("urn", 0, 1.2, None, False, False), ("tombstone", 0, 1.0, None, False, False)],
-    "fungal": [("puffball", 0, 1.5, (0.8, 0.5, 1.0), True, False), ("fern", 0, 1.5, None, False, False)],
+    "catacombs": [("urn", 0, 1.2, None, False, False), ("tombstone", 0, 1.0, None, False, False),
+                  ("wall_skull_shelf", 2, 1.2, None, False, False), ("wall_shackles", 2, 1.0, None, False, False),
+                  ("sarcophagus", 0, 0.8, None, False, False)],
+    "fungal": [("puffball", 0, 1.5, (0.8, 0.5, 1.0), True, False), ("fern", 0, 1.5, None, False, False),
+               ("wall_fungi", 2, 1.5, (1.0, 0.7, 0.4), True, False), ("wall_roots", 2, 1.2, None, False, False),
+               ("mushroom_cluster", 0, 0.8, (0.5, 1.0, 0.9), True, False)],
     "ruins": [("vase", 0, 1.2, None, False, False), ("banner", 1, 1.0, None, False, True),
-              ("rubble", 0, 1.5, None, False, False)],
-    "lava": [("obsidian", 0, 1.5, None, False, False)],
+              ("rubble", 0, 1.5, None, False, False), ("wall_fresco", 2, 1.0, None, False, False),
+              ("wall_ivy", 2, 1.5, None, False, False), ("broken_arch", 0, 0.7, None, False, False)],
+    "lava": [("obsidian", 0, 1.5, None, False, False), ("wall_lava_crack", 2, 1.5, (1.0, 0.5, 0.2), True, False),
+             ("charred_bones", 0, 1.0, None, False, False), ("wall_shackles", 2, 0.6, None, False, False)],
 }
 MIRROR_DECOR = [("mirror", 0, 1.5, (0.75, 0.65, 1.0), True, False), ("rune_crystal", 0, 1.5, (0.7, 0.5, 1.0), True, False),
                 ("candelabra", 0, 1.0, (0.85, 0.6, 1.0), True, False), ("violet_banner", 1, 1.2, None, False, True),
                 ("cards", 1, 1.2, None, False, True), ("chains", 1, 0.8, None, False, True),
-                ("crystals", 0, 1.0, (0.8, 0.6, 1.0), True, False)]
+                ("crystals", 0, 1.0, (0.8, 0.6, 1.0), True, False),
+                ("wall_mirror", 2, 1.5, (0.75, 0.65, 1.0), True, False), ("wall_masks", 2, 1.2, None, False, False),
+                ("grand_mirror", 0, 0.7, (0.75, 0.6, 1.0), True, False)]
 
 
 def _decor_sub(sid, tex_id, placement, weight, light, unshaded, sway):
@@ -782,13 +1058,14 @@ ambient = Color(0.98, 0.95, 1, 1)
 back_wall_modulate = Color(0.84, 0.8, 0.9, 1)
 torch_color = Color(0.8, 0.55, 1, 1)
 ambient_particles = Color(0.85, 0.75, 1, 1)
+particle_style = &"sparkles"
 fog_color = Color(0.55, 0.45, 0.75, 1)
 fog_amount = 0.09
 grade_tint = Color(0.98, 0.95, 1.03, 1)
 saturation = 1.0
 contrast = 1.05
 decorations = Array[ExtResource("decor_script")]([%s])
-decor_per_room = 3.5
+decor_per_room = 5.0
 ore_chance = 0.04
 ore_item = &"moon_crystal"
 """ % ", ".join('SubResource("Decor_%s")' % n[0] for n in MIRROR_DECOR)

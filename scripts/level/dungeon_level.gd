@@ -23,6 +23,10 @@ const T = LevelLayout.Tile
 @onready var back: TileMapLayer = $Back
 @onready var tiles: TileMapLayer = $Tiles
 @onready var glow: TileMapLayer = $Glow
+## Small details without collision: wall marks (behind) and floor / ceiling
+## fringe (grass, pebbles, vines...). Rows AssetPaths.TILE_ROW_*_FRINGE / WALL_DETAIL.
+@onready var back_detail: TileMapLayer = $BackDetail
+@onready var detail: TileMapLayer = $Detail
 @onready var entities: Node2D = $Entities
 
 var layout: LevelLayout
@@ -53,8 +57,11 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	back.tile_set = ts
 	tiles.tile_set = ts
 	glow.tile_set = ts
+	back_detail.tile_set = ts
+	detail.tile_set = ts
 	if biome:
 		back.modulate = biome.back_wall_modulate
+		back_detail.modulate = biome.back_wall_modulate
 	explored.resize(layout.width * layout.height)
 	explored.fill(0)
 	_place_ore()
@@ -69,6 +76,9 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 			if noise.get_noise_2d(x, y) > -0.25 or _near_solid(cell):
 				back.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(_back_variant(cell), AssetPaths.TILE_ROW_BACKWALL))
 			_apply_tile(cell, layout.get_tile(x, y))
+	for y in layout.height:
+		for x in layout.width:
+			_apply_detail(Vector2i(x, y))
 	if layout.is_arena:
 		_spawn_boss()
 		_spawn_ambience()
@@ -118,11 +128,11 @@ func _variant(cell: Vector2i) -> int:
 	return absi(hash(cell * 7 + Vector2i(floor_number, 3))) % 4
 
 
-## Back wall: mostly plain blocks (0, 1); a crack (2) or a niche / carving (3)
-## only now and then, so details do not turn into a pattern.
+## Back wall: mostly plain blocks (0, 1); a crack (2) or a niche (3) only
+## now and then (2 in 96 / 1 in 96), so details do not turn into a pattern.
 func _back_variant(cell: Vector2i) -> int:
-	var h := absi(hash(cell * 13 + Vector2i(floor_number, 11))) % 16
-	return 3 if h == 15 else 2 if h == 14 else h % 2
+	var h := absi(hash(cell * 13 + Vector2i(floor_number, 11))) % 96
+	return 3 if h == 95 else 2 if h >= 93 else h % 2
 
 
 func _near_solid(cell: Vector2i) -> bool:
@@ -186,12 +196,33 @@ func _apply_tile(cell: Vector2i, kind: int) -> void:
 			tiles.set_cell(cell, TilesetBuilder.SOURCE_ID, AssetPaths.TILE_LADDER, TilesetBuilder.LADDER_TOP_ALT)
 
 
+## Fringe and wall marks of a cell, from its neighbours (stable per cell).
+func _apply_detail(cell: Vector2i) -> void:
+	detail.erase_cell(cell)
+	back_detail.erase_cell(cell)
+	if layout.get_tile(cell.x, cell.y) != T.EMPTY:
+		return
+	var h := absi(hash(cell * 17 + Vector2i(floor_number, 5)))
+	var roll := float(h % 1000) / 1000.0
+	var v := (h / 1000) % 4
+	var floor_k := biome.floor_fringe if biome else 0.45
+	var ceil_k := biome.ceiling_fringe if biome else 0.3
+	var wall_k := biome.wall_details if biome else 0.03
+	if layout.get_tile(cell.x, cell.y + 1) == T.BRICK and roll < floor_k:
+		detail.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(v, AssetPaths.TILE_ROW_FLOOR_FRINGE))
+	elif LevelLayout.is_solid(layout.get_tile(cell.x, cell.y - 1)) and roll < ceil_k:
+		detail.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(v, AssetPaths.TILE_ROW_CEIL_FRINGE))
+	elif back.get_cell_source_id(cell) >= 0 and roll > 1.0 - wall_k:
+		back_detail.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(v, AssetPaths.TILE_ROW_WALL_DETAIL))
+
+
 ## Re-picks the tile of a cell and its neighbours (after digging).
 func _refresh_around(cell: Vector2i) -> void:
 	for d in [Vector2i.ZERO, Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
 		var c: Vector2i = cell + d
 		if layout.in_bounds(c.x, c.y):
 			_apply_tile(c, layout.get_tile(c.x, c.y))
+			_apply_detail(c)
 
 
 ## Navigation is rebuilt shortly after digging / bombs / ropes: a burst of
@@ -457,18 +488,40 @@ func _spawn_decorations() -> void:
 		if used.has(cell) or layout.get_tile(cell.x, cell.y) != T.EMPTY or cell == layout.exit_cell:
 			continue
 		var tall := data.texture.get_height() > TILE
+		var wide := data.texture.get_width() > TILE
+		var cell2 := cell + Vector2i.RIGHT
+		if wide and (used.has(cell2) or layout.get_tile(cell2.x, cell2.y) != T.EMPTY or cell2 == layout.exit_cell):
+			continue
 		var pos: Vector2
-		if data.placement == DecorData.Placement.FLOOR:
-			if layout.get_tile(cell.x, cell.y + 1) != T.BRICK or (tall and layout.get_tile(cell.x, cell.y - 1) != T.EMPTY):
-				continue
-			pos = cell_bottom(cell)
-		else:
-			if not LevelLayout.is_solid(layout.get_tile(cell.x, cell.y - 1)):
-				continue
-			pos = cell_center(cell) - Vector2(0, TILE / 2.0)
+		match data.placement:
+			DecorData.Placement.FLOOR:
+				if layout.get_tile(cell.x, cell.y + 1) != T.BRICK or (tall and layout.get_tile(cell.x, cell.y - 1) != T.EMPTY):
+					continue
+				if wide and (layout.get_tile(cell2.x, cell2.y + 1) != T.BRICK
+						or (tall and layout.get_tile(cell2.x, cell2.y - 1) != T.EMPTY)):
+					continue
+				pos = cell_bottom(cell)
+			DecorData.Placement.CEILING:
+				if not LevelLayout.is_solid(layout.get_tile(cell.x, cell.y - 1)):
+					continue
+				pos = cell_center(cell) - Vector2(0, TILE / 2.0)
+			DecorData.Placement.WALL:
+				# On the back wall, 2-3 cells above a floor (eye level), not on gaps.
+				if back.get_cell_source_id(cell) < 0 or layout.get_tile(cell.x, cell.y + 1) != T.EMPTY:
+					continue
+				if not (layout.get_tile(cell.x, cell.y + 2) == T.BRICK or layout.get_tile(cell.x, cell.y + 3) == T.BRICK):
+					continue
+				if wide and back.get_cell_source_id(cell2) < 0:
+					continue
+				pos = cell_center(cell)
+		if wide:
+			pos.x += TILE / 2.0
+			used[cell2] = true
 		used[cell] = true
 		var deco := Decoration.new()
 		deco.data = data
+		if data.placement == DecorData.Placement.WALL and biome:
+			deco.wall_tint = biome.back_wall_modulate.lerp(Color.WHITE, 0.45)
 		add_entity(deco, pos)
 		count -= 1
 

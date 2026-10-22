@@ -3,7 +3,9 @@ extends Resource
 ## Decoration placed in the level (bones, cobwebs, crystals, statues...).
 ## Pure visuals: no collision.
 
-enum Placement { FLOOR, CEILING }
+## WALL: hangs on the back wall at eye level (shelves, frescoes, masks...).
+## Textures wider than a cell (32 px) stand on / need two cells.
+enum Placement { FLOOR, CEILING, WALL }
 
 @export var texture: Texture2D
 @export var placement: Placement = Placement.FLOOR

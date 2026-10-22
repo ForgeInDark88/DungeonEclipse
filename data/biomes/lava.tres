@@ -11,6 +11,9 @@
 [ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="9_tpf2t"]
 [ext_resource type="Texture2D" path="res://assets/sprites/tiles/tiles_lava.png" id="10_771dq"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/obsidian.png" id="dx_obsidian"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/wall_lava_crack.png" id="dx_wall_lava_crack"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/charred_bones.png" id="dx_charred_bones"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/wall_shackles.png" id="dx_wall_shackles"]
 
 [sub_resource type="Resource" id="Resource_ik8yg"]
 script = ExtResource("1_hm27p")
@@ -62,6 +65,36 @@ light_scale = 0.25
 unshaded = false
 sway = false
 
+[sub_resource type="Resource" id="Decor_wall_lava_crack"]
+script = ExtResource("1_hm27p")
+texture = ExtResource("dx_wall_lava_crack")
+placement = 2
+weight = 1.5
+light_color = Color(1.0, 0.5, 0.2, 1)
+light_scale = 0.25
+unshaded = true
+sway = false
+
+[sub_resource type="Resource" id="Decor_charred_bones"]
+script = ExtResource("1_hm27p")
+texture = ExtResource("dx_charred_bones")
+placement = 0
+weight = 1.0
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Decor_wall_shackles"]
+script = ExtResource("1_hm27p")
+texture = ExtResource("dx_wall_shackles")
+placement = 2
+weight = 0.6
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
 [resource]
 script = ExtResource("9_tpf2t")
 music = &"lava"
@@ -77,12 +110,13 @@ ambient = Color(1, 0.95, 0.9, 1)
 back_wall_modulate = Color(0.92, 0.66, 0.58, 1)
 torch_color = Color(1, 0.45, 0.2, 1)
 ambient_particles = Color(1, 0.5, 0.2, 1)
+particle_style = &"embers"
 fog_color = Color(0.8, 0.25, 0.1, 1)
 fog_amount = 0.1
 grade_tint = Color(1.08, 0.95, 0.9, 1)
 saturation = 1.1
 contrast = 1.1
-decorations = Array[ExtResource("1_hm27p")]([SubResource("Resource_ik8yg"), SubResource("Resource_blxpc"), SubResource("Resource_j8ao4"), SubResource("Resource_7et0i"), SubResource("Decor_obsidian")])
-decor_per_room = 3.0
+decorations = Array[ExtResource("1_hm27p")]([SubResource("Resource_ik8yg"), SubResource("Resource_blxpc"), SubResource("Resource_j8ao4"), SubResource("Resource_7et0i"), SubResource("Decor_obsidian"), SubResource("Decor_wall_lava_crack"), SubResource("Decor_charred_bones"), SubResource("Decor_wall_shackles")])
+decor_per_room = 4.5
 ore_chance = 0.05
 ore_item = &"iron_ore"

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BiomeData" load_steps=21 format=3]
+[gd_resource type="Resource" script_class="BiomeData" load_steps=27 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor_script"]
 [ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="biome_script"]
@@ -13,6 +13,9 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/cards.png" id="dx_cards"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/chains.png" id="dx_chains"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/crystals.png" id="dx_crystals"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/wall_mirror.png" id="dx_wall_mirror"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/wall_masks.png" id="dx_wall_masks"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/grand_mirror.png" id="dx_grand_mirror"]
 
 [sub_resource type="Resource" id="Decor_mirror"]
 script = ExtResource("decor_script")
@@ -84,6 +87,36 @@ light_scale = 0.25
 unshaded = true
 sway = false
 
+[sub_resource type="Resource" id="Decor_wall_mirror"]
+script = ExtResource("decor_script")
+texture = ExtResource("dx_wall_mirror")
+placement = 2
+weight = 1.5
+light_color = Color(0.75, 0.65, 1.0, 1)
+light_scale = 0.25
+unshaded = true
+sway = false
+
+[sub_resource type="Resource" id="Decor_wall_masks"]
+script = ExtResource("decor_script")
+texture = ExtResource("dx_wall_masks")
+placement = 2
+weight = 1.2
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Decor_grand_mirror"]
+script = ExtResource("decor_script")
+texture = ExtResource("dx_grand_mirror")
+placement = 0
+weight = 0.7
+light_color = Color(0.75, 0.6, 1.0, 1)
+light_scale = 0.25
+unshaded = true
+sway = false
+
 [resource]
 script = ExtResource("biome_script")
 music = &"mirror_halls"
@@ -99,12 +132,13 @@ ambient = Color(0.98, 0.95, 1, 1)
 back_wall_modulate = Color(0.84, 0.8, 0.9, 1)
 torch_color = Color(0.8, 0.55, 1, 1)
 ambient_particles = Color(0.85, 0.75, 1, 1)
+particle_style = &"sparkles"
 fog_color = Color(0.55, 0.45, 0.75, 1)
 fog_amount = 0.09
 grade_tint = Color(0.98, 0.95, 1.03, 1)
 saturation = 1.0
 contrast = 1.05
-decorations = Array[ExtResource("decor_script")]([SubResource("Decor_mirror"), SubResource("Decor_rune_crystal"), SubResource("Decor_candelabra"), SubResource("Decor_violet_banner"), SubResource("Decor_cards"), SubResource("Decor_chains"), SubResource("Decor_crystals")])
-decor_per_room = 3.5
+decorations = Array[ExtResource("decor_script")]([SubResource("Decor_mirror"), SubResource("Decor_rune_crystal"), SubResource("Decor_candelabra"), SubResource("Decor_violet_banner"), SubResource("Decor_cards"), SubResource("Decor_chains"), SubResource("Decor_crystals"), SubResource("Decor_wall_mirror"), SubResource("Decor_wall_masks"), SubResource("Decor_grand_mirror")])
+decor_per_room = 5.0
 ore_chance = 0.04
 ore_item = &"moon_crystal"

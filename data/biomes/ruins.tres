@@ -14,6 +14,9 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/vase.png" id="dx_vase"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/banner.png" id="dx_banner"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/rubble.png" id="dx_rubble"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/wall_fresco.png" id="dx_wall_fresco"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/wall_ivy.png" id="dx_wall_ivy"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/broken_arch.png" id="dx_broken_arch"]
 
 [sub_resource type="Resource" id="Resource_mbtgo"]
 script = ExtResource("1_ase3j")
@@ -95,6 +98,36 @@ light_scale = 0.25
 unshaded = false
 sway = false
 
+[sub_resource type="Resource" id="Decor_wall_fresco"]
+script = ExtResource("1_ase3j")
+texture = ExtResource("dx_wall_fresco")
+placement = 2
+weight = 1.0
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Decor_wall_ivy"]
+script = ExtResource("1_ase3j")
+texture = ExtResource("dx_wall_ivy")
+placement = 2
+weight = 1.5
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Decor_broken_arch"]
+script = ExtResource("1_ase3j")
+texture = ExtResource("dx_broken_arch")
+placement = 0
+weight = 0.7
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
 [resource]
 script = ExtResource("10_0ie7r")
 music = &"ruins"
@@ -110,12 +143,13 @@ ambient = Color(0.98, 0.99, 1, 1)
 back_wall_modulate = Color(0.9, 0.85, 0.78, 1)
 torch_color = Color(1, 0.8, 0.45, 1)
 ambient_particles = Color(0.9, 0.85, 0.6, 1)
+particle_style = &"pollen"
 fog_color = Color(0.6, 0.55, 0.45, 1)
 fog_amount = 0.06
 grade_tint = Color(1.05, 1, 0.92, 1)
 saturation = 0.95
 contrast = 1.08
-decorations = Array[ExtResource("1_ase3j")]([SubResource("Resource_mbtgo"), SubResource("Resource_5po7i"), SubResource("Resource_juyo7"), SubResource("Resource_37t48"), SubResource("Resource_yvy1r"), SubResource("Decor_vase"), SubResource("Decor_banner"), SubResource("Decor_rubble")])
-decor_per_room = 3.0
+decorations = Array[ExtResource("1_ase3j")]([SubResource("Resource_mbtgo"), SubResource("Resource_5po7i"), SubResource("Resource_juyo7"), SubResource("Resource_37t48"), SubResource("Resource_yvy1r"), SubResource("Decor_vase"), SubResource("Decor_banner"), SubResource("Decor_rubble"), SubResource("Decor_wall_fresco"), SubResource("Decor_wall_ivy"), SubResource("Decor_broken_arch")])
+decor_per_room = 4.5
 ore_chance = 0.04
 ore_item = &"gold_coin"
