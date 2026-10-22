@@ -268,7 +268,7 @@ func _drop_fire(spot: Vector2, a: BossAttack, dmg: int) -> void:
 
 
 func _summon(a: BossAttack) -> void:
-	_summons = _summons.filter(func(n: Node) -> bool: return is_instance_valid(n) and not n.is_dead())
+	_summons.assign(_summons.filter(func(n) -> bool: return is_instance_valid(n) and not n.is_dead()))
 	var lvl := _level()
 	if a.summon == null or lvl == null:
 		return

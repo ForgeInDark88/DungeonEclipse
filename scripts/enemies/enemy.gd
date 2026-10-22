@@ -1308,7 +1308,7 @@ func _apply_hit_effects(target: Node, dmg: int) -> void:
 
 
 func _alive_summons() -> int:
-	_summons = _summons.filter(func(n: Node) -> bool: return is_instance_valid(n) and not n.is_dead())
+	_summons.assign(_summons.filter(func(n) -> bool: return is_instance_valid(n) and not n.is_dead()))
 	return _summons.size()
 
 
