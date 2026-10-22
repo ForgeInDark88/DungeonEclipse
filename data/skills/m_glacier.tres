@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/m_glacier.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/passive_skill.gd" id="eff"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="hit"]
+
+[sub_resource type="Resource" id="Hit"]
+script = ExtResource("hit")
+status = &"slow"
+duration = 2.0
+power = 0.4
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+bonuses = {}
+bonuses_per_level = {
+"intellect": 1
+}
+hit_chance = 0.2
+hit_chance_per_level = 0.08
+hit_effect = SubResource("Hit")
+
+[resource]
+script = ExtResource("skill")
+id = &"m_glacier"
+display_name = "Вечная мерзлота"
+description = "Удары замедляют врагов."
+icon = ExtResource("icon")
+mana_cost = 0
+cooldown = 0.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3

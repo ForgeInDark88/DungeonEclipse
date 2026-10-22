@@ -122,39 +122,75 @@ func _build_ground(clearance: int) -> GroundGraph:
 				g.add_point(id_of(Vector2i(x, y)), Vector2(x, y))
 	for y in h:
 		for x in w:
-			if not g.has_point(id_of(Vector2i(x, y))):
-				continue
-			var from := id_of(Vector2i(x, y))
-			var stand := standable(x, y, clearance)
-			# Ladders: up and down the shaft (both ways).
-			for dy in [-1, 1]:
-				var ny: int = y + dy
-				if (is_ladder(x, y) or is_ladder(x, ny)) and g.has_point(id_of(Vector2i(x, ny))):
-					g.link(from, id_of(Vector2i(x, ny)), Edge.CLIMB, 1.4)
-			if not stand:
-				continue
-			for sx in [-1, 1]:
-				var nx: int = x + sx
-				# Walk to the neighbour or step off the ledge.
-				if standable(nx, y, clearance):
-					g.link(from, id_of(Vector2i(nx, y)), Edge.WALK, 1.0)
-				elif fits(nx, y, clearance):
-					for k in range(1, MAX_FALL + 1):
-						if not fits(nx, y + k, clearance):
-							break
-						if standable(nx, y + k, clearance):
-							g.link(from, id_of(Vector2i(nx, y + k)), Edge.FALL, 1.0 + k * 0.4)
-							break
-				_add_jumps(g, x, y, sx, clearance)
-			# Drop through a one-way platform under the feet.
-			if layout.get_tile(x, y + 1) == T.PLATFORM:
-				for k in range(2, MAX_FALL + 2):
-					if not fits(x, y + k, clearance):
-						break
-					if standable(x, y + k, clearance):
-						g.link(from, id_of(Vector2i(x, y + k)), Edge.DROP, 1.5 + k * 0.4)
-						break
+			if g.has_point(id_of(Vector2i(x, y))):
+				_link_from(g, x, y, clearance)
 	return g
+
+
+## Every edge that starts in (x, y).
+func _link_from(g: GroundGraph, x: int, y: int, clearance: int) -> void:
+	var from := id_of(Vector2i(x, y))
+	# Ladders: up and down the shaft (both ways).
+	for dy in [-1, 1]:
+		var ny: int = y + dy
+		if (is_ladder(x, y) or is_ladder(x, ny)) and g.has_point(id_of(Vector2i(x, ny))):
+			g.link(from, id_of(Vector2i(x, ny)), Edge.CLIMB, 1.4)
+	if not standable(x, y, clearance):
+		return
+	for sx in [-1, 1]:
+		var nx: int = x + sx
+		# Walk to the neighbour or step off the ledge.
+		if standable(nx, y, clearance):
+			g.link(from, id_of(Vector2i(nx, y)), Edge.WALK, 1.0)
+		elif fits(nx, y, clearance):
+			for k in range(1, MAX_FALL + 1):
+				if not fits(nx, y + k, clearance):
+					break
+				if standable(nx, y + k, clearance):
+					g.link(from, id_of(Vector2i(nx, y + k)), Edge.FALL, 1.0 + k * 0.4)
+					break
+		_add_jumps(g, x, y, sx, clearance)
+	# Drop through a one-way platform under the feet.
+	if layout.get_tile(x, y + 1) == T.PLATFORM:
+		for k in range(2, MAX_FALL + 2):
+			if not fits(x, y + k, clearance):
+				break
+			if standable(x, y + k, clearance):
+				g.link(from, id_of(Vector2i(x, y + k)), Edge.DROP, 1.5 + k * 0.4)
+				break
+
+
+## Local rebuild after bricks break or ropes appear: only nodes whose edges
+## could pass through `area` (falls, jumps and drops reach a few cells) are
+## relinked, instead of the whole floor (that caused a hitch on every dig).
+func update_area(area: Rect2i) -> void:
+	var box := Rect2i(area.position - Vector2i(MAX_JUMP_ACROSS + 1, MAX_FALL + 3),
+			area.size + Vector2i(MAX_JUMP_ACROSS * 2 + 2, MAX_FALL + MAX_JUMP_UP + 6))
+	box = box.intersection(Rect2i(0, 0, layout.width, layout.height))
+	for clearance in [1, 2]:
+		var g := graph(clearance)
+		for y in range(box.position.y, box.end.y):
+			for x in range(box.position.x, box.end.x):
+				var id := id_of(Vector2i(x, y))
+				var should := is_node(x, y, clearance)
+				if g.has_point(id):
+					if not should:
+						g.remove_point(id)
+						continue
+					for to in g.get_point_connections(id):
+						g.unlink(id, to)
+				elif should:
+					g.add_point(id, Vector2(x, y))
+		for y in range(box.position.y, box.end.y):
+			for x in range(box.position.x, box.end.x):
+				if g.has_point(id_of(Vector2i(x, y))):
+					_link_from(g, x, y, clearance)
+	for y in range(area.position.y, area.end.y):
+		for x in range(area.position.x, area.end.x):
+			if layout.in_bounds(x, y):
+				fly.set_point_solid(Vector2i(x, y), LevelLayout.is_solid(layout.get_tile(x, y)))
+	_apply_dangers()
+	version += 1
 
 
 ## Jumps from (x, y) towards `sx`: up to MAX_JUMP_UP up, across gaps and

@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/w_berserk.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/buff_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+key = "berserk"
+bonuses = {
+"damage": 6,
+"speed": 20
+}
+bonuses_per_level = {
+"damage": 3
+}
+duration = 8.0
+duration_per_level = 1.0
+tint = Color(1.0, 0.45, 0.4, 1)
+heal_percent = 0.0
+
+[resource]
+script = ExtResource("skill")
+id = &"w_berserk"
+display_name = "Берсерк"
+description = "Слепая ярость: больше урона и скорости."
+icon = ExtResource("icon")
+mana_cost = 25
+cooldown = 25.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_heavy"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3

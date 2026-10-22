@@ -747,7 +747,6 @@ def main() -> None:
         "bomb": icon_bomb(),
         "rope": icon_rope(),
         "key": icon_key(),
-        "pickaxe": icon_pickaxe(),
         "gold_coin": icon_coin(),
         "bone": icon_bone(),
         "iron_ore": icon_ore(),

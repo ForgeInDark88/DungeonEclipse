@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="LootTable" load_steps=73 format=3]
+[gd_resource type="Resource" script_class="LootTable" load_steps=67 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/loot_table.gd" id="table"]
 [ext_resource type="Script" path="res://scripts/data/loot_entry.gd" id="entry"]
@@ -22,8 +22,6 @@
 [ext_resource type="Resource" path="res://data/items/usable/mana_crystal.tres" id="i_mana_crystal"]
 [ext_resource type="Resource" path="res://data/items/usable/mana_potion.tres" id="i_mana_potion"]
 [ext_resource type="Resource" path="res://data/items/usable/map_scroll.tres" id="i_map_scroll"]
-[ext_resource type="Resource" path="res://data/items/usable/mithril_pickaxe.tres" id="i_mithril_pickaxe"]
-[ext_resource type="Resource" path="res://data/items/usable/pickaxe.tres" id="i_pickaxe"]
 [ext_resource type="Resource" path="res://data/items/usable/poison_bomb.tres" id="i_poison_bomb"]
 [ext_resource type="Resource" path="res://data/items/usable/portal_scroll.tres" id="i_portal_scroll"]
 [ext_resource type="Resource" path="res://data/items/usable/regen_potion.tres" id="i_regen_potion"]
@@ -32,7 +30,6 @@
 [ext_resource type="Resource" path="res://data/items/usable/shield_elixir.tres" id="i_shield_elixir"]
 [ext_resource type="Resource" path="res://data/items/usable/small_health_potion.tres" id="i_small_health_potion"]
 [ext_resource type="Resource" path="res://data/items/usable/speed_potion.tres" id="i_speed_potion"]
-[ext_resource type="Resource" path="res://data/items/usable/steel_pickaxe.tres" id="i_steel_pickaxe"]
 [ext_resource type="Resource" path="res://data/items/usable/sticky_bomb.tres" id="i_sticky_bomb"]
 [ext_resource type="Resource" path="res://data/items/usable/strength_potion.tres" id="i_strength_potion"]
 [ext_resource type="Resource" path="res://data/items/usable/teleport_scroll.tres" id="i_teleport_scroll"]
@@ -218,24 +215,6 @@ max_count = 1
 min_floor = 1
 max_floor = 0
 
-[sub_resource type="Resource" id="e_mithril_pickaxe"]
-script = ExtResource("entry")
-item = ExtResource("i_mithril_pickaxe")
-weight = 1.00
-min_count = 1
-max_count = 1
-min_floor = 1
-max_floor = 0
-
-[sub_resource type="Resource" id="e_pickaxe"]
-script = ExtResource("entry")
-item = ExtResource("i_pickaxe")
-weight = 1.00
-min_count = 1
-max_count = 1
-min_floor = 1
-max_floor = 0
-
 [sub_resource type="Resource" id="e_poison_bomb"]
 script = ExtResource("entry")
 item = ExtResource("i_poison_bomb")
@@ -308,15 +287,6 @@ max_count = 1
 min_floor = 1
 max_floor = 0
 
-[sub_resource type="Resource" id="e_steel_pickaxe"]
-script = ExtResource("entry")
-item = ExtResource("i_steel_pickaxe")
-weight = 1.00
-min_count = 1
-max_count = 1
-min_floor = 1
-max_floor = 0
-
 [sub_resource type="Resource" id="e_sticky_bomb"]
 script = ExtResource("entry")
 item = ExtResource("i_sticky_bomb")
@@ -363,7 +333,7 @@ rarity_min_floor = Array[int]([1, 1, 99, 99])
 item_level_base = 1.0
 item_level_per_floor = 0.75
 item_level_bonus = 0.0
-entries = Array[ExtResource("entry")]([SubResource("e_antidote"), SubResource("e_big_health_potion"), SubResource("e_bomb"), SubResource("e_bread"), SubResource("e_cheese"), SubResource("e_defense_potion"), SubResource("e_detection_scroll"), SubResource("e_fire_bomb"), SubResource("e_fireball_scroll"), SubResource("e_healing_scroll"), SubResource("e_health_potion"), SubResource("e_ice_bomb"), SubResource("e_identify_scroll"), SubResource("e_invisibility_potion"), SubResource("e_key"), SubResource("e_lockpick"), SubResource("e_long_rope"), SubResource("e_mana_crystal"), SubResource("e_mana_potion"), SubResource("e_map_scroll"), SubResource("e_mithril_pickaxe"), SubResource("e_pickaxe"), SubResource("e_poison_bomb"), SubResource("e_portal_scroll"), SubResource("e_regen_potion"), SubResource("e_roast_meat"), SubResource("e_rope"), SubResource("e_shield_elixir"), SubResource("e_small_health_potion"), SubResource("e_speed_potion"), SubResource("e_steel_pickaxe"), SubResource("e_sticky_bomb"), SubResource("e_strength_potion"), SubResource("e_teleport_scroll"), SubResource("e_whetstone")])
+entries = Array[ExtResource("entry")]([SubResource("e_antidote"), SubResource("e_big_health_potion"), SubResource("e_bomb"), SubResource("e_bread"), SubResource("e_cheese"), SubResource("e_defense_potion"), SubResource("e_detection_scroll"), SubResource("e_fire_bomb"), SubResource("e_fireball_scroll"), SubResource("e_healing_scroll"), SubResource("e_health_potion"), SubResource("e_ice_bomb"), SubResource("e_identify_scroll"), SubResource("e_invisibility_potion"), SubResource("e_key"), SubResource("e_lockpick"), SubResource("e_long_rope"), SubResource("e_mana_crystal"), SubResource("e_mana_potion"), SubResource("e_map_scroll"), SubResource("e_poison_bomb"), SubResource("e_portal_scroll"), SubResource("e_regen_potion"), SubResource("e_roast_meat"), SubResource("e_rope"), SubResource("e_shield_elixir"), SubResource("e_small_health_potion"), SubResource("e_speed_potion"), SubResource("e_sticky_bomb"), SubResource("e_strength_potion"), SubResource("e_teleport_scroll"), SubResource("e_whetstone")])
 extra_tables = Array[ExtResource("table")]([])
 gold_min = 0
 gold_max = 0

@@ -18,16 +18,23 @@ var ranks: Dictionary = {}
 ## skill id -> seconds left
 var cooldowns: Dictionary = {}
 var skill_points: int = 0
+## Branch tree of the class (ClassData.tree_layout / branch_names).
+var layout: Dictionary = {}
+var branch_names: Array[String] = []
+## Gold per hero level to forget every skill and get the points back.
+const RESPEC_GOLD_PER_LEVEL := 25
 
 
-func setup(list: Array[SkillData]) -> void:
+func setup(list: Array[SkillData], p_layout: Dictionary = {}, p_branches: Array[String] = []) -> void:
 	all = list.duplicate()
+	layout = p_layout
+	branch_names = p_branches
 	ranks.clear()
 	cooldowns.clear()
 	skills.clear()
 	skills.resize(SLOT_COUNT)
 	for s in all:
-		if s.is_starting():
+		if is_starting(s):
 			_learn_free(s)
 	changed.emit()
 
@@ -64,6 +71,92 @@ func upgrade(index: int) -> bool:
 
 # --- Tree ---------------------------------------------------------------------
 
+func has_branches() -> bool:
+	return not layout.is_empty()
+
+
+func _slot(s: SkillData) -> Dictionary:
+	return layout.get(String(s.id), {}) if s else {}
+
+
+func branch_of(s: SkillData) -> int:
+	return int(_slot(s).get("branch", -1))
+
+
+func row_of(s: SkillData) -> int:
+	return int(_slot(s).get("row", s.tree_row)) if has_branches() else s.tree_row
+
+
+func choice_of(s: SkillData) -> String:
+	return String(_slot(s).get("choice", ""))
+
+
+func required_level(s: SkillData) -> int:
+	return int(_slot(s).get("level", s.required_level)) if has_branches() else s.required_level
+
+
+## Points that must be spent in the skill's branch before it opens.
+func required_points(s: SkillData) -> int:
+	return int(_slot(s).get("points", 0))
+
+
+## Known from the start (free): top of a branch / old-style starting skill.
+func is_starting(s: SkillData) -> bool:
+	if has_branches():
+		return required_points(s) == 0 and required_level(s) <= 1 and choice_of(s) == ""
+	return s.is_starting()
+
+
+## Skill points spent in a branch (free starting ranks do not count).
+func spent_in(branch: int) -> int:
+	var n := 0
+	for s in all:
+		if branch_of(s) == branch and is_learned(s):
+			n += rank(s) - (1 if is_starting(s) else 0)
+	return n
+
+
+## The learned skill that closed this one (same choice group), or null.
+func chosen_rival(s: SkillData) -> SkillData:
+	var group := choice_of(s)
+	if group == "":
+		return null
+	for o in all:
+		if o != s and choice_of(o) == group and is_learned(o):
+			return o
+	return null
+
+
+func respec_cost(hero_level: int) -> int:
+	return RESPEC_GOLD_PER_LEVEL * hero_level
+
+
+## Points that a respec would give back.
+func spent_total() -> int:
+	var n := 0
+	for s in all:
+		if is_learned(s):
+			n += rank(s) - (1 if is_starting(s) else 0)
+	return n
+
+
+## Forgets everything but the starting skills (rank 1); points come back.
+func reset() -> int:
+	var back := spent_total()
+	for s in all:
+		if not is_learned(s):
+			continue
+		if is_starting(s):
+			ranks[s.id] = 1
+		else:
+			ranks.erase(s.id)
+			var i := skills.find(s)
+			if i >= 0:
+				skills[i] = null
+	skill_points += back
+	changed.emit()
+	return back
+
 func rank(s: SkillData) -> int:
 	return int(ranks.get(s.id, 0)) if s else 0
 
@@ -73,6 +166,8 @@ func is_learned(s: SkillData) -> bool:
 
 
 func prerequisites_met(s: SkillData) -> bool:
+	if has_branches():
+		return true
 	for r in s.requires:
 		if r and not is_learned(r):
 			return false
@@ -84,8 +179,15 @@ func block_reason(s: SkillData, hero_level: int) -> String:
 	if rank(s) >= s.max_level:
 		return "Максимальный уровень"
 	if not is_learned(s):
-		if hero_level < s.required_level:
-			return "Нужен уровень героя %d" % s.required_level
+		var rival := chosen_rival(s)
+		if rival:
+			return "Выбран другой путь: %s" % rival.display_name
+		var need := required_points(s) - spent_in(branch_of(s))
+		if need > 0:
+			var b := branch_of(s)
+			return "Вложите ещё %d очк. в ветвь «%s»" % [need, branch_names[b] if b >= 0 and b < branch_names.size() else "?"]
+		if hero_level < required_level(s):
+			return "Нужен уровень героя %d" % required_level(s)
 		if not prerequisites_met(s):
 			var names: Array[String] = []
 			for r in s.requires:

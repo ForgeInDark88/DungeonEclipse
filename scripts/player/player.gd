@@ -25,6 +25,9 @@ const PROJECTILE_SCENE := preload("res://scenes/world/projectile.tscn")
 var hero: Hero
 var level: DungeonLevel
 var facing: float = 1.0
+## Aiming with the mouse: shots and projectile skills fly to the cursor.
+## Turned off by keyboard / gamepad attacks (they shoot where the hero faces).
+var mouse_aim := true
 var dead := false
 var climbing := false
 
@@ -309,6 +312,33 @@ func _walk(input_x: float, delta: float) -> void:
 
 
 # -------------------------------------------------------------------- input
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion or event is InputEventMouseButton:
+		mouse_aim = true
+	elif event is InputEventJoypadButton or (event is InputEventJoypadMotion and absf((event as InputEventJoypadMotion).axis_value) > 0.5):
+		mouse_aim = false
+	elif event is InputEventKey and event.is_action_pressed("attack"):
+		mouse_aim = false
+
+
+## Direction of a shot from `origin`: to the mouse cursor, or straight ahead.
+func aim_vector(origin: Vector2) -> Vector2:
+	if mouse_aim:
+		var to := get_global_mouse_position() - origin
+		if to.length() > 4.0:
+			return to.normalized()
+	return Vector2(facing, 0)
+
+
+## Turns the hero to the cursor before a shot / cast.
+func face_aim() -> void:
+	if mouse_aim:
+		var dx := get_global_mouse_position().x - global_position.x
+		if absf(dx) > 2.0:
+			facing = signf(dx)
+			visual.facing = facing
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if hero == null or dead or status.is_stunned():
 		return
@@ -345,6 +375,8 @@ func attack() -> void:
 		return
 	status.remove(&"invisible")  # attacking reveals the hero
 	var w := hero.weapon()
+	if w and w.is_ranged():
+		face_aim()
 	var interval := hero.attack_interval()
 	_attack_cooldown = interval
 	# Fists use the quick jab; weapons their own animation.
@@ -431,7 +463,10 @@ func _shoot(w: WeaponItemData, dir: float) -> void:
 		return
 	var p: Projectile = PROJECTILE_SCENE.instantiate()
 	var d := roll_damage()
-	p.setup(w.projectile_texture, Vector2(dir, 0), w.projectile_speed, d["amount"], "enemies")
+	var origin := global_position + Vector2(0, -13.0)
+	var aim := aim_vector(origin) if mouse_aim else Vector2(dir, 0)
+	dir = signf(aim.x) if absf(aim.x) > 0.01 else dir
+	p.setup(w.projectile_texture, aim, w.projectile_speed, d["amount"], "enemies")
 	p.crit = d["crit"]
 	p.damage_type = w.damage_type
 	p.pierce = w.projectile_pierce
@@ -447,7 +482,7 @@ func _shoot(w: WeaponItemData, dir: float) -> void:
 			if is_instance_valid(enemy) and not enemy.is_dead():
 				hero.apply_passive_hits(self, enemy, _dmg)
 		hero.wear_weapon(1)
-	level.add_entity(p, LineOfSight.safe_point(self, global_position + Vector2(0, -13.0), global_position + Vector2(dir * 10.0, -13.0)))
+	level.add_entity(p, LineOfSight.safe_point(self, origin, origin + aim * 10.0))
 
 
 ## Called by enemies, enemy projectiles and traps. Elemental damage

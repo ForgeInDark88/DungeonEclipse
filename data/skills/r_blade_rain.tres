@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/r_blade_rain.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/projectile_skill.gd" id="eff"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/knife.png" id="tex"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+texture = ExtResource("tex")
+speed = 300.0
+damage_multiplier = 0.9
+damage_per_level = 0.2
+count = 7
+extra_every_levels = 0
+spread_degrees = 30.0
+pierce = 0
+blast_radius = 0.0
+damage_type = 0
+color = Color(0.9, 0.9, 1.0, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"r_blade_rain"
+display_name = "Дождь клинков"
+description = "Семь ножей широким веером."
+icon = ExtResource("icon")
+mana_cost = 24
+cooldown = 8.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+synergy_weapons = Array[int]([3, 7])
+synergy_power = 0.3

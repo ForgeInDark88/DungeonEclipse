@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/w_blade_storm.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/area_blast_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+radius = 70.0
+radius_per_level = 5.0
+damage_multiplier = 2.4
+damage_per_level = 0.4
+knockback = 140.0
+breaks_tiles = false
+stun_time = 0.0
+damage_type = 0
+color = Color(1.0, 0.6, 0.6, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"w_blade_storm"
+display_name = "Буря клинков"
+description = "Шквал ударов разрывает всё вокруг."
+icon = ExtResource("icon")
+mana_cost = 30
+cooldown = 14.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_heavy"
+synergy_weapons = Array[int]([0, 1])
+synergy_power = 0.3

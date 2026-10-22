@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/m_arcane_orb.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/projectile_skill.gd" id="eff"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/magic_bolt.png" id="tex"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+texture = ExtResource("tex")
+speed = 150.0
+damage_multiplier = 2.6
+damage_per_level = 0.45
+count = 1
+extra_every_levels = 0
+spread_degrees = 10.0
+pierce = 0
+blast_radius = 36.0
+damage_type = 4
+color = Color(0.8, 0.5, 1.0, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"m_arcane_orb"
+display_name = "Тайная сфера"
+description = "Медленная сфера взрывается чистой магией."
+icon = ExtResource("icon")
+mana_cost = 24
+cooldown = 7.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3

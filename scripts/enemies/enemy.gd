@@ -805,7 +805,7 @@ func _go_to(target: Vector2, speed: float, delta: float) -> Move:
 	var grounded := is_on_floor() or _climbing or data.behavior == EnemyData.Behavior.FLYER
 	if _jumping and is_on_floor() and velocity.y >= 0.0 and (_path.is_empty() or _path_i >= _path.size()):
 		_jumping = false  # landed after the plan changed mid-air
-	var outdated := _path_version != lvl.nav.version or goal != _path_goal or _repath_timer <= 0.0 or _path.is_empty()
+	var outdated := _nav_changed(lvl) or goal != _path_goal or _repath_timer <= 0.0 or _path.is_empty()
 	if outdated and grounded and not _jumping:
 		_compute_path(lvl, goal)
 	if _path.is_empty():
@@ -815,6 +815,18 @@ func _go_to(target: Vector2, speed: float, delta: float) -> Move:
 	if data.behavior == EnemyData.Behavior.FLYER:
 		return _follow_fly(lvl, speed, delta)
 	return _follow_ground(lvl, speed, delta)
+
+
+## The level changed (a brick broke): repath soon, but not all monsters in
+## the same frame — the old path stays valid for a moment.
+func _nav_changed(lvl: DungeonLevel) -> bool:
+	if _path_version == lvl.nav.version:
+		return false
+	_path_version = lvl.nav.version
+	if _path.is_empty():
+		return true
+	_repath_timer = minf(_repath_timer, randf_range(0.05, 0.5))
+	return false
 
 
 func _compute_path(lvl: DungeonLevel, goal: Vector2i) -> void:
@@ -1178,7 +1190,7 @@ func _fly_to(target: Vector2, speed: float, delta: float) -> Move:
 	var goal := lvl.world_to_cell(target + Vector2(0, -6))
 	if not lvl.nav.passable(goal.x, goal.y) and lvl.nav.passable(goal.x, goal.y - 1):
 		goal.y -= 1
-	if _path_version != lvl.nav.version or goal != _path_goal or _repath_timer <= 0.0:
+	if _nav_changed(lvl) or goal != _path_goal or _repath_timer <= 0.0:
 		_compute_path(lvl, goal)
 	if _path.is_empty():
 		velocity = velocity.move_toward(Vector2.ZERO, 300.0 * delta)

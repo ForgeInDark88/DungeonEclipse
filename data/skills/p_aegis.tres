@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/p_aegis.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/buff_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+key = "aegis"
+bonuses = {
+"armor": 20
+}
+bonuses_per_level = {
+"armor": 6
+}
+duration = 8.0
+duration_per_level = 1.0
+tint = Color(0.8, 0.9, 1.0, 1)
+heal_percent = 0.0
+
+[resource]
+script = ExtResource("skill")
+id = &"p_aegis"
+display_name = "Эгида"
+description = "Неприступная броня на время."
+icon = ExtResource("icon")
+mana_cost = 24
+cooldown = 26.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3

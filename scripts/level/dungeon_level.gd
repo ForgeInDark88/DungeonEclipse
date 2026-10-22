@@ -37,6 +37,8 @@ var explored_version := 0
 ## Monster navigation (walk graph + flying grid), see LevelNav.
 var nav: LevelNav
 var _nav_dirty := false
+## Cells changed since the last navigation update (bounding box).
+var _nav_area := Rect2i()
 var _nav_timer := 0.0
 ## Cells whose look changed (explored or dug): the minimap redraws only these.
 var changed_cells: Array[Vector2i] = []
@@ -193,13 +195,17 @@ func _physics_process(delta: float) -> void:
 	_nav_timer -= delta
 	if _nav_timer <= 0.0:
 		_nav_dirty = false
-		nav.rebuild()
-		AIDebug.log_event(self, "nav", "граф навигации перестроен (v%d)" % nav.version)
+		nav.update_area(_nav_area)
+		AIDebug.log_event(self, "nav", "граф навигации обновлён (v%d)" % nav.version)
 
 
-func _mark_nav_dirty() -> void:
+func _mark_nav_dirty(cell: Vector2i) -> void:
+	var r := Rect2i(cell, Vector2i.ONE)
 	if not _nav_dirty:
 		_nav_timer = 0.2
+		_nav_area = r
+	else:
+		_nav_area = _nav_area.merge(r)
 	_nav_dirty = true
 
 
@@ -280,7 +286,7 @@ func break_tile(cell: Vector2i, effects := true) -> bool:
 	if layout.get_tile(cell.x, cell.y) != T.BRICK:
 		return false
 	layout.set_tile(cell.x, cell.y, T.EMPTY)
-	_mark_nav_dirty()
+	_mark_nav_dirty(cell)
 	changed_cells.append(cell)
 	var was_ore := ore_cells.erase(cell)
 	_refresh_around(cell)
@@ -324,7 +330,7 @@ func place_rope(cell: Vector2i, max_length: int) -> int:
 		y += 1
 	while count < max_length and layout.get_tile(cell.x, y) == T.EMPTY:
 		layout.set_tile(cell.x, y, T.LADDER)
-		_mark_nav_dirty()
+		_mark_nav_dirty(Vector2i(cell.x, y))
 		changed_cells.append(Vector2i(cell.x, y))
 		_refresh_around(Vector2i(cell.x, y))
 		count += 1

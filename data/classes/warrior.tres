@@ -14,13 +14,34 @@
 [ext_resource type="Resource" path="res://data/skills/blade_master.tres" id="sk_blade_master"]
 [ext_resource type="Resource" path="res://data/skills/bloodletting.tres" id="sk_bloodletting"]
 [ext_resource type="Resource" path="res://data/skills/war_cry.tres" id="sk_war_cry"]
+[ext_resource type="Resource" path="res://data/skills/power_strike.tres" id="tree_power_strike"]
+[ext_resource type="Resource" path="res://data/skills/blade_master.tres" id="tree_blade_master"]
+[ext_resource type="Resource" path="res://data/skills/w_whirlwind.tres" id="tree_w_whirlwind"]
+[ext_resource type="Resource" path="res://data/skills/bloodletting.tres" id="tree_bloodletting"]
+[ext_resource type="Resource" path="res://data/skills/earthquake.tres" id="tree_earthquake"]
+[ext_resource type="Resource" path="res://data/skills/w_executioner.tres" id="tree_w_executioner"]
+[ext_resource type="Resource" path="res://data/skills/w_berserk.tres" id="tree_w_berserk"]
+[ext_resource type="Resource" path="res://data/skills/iron_skin.tres" id="tree_iron_skin"]
+[ext_resource type="Resource" path="res://data/skills/toughness.tres" id="tree_toughness"]
+[ext_resource type="Resource" path="res://data/skills/w_shield_wall.tres" id="tree_w_shield_wall"]
+[ext_resource type="Resource" path="res://data/skills/w_second_wind.tres" id="tree_w_second_wind"]
+[ext_resource type="Resource" path="res://data/skills/war_cry.tres" id="tree_war_cry"]
+[ext_resource type="Resource" path="res://data/skills/w_unbreakable.tres" id="tree_w_unbreakable"]
+[ext_resource type="Resource" path="res://data/skills/w_titan_grip.tres" id="tree_w_titan_grip"]
+[ext_resource type="Resource" path="res://data/skills/haste.tres" id="tree_haste"]
+[ext_resource type="Resource" path="res://data/skills/w_battle_lust.tres" id="tree_w_battle_lust"]
+[ext_resource type="Resource" path="res://data/skills/w_axe_throw.tres" id="tree_w_axe_throw"]
+[ext_resource type="Resource" path="res://data/skills/w_charge.tres" id="tree_w_charge"]
+[ext_resource type="Resource" path="res://data/skills/w_rage_leech.tres" id="tree_w_rage_leech"]
+[ext_resource type="Resource" path="res://data/skills/w_blade_storm.tres" id="tree_w_blade_storm"]
+[ext_resource type="Resource" path="res://data/skills/w_battle_trance.tres" id="tree_w_battle_trance"]
 
 [resource]
 script = ExtResource("2_3268n")
 id = &"warrior"
 display_name = "Воин"
 order = 0
-description = "Крепкий боец ближнего боя с киркой и щитом. Урон зависит от Силы."
+description = "Крепкий боец ближнего боя с мечом и щитом. Урон зависит от Силы."
 portrait_overlay = ExtResource("1_1y7wg")
 sprite = ExtResource("8_h8h0d")
 outfit_sheet = ExtResource("sheet_outfit")
@@ -48,12 +69,35 @@ starting_items = {
 "key": 1,
 "leather_armor": 1,
 "mana_crystal": 1,
-"pickaxe": 1,
 "rope": 1,
 "rusty_sword": 1,
 "whetstone": 1
 }
 starting_equipment = Array[StringName]([&"rusty_sword", &"leather_armor"])
-starting_quick_bar = Array[StringName]([&"pickaxe", &"bomb", &"mana_crystal", &"health_potion", &"rope", &"key"])
-skills = Array[ExtResource("3_o3gbp")]([ExtResource("4_vp7vw"), ExtResource("5_c13nv"), ExtResource("6_pse82"), ExtResource("7_ontb7"), ExtResource("sk_toughness"), ExtResource("sk_blade_master"), ExtResource("sk_war_cry"), ExtResource("sk_bloodletting")])
+starting_quick_bar = Array[StringName]([&"bomb", &"mana_crystal", &"health_potion", &"rope", &"key"])
+skills = Array[ExtResource("3_o3gbp")]([ExtResource("tree_power_strike"), ExtResource("tree_blade_master"), ExtResource("tree_w_whirlwind"), ExtResource("tree_bloodletting"), ExtResource("tree_earthquake"), ExtResource("tree_w_executioner"), ExtResource("tree_w_berserk"), ExtResource("tree_iron_skin"), ExtResource("tree_toughness"), ExtResource("tree_w_shield_wall"), ExtResource("tree_w_second_wind"), ExtResource("tree_war_cry"), ExtResource("tree_w_unbreakable"), ExtResource("tree_w_titan_grip"), ExtResource("tree_haste"), ExtResource("tree_w_battle_lust"), ExtResource("tree_w_axe_throw"), ExtResource("tree_w_charge"), ExtResource("tree_w_rage_leech"), ExtResource("tree_w_blade_storm"), ExtResource("tree_w_battle_trance")])
 allowed_weapon_types = Array[int]([0, 1, 2, 6])
+branch_names = Array[String](["Оружие", "Стойкость", "Ярость"])
+tree_layout = {
+"power_strike": {"branch": 0, "row": 0, "points": 0, "level": 1, "choice": ""},
+"blade_master": {"branch": 0, "row": 1, "points": 1, "level": 2, "choice": ""},
+"w_whirlwind": {"branch": 0, "row": 2, "points": 3, "level": 4, "choice": "warrior_0_2"},
+"bloodletting": {"branch": 0, "row": 2, "points": 3, "level": 4, "choice": "warrior_0_2"},
+"earthquake": {"branch": 0, "row": 3, "points": 6, "level": 6, "choice": ""},
+"w_executioner": {"branch": 0, "row": 4, "points": 9, "level": 9, "choice": "warrior_0_4"},
+"w_berserk": {"branch": 0, "row": 4, "points": 9, "level": 9, "choice": "warrior_0_4"},
+"iron_skin": {"branch": 1, "row": 0, "points": 0, "level": 1, "choice": ""},
+"toughness": {"branch": 1, "row": 1, "points": 1, "level": 2, "choice": ""},
+"w_shield_wall": {"branch": 1, "row": 2, "points": 3, "level": 4, "choice": "warrior_1_2"},
+"w_second_wind": {"branch": 1, "row": 2, "points": 3, "level": 4, "choice": "warrior_1_2"},
+"war_cry": {"branch": 1, "row": 3, "points": 6, "level": 6, "choice": ""},
+"w_unbreakable": {"branch": 1, "row": 4, "points": 9, "level": 9, "choice": "warrior_1_4"},
+"w_titan_grip": {"branch": 1, "row": 4, "points": 9, "level": 9, "choice": "warrior_1_4"},
+"haste": {"branch": 2, "row": 0, "points": 0, "level": 1, "choice": ""},
+"w_battle_lust": {"branch": 2, "row": 1, "points": 1, "level": 2, "choice": ""},
+"w_axe_throw": {"branch": 2, "row": 2, "points": 3, "level": 4, "choice": "warrior_2_2"},
+"w_charge": {"branch": 2, "row": 2, "points": 3, "level": 4, "choice": "warrior_2_2"},
+"w_rage_leech": {"branch": 2, "row": 3, "points": 6, "level": 6, "choice": ""},
+"w_blade_storm": {"branch": 2, "row": 4, "points": 9, "level": 9, "choice": "warrior_2_4"},
+"w_battle_trance": {"branch": 2, "row": 4, "points": 9, "level": 9, "choice": "warrior_2_4"}
+}

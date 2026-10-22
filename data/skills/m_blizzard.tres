@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/m_blizzard.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/area_blast_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+radius = 76.0
+radius_per_level = 5.0
+damage_multiplier = 1.8
+damage_per_level = 0.35
+knockback = 140.0
+breaks_tiles = false
+stun_time = 1.0
+damage_type = 2
+color = Color(0.7, 0.9, 1.0, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"m_blizzard"
+display_name = "Буран"
+description = "Ледяная буря замораживает всех вокруг."
+icon = ExtResource("icon")
+mana_cost = 32
+cooldown = 16.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3
