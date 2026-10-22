@@ -27,6 +27,7 @@ chance = 0.2
 script = ExtResource("5_o5dl5")
 id = &"spider"
 display_name = "Пещерный паук"
+description = "Ждёт на потолке и падает на голову. Укус ядовит."
 texture = ExtResource("8_lq5t7")
 sheet = ExtResource("6_512pu")
 sheet_layout = ExtResource("7_sx0g2")

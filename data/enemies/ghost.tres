@@ -19,6 +19,7 @@ chance = 0.35
 script = ExtResource("4_twsag")
 id = &"ghost"
 display_name = "Призрак"
+description = "Неупокоенная душа. Проходит сквозь стены и не боится яда."
 texture = ExtResource("7_dy1md")
 sheet = ExtResource("5_8bmuw")
 sheet_layout = ExtResource("6_oe5gy")

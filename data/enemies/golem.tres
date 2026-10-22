@@ -19,6 +19,7 @@ chance = 0.35
 script = ExtResource("4_kit7j")
 id = &"golem"
 display_name = "Каменный голем"
+description = "Ожившая кладка. Медленный и тяжёлый, обрушивает удар по площади."
 texture = ExtResource("7_hlrkk")
 sheet = ExtResource("5_as0sq")
 sheet_layout = ExtResource("6_6y21x")

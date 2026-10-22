@@ -11,6 +11,7 @@
 script = ExtResource("2_b60uw")
 id = &"bat"
 display_name = "Летучая мышь"
+description = "Пищащая тень под сводами. Слабая, но налетает стаями и бьёт сверху."
 texture = ExtResource("3_y8xl4")
 sheet = ExtResource("sheet_tex")
 sheet_layout = ExtResource("sheet_lay")

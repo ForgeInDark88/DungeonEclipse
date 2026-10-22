@@ -177,6 +177,7 @@ contact_damage_mult = 0.5
 reward_items = Array[StringName]([&"guardian_seal", &"eclipse_shard", &"eclipse_shard"])
 id = &"flame_witch"
 display_name = "Владычица пламени"
+description = "Пламя Затмения во плоти. Огненные шары, кольца огня и горящая земля."
 sheet = ExtResource("9_qyhky")
 sheet_layout = ExtResource("10_hy34l")
 behavior = 1

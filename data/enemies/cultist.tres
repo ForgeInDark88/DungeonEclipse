@@ -20,6 +20,7 @@ chance = 0.3
 script = ExtResource("3_achw7")
 id = &"cultist"
 display_name = "Культист Затмения"
+description = "Служитель Затмения. Держится на расстоянии и мечет тёмные сгустки."
 texture = ExtResource("4_gycwh")
 sheet = ExtResource("sheet_tex")
 sheet_layout = ExtResource("sheet_lay")

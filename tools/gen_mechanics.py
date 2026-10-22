@@ -637,6 +637,62 @@ def meta_icons():
     gp.save(im, "sprites/skills/holy_light.png")
 
 
+# ------------------------------------------------------- achievement icons
+def achievement_icons():
+    """16x16 medal: ring colour = tier (bronze/silver/gold), glyph = category."""
+    tiers = {"bronze": (190, 120, 60, 255), "silver": (200, 205, 215, 255), "gold": (240, 200, 70, 255)}
+    ink = (40, 25, 20, 255)
+
+    def skull(d):
+        d.ellipse((5, 4, 10, 9), fill=(235, 230, 215, 255))
+        d.rectangle((6, 9, 9, 11), fill=(235, 230, 215, 255))
+        d.point((6, 6), fill=ink); d.point((9, 6), fill=ink)
+
+    def crown(d):
+        d.polygon([(4, 10), (4, 5), (6, 7), (8, 4), (10, 7), (12, 5), (12, 10)], fill=(250, 220, 90, 255), outline=ink)
+
+    def stairs(d):
+        for i in range(3):
+            d.rectangle((4 + i * 3, 10 - i * 2, 12, 11 - i * 2), fill=(120, 90, 70, 255))
+
+    def chest(d):
+        d.rectangle((4, 6, 11, 11), fill=(140, 90, 40, 255), outline=ink)
+        d.line((4, 8, 11, 8), fill=ink)
+        d.point((8, 9), fill=(250, 220, 90, 255))
+
+    def gem(d):
+        d.polygon([(8, 4), (12, 8), (8, 12), (4, 8)], fill=(170, 80, 240, 255), outline=ink)
+
+    def coin(d):
+        d.ellipse((5, 5, 10, 10), fill=(250, 210, 70, 255), outline=ink)
+
+    def gear(d):
+        d.polygon([(4, 11), (8, 4), (12, 11)], fill=(150, 150, 160, 255), outline=ink)
+
+    def star(d):
+        d.polygon([(8, 3), (9, 7), (13, 7), (10, 9), (11, 13), (8, 10), (5, 13), (6, 9), (3, 7), (7, 7)],
+                  fill=(255, 245, 190, 255))
+
+    def book(d):
+        d.rectangle((4, 4, 11, 11), fill=(120, 40, 40, 255), outline=ink)
+        d.line((6, 4, 6, 11), fill=(230, 200, 120, 255))
+
+    def bag(d):
+        d.ellipse((4, 6, 11, 12), fill=(150, 100, 50, 255), outline=ink)
+        d.rectangle((6, 4, 9, 6), fill=(120, 80, 40, 255))
+
+    glyphs = {"skull": skull, "crown": crown, "stairs": stairs, "chest": chest, "gem": gem, "coin": coin,
+              "trap": gear, "star": star, "book": book, "bag": bag}
+    for tier, col in tiers.items():
+        for gname, fn in glyphs.items():
+            im = gp.new(16, 16)
+            d = ImageDraw.Draw(im)
+            d.ellipse((0, 0, 15, 15), fill=c4(gp.shade(col, 0.55)), outline=c4(col))
+            d.ellipse((1, 1, 14, 14), outline=c4(gp.shade(col, 1.2)))
+            fn(d)
+            gp.save(im, "sprites/achievements/%s_%s.png" % (gname, tier))
+
+
 def main():
     os.makedirs(os.path.join(A, "ui/status"), exist_ok=True)
     status_icons()
@@ -646,6 +702,7 @@ def main():
     new_monsters()
     events()
     meta_icons()
+    achievement_icons()
     print("mechanics generated")
 
 

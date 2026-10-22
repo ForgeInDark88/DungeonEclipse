@@ -5,6 +5,7 @@ const MAIN_MENU := "res://scenes/ui/main_menu.tscn"
 const CHARACTER_CREATION := "res://scenes/ui/character_creation.tscn"
 const GAME := "res://scenes/game/game.tscn"
 const SANCTUM := "res://scenes/ui/sanctum.tscn"
+const CODEX := "res://scenes/ui/codex.tscn"
 ## A new biome every N floors (see data/biomes, BiomeData.order).
 const FLOORS_PER_BIOME := 3
 ## Every N-th floor is a boss arena.
@@ -67,6 +68,8 @@ func end_run() -> Dictionary:
 	if run_active:
 		SaveManager.record_run(floor_number, kills)
 		reward = MetaProgress.finish_run(hero, floor_number, run_stats)
+		Codex.add(&"runs")
+		Codex.save_progress()
 	run_active = false
 	return reward
 

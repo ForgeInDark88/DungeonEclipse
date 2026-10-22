@@ -171,6 +171,7 @@ contact_damage_mult = 0.5
 reward_items = Array[StringName]([&"guardian_seal", &"eclipse_shard", &"eclipse_shard"])
 id = &"bone_king"
 display_name = "Король костей"
+description = "Владыка катакомб в короне из рёбер. Призывает свиту и бьёт волнами костей."
 sheet = ExtResource("9_ihrge")
 sheet_layout = ExtResource("10_dvl2w")
 behavior = 0

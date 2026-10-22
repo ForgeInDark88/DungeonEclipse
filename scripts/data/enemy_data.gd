@@ -6,6 +6,8 @@ enum Behavior { WALKER, FLYER, RANGED }
 
 @export var id: StringName
 @export var display_name: String = ""
+## Bestiary text (Codex).
+@export_multiline var description: String = ""
 @export var texture: Texture2D
 ## Animated sheet (idle, walk/fly, windup, attack, hurt, death) + its layout.
 ## If empty, the static `texture` is used.

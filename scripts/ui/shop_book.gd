@@ -164,6 +164,7 @@ func buy(index: int) -> void:
 		merchant.stock.remove_at(index)  # unique item: sold out
 		_refresh_goods()
 	AudioManager.play_ui(&"coin")
+	EventBus.item_bought.emit(item)
 	Tooltip.hide_tip()
 
 

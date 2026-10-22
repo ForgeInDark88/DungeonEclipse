@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AchievementData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/achievement_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/achievements/coin_silver.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"rich"
+display_name = "Толстый кошелёк"
+description = "Соберите 1000 золота за все забеги."
+icon = ExtResource("2_icon")
+order = 11
+counter = &"gold"
+target = 1000
+reward_shards = 3
+hidden = false

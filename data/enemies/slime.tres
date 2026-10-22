@@ -19,6 +19,7 @@ chance = 0.25
 script = ExtResource("2_s5mx1")
 id = &"slime"
 display_name = "Слизень"
+description = "Студень, растворяющий всё на своём пути. Прыгает на добычу."
 texture = ExtResource("3_q2kvs")
 sheet = ExtResource("sheet_tex")
 sheet_layout = ExtResource("sheet_lay")

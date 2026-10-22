@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AchievementData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/achievement_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/achievements/stairs_silver.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"abyss"
+display_name = "Взгляд бездны"
+description = "Доберитесь до 10 этажа."
+icon = ExtResource("2_icon")
+order = 7
+counter = &"floor"
+target = 10
+reward_shards = 4
+hidden = false

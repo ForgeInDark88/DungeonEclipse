@@ -565,6 +565,8 @@ func _die() -> void:
 		var coin := ItemDatabase.get_item(&"gold_coin")
 		if coin:
 			EventBus.spawn_items.emit(global_position + Vector2(0, -8), [{"item": coin, "count": gold}])
+	if elite:
+		EventBus.elite_killed.emit(data)
 	if elite and elite.shard_drop > 0:
 		var shard := ItemDatabase.get_item(MetaProgress.SHARD_ITEM)
 		if shard:

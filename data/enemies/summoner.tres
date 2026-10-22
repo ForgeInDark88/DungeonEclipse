@@ -13,6 +13,7 @@
 script = ExtResource("4_3a0v7")
 id = &"summoner"
 display_name = "Некромант"
+description = "Некромант, поднимающий скелетов. Убейте его первым."
 texture = ExtResource("8_oe8kc")
 sheet = ExtResource("5_ke01p")
 sheet_layout = ExtResource("6_4vx4i")

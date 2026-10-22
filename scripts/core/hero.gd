@@ -61,6 +61,7 @@ func add_gold(amount: int) -> void:
 	gold = maxi(0, gold + amount)
 	if amount > 0:
 		GameState.run_stats["gold"] = int(GameState.run_stats.get("gold", 0)) + amount
+		EventBus.gold_earned.emit(amount)
 	gold_changed.emit(gold)
 
 

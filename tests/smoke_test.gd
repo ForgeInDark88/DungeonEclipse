@@ -59,7 +59,9 @@ func _ready() -> void:
 	_test_statuses()
 	# The player's real Sanctum progress must neither affect nor be changed by the test.
 	var meta_backup := [MetaProgress.shards, MetaProgress.gold, MetaProgress.levels.duplicate(), MetaProgress.unlocked.duplicate()]
+	var codex_backup := Codex.snapshot()
 	_test_meta()
+	_test_codex()
 	MetaProgress.apply_upgrades = false
 	await _test_scenes()
 	MetaProgress.shards = meta_backup[0]
@@ -68,6 +70,7 @@ func _ready() -> void:
 	MetaProgress.unlocked = meta_backup[3]
 	MetaProgress.apply_upgrades = true
 	MetaProgress.save_progress()
+	Codex.restore(codex_backup)
 	if not _finished:
 		failures.append("scenario did not reach the end (script error?)")
 	print("FAILURES: ", failures.size())
@@ -131,6 +134,34 @@ func _test_meta() -> void:
 	var cfg := ConfigFile.new()
 	check(cfg.load(SaveManager.META_PATH) == OK and cfg.get_value("sanctum", "levels", {}).get(&"vitality", 0) == 1, "sanctum saved to meta.cfg")
 	check(cfg.has_section_key("meta", "total_runs") or SaveManager.total_runs == 0, "meta section kept")
+	MetaProgress.reset()
+
+
+func _test_codex() -> void:
+	Codex.restore([{}, {}, {}, {}])
+	MetaProgress.reset()
+	check(Codex.achievements.size() >= 15, "achievements loaded: %d" % Codex.achievements.size())
+	var got: Array[StringName] = []
+	var cb := func(a: AchievementData) -> void: got.append(a.id)
+	EventBus.achievement_unlocked.connect(cb)
+	var bat: EnemyData = null
+	for e in ItemDatabase.enemies:
+		if e.id == &"bat":
+			bat = e
+	EventBus.enemy_killed.emit(bat, Vector2.ZERO)
+	check(&"first_blood" in got and Codex.is_enemy_known(&"bat"), "first kill: achievement + bestiary entry")
+	check(MetaProgress.shards == 1, "achievement pays shards (%d)" % MetaProgress.shards)
+	EventBus.enemy_killed.emit(bat, Vector2.ZERO)
+	check(got.count(&"first_blood") == 1 and Codex.enemy_kills[&"bat"] == 2, "achievement unlocks once, kills counted")
+	EventBus.item_collected.emit(ItemDatabase.get_item(&"eclipse_blade"), Vector2.ZERO)
+	check(Codex.is_item_known(&"eclipse_blade") and &"epic_find" in got, "epic item found -> encyclopedia + achievement")
+	for i in 5:
+		EventBus.floor_changed.emit(i + 1)
+	check(&"deep_diver" in got, "floor 5 achievement")
+	EventBus.achievement_unlocked.disconnect(cb)
+	var cfg := ConfigFile.new()
+	cfg.load(SaveManager.META_PATH)
+	check(cfg.get_value("codex", "achieved", {}).has(&"first_blood"), "codex saved to meta.cfg")
 	MetaProgress.reset()
 
 
@@ -314,6 +345,20 @@ func _test_scenes() -> void:
 	await frames(3)
 	await shot("02a_orc_paladin")
 	MetaProgress.unlocked.clear()
+	get_tree().change_scene_to_file("res://scenes/ui/codex.tscn")
+	await frames(10)
+	var codex_ui := get_tree().current_scene
+	codex_ui._show_achievement(Codex.achievements[0])
+	await frames(3)
+	await shot("02c_codex_achievements")
+	codex_ui.select_tab(1)
+	codex_ui._show_creature(ItemDatabase.enemies.filter(func(e: EnemyData) -> bool: return e.id == &"bat")[0])
+	await frames(3)
+	await shot("02d_codex_bestiary")
+	codex_ui.select_tab(2)
+	codex_ui._show_item(ItemDatabase.get_item(&"eclipse_blade"))
+	await frames(3)
+	await shot("02e_codex_items")
 	MetaProgress.shards = 25
 	MetaProgress.gold = 320
 	get_tree().change_scene_to_file("res://scenes/ui/sanctum.tscn")

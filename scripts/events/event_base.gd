@@ -39,6 +39,7 @@ func interact(player: Node) -> void:
 		return
 	if _activate(player):
 		used = true
+		EventBus.event_completed.emit(self)
 		if sprite.sprite_frames and sprite.sprite_frames.has_animation(used_anim):
 			sprite.play(used_anim)
 		var light := get_node_or_null("PointLight2D") as PointLight2D

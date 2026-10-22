@@ -19,6 +19,7 @@ chance = 0.2
 script = ExtResource("2_w7tpy")
 id = &"skeleton"
 display_name = "Скелет"
+description = "Страж катакомб. Не знает усталости и не чувствует яда."
 texture = ExtResource("3_qvjei")
 sheet = ExtResource("sheet_tex")
 sheet_layout = ExtResource("sheet_lay")

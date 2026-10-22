@@ -26,6 +26,8 @@ func _ready() -> void:
 	right_page.add_child(start)
 	right_page.add_child(BookPageScreen.button("Святилище Затмения (%d оск.)" % MetaProgress.shards,
 		func() -> void: get_tree().change_scene_to_file(GameState.SANCTUM)))
+	right_page.add_child(BookPageScreen.button("Летопись (%d/%d)" % [Codex.achieved.size(), Codex.achievements.size()],
+		func() -> void: get_tree().change_scene_to_file(GameState.CODEX)))
 	_fullscreen_button = BookPageScreen.button("", _toggle_fullscreen)
 	right_page.add_child(_fullscreen_button)
 	for entry in [["Общая", "master_volume"], ["Музыка", "music_volume"], ["Звуки", "sfx_volume"], ["Интерфейс", "ui_volume"]]:
