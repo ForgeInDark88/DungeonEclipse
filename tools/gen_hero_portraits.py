@@ -125,8 +125,8 @@ HEAD = [(17, 23), (18, 15), (22, 9), (29, 5), (37, 5), (43, 9), (46, 15), (47, 2
 HC = (33, 26)  # ellipsoid centre for lighting
 EYE_NEAR = (31, 27)
 EYE_FAR = (41, 27)
-NOSE = (37, 34)  # tip
-MOUTH_X = -4  # mouth shift from the old profile layout
+NOSE = (38, 34)  # tip (the bridge starts higher and to the left, between the eyes)
+MOUTH_X = -3  # mouth shift from the old profile layout
 
 # Animation frames of one portrait sheet (left to right). AnimatedPortrait
 # knows these names (AssetPaths.HERO_PORTRAIT_FRAMES).
@@ -314,22 +314,25 @@ def eyes(d, im, r, skin, sh, eye, look, knit):
 
 
 def nose_and_mouth(d, im, r, skin, sh, mouth):
-    # Nose between the eyes: the bridge starts between them, the tip below.
-    # Light comes from the right: lit right flank, soft shadow on the left
-    # flank, a highlight on the tip, two nostrils, a shadow under the nose.
+    # The head is turned a little to the right, so the nose points that way:
+    # the bridge starts between the eyes and runs down-right, the tip juts
+    # toward the far eye. The left flank (facing us) is in soft shadow, the
+    # near nostril shows, the far one hides behind the tip.
     nx, ny = NOSE
     wide = 1 if r.get("tusks") or r.get("wide") else 0
-    for y in range(ny - 6, ny + 1):
-        put(im, nx - 2 - (1 if y > ny - 2 else 0) - wide, y, tone(skin, 0.6, sh, True), 0.3 + 0.05 * (y - ny + 6))
-    for y in range(ny - 6, ny - 1):
-        put(im, nx + 1, y, tone(skin, 1.18), 0.55)  # bridge light
-    put(im, nx, ny, tone(skin, 1.3), 0.9)  # tip
-    put(im, nx + 1, ny - 1, tone(skin, 1.2), 0.6)
-    d.point((nx - 2 - wide, ny + 1), fill=tone(skin, 0.5, sh, True))  # nostrils
-    d.point((nx + 2 + wide, ny + 1), fill=tone(skin, 0.55, sh, True))
-    d.point((nx - 3 - wide, ny), fill=tone(skin, 0.7, sh, True))  # wings
-    d.point((nx + 3 + wide, ny), fill=tone(skin, 0.78, sh, True))
-    for x in range(nx - 2 - wide, nx + 3 + wide):
+    for k in range(7):  # left flank: a diagonal soft shadow
+        x, y = nx - 4 + k // 2, ny - 6 + k
+        put(im, x - wide, y, tone(skin, 0.58, sh, True), 0.28 + 0.05 * k)
+        put(im, x - 1 - wide, y, tone(skin, 0.7, sh, True), 0.12)
+    for k in range(5):  # lit ridge, right of the flank
+        put(im, nx - 2 + k // 2, ny - 6 + k, tone(skin, 1.2), 0.5)
+    put(im, nx + 1, ny, tone(skin, 1.32), 0.95)  # tip
+    put(im, nx, ny - 1, tone(skin, 1.2), 0.6)
+    put(im, nx + 2, ny, tone(skin, 0.85, sh, True), 0.5)  # tip edge turning away
+    d.point((nx - 2 - wide, ny), fill=tone(skin, 0.68, sh, True))  # near wing
+    d.point((nx - 1 - wide, ny + 1), fill=tone(skin, 0.45, sh, True))  # near nostril
+    d.point((nx + 2, ny + 1), fill=tone(skin, 0.62, sh, True))  # far nostril, half hidden
+    for x in range(nx - 2 - wide, nx + 3):
         put(im, x, ny + 2, tone(skin, 0.62, sh, True), 0.45)  # under the nose
     d.point((nx, ny + 3), fill=tone(skin, 0.82, sh, True))  # philtrum
     m = MOUTH_X
