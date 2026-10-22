@@ -16,6 +16,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="DungeonEclipse"
 config/description="2D roguelike platformer in a dark fantasy dungeon."
+config/version="0.1"
 run/main_scene="res://scenes/ui/main_menu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://assets/sprites/items/eclipse_ring.png"

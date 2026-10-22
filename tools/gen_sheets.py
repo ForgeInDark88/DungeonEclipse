@@ -274,6 +274,9 @@ def _head(d, p, race, s):
         d.line((hx + 1, hy - 1, hx + 2, hy - 1), fill=shade(hair, 0.8))
         d.point((hx + 3, hy + 1), fill=shade(skin, 0.82))
         d.point((hx + 2, hy + 2), fill=(196, 84, 90, 255) if style else (150, 75, 70, 255))
+        d.point((hx - 1, hy + 1), fill=shade(skin, 0.8))  # ear
+        d.point((hx + 2, hy + 1), fill=_blush(skin))  # cheek
+        d.point((hx - 2, hy - 2), fill=shade(hair, 0.72))  # strand
         if style:
             d.point((hx + 3, hy - 1), fill=(30, 20, 24, 255))  # lashes
             d.point((hx - 3, hy + 3), fill=hair)  # hair down to the jaw
@@ -294,6 +297,10 @@ def _head(d, p, race, s):
         d.point((hx, hy + 2), fill=(240, 240, 220, 255))
 
 
+def _blush(c):
+    return (min(255, int(c[0] * 1.02) + 6), int(c[1] * 0.84), int(c[2] * 0.84), 255)
+
+
 def draw_body(p, race):
     im = gp.new(HERO_FW, HERO_FH)
     d = ImageDraw.Draw(im)
@@ -312,10 +319,50 @@ def _boots(d, s, color):
     for side in ("l", "r"):
         fx, fy = s[side + "foot"]
         c = color if side == "r" else shade(color, 0.8)
-        d.rectangle((fx - 1, fy - 2, fx + 2, fy), fill=c)
-        d.line((fx - 1, fy - 2, fx + 1, fy - 2), fill=shade(c, 1.3))  # cuff
-        d.line((fx - 1, fy, fx + 2, fy), fill=shade(c, 0.6))  # sole
-        d.point((fx + 2, fy - 1), fill=shade(c, 1.15))  # toe
+        d.rectangle((fx - 1, fy - 3, fx + 1, fy), fill=c)  # shaft
+        d.rectangle((fx + 1, fy - 1, fx + 2, fy), fill=c)  # toe
+        d.line((fx - 1, fy - 3, fx + 1, fy - 3), fill=shade(c, 1.35))  # cuff
+        d.point((fx - 1, fy - 2), fill=shade(c, 1.15))
+        d.point((fx + 1, fy - 2), fill=shade(c, 0.75))
+        d.point((fx, fy - 1), fill=(200, 180, 120, 255) if side == "r" else shade(c, 0.9))  # buckle
+        d.point((fx + 2, fy - 1), fill=shade(c, 1.25))  # toe cap shine
+        d.line((fx - 1, fy, fx + 2, fy), fill=shade(c, 0.5))  # sole
+        d.point((fx - 1, fy), fill=shade(c, 0.35))  # heel
+
+
+def _cape_img(s, p, cape):
+    """The cape on its own layer with its own dark outline (outfits have none)."""
+    im = gp.new(HERO_FW, HERO_FH)
+    _cape(ImageDraw.Draw(im), s, p, *cape)
+    return gp.outline(im)
+
+
+def _cape(d, s, p, color, length, trim=None, ragged=False):
+    """Cape hanging from the shoulders behind the back; trails further back
+    when the hero leans (runs, dashes)."""
+    hx, hy = s["hip"]
+    nx, ny = s["neck"]
+    c = rgba(color)
+    fl = 1 + max(0, p["lean"]) + p["crouch"] // 2
+    bottom = min(GROUND - 1, hy + length)
+    if p["back"]:
+        d.polygon([(nx - 3, ny), (nx + 3, ny), (hx + 3, bottom), (hx - 3, bottom)], fill=c)
+        d.line((nx - 3, ny, hx - 3, bottom), fill=shade(c, 0.7))
+        d.line((nx + 3, ny, hx + 3, bottom), fill=shade(c, 1.2))
+        d.line((nx, ny + 2, hx, bottom - 1), fill=shade(c, 0.78))  # fold
+        if trim:
+            d.line((hx - 3, bottom, hx + 3, bottom), fill=rgba(trim))
+        return
+    pts = [(nx - 3, ny), (nx + 1, ny), (hx - 1, bottom), (hx - 4 - fl, bottom - 1), (hx - 5 - fl, bottom - 3)]
+    d.polygon(pts, fill=c)
+    d.line((nx - 3, ny, hx - 5 - fl, bottom - 3), fill=shade(c, 0.66))  # back edge
+    d.line((nx - 1, ny + 2, hx - 3 - fl // 2, bottom - 1), fill=shade(c, 0.8))  # fold
+    d.line((nx, ny, nx - 1, ny + 3), fill=shade(c, 1.25))  # lit inner edge
+    if trim:
+        d.line((hx - 1, bottom, hx - 4 - fl, bottom - 1), fill=rgba(trim))
+    if ragged:
+        for k in range(3):
+            d.point((hx - 2 - k * 2 - fl // 2, bottom + (k % 2)), fill=shade(c, 0.8))
 
 
 OUTFITS = {
@@ -337,9 +384,14 @@ def draw_outfit(p, o, race=RACES["human"]):
     s = skel(p, race)
     torso = rgba(o["torso"])
     trim = rgba(o["trim"])
-    _boots(d, s, rgba(o["boots"]))
     hx, hy = s["hip"]
     nx, ny = s["neck"]
+    kind = o.get("kind")
+    cape = {"warrior": ((120, 30, 32), 6, None, False), "rogue": ((38, 58, 40), 5, None, True),
+            "paladin": ((52, 74, 160), 7, (225, 185, 70), False)}.get(kind)
+    if cape and not p["back"]:
+        im.alpha_composite(_cape_img(s, p, cape))
+    _boots(d, s, rgba(o["boots"]))
     if o["robe"]:
         lf, rf = s["lfoot"], s["rfoot"]
         x0, x1 = min(lf[0], hx - 3) - 1, max(rf[0], hx + 3) + 1
@@ -347,7 +399,24 @@ def draw_outfit(p, o, race=RACES["human"]):
         d.line((x0, GROUND - 2, x1, GROUND - 2), fill=trim)  # hem
         d.line((hx, hy, (x0 + x1) / 2, GROUND - 3), fill=shade(torso, 0.65))  # fold
     _torso(d, s, torso)
-    kind = o.get("kind")
+    # collar / neckline
+    d.line((nx - 2, ny, nx + 2, ny), fill=shade(torso, 0.7))
+    # skirt below the belt: mail for the warrior, leather tassets for the rogue,
+    # plate tassets for the paladin
+    if kind in ("warrior", "rogue", "paladin"):
+        sk = {"warrior": (150, 152, 162), "rogue": (70, 54, 40), "paladin": (205, 205, 218)}[kind]
+        d.rectangle((hx - 3, hy, hx + 2, hy + 2), fill=rgba(sk))
+        d.line((hx - 3, hy + 2, hx + 2, hy + 2), fill=shade(rgba(sk), 0.7))
+        if kind == "warrior":
+            for x in range(int(hx) - 3, int(hx) + 3, 2):
+                d.point((x, hy + 1), fill=shade(rgba(sk), 0.72))  # rings
+        else:
+            d.line((hx, hy, hx, hy + 2), fill=shade(rgba(sk), 0.7))  # split
+            d.point((hx + 1, hy), fill=shade(rgba(sk), 1.3))
+    if o["robe"]:
+        lf, rf = s["lfoot"], s["rfoot"]
+        for k in range(3):
+            d.point((hx - 1 + k * 2, hy + 3 + k * 2), fill=(240, 220, 120, 255))  # embroidered stars
     # Belt with a buckle.
     d.line((hx - 3, hy - 1, hx + 2, hy - 1), fill=trim)
     d.point((hx + 1, hy - 1), fill=(230, 200, 90, 255) if kind != "mage" else (255, 90, 110, 255))
@@ -356,16 +425,21 @@ def draw_outfit(p, o, race=RACES["human"]):
             d.line((nx - 2, ny + 1, hx + 2, hy - 2), fill=rgba((95, 62, 35)))  # strap
             d.point((nx + 1, ny + 3), fill=rgba((200, 170, 80)))
         elif kind == "rogue":
+            d.line((hx - 3, hy - 2, hx - 6, hy + 2), fill=rgba((60, 40, 26)))  # dagger sheath
+            d.point((hx - 2, hy - 3), fill=rgba((200, 200, 210)))
             d.line((nx - 2, ny + 1, hx + 2, hy - 2), fill=rgba((40, 32, 25)))
             d.rectangle((hx - 3, hy - 3, hx - 2, hy - 2), fill=rgba((90, 65, 40)))  # pouch
             d.line((nx - 1, ny, nx + 2, ny), fill=rgba((120, 40, 40)))  # scarf
         elif kind == "mage":
             d.line((nx, ny, nx, hy - 1), fill=trim)
+            d.line((nx - 2, ny, nx + 2, ny), fill=trim)  # gold mantle collar
             d.point((nx, ny + 3), fill=(120, 220, 255, 255))  # amulet
+            d.point((nx - 2, ny + 4), fill=shade(torso, 1.3))
         elif kind == "paladin":
             d.rectangle((nx - 1, ny + 2, nx + 2, hy - 2), fill=rgba((240, 236, 225)))  # tabard
             d.line((nx + 1, ny + 2, nx + 1, hy - 2), fill=trim)
             d.line((nx, ny + 4, nx + 2, ny + 4), fill=trim)
+            d.point((nx + 1, ny + 1), fill=(225, 185, 70, 255))  # cape clasp
         else:
             d.line((nx, ny, nx, ny + 4), fill=shade(torso, 1.25))
     # Shoulder pad for armoured classes.
@@ -377,14 +451,18 @@ def draw_outfit(p, o, race=RACES["human"]):
         if kind == "paladin":
             d.line((sx - 2, sy + 1, sx + 2, sy + 1), fill=trim)
     _arm(d, s, "r", rgba(o["sleeve"]), rgba(GLOVE))
+    hx2, hy2 = s["rhand"]
     if kind == "mage":
-        hx2, hy2 = s["rhand"]
         d.point((hx2 - 1, hy2 - 2), fill=trim)  # cuff
+    else:
+        d.point((hx2 - 1, hy2 - 1), fill=shade(rgba(GLOVE), 0.7))  # glove cuff
+    if cape and p["back"]:
+        im.alpha_composite(_cape_img(s, p, cape))
     return im
 
 
 HEADGEAR = {
-    "warrior": ("miner", (110, 85, 50)),
+    "warrior": ("nasal", (150, 156, 168)),
     "rogue": ("hood", (50, 75, 50)),
     "mage": ("wizard", (70, 50, 150)),
     "paladin": ("helm", (225, 215, 170)),
@@ -409,6 +487,19 @@ def draw_head(p, kind, color):
         if not p["back"]:
             d.rectangle((hx + 1, hy - 4, hx + 2, hy - 3), fill=(255, 240, 160, 255))
             d.point((hx + 3, hy - 4), fill=(255, 255, 220, 200))
+    elif kind == "nasal":
+        d.pieslice((hx - 4, hy - 6, hx + 4, hy + 2), 180, 360, fill=c)
+        d.line((hx - 3, hy - 4, hx - 1, hy - 5), fill=hi)
+        d.point((hx - 2, hy - 3), fill=shade(c, 1.6))
+        d.line((hx - 4, hy - 2, hx + 4, hy - 2), fill=rgba((110, 70, 40)))  # leather band
+        d.point((hx - 2, hy - 2), fill=shade(c, 1.5))  # rivets
+        d.point((hx + 1, hy - 2), fill=shade(c, 1.5))
+        d.line((hx, hy - 6, hx, hy - 3), fill=lo)  # ridge
+        if not p["back"]:
+            d.line((hx + 3, hy - 2, hx + 3, hy + 1), fill=c)  # nasal guard
+            d.point((hx + 3, hy + 1), fill=lo)
+        else:
+            d.rectangle((hx - 4, hy - 2, hx + 3, hy + 1), fill=shade(c, 0.85))  # neck guard
     elif kind == "hood":
         d.polygon([(hx - 4, hy + 3), (hx - 4, hy - 2), (hx - 1, hy - 5), (hx + 3, hy - 4), (hx + 4, hy - 1), (hx + 2, hy - 2),
                    (hx - 2, hy + 3)], fill=c)

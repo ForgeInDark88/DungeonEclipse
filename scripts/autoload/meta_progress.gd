@@ -159,6 +159,11 @@ func finish_run(hero: Hero, floor_reached: int, stats: Dictionary) -> Dictionary
 	if from_bosses > 0:
 		parts.append("стражи: %d" % from_bosses)
 	var s := from_items + from_depth + from_bosses
+	var diff: DifficultyData = GameState.difficulty
+	if diff and not is_equal_approx(diff.shard_mult, 1.0) and s > 0:
+		var total := roundi(s * diff.shard_mult)
+		parts.append("сложность «%s»: %+d" % [diff.display_name, total - s])
+		s = total
 	var g := roundi(int(stats.get("gold", 0)) * GOLD_BANK_SHARE)
 	shards += s
 	gold += g

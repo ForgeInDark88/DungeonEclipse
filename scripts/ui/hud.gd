@@ -281,6 +281,9 @@ func _refresh_xp() -> void:
 func _refresh_floor() -> void:
 	var biome := GameState.current_biome()
 	_floor_label.text = "Этаж %d · %s" % [GameState.floor_number, biome.display_name] if biome else "Этаж %d" % GameState.floor_number
+	var diff := GameState.difficulty
+	if diff and diff.id != &"normal":
+		_floor_label.text += " · " + diff.display_name
 	var plaque := _floor_label.get_parent() as Control
 	plaque.size.x = _floor_label.get_minimum_size().x + 14
 

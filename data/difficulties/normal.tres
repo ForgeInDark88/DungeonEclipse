@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="DifficultyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/difficulty_data.gd" id="1_diff"]
+
+[resource]
+script = ExtResource("1_diff")
+id = &"normal"
+display_name = "Обычная"
+description = "Подземелье, как оно задумано."
+order = 1
+color = Color(0.92, 0.86, 0.66, 1)
+effects = {}
+elite_chance_mult = 1.0
+trap_damage_mult = 1.0
+shard_mult = 1.0

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="DifficultyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/difficulty_data.gd" id="1_diff"]
+
+[resource]
+script = ExtResource("1_diff")
+id = &"easy"
+display_name = "Лёгкая"
+description = "Монстры слабее и бьют мягче. Для знакомства с подземельем.\nОсколков Святилища: ×0.5"
+order = 0
+color = Color(0.55, 0.85, 0.45, 1)
+effects = {
+"enemy_hp": -0.3,
+"enemy_damage": -0.35,
+"gold": -0.1
+}
+elite_chance_mult = 0.6
+trap_damage_mult = 0.6
+shard_mult = 0.5

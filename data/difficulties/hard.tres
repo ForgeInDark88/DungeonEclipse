@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="DifficultyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/difficulty_data.gd" id="1_diff"]
+
+[resource]
+script = ExtResource("1_diff")
+id = &"hard"
+display_name = "Сложная"
+description = "Монстры крепче и злее, элиты встречаются чаще. Больше золота и опыта.\nОсколков Святилища: ×1.5"
+order = 2
+color = Color(0.95, 0.6, 0.3, 1)
+effects = {
+"enemy_hp": 0.4,
+"enemy_damage": 0.3,
+"xp": 0.15,
+"gold": 0.2
+}
+elite_chance_mult = 1.5
+trap_damage_mult = 1.3
+shard_mult = 1.5

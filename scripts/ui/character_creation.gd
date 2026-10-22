@@ -15,6 +15,8 @@ var _name_label: Label
 var _stats_label: Label
 var _skills_row: HBoxContainer
 var _items_row: HFlowContainer
+var _difficulty: DifficultyData
+var _difficulty_desc: Label
 
 
 func _ready() -> void:
@@ -86,12 +88,16 @@ func _ready() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	right_page.add_child(spacer)
+	_build_difficulty_row()
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
 	buttons.add_theme_constant_override("separation", 8)
 	right_page.add_child(buttons)
 	buttons.add_child(BookPageScreen.button("Назад", func() -> void: get_tree().change_scene_to_file(GameState.MAIN_MENU)))
-	var go := BookPageScreen.button("В подземелье!", func() -> void: GameState.start_new_run(_race, _class, -1, "", _female))
+	var go := BookPageScreen.button("В подземелье!", func() -> void:
+		SaveManager.last_difficulty = String(_difficulty.id) if _difficulty else "normal"
+		SaveManager.save_settings()
+		GameState.start_new_run(_race, _class, -1, "", _female, _difficulty.id if _difficulty else &"normal"))
 	buttons.add_child(go)
 
 	if not _race_buttons.is_empty():
@@ -101,6 +107,34 @@ func _ready() -> void:
 		_class_buttons[0].button_pressed = true
 		_select_class(ItemDatabase.classes[0])
 	go.grab_focus()
+
+
+## Difficulty: a row of toggles (data/difficulties) and the description of
+## the selected one; the last choice is remembered in the settings.
+func _build_difficulty_row() -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 3)
+	right_page.add_child(row)
+	row.add_child(UIStyle.label("Сложность", 9, UIStyle.INK_SOFT))
+	var group := ButtonGroup.new()
+	var last := ItemDatabase.difficulty(StringName(SaveManager.last_difficulty))
+	for d in ItemDatabase.difficulties:
+		var b := _toggle(d.display_name, group, func() -> void: _select_difficulty(d))
+		b.add_theme_font_size_override("font_size", 8)
+		row.add_child(b)
+		if d == last:
+			b.button_pressed = true
+	_difficulty_desc = _wrap_label()
+	_difficulty_desc.custom_minimum_size = Vector2(240, 18)
+	right_page.add_child(_difficulty_desc)
+	if last:
+		_select_difficulty(last)
+
+
+func _select_difficulty(d: DifficultyData) -> void:
+	_difficulty = d
+	_difficulty_desc.text = d.description
+	_difficulty_desc.add_theme_color_override("font_color", d.color.darkened(0.55))
 
 
 ## Races / classes not bought in the Sanctum of the Eclipse are shown but locked.

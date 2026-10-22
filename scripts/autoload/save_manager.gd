@@ -18,6 +18,8 @@ var brightness: float = 1.0
 var hud_scale: float = 1.0
 var show_damage_numbers: bool = true
 var show_hints: bool = true
+## Difficulty picked last time in hero creation (DifficultyData.id).
+var last_difficulty: String = "normal"
 ## Ids of beginner hints already shown (HintManager).
 var seen_hints: Array = []
 
@@ -47,6 +49,7 @@ func load_settings() -> void:
 	show_damage_numbers = cfg.get_value("game", "damage_numbers", show_damage_numbers)
 	show_hints = cfg.get_value("game", "hints", show_hints)
 	seen_hints = cfg.get_value("game", "seen_hints", [])
+	last_difficulty = cfg.get_value("game", "difficulty", last_difficulty)
 	InputBindings.apply_overrides(cfg.get_value("input", "bindings", {}))
 
 
@@ -62,6 +65,7 @@ func save_settings() -> void:
 	cfg.set_value("game", "damage_numbers", show_damage_numbers)
 	cfg.set_value("game", "hints", show_hints)
 	cfg.set_value("game", "seen_hints", seen_hints)
+	cfg.set_value("game", "difficulty", last_difficulty)
 	cfg.set_value("input", "bindings", InputBindings.overrides())
 	cfg.save(SETTINGS_PATH)
 	settings_changed.emit()

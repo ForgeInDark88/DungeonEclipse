@@ -135,7 +135,7 @@ func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null) -> v
 		damage = roundi(damage * elite.damage_mult)
 		_speed_mult = elite.speed_mult
 		_cooldown_mult = elite.attack_cooldown_mult
-	# Curses of the altars of fate.
+	# Difficulty and curses of the altars of fate.
 	max_hp = maxi(1, roundi(max_hp * (1.0 + GameState.run_effect("enemy_hp"))))
 	damage = maxi(1, roundi(damage * (1.0 + GameState.run_effect("enemy_damage"))))
 	hp = max_hp

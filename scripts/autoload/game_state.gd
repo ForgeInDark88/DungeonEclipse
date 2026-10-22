@@ -24,6 +24,8 @@ var run_stats: Dictionary = {}
 var daily_date: String = ""
 ## Blessings and curses of the altars of fate taken this run (RunPactData).
 var pacts: Array[RunPactData] = []
+## Difficulty of this run (data/difficulties; daily runs: «normal»).
+var difficulty: DifficultyData
 ## Pet of this run (null = none).
 var pet: PetData
 ## Combo: kills in a row, each within COMBO_WINDOW of the previous one,
@@ -48,8 +50,10 @@ func _ready() -> void:
 
 
 ## `seed_value` >= 0 makes the whole run reproducible (daily runs, tests).
-func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, daily := "", female := false) -> void:
+func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, daily := "", female := false,
+		difficulty_id: StringName = &"normal") -> void:
 	daily_date = daily
+	difficulty = ItemDatabase.difficulty(&"normal" if daily != "" else difficulty_id)
 	hero = Hero.new(race, class_data, ItemDatabase.equipment_layout)
 	hero.female = female
 	hero.give_starting_kit()
@@ -114,9 +118,10 @@ func add_pact(pact: RunPactData) -> void:
 	EventBus.pact_taken.emit(pact)
 
 
-## Sum of a run multiplier over every pact (see RunPactData.effects).
+## Sum of a run multiplier over every pact (see RunPactData.effects) and
+## the difficulty (DifficultyData.effects).
 func run_effect(key: String) -> float:
-	var v := 0.0
+	var v := float(difficulty.effects.get(key, 0.0)) if difficulty else 0.0
 	for p in pacts:
 		v += float(p.effects.get(key, 0.0))
 	return v
@@ -146,6 +151,15 @@ func start_daily_run(date: String = "") -> void:
 		date = today()
 	var d := daily_setup(date)
 	start_new_run(d["race"], d["class"], d["seed"], date, d["female"])
+
+
+## Difficulty multipliers that are not run effects (1.0 without a run).
+func elite_chance_mult() -> float:
+	return difficulty.elite_chance_mult if difficulty else 1.0
+
+
+func trap_damage_mult() -> float:
+	return difficulty.trap_damage_mult if difficulty else 1.0
 
 
 func is_daily() -> bool:
