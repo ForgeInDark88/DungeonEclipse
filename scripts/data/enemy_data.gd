@@ -53,6 +53,8 @@ enum Behavior { WALKER, FLYER, RANGED }
 ## Summoners: raise these instead of shooting every other attack.
 @export var summon: EnemyData
 @export var max_summons: int = 3
+## Fakes (boss illusions): no XP, gold, loot or kill count on death.
+@export var no_rewards: bool = false
 @export_group("Statuses and elements")
 ## Resistances by stat key: {"res_fire": 0.5, "res_poison": 1.0}.
 @export var resistances: Dictionary = {}

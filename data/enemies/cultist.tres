@@ -44,7 +44,7 @@ gold_min = 3
 gold_max = 8
 min_floor = 2
 spawn_weight = 0.8
-biomes = Array[StringName]([&"catacombs", &"ruins", &"lava"])
+biomes = Array[StringName]([&"catacombs", &"ruins", &"lava", &"mirror_halls"])
 tint = Color(1, 1, 1, 1)
 resistances = {
 "res_fire": 0.3,

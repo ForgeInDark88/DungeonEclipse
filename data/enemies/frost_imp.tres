@@ -44,7 +44,7 @@ gold_min = 3
 gold_max = 8
 min_floor = 2
 spawn_weight = 0.9
-biomes = Array[StringName]([&"fungal", &"ruins", &"catacombs"])
+biomes = Array[StringName]([&"fungal", &"ruins", &"catacombs", &"mirror_halls"])
 tint = Color(1, 1, 1, 1)
 resistances = {
 "res_ice": 0.6,

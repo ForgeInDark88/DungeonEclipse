@@ -10,6 +10,8 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/fungal_near.png" id="8_1cgql"]
 [ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="9_1a17a"]
 [ext_resource type="Texture2D" path="res://assets/sprites/tiles/tiles_fungal.png" id="10_g5q6i"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/puffball.png" id="dx_puffball"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/fern.png" id="dx_fern"]
 
 [sub_resource type="Resource" id="Resource_7wvo4"]
 script = ExtResource("1_linjs")
@@ -51,6 +53,26 @@ light_scale = 0.25
 unshaded = false
 sway = true
 
+[sub_resource type="Resource" id="Decor_puffball"]
+script = ExtResource("1_linjs")
+texture = ExtResource("dx_puffball")
+placement = 0
+weight = 1.5
+light_color = Color(0.8, 0.5, 1.0, 1)
+light_scale = 0.25
+unshaded = true
+sway = false
+
+[sub_resource type="Resource" id="Decor_fern"]
+script = ExtResource("1_linjs")
+texture = ExtResource("dx_fern")
+placement = 0
+weight = 1.5
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
 [resource]
 script = ExtResource("9_1a17a")
 music = &"fungal"
@@ -71,7 +93,7 @@ fog_amount = 0.12
 grade_tint = Color(0.92, 1, 0.98, 1)
 saturation = 1.15
 contrast = 1.0
-decorations = Array[ExtResource("1_linjs")]([SubResource("Resource_7wvo4"), SubResource("Resource_vs538"), SubResource("Resource_6con0"), SubResource("Resource_kacfg")])
+decorations = Array[ExtResource("1_linjs")]([SubResource("Resource_7wvo4"), SubResource("Resource_vs538"), SubResource("Resource_6con0"), SubResource("Resource_kacfg"), SubResource("Decor_puffball"), SubResource("Decor_fern")])
 decor_per_room = 3.0
 ore_chance = 0.04
 ore_item = &"mana_crystal"

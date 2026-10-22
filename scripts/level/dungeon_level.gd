@@ -67,7 +67,7 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 		for x in layout.width:
 			var cell := Vector2i(x, y)
 			if noise.get_noise_2d(x, y) > -0.25 or _near_solid(cell):
-				back.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(_variant(cell), AssetPaths.TILE_ROW_BACKWALL))
+				back.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(_back_variant(cell), AssetPaths.TILE_ROW_BACKWALL))
 			_apply_tile(cell, layout.get_tile(x, y))
 	if layout.is_arena:
 		_spawn_boss()
@@ -116,6 +116,13 @@ func _on_boss_defeated(_boss: BossData, _pos: Vector2) -> void:
 ## Deterministic 0..3 variant per cell.
 func _variant(cell: Vector2i) -> int:
 	return absi(hash(cell * 7 + Vector2i(floor_number, 3))) % 4
+
+
+## Back wall: mostly plain blocks (0, 1); a crack (2) or a niche / carving (3)
+## only now and then, so details do not turn into a pattern.
+func _back_variant(cell: Vector2i) -> int:
+	var h := absi(hash(cell * 13 + Vector2i(floor_number, 11))) % 16
+	return 3 if h == 15 else 2 if h == 14 else h % 2
 
 
 func _near_solid(cell: Vector2i) -> bool:

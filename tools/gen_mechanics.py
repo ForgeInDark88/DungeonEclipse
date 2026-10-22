@@ -311,6 +311,99 @@ def bosses():
     gp.save(seal, "sprites/items/guardian_seal.png")
 
 
+def illusionist():
+    """The Illusionist (40x46): masked mage in a violet cloak, playing cards circling."""
+    fw, fh = 40, 46
+    lay = gs.monster_layout("illusionist_layout", fw, fh, (20, 46), "fly",
+                            {"idle": 4, "fly": 4, "windup": 4, "attack": 3, "death": 6})
+
+    def mage(phase=0.0, arms=0, glow=0, alpha=255, dissolve=0, flash=False, split=0):
+        im = gp.new(fw, fh)
+        d = ImageDraw.Draw(im)
+        dy = int(round(math.sin(phase) * 2))
+        a = alpha
+        cloak = (88, 40, 130)
+        inner = (40, 18, 60)
+        gold = (230, 190, 70)
+        # Cards orbiting behind / in front.
+        cards = []
+        for k in range(4):
+            ang = phase * 0.8 + k * math.tau / 4
+            x, y = 20 + math.cos(ang) * 15, 22 + dy + math.sin(ang) * 6
+            cards.append((math.sin(ang), x, y, k))
+        def card(x, y, k):
+            d.rectangle((x - 2, y - 3, x + 2, y + 3), fill=(245, 240, 230, a), outline=(60, 40, 70, a))
+            d.point((x, y), fill=((200, 30, 50, a) if k % 2 else (30, 30, 40, a)))
+        for z, x, y, k in cards:
+            if z < 0:
+                card(x, y, k)
+        # Cloak with a tall collar, tattered hem.
+        d.polygon([(12, 14 + dy), (28, 14 + dy), (33, 40 + dy), (29, 37 + dy), (26, 43 + dy), (22, 39 + dy),
+                   (18, 43 + dy), (14, 38 + dy), (10, 41 + dy), (7, 39 + dy)], fill=(*cloak, a))
+        d.polygon([(16, 16 + dy), (24, 16 + dy), (25, 38 + dy), (20, 36 + dy), (15, 38 + dy)], fill=(*inner, a))
+        d.line((20, 17 + dy, 20, 35 + dy), fill=(*gold, a))
+        for yy in (21, 26, 31):
+            d.point((20, yy + dy), fill=(255, 240, 160, a))
+        d.polygon([(11, 15 + dy), (14, 4 + dy), (16, 13 + dy)], fill=(*gp.shade(cloak + (255,), 1.25)[:3], a))
+        d.polygon([(29, 15 + dy), (26, 4 + dy), (24, 13 + dy)], fill=(*gp.shade(cloak + (255,), 0.8)[:3], a))
+        # Hood and the white mask (half smiling, half crying).
+        d.ellipse((14, 3 + dy, 26, 17 + dy), fill=(*gp.shade(cloak + (255,), 0.9)[:3], a))
+        d.ellipse((16, 6 + dy, 24, 16 + dy), fill=(240, 236, 230, a))
+        d.line((20, 6 + dy, 20, 16 + dy), fill=(30, 25, 40, a))
+        d.rectangle((16, 6 + dy, 19, 16 + dy), fill=(25, 22, 35, a))
+        d.ellipse((16, 6 + dy, 24, 16 + dy), outline=(*gold, a))
+        eye = (255, 255, 255, a) if flash else (170, 90, 255, a)
+        d.point((18, 10 + dy), fill=eye)
+        d.point((22, 10 + dy), fill=(30, 25, 40, a))
+        d.arc((20, 11 + dy, 24, 15 + dy), 20, 160, fill=(30, 25, 40, a))
+        # Arms / hands with violet sparks.
+        hy = 24 + dy - arms * 6
+        d.line((13, 18 + dy, 7, hy), fill=(*cloak, a), width=2)
+        d.line((27, 18 + dy, 33, hy), fill=(*cloak, a), width=2)
+        if glow:
+            for x in (7, 33):
+                d.ellipse((x - glow, hy - glow, x + glow, hy + glow), fill=(190, 120, 255, a))
+                d.point((x, hy), fill=(255, 240, 255, a))
+        for z, x, y, k in cards:
+            if z >= 0:
+                card(x, y, k)
+        if split:
+            # Afterimages to both sides (teleport / illusions).
+            ghost = im.copy()
+            gpx = ghost.load()
+            for yy in range(fh):
+                for xx in range(fw):
+                    r, g, b, aa = gpx[xx, yy]
+                    gpx[xx, yy] = (r, g, b, aa // 3)
+            res = gp.new(fw, fh)
+            res.alpha_composite(ghost, (-split, 0))
+            res.alpha_composite(ghost, (split, 0))
+            res.alpha_composite(im)
+            im = res
+        if dissolve:
+            px = im.load()
+            for yy in range(fh):
+                for xx in range(fw):
+                    if (xx * 7 + yy * 11) % 10 < dissolve:
+                        px[xx, yy] = (0, 0, 0, 0)
+        return im
+
+    def fn(name, i, n):
+        if name in ("idle", "fly"):
+            return mage(i * math.tau / 4)
+        if name == "windup":
+            return mage(i, arms=1, glow=1 + i, split=i + 1)
+        if name == "attack":
+            return mage(i, arms=2, glow=[4, 2, 0][i], flash=i == 0)
+        if name == "hurt":
+            return mage(0, flash=True, split=2)
+        return mage(i, dissolve=1 + i * 2, alpha=255 - i * 30)
+
+    gs.render_sheet(lay, fn, "sprites/bosses/illusionist_sheet.png")
+    lay.write_tres()
+    gp.save(mage(0.0), "sprites/bosses/illusionist.png")
+
+
 # ------------------------------------------------------------ new monsters
 def new_monsters():
     # Spider 22x14
@@ -840,6 +933,7 @@ def main():
     anvil()
     pets()
     crosshair()
+    illusionist()
     print("mechanics generated")
 
 

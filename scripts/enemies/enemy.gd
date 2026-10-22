@@ -1453,6 +1453,22 @@ func _die() -> void:
 	hp_bar.visible = false
 	if _mark:
 		_mark.visible = false
+	if _name_label:
+		_name_label.visible = false
+	if not data.no_rewards:
+		_give_rewards()
+	# Death animation, then the body breaks into particles.
+	sprite.play(&"death")
+	var parent := get_parent()
+	var pos := global_position + Vector2(0, -6)
+	var color := data.tint.darkened(0.2)
+	sprite.animation_finished.connect(func() -> void:
+		Fx.sparks(parent, pos, color, 14, 100.0)
+		queue_free(), CONNECT_ONE_SHOT)
+
+
+## XP, gold, loot and kill events (not for illusions and other fakes).
+func _give_rewards() -> void:
 	EventBus.enemy_killed.emit(data, global_position)
 	var xp := roundi((data.xp_reward + floor_number - 1) * (elite.xp_mult if elite else 1.0) * maxf(0.0, 1.0 + GameState.run_effect("xp") + GameState.combo_bonus()))
 	if GameState.hero:
@@ -1470,18 +1486,8 @@ func _die() -> void:
 		var shard := ItemDatabase.get_item(MetaProgress.SHARD_ITEM)
 		if shard:
 			EventBus.spawn_items.emit(global_position + Vector2(0, -8), [{"item": shard, "count": elite.shard_drop}])
-	if _name_label:
-		_name_label.visible = false
 	var table: LootTable = ItemDatabase.get_loot_table(ELITE_LOOT_TABLE) if elite else data.loot_table
 	if table and (elite != null or randf() < data.loot_chance):
 		var loot := table.roll(floor_number)
 		if not loot.is_empty():
 			EventBus.spawn_items.emit(global_position + Vector2(0, -8), loot)
-	# Death animation, then the body breaks into particles.
-	sprite.play(&"death")
-	var parent := get_parent()
-	var pos := global_position + Vector2(0, -6)
-	var color := data.tint.darkened(0.2)
-	sprite.animation_finished.connect(func() -> void:
-		Fx.sparks(parent, pos, color, 14, 100.0)
-		queue_free(), CONNECT_ONE_SHOT)
