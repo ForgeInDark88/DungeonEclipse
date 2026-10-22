@@ -1,0 +1,139 @@
+[gd_resource type="Resource" script_class="LootTable" load_steps=27 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/loot_table.gd" id="table"]
+[ext_resource type="Script" path="res://scripts/data/loot_entry.gd" id="entry"]
+[ext_resource type="Resource" path="res://data/items/usable/antidote.tres" id="i_antidote"]
+[ext_resource type="Resource" path="res://data/items/usable/big_health_potion.tres" id="i_big_health_potion"]
+[ext_resource type="Resource" path="res://data/items/usable/bomb.tres" id="i_bomb"]
+[ext_resource type="Resource" path="res://data/items/usable/health_potion.tres" id="i_health_potion"]
+[ext_resource type="Resource" path="res://data/items/usable/key.tres" id="i_key"]
+[ext_resource type="Resource" path="res://data/items/usable/mana_crystal.tres" id="i_mana_crystal"]
+[ext_resource type="Resource" path="res://data/items/usable/map_scroll.tres" id="i_map_scroll"]
+[ext_resource type="Resource" path="res://data/items/usable/pickaxe.tres" id="i_pickaxe"]
+[ext_resource type="Resource" path="res://data/items/usable/regen_potion.tres" id="i_regen_potion"]
+[ext_resource type="Resource" path="res://data/items/usable/rope.tres" id="i_rope"]
+[ext_resource type="Resource" path="res://data/items/usable/shield_elixir.tres" id="i_shield_elixir"]
+[ext_resource type="Resource" path="res://data/items/usable/whetstone.tres" id="i_whetstone"]
+
+[sub_resource type="Resource" id="e_antidote"]
+script = ExtResource("entry")
+item = ExtResource("i_antidote")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_big_health_potion"]
+script = ExtResource("entry")
+item = ExtResource("i_big_health_potion")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_bomb"]
+script = ExtResource("entry")
+item = ExtResource("i_bomb")
+weight = 1.00
+min_count = 1
+max_count = 2
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_health_potion"]
+script = ExtResource("entry")
+item = ExtResource("i_health_potion")
+weight = 1.00
+min_count = 1
+max_count = 2
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_key"]
+script = ExtResource("entry")
+item = ExtResource("i_key")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_mana_crystal"]
+script = ExtResource("entry")
+item = ExtResource("i_mana_crystal")
+weight = 1.00
+min_count = 1
+max_count = 2
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_map_scroll"]
+script = ExtResource("entry")
+item = ExtResource("i_map_scroll")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_pickaxe"]
+script = ExtResource("entry")
+item = ExtResource("i_pickaxe")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_regen_potion"]
+script = ExtResource("entry")
+item = ExtResource("i_regen_potion")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_rope"]
+script = ExtResource("entry")
+item = ExtResource("i_rope")
+weight = 1.00
+min_count = 1
+max_count = 2
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_shield_elixir"]
+script = ExtResource("entry")
+item = ExtResource("i_shield_elixir")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_whetstone"]
+script = ExtResource("entry")
+item = ExtResource("i_whetstone")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[resource]
+script = ExtResource("table")
+rolls_min = 0
+rolls_max = 1
+rarity_weights = Array[float]([80.00, 20.00, 0.00, 0.00])
+rarity_per_floor = Array[float]([0.00, 2.00, 0.00, 0.00])
+rarity_min_floor = Array[int]([1, 1, 99, 99])
+item_level_base = 1.0
+item_level_per_floor = 0.75
+item_level_bonus = 0.0
+entries = Array[ExtResource("entry")]([SubResource("e_antidote"), SubResource("e_big_health_potion"), SubResource("e_bomb"), SubResource("e_health_potion"), SubResource("e_key"), SubResource("e_mana_crystal"), SubResource("e_map_scroll"), SubResource("e_pickaxe"), SubResource("e_regen_potion"), SubResource("e_rope"), SubResource("e_shield_elixir"), SubResource("e_whetstone")])
+extra_tables = Array[ExtResource("table")]([])
+gold_min = 0
+gold_max = 0

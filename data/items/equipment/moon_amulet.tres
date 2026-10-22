@@ -12,6 +12,7 @@ description = "Светится в темноте холодным светом.
 icon = ExtResource("1_6koat")
 item_type = 0
 rarity = 2
+item_level = 6
 max_stack = 1
 stat_bonuses = {
 "armor": 2,

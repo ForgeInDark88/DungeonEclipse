@@ -38,6 +38,7 @@ description = "Сочится зелёной отравой."
 icon = ExtResource("1_xxbyx")
 item_type = 0
 rarity = 2
+item_level = 6
 max_stack = 1
 stat_bonuses = {
 "agility": 4,

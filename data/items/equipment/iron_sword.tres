@@ -30,6 +30,7 @@ description = "Надёжный клинок подземных кузнецов
 icon = ExtResource("1_2a6mt")
 item_type = 0
 rarity = 0
+item_level = 2
 max_stack = 1
 stat_bonuses = {
 "strength": 1

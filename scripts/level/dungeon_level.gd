@@ -101,6 +101,7 @@ func _on_boss_defeated(_boss: BossData, _pos: Vector2) -> void:
 	chest.tier = 2
 	chest.floor_number = floor_number
 	chest.unlocked_by_default = true
+	chest.table_override = &"boss"  # boss loot: the main source of legendary items
 	add_entity(chest, cell_bottom(Vector2i(layout.width / 2, layout.boss_cell.y)))
 	Fx.sparks(entities, cell_bottom(layout.exit_cell) + Vector2(0, -16), Color(0.7, 0.4, 1.0), 30, 120.0)
 	EventBus.message.emit("Страж повержен! Открылся проход.")
@@ -556,8 +557,8 @@ func _spawn_enemies() -> void:
 	var weights: Array[float] = []
 	for e in pool:
 		weights.append(e.spawn_weight)
-	# Elites: 5% on floor 1, +2% per floor, at most 30%.
-	var elite_chance := minf(0.05 + 0.02 * (floor_number - 1), 0.3)
+	# Elites: 6% on floor 1, +2.5% per floor, at most 35%.
+	var elite_chance := minf(0.06 + 0.025 * (floor_number - 1), 0.35)
 	var elite_pool: Array[EliteAffixData] = []
 	var elite_weights: Array[float] = []
 	for e in ItemDatabase.elites:

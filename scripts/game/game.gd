@@ -252,9 +252,7 @@ func _on_player_died() -> void:
 	overlay.add_control(_stats_grid([
 		["Этаж", str(GameState.floor_number)], ["Время", "%d:%02d" % [seconds / 60, seconds % 60]],
 		["Убито врагов", str(GameState.kills)], ["Элиты / стражи", "%d / %d" % [int(stats.get("elites", 0)), int(stats.get("bosses", 0))]],
-		["Золото собрано", str(int(stats.get("gold", 0)))], ["Находки", "[color=#%s]%d[/color] · [color=#%s]%d[/color] · [color=#%s]%d[/color]" % [
-			UIStyle.INK.to_html(false), found[0], ItemData.RARITY_COLORS[1].darkened(0.3).to_html(false), found[1],
-			ItemData.RARITY_COLORS[2].darkened(0.2).to_html(false), found[2]]],
+		["Золото собрано", str(int(stats.get("gold", 0)))], ["Находки", _found_text(found)],
 	]))
 	if reward.has("daily"):
 		var d: Dictionary = reward["daily"]
@@ -266,6 +264,15 @@ func _on_player_died() -> void:
 		overlay.add_text(text, 7)
 	overlay.add_button("В главное меню", func() -> void: GameState.go_to_menu()).grab_focus()
 	overlay.visible = true
+
+
+## Found items by rarity, each number in its rarity color.
+func _found_text(found: Array) -> String:
+	var parts: Array[String] = []
+	for r in found.size():
+		var col: Color = ItemData.RARITY_COLORS[r]
+		parts.append("[color=#%s]%d[/color]" % [(UIStyle.INK if r == 0 else col.darkened(0.25)).to_html(false), int(found[r])])
+	return " · ".join(parts)
 
 
 ## Two-column table of run statistics: [[label, value (bbcode)], ...].

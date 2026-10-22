@@ -11,6 +11,7 @@ description = "Найдена в стенах подземелья."
 icon = ExtResource("1_qp1rf")
 item_type = 2
 rarity = 0
+item_level = 1
 max_stack = 20
 stat_bonuses = {}
 price = 6

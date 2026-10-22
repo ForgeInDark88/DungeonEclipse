@@ -15,6 +15,7 @@ description = "Ноги сами несут вперёд."
 icon = ExtResource("1_lsxsd")
 item_type = 0
 rarity = 1
+item_level = 4
 max_stack = 1
 stat_bonuses = {
 "agility": 2,

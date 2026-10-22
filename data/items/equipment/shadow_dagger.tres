@@ -30,6 +30,7 @@ description = "Лезвие словно поглощает свет."
 icon = ExtResource("1_nqx8l")
 item_type = 0
 rarity = 1
+item_level = 4
 max_stack = 1
 stat_bonuses = {
 "agility": 3,

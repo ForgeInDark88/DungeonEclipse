@@ -1,391 +1,499 @@
-[gd_resource type="Resource" script_class="LootTable" load_steps=87 format=3]
+[gd_resource type="Resource" script_class="LootTable" load_steps=99 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/loot_entry.gd" id="1_dxnf3"]
-[ext_resource type="Resource" path="res://data/items/usable/health_potion.tres" id="2_k2bju"]
-[ext_resource type="Resource" path="res://data/items/usable/mana_crystal.tres" id="3_gjgb6"]
-[ext_resource type="Resource" path="res://data/items/usable/bomb.tres" id="4_kl5mx"]
-[ext_resource type="Resource" path="res://data/items/usable/rope.tres" id="6_wj56k"]
-[ext_resource type="Resource" path="res://data/items/materials/gold_coin.tres" id="7_cccm5"]
-[ext_resource type="Resource" path="res://data/items/usable/big_health_potion.tres" id="8_oi0mk"]
-[ext_resource type="Resource" path="res://data/items/usable/whetstone.tres" id="8_x6bb2"]
-[ext_resource type="Resource" path="res://data/items/usable/key.tres" id="9_e2f8k"]
-[ext_resource type="Resource" path="res://data/items/equipment/rusty_sword.tres" id="10_xq5qm"]
-[ext_resource type="Resource" path="res://data/items/equipment/iron_sword.tres" id="11_1pksw"]
-[ext_resource type="Resource" path="res://data/items/equipment/dagger.tres" id="12_34s87"]
-[ext_resource type="Resource" path="res://data/items/equipment/oak_staff.tres" id="13_yk45x"]
-[ext_resource type="Resource" path="res://data/items/equipment/leather_cap.tres" id="14_1oih4"]
-[ext_resource type="Resource" path="res://data/items/equipment/club.tres" id="14_6sy10"]
-[ext_resource type="Resource" path="res://data/items/equipment/leather_armor.tres" id="15_uuxu7"]
-[ext_resource type="Resource" path="res://data/items/equipment/leather_gloves.tres" id="16_ewmeo"]
-[ext_resource type="Resource" path="res://data/items/equipment/leather_boots.tres" id="17_tsdsc"]
-[ext_resource type="Resource" path="res://data/items/equipment/copper_ring.tres" id="18_a756d"]
-[ext_resource type="Resource" path="res://data/items/equipment/bone_amulet.tres" id="19_8c1n7"]
-[ext_resource type="Resource" path="res://data/items/equipment/war_axe.tres" id="20_kshuo"]
-[ext_resource type="Resource" path="res://data/items/equipment/ember_staff.tres" id="20_npk48"]
-[ext_resource type="Resource" path="res://data/items/equipment/shadow_dagger.tres" id="21_gbgv0"]
-[ext_resource type="Resource" path="res://data/items/equipment/executioner_axe.tres" id="21_woghg"]
-[ext_resource type="Resource" path="res://data/items/equipment/iron_helm.tres" id="22_vatwy"]
-[ext_resource type="Resource" path="res://data/items/equipment/glaive.tres" id="23_0b2gs"]
-[ext_resource type="Resource" path="res://data/items/equipment/chainmail.tres" id="23_q5xks"]
-[ext_resource type="Resource" path="res://data/items/equipment/hatchet.tres" id="24_7hr64"]
-[ext_resource type="Resource" path="res://data/items/equipment/mage_robe.tres" id="24_bpnm6"]
-[ext_resource type="Resource" path="res://data/items/equipment/hunter_bow.tres" id="25_1d7rm"]
-[ext_resource type="Resource" path="res://data/items/equipment/gauntlets.tres" id="25_7lqsn"]
-[ext_resource type="Resource" path="res://data/items/equipment/swift_boots.tres" id="26_edm0m"]
-[ext_resource type="Resource" path="res://data/items/equipment/ruby_ring.tres" id="27_d4xf8"]
-[ext_resource type="Resource" path="res://data/items/equipment/eclipse_blade.tres" id="28_s7t3p"]
-[ext_resource type="Resource" path="res://data/items/equipment/knight_sword.tres" id="28_tv7hw"]
-[ext_resource type="Resource" path="res://data/items/equipment/arcane_staff.tres" id="29_a3pgi"]
-[ext_resource type="Resource" path="res://data/items/equipment/crown_of_shadows.tres" id="30_ogmug"]
-[ext_resource type="Resource" path="res://data/items/equipment/eclipse_ring.tres" id="31_yuwxu"]
-[ext_resource type="Resource" path="res://data/items/equipment/moon_amulet.tres" id="32_ksp32"]
-[ext_resource type="Script" path="res://scripts/data/loot_table.gd" id="33_fhuvl"]
-[ext_resource type="Resource" path="res://data/items/equipment/morning_star.tres" id="35_clf4w"]
-[ext_resource type="Resource" path="res://data/items/equipment/short_bow.tres" id="40_n4mnw"]
-[ext_resource type="Resource" path="res://data/items/equipment/venom_fang.tres" id="42_8ihqc"]
-[ext_resource type="Resource" path="res://data/items/equipment/wooden_spear.tres" id="44_qx8qp"]
+[ext_resource type="Script" path="res://scripts/data/loot_table.gd" id="table"]
+[ext_resource type="Script" path="res://scripts/data/loot_entry.gd" id="entry"]
+[ext_resource type="Resource" path="res://data/items/equipment/arcane_staff.tres" id="i_arcane_staff"]
+[ext_resource type="Resource" path="res://data/items/equipment/bone_amulet.tres" id="i_bone_amulet"]
+[ext_resource type="Resource" path="res://data/items/equipment/chainmail.tres" id="i_chainmail"]
+[ext_resource type="Resource" path="res://data/items/equipment/club.tres" id="i_club"]
+[ext_resource type="Resource" path="res://data/items/equipment/copper_ring.tres" id="i_copper_ring"]
+[ext_resource type="Resource" path="res://data/items/equipment/crown_of_shadows.tres" id="i_crown_of_shadows"]
+[ext_resource type="Resource" path="res://data/items/equipment/dagger.tres" id="i_dagger"]
+[ext_resource type="Resource" path="res://data/items/equipment/eclipse_blade.tres" id="i_eclipse_blade"]
+[ext_resource type="Resource" path="res://data/items/equipment/eclipse_ring.tres" id="i_eclipse_ring"]
+[ext_resource type="Resource" path="res://data/items/equipment/ember_staff.tres" id="i_ember_staff"]
+[ext_resource type="Resource" path="res://data/items/equipment/executioner_axe.tres" id="i_executioner_axe"]
+[ext_resource type="Resource" path="res://data/items/equipment/gauntlets.tres" id="i_gauntlets"]
+[ext_resource type="Resource" path="res://data/items/equipment/glaive.tres" id="i_glaive"]
+[ext_resource type="Resource" path="res://data/items/equipment/hatchet.tres" id="i_hatchet"]
+[ext_resource type="Resource" path="res://data/items/equipment/hunter_bow.tres" id="i_hunter_bow"]
+[ext_resource type="Resource" path="res://data/items/equipment/iron_helm.tres" id="i_iron_helm"]
+[ext_resource type="Resource" path="res://data/items/equipment/iron_sword.tres" id="i_iron_sword"]
+[ext_resource type="Resource" path="res://data/items/equipment/knight_sword.tres" id="i_knight_sword"]
+[ext_resource type="Resource" path="res://data/items/equipment/leather_armor.tres" id="i_leather_armor"]
+[ext_resource type="Resource" path="res://data/items/equipment/leather_boots.tres" id="i_leather_boots"]
+[ext_resource type="Resource" path="res://data/items/equipment/leather_cap.tres" id="i_leather_cap"]
+[ext_resource type="Resource" path="res://data/items/equipment/leather_gloves.tres" id="i_leather_gloves"]
+[ext_resource type="Resource" path="res://data/items/equipment/mage_robe.tres" id="i_mage_robe"]
+[ext_resource type="Resource" path="res://data/items/equipment/moon_amulet.tres" id="i_moon_amulet"]
+[ext_resource type="Resource" path="res://data/items/equipment/morning_star.tres" id="i_morning_star"]
+[ext_resource type="Resource" path="res://data/items/equipment/oak_staff.tres" id="i_oak_staff"]
+[ext_resource type="Resource" path="res://data/items/equipment/ruby_ring.tres" id="i_ruby_ring"]
+[ext_resource type="Resource" path="res://data/items/equipment/rusty_sword.tres" id="i_rusty_sword"]
+[ext_resource type="Resource" path="res://data/items/equipment/shadow_dagger.tres" id="i_shadow_dagger"]
+[ext_resource type="Resource" path="res://data/items/equipment/short_bow.tres" id="i_short_bow"]
+[ext_resource type="Resource" path="res://data/items/equipment/swift_boots.tres" id="i_swift_boots"]
+[ext_resource type="Resource" path="res://data/items/equipment/venom_fang.tres" id="i_venom_fang"]
+[ext_resource type="Resource" path="res://data/items/equipment/war_axe.tres" id="i_war_axe"]
+[ext_resource type="Resource" path="res://data/items/equipment/wooden_spear.tres" id="i_wooden_spear"]
+[ext_resource type="Resource" path="res://data/items/materials/bone.tres" id="i_bone"]
+[ext_resource type="Resource" path="res://data/items/materials/iron_ore.tres" id="i_iron_ore"]
+[ext_resource type="Resource" path="res://data/items/usable/antidote.tres" id="i_antidote"]
+[ext_resource type="Resource" path="res://data/items/usable/big_health_potion.tres" id="i_big_health_potion"]
+[ext_resource type="Resource" path="res://data/items/usable/bomb.tres" id="i_bomb"]
+[ext_resource type="Resource" path="res://data/items/usable/health_potion.tres" id="i_health_potion"]
+[ext_resource type="Resource" path="res://data/items/usable/key.tres" id="i_key"]
+[ext_resource type="Resource" path="res://data/items/usable/mana_crystal.tres" id="i_mana_crystal"]
+[ext_resource type="Resource" path="res://data/items/usable/map_scroll.tres" id="i_map_scroll"]
+[ext_resource type="Resource" path="res://data/items/usable/pickaxe.tres" id="i_pickaxe"]
+[ext_resource type="Resource" path="res://data/items/usable/regen_potion.tres" id="i_regen_potion"]
+[ext_resource type="Resource" path="res://data/items/usable/rope.tres" id="i_rope"]
+[ext_resource type="Resource" path="res://data/items/usable/shield_elixir.tres" id="i_shield_elixir"]
+[ext_resource type="Resource" path="res://data/items/usable/whetstone.tres" id="i_whetstone"]
 
-[sub_resource type="Resource" id="Resource_bigki"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("2_k2bju")
-weight = 3.0
+[sub_resource type="Resource" id="e_arcane_staff"]
+script = ExtResource("entry")
+item = ExtResource("i_arcane_staff")
+weight = 1.00
 min_count = 1
-max_count = 2
+max_count = 1
 min_floor = 1
+max_floor = 0
 
-[sub_resource type="Resource" id="Resource_wurll"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("3_gjgb6")
-weight = 2.0
+[sub_resource type="Resource" id="e_bone_amulet"]
+script = ExtResource("entry")
+item = ExtResource("i_bone_amulet")
+weight = 1.00
 min_count = 1
-max_count = 2
+max_count = 1
 min_floor = 1
+max_floor = 0
 
-[sub_resource type="Resource" id="Resource_6sk5b"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("4_kl5mx")
-weight = 2.0
+[sub_resource type="Resource" id="e_chainmail"]
+script = ExtResource("entry")
+item = ExtResource("i_chainmail")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_club"]
+script = ExtResource("entry")
+item = ExtResource("i_club")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_copper_ring"]
+script = ExtResource("entry")
+item = ExtResource("i_copper_ring")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_crown_of_shadows"]
+script = ExtResource("entry")
+item = ExtResource("i_crown_of_shadows")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_dagger"]
+script = ExtResource("entry")
+item = ExtResource("i_dagger")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_eclipse_blade"]
+script = ExtResource("entry")
+item = ExtResource("i_eclipse_blade")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_eclipse_ring"]
+script = ExtResource("entry")
+item = ExtResource("i_eclipse_ring")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_ember_staff"]
+script = ExtResource("entry")
+item = ExtResource("i_ember_staff")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_executioner_axe"]
+script = ExtResource("entry")
+item = ExtResource("i_executioner_axe")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_gauntlets"]
+script = ExtResource("entry")
+item = ExtResource("i_gauntlets")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_glaive"]
+script = ExtResource("entry")
+item = ExtResource("i_glaive")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_hatchet"]
+script = ExtResource("entry")
+item = ExtResource("i_hatchet")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_hunter_bow"]
+script = ExtResource("entry")
+item = ExtResource("i_hunter_bow")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_iron_helm"]
+script = ExtResource("entry")
+item = ExtResource("i_iron_helm")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_iron_sword"]
+script = ExtResource("entry")
+item = ExtResource("i_iron_sword")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_knight_sword"]
+script = ExtResource("entry")
+item = ExtResource("i_knight_sword")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_leather_armor"]
+script = ExtResource("entry")
+item = ExtResource("i_leather_armor")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_leather_boots"]
+script = ExtResource("entry")
+item = ExtResource("i_leather_boots")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_leather_cap"]
+script = ExtResource("entry")
+item = ExtResource("i_leather_cap")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_leather_gloves"]
+script = ExtResource("entry")
+item = ExtResource("i_leather_gloves")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_mage_robe"]
+script = ExtResource("entry")
+item = ExtResource("i_mage_robe")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_moon_amulet"]
+script = ExtResource("entry")
+item = ExtResource("i_moon_amulet")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_morning_star"]
+script = ExtResource("entry")
+item = ExtResource("i_morning_star")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_oak_staff"]
+script = ExtResource("entry")
+item = ExtResource("i_oak_staff")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_ruby_ring"]
+script = ExtResource("entry")
+item = ExtResource("i_ruby_ring")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_rusty_sword"]
+script = ExtResource("entry")
+item = ExtResource("i_rusty_sword")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_shadow_dagger"]
+script = ExtResource("entry")
+item = ExtResource("i_shadow_dagger")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_short_bow"]
+script = ExtResource("entry")
+item = ExtResource("i_short_bow")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_swift_boots"]
+script = ExtResource("entry")
+item = ExtResource("i_swift_boots")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_venom_fang"]
+script = ExtResource("entry")
+item = ExtResource("i_venom_fang")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_war_axe"]
+script = ExtResource("entry")
+item = ExtResource("i_war_axe")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_wooden_spear"]
+script = ExtResource("entry")
+item = ExtResource("i_wooden_spear")
+weight = 1.00
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_bone"]
+script = ExtResource("entry")
+item = ExtResource("i_bone")
+weight = 0.60
 min_count = 1
 max_count = 3
 min_floor = 1
+max_floor = 0
 
-[sub_resource type="Resource" id="Resource_a7i6n"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("6_wj56k")
-weight = 1.5
+[sub_resource type="Resource" id="e_iron_ore"]
+script = ExtResource("entry")
+item = ExtResource("i_iron_ore")
+weight = 0.60
 min_count = 1
 max_count = 2
 min_floor = 1
+max_floor = 0
 
-[sub_resource type="Resource" id="Resource_5gdqm"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("7_cccm5")
-weight = 2.0
-min_count = 2
-max_count = 8
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_it5o0"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("8_x6bb2")
-weight = 1.2
+[sub_resource type="Resource" id="e_antidote"]
+script = ExtResource("entry")
+item = ExtResource("i_antidote")
+weight = 0.60
 min_count = 1
 max_count = 1
 min_floor = 1
+max_floor = 0
 
-[sub_resource type="Resource" id="Resource_354if"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("8_oi0mk")
-weight = 2.0
+[sub_resource type="Resource" id="e_big_health_potion"]
+script = ExtResource("entry")
+item = ExtResource("i_big_health_potion")
+weight = 0.60
 min_count = 1
 max_count = 1
 min_floor = 1
+max_floor = 0
 
-[sub_resource type="Resource" id="Resource_mpqrk"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("9_e2f8k")
-weight = 1.5
+[sub_resource type="Resource" id="e_bomb"]
+script = ExtResource("entry")
+item = ExtResource("i_bomb")
+weight = 0.60
+min_count = 1
+max_count = 2
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_health_potion"]
+script = ExtResource("entry")
+item = ExtResource("i_health_potion")
+weight = 0.60
+min_count = 1
+max_count = 2
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_key"]
+script = ExtResource("entry")
+item = ExtResource("i_key")
+weight = 0.60
 min_count = 1
 max_count = 1
 min_floor = 1
+max_floor = 0
 
-[sub_resource type="Resource" id="Resource_snvhm"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("29_a3pgi")
-weight = 1.3
+[sub_resource type="Resource" id="e_mana_crystal"]
+script = ExtResource("entry")
+item = ExtResource("i_mana_crystal")
+weight = 0.60
 min_count = 1
-max_count = 1
-min_floor = 2
+max_count = 2
+min_floor = 1
+max_floor = 0
 
-[sub_resource type="Resource" id="Resource_sas5h"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("19_8c1n7")
-weight = 1.0
+[sub_resource type="Resource" id="e_map_scroll"]
+script = ExtResource("entry")
+item = ExtResource("i_map_scroll")
+weight = 0.60
 min_count = 1
 max_count = 1
 min_floor = 1
+max_floor = 0
 
-[sub_resource type="Resource" id="Resource_hyghu"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("23_q5xks")
-weight = 1.0
+[sub_resource type="Resource" id="e_pickaxe"]
+script = ExtResource("entry")
+item = ExtResource("i_pickaxe")
+weight = 0.60
 min_count = 1
 max_count = 1
 min_floor = 1
+max_floor = 0
 
-[sub_resource type="Resource" id="Resource_7gfyx"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("14_6sy10")
-weight = 1.3
+[sub_resource type="Resource" id="e_regen_potion"]
+script = ExtResource("entry")
+item = ExtResource("i_regen_potion")
+weight = 0.60
 min_count = 1
 max_count = 1
 min_floor = 1
+max_floor = 0
 
-[sub_resource type="Resource" id="Resource_n8ul7"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("18_a756d")
-weight = 1.0
+[sub_resource type="Resource" id="e_rope"]
+script = ExtResource("entry")
+item = ExtResource("i_rope")
+weight = 0.60
+min_count = 1
+max_count = 2
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_shield_elixir"]
+script = ExtResource("entry")
+item = ExtResource("i_shield_elixir")
+weight = 0.60
 min_count = 1
 max_count = 1
 min_floor = 1
+max_floor = 0
 
-[sub_resource type="Resource" id="Resource_ayh7p"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("30_ogmug")
-weight = 1.0
-min_count = 1
-max_count = 1
-min_floor = 2
-
-[sub_resource type="Resource" id="Resource_8wvar"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("12_34s87")
-weight = 1.3
+[sub_resource type="Resource" id="e_whetstone"]
+script = ExtResource("entry")
+item = ExtResource("i_whetstone")
+weight = 0.60
 min_count = 1
 max_count = 1
 min_floor = 1
-
-[sub_resource type="Resource" id="Resource_8scry"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("28_s7t3p")
-weight = 1.3
-min_count = 1
-max_count = 1
-min_floor = 2
-
-[sub_resource type="Resource" id="Resource_23i1b"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("31_yuwxu")
-weight = 1.0
-min_count = 1
-max_count = 1
-min_floor = 2
-
-[sub_resource type="Resource" id="Resource_hhakv"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("20_npk48")
-weight = 1.3
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_uc1h2"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("21_woghg")
-weight = 1.3
-min_count = 1
-max_count = 1
-min_floor = 2
-
-[sub_resource type="Resource" id="Resource_aytrr"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("25_7lqsn")
-weight = 1.0
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_q3p68"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("23_0b2gs")
-weight = 1.3
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_dkufu"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("24_7hr64")
-weight = 1.3
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_6dqpf"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("25_1d7rm")
-weight = 1.3
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_6nyc7"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("22_vatwy")
-weight = 1.0
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_bn360"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("11_1pksw")
-weight = 1.3
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_7tuea"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("28_tv7hw")
-weight = 1.3
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_0luu1"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("15_uuxu7")
-weight = 1.0
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_4j0ok"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("17_tsdsc")
-weight = 1.0
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_biffp"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("14_1oih4")
-weight = 1.0
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_k4nc3"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("16_ewmeo")
-weight = 1.0
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_vqrl6"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("24_bpnm6")
-weight = 1.0
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_muvx8"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("32_ksp32")
-weight = 1.0
-min_count = 1
-max_count = 1
-min_floor = 2
-
-[sub_resource type="Resource" id="Resource_37r5y"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("35_clf4w")
-weight = 1.3
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_xmdel"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("13_yk45x")
-weight = 1.3
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_bo0p6"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("27_d4xf8")
-weight = 1.0
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_qc5d4"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("10_xq5qm")
-weight = 1.3
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_68wq8"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("21_gbgv0")
-weight = 1.3
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_he4gh"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("40_n4mnw")
-weight = 1.3
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_2y2w8"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("26_edm0m")
-weight = 1.0
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_rh8jx"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("42_8ihqc")
-weight = 1.3
-min_count = 1
-max_count = 1
-min_floor = 2
-
-[sub_resource type="Resource" id="Resource_agykb"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("20_kshuo")
-weight = 1.3
-min_count = 1
-max_count = 1
-min_floor = 1
-
-[sub_resource type="Resource" id="Resource_b65ru"]
-script = ExtResource("1_dxnf3")
-item = ExtResource("44_qx8qp")
-weight = 1.3
-min_count = 1
-max_count = 1
-min_floor = 1
+max_floor = 0
 
 [resource]
-script = ExtResource("33_fhuvl")
+script = ExtResource("table")
 rolls_min = 1
 rolls_max = 2
-rarity_weights = Array[float]([60.0, 32.0, 8.0])
-rare_bonus_per_floor = 3.0
-epic_bonus_per_floor = 1.5
-entries = Array[ExtResource("1_dxnf3")]([SubResource("Resource_bigki"), SubResource("Resource_wurll"), SubResource("Resource_6sk5b"), SubResource("Resource_a7i6n"), SubResource("Resource_5gdqm"), SubResource("Resource_it5o0"), SubResource("Resource_354if"), SubResource("Resource_mpqrk"), SubResource("Resource_snvhm"), SubResource("Resource_sas5h"), SubResource("Resource_hyghu"), SubResource("Resource_7gfyx"), SubResource("Resource_n8ul7"), SubResource("Resource_ayh7p"), SubResource("Resource_8wvar"), SubResource("Resource_8scry"), SubResource("Resource_23i1b"), SubResource("Resource_hhakv"), SubResource("Resource_uc1h2"), SubResource("Resource_aytrr"), SubResource("Resource_q3p68"), SubResource("Resource_dkufu"), SubResource("Resource_6dqpf"), SubResource("Resource_6nyc7"), SubResource("Resource_bn360"), SubResource("Resource_7tuea"), SubResource("Resource_0luu1"), SubResource("Resource_4j0ok"), SubResource("Resource_biffp"), SubResource("Resource_k4nc3"), SubResource("Resource_vqrl6"), SubResource("Resource_muvx8"), SubResource("Resource_37r5y"), SubResource("Resource_xmdel"), SubResource("Resource_bo0p6"), SubResource("Resource_qc5d4"), SubResource("Resource_68wq8"), SubResource("Resource_he4gh"), SubResource("Resource_2y2w8"), SubResource("Resource_rh8jx"), SubResource("Resource_agykb"), SubResource("Resource_b65ru")])
+rarity_weights = Array[float]([70.00, 27.00, 1.50, 0.00])
+rarity_per_floor = Array[float]([0.00, 3.00, 1.20, 0.08])
+rarity_min_floor = Array[int]([1, 1, 5, 9])
+item_level_base = 1.0
+item_level_per_floor = 0.75
+item_level_bonus = 1.0
+entries = Array[ExtResource("entry")]([SubResource("e_arcane_staff"), SubResource("e_bone_amulet"), SubResource("e_chainmail"), SubResource("e_club"), SubResource("e_copper_ring"), SubResource("e_crown_of_shadows"), SubResource("e_dagger"), SubResource("e_eclipse_blade"), SubResource("e_eclipse_ring"), SubResource("e_ember_staff"), SubResource("e_executioner_axe"), SubResource("e_gauntlets"), SubResource("e_glaive"), SubResource("e_hatchet"), SubResource("e_hunter_bow"), SubResource("e_iron_helm"), SubResource("e_iron_sword"), SubResource("e_knight_sword"), SubResource("e_leather_armor"), SubResource("e_leather_boots"), SubResource("e_leather_cap"), SubResource("e_leather_gloves"), SubResource("e_mage_robe"), SubResource("e_moon_amulet"), SubResource("e_morning_star"), SubResource("e_oak_staff"), SubResource("e_ruby_ring"), SubResource("e_rusty_sword"), SubResource("e_shadow_dagger"), SubResource("e_short_bow"), SubResource("e_swift_boots"), SubResource("e_venom_fang"), SubResource("e_war_axe"), SubResource("e_wooden_spear"), SubResource("e_bone"), SubResource("e_iron_ore"), SubResource("e_antidote"), SubResource("e_big_health_potion"), SubResource("e_bomb"), SubResource("e_health_potion"), SubResource("e_key"), SubResource("e_mana_crystal"), SubResource("e_map_scroll"), SubResource("e_pickaxe"), SubResource("e_regen_potion"), SubResource("e_rope"), SubResource("e_shield_elixir"), SubResource("e_whetstone")])
+extra_tables = Array[ExtResource("table")]([])
+gold_min = 0
+gold_max = 0

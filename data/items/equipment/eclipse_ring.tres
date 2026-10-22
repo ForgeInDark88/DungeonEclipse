@@ -12,6 +12,7 @@ description = "Чёрный камень в золотой оправе."
 icon = ExtResource("1_frwye")
 item_type = 0
 rarity = 2
+item_level = 8
 max_stack = 1
 stat_bonuses = {
 "agility": 2,

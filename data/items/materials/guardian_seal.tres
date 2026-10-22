@@ -11,6 +11,7 @@ description = "Трофей хранителя этажа. В Святилище
 icon = ExtResource("1_ovp3d")
 item_type = 2
 rarity = 2
+item_level = 5
 max_stack = 10
 stat_bonuses = {}
 price = 150

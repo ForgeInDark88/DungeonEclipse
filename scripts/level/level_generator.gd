@@ -318,7 +318,8 @@ func _place_enemies(floor_number: int) -> void:
 			rooms.append(room)
 	if rooms.is_empty():
 		return
-	var count := 3 + floor_number * 2 + rooms.size() / 2
+	# Density grows with depth: more monsters per room on deeper floors.
+	var count := 3 + roundi(floor_number * 2.4) + rooms.size() / 2
 	for i in count:
 		var cell: Variant = _take_spot(rooms[rng.randi_range(0, rooms.size() - 1)])
 		if cell != null:

@@ -10,7 +10,7 @@ static func _c(color: Color, text: String) -> String:
 static func item(item: ItemData, hero: Hero, is_equipped := false) -> String:
 	var lines: Array[String] = []
 	lines.append("[font_size=10][b]%s[/b][/font_size]" % _c(item.rarity_color().darkened(0.35), item.display_name))
-	lines.append(_c(UIStyle.INK_SOFT, "%s · %s" % [item.rarity_name(), item.subtitle()]))
+	lines.append(_c(UIStyle.INK_SOFT, "%s · %s · ур. %d" % [item.rarity_name(), item.subtitle(), item.item_level]))
 	if item.description != "":
 		lines.append("[i]%s[/i]" % item.description)
 

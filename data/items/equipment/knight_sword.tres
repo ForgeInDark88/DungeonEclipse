@@ -30,6 +30,7 @@ description = "Клинок павшего паладина."
 icon = ExtResource("1_ndeqh")
 item_type = 0
 rarity = 1
+item_level = 4
 max_stack = 1
 stat_bonuses = {
 "armor": 2,

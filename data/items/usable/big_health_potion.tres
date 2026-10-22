@@ -23,6 +23,7 @@ description = "Густое и красное, как закат."
 icon = ExtResource("3_rlhv8")
 item_type = 1
 rarity = 1
+item_level = 3
 max_stack = 5
 stat_bonuses = {}
 price = 60

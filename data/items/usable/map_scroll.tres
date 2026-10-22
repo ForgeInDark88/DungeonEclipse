@@ -21,5 +21,6 @@ description = "Набросок ходов этого этажа. Сгорает
 icon = ExtResource("4_icon")
 item_type = 1
 rarity = 0
+item_level = 2
 max_stack = 5
 price = 30

@@ -15,6 +15,7 @@ description = "Звенит от каждого удара, но держит."
 icon = ExtResource("1_vfb52")
 item_type = 0
 rarity = 1
+item_level = 3
 max_stack = 1
 stat_bonuses = {
 "armor": 5,

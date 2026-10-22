@@ -23,8 +23,11 @@ enum Move { MOVING, ARRIVED, NO_PATH }
 const STATE_NAMES := ["patrol", "chase", "attack", "hurt", "alert", "search", "return"]
 const GRAVITY := 900.0
 const PROJECTILE_SCENE := preload("res://scenes/world/projectile.tscn")
-const HP_SCALE_PER_FLOOR := 0.3
-const DMG_SCALE_PER_FLOOR := 0.18
+## Monster strength per floor below the first (see docs/BALANCE.md).
+const HP_SCALE_PER_FLOOR := 0.4
+const DMG_SCALE_PER_FLOOR := 0.22
+## Elites drop from this richer table instead of their own.
+const ELITE_LOOT_TABLE := &"enemy_rare"
 const WORLD_MASK := 1
 const PLATFORM_LAYER := 2
 ## Seconds the hero's last position is remembered after losing sight.
@@ -99,6 +102,7 @@ var _mark_time := 0.0
 ## Statistics read by tests/ai_sim: longest time it wanted to move but could
 ## not, and time spent standing in a trap cell.
 var _home_set := false
+var _last_step := ""
 var _patrol_turns := 0.0
 var _patrol_idle := 0.0
 var _patrol_point := Vector2.INF
@@ -302,8 +306,9 @@ func _physics_process(delta: float) -> void:
 	_check_stuck(delta)
 	var lvl := _level()
 	if lvl and lvl.nav and lvl.nav.is_forbidden(_feet_cell()) and data.behavior != EnemyData.Behavior.FLYER and is_on_floor():
+		_path.clear()  # landed on a trap cell: plan a way off right now
 		if danger_time == 0.0 or fmod(danger_time, 1.0) < delta:
-			AIDebug.log_event(self, "danger", "%s в клетке ловушки %s (%s, шаг %s)" % [data.id, _feet_cell(), state_name(), _debug_step()])
+			AIDebug.log_event(self, "danger", "%s в клетке ловушки %s (%s, шаг %s, прошлый шаг %s, vel %s, jumping %s)" % [data.id, _feet_cell(), state_name(), _debug_step(), _last_step, velocity, _jumping])
 		danger_time += delta
 	_attack_anim_left = maxf(0.0, _attack_anim_left - delta)
 	_update_animation()
@@ -607,6 +612,18 @@ func _blocked_ahead() -> bool:
 	return not lvl.nav.standable(cell.x, cell.y, _clearance) or lvl.nav.is_dangerous(cell)
 
 
+## A trap cell within two cells in front (no playful hops there).
+func _danger_near() -> bool:
+	var lvl := _level()
+	if lvl == null or lvl.nav == null:
+		return false
+	var c := _feet_cell()
+	for i in range(0, 3):
+		if lvl.nav.is_dangerous(c + Vector2i(int(dir) * i, 0)):
+			return true
+	return false
+
+
 func _ledge_ahead() -> bool:
 	return _blocked_ahead()
 
@@ -656,8 +673,8 @@ func _chase_walk(delta: float) -> void:
 		_face_point(_player.global_position)
 		if res == Move.NO_PATH and not _sees_player and _state_time > 3.0:
 			_set_state(State.SEARCH)
-	elif data.jumps and is_on_floor() and not _jumping and randf() < 0.02:
-		velocity.y = -200.0  # slimes keep bouncing
+	elif data.jumps and is_on_floor() and not _jumping and randf() < 0.02 and not _danger_near():
+		velocity.y = -200.0  # slimes keep bouncing (never next to a trap)
 
 
 ## Melee only with a clear line and on (about) the same level.
@@ -861,6 +878,8 @@ func _launch(tpos: Vector2) -> void:
 
 
 func _advance() -> void:
+	if _path_i < _path.size():
+		_last_step = "%s→%s" % [LevelNav.EDGE_NAMES[_path[_path_i]["kind"]] if _path[_path_i]["kind"] >= 0 else "fly", _path[_path_i]["cell"]]
 	_path_i += 1
 
 
@@ -1101,9 +1120,13 @@ func _search_fly(delta: float) -> void:
 func _fly_to(target: Vector2, speed: float, delta: float) -> Move:
 	if not target.is_finite():
 		return Move.NO_PATH
-	if global_position.distance_to(target) < 8.0:
+	# Points on the floor line cannot be reached by wings: aim a bit above.
+	var lvl0 := _level()
+	if lvl0 and lvl0.is_solid_at(target + Vector2(0, 2)):
+		target.y -= 10.0
+	if global_position.distance_to(target) < 12.0:
 		return Move.ARRIVED
-	if data.phases_through_walls or has_line_to(target):
+	if data.phases_through_walls or _wide_clear(target):
 		_steer(target, speed, delta)
 		return Move.MOVING
 	var lvl := _level()
@@ -1122,17 +1145,29 @@ func _fly_to(target: Vector2, speed: float, delta: float) -> Move:
 	return _follow_fly(lvl, speed, delta)
 
 
+## Straight flight only through a corridor as wide as the body (two parallel
+## rays): a thin line of sight past a corner is not enough for wings.
+func _wide_clear(target: Vector2) -> bool:
+	var from := global_position + Vector2(0, -data.collision_size.y * 0.5)
+	var d := target - from
+	if d.length() < 1.0:
+		return true
+	var side := d.normalized().orthogonal() * (data.collision_size.x * 0.5 + 1.0)
+	return LineOfSight.clear(self, from + side, target + side) and LineOfSight.clear(self, from - side, target - side)
+
+
 func _follow_fly(lvl: DungeonLevel, speed: float, delta: float) -> Move:
 	while _path_i < _path.size() and lvl.cell_center(_path[_path_i]["cell"]).distance_to(global_position + Vector2(0, -6)) < 6.0:
 		_path_i += 1
 	if _path_i >= _path.size():
 		return Move.ARRIVED
-	_steer(lvl.cell_center(_path[_path_i]["cell"]) + Vector2(0, 6), speed, delta)
+	# The grid path already keeps off the walls: no whiskers in tight shafts.
+	_steer(lvl.cell_center(_path[_path_i]["cell"]) + Vector2(0, 6), speed, delta, false)
 	return Move.MOVING
 
 
 ## Seek `target`, pushed away from walls by three short ray "whiskers".
-func _steer(target: Vector2, speed: float, delta: float) -> void:
+func _steer(target: Vector2, speed: float, delta: float, whiskers := true) -> void:
 	if not target.is_finite():
 		return
 	_wants_move = true
@@ -1141,7 +1176,7 @@ func _steer(target: Vector2, speed: float, delta: float) -> void:
 		velocity = velocity.move_toward(Vector2.ZERO, 300.0 * delta)
 		return
 	desired = desired.normalized() * speed
-	if not data.phases_through_walls:
+	if whiskers and not data.phases_through_walls:
 		var space := get_world_2d().direct_space_state
 		var origin := global_position + Vector2(0, -data.collision_size.y / 2.0)
 		var heading := desired.normalized()
@@ -1382,8 +1417,9 @@ func _die() -> void:
 			EventBus.spawn_items.emit(global_position + Vector2(0, -8), [{"item": shard, "count": elite.shard_drop}])
 	if _name_label:
 		_name_label.visible = false
-	if data.loot_table and (elite != null or randf() < data.loot_chance):
-		var loot := data.loot_table.roll(floor_number)
+	var table: LootTable = ItemDatabase.get_loot_table(ELITE_LOOT_TABLE) if elite else data.loot_table
+	if table and (elite != null or randf() < data.loot_chance):
+		var loot := table.roll(floor_number)
 		if not loot.is_empty():
 			EventBus.spawn_items.emit(global_position + Vector2(0, -8), loot)
 	# Death animation, then the body breaks into particles.

@@ -15,6 +15,7 @@ description = "Мягкие подошвы для тихих шагов."
 icon = ExtResource("1_fnj6b")
 item_type = 0
 rarity = 0
+item_level = 1
 max_stack = 1
 stat_bonuses = {
 "armor": 1,

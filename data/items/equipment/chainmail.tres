@@ -15,6 +15,7 @@ description = "Тяжёлая, зато спасает от когтей."
 icon = ExtResource("1_cb806")
 item_type = 0
 rarity = 1
+item_level = 4
 max_stack = 1
 stat_bonuses = {
 "armor": 9,

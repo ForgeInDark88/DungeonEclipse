@@ -24,6 +24,7 @@ description = "Кожа покрывается мерцающей плёнкой
 icon = ExtResource("3_d6vsa")
 item_type = 1
 rarity = 1
+item_level = 4
 max_stack = 5
 stat_bonuses = {}
 price = 60

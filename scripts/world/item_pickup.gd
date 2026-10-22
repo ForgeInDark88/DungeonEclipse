@@ -31,7 +31,7 @@ func _ready() -> void:
 		_glow = PointLight2D.new()
 		_glow.texture = AssetPaths.tex(AssetPaths.LIGHT)
 		_glow.color = item.rarity_color()
-		_glow.texture_scale = 0.25 if item.rarity == ItemData.Rarity.RARE else 0.35
+		_glow.texture_scale = [0.2, 0.25, 0.35, 0.45][item.rarity]
 		_glow.position = Vector2(0, -8)
 		add_child(_glow)
 
@@ -79,9 +79,9 @@ func collect(hero: Hero) -> void:
 	if taken > 0:
 		EventBus.item_collected.emit(item, global_position + Vector2(0, -8))
 		var found: Array = GameState.run_stats.get("found", [0, 0, 0])
-		if found.size() == 3:
+		if found.size() > item.rarity:
 			found[item.rarity] += 1
-		var snd: StringName = [&"pickup_common", &"pickup_rare", &"pickup_epic"][item.rarity]
+		var snd: StringName = [&"pickup_common", &"pickup_rare", &"pickup_epic", &"pickup_epic"][item.rarity]
 		AudioManager.play_sfx(&"coin" if item.id == &"gold_coin" else snd, global_position)
 		EventBus.floating_text.emit(global_position + Vector2(0, -16), "+%d %s" % [taken, item.display_name], item.rarity_color())
 	if left > 0:

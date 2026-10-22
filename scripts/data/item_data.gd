@@ -4,10 +4,10 @@ extends Resource
 ## Plain ItemData with type MATERIAL is a resource / misc item.
 
 enum ItemType { EQUIPMENT, USABLE, MATERIAL }
-enum Rarity { COMMON, RARE, EPIC }
+enum Rarity { COMMON, RARE, EPIC, LEGENDARY }
 
-const RARITY_NAMES := ["Обычный", "Редкий", "Эпический"]
-const RARITY_COLORS := [Color(0.85, 0.82, 0.75), Color(0.35, 0.6, 1.0), Color(0.75, 0.4, 1.0)]
+const RARITY_NAMES := ["Обычный", "Редкий", "Эпический", "Легендарный"]
+const RARITY_COLORS := [Color(0.85, 0.82, 0.75), Color(0.35, 0.6, 1.0), Color(0.75, 0.4, 1.0), Color(1.0, 0.6, 0.15)]
 const TYPE_NAMES := ["Снаряжение", "Используемое", "Ресурс"]
 
 @export var id: StringName
@@ -16,6 +16,11 @@ const TYPE_NAMES := ["Снаряжение", "Используемое", "Рес
 @export var icon: Texture2D
 @export var item_type: ItemType = ItemType.MATERIAL
 @export var rarity: Rarity = Rarity.COMMON
+## Power tier (1 = starting gear … 10+ = deep floors). Loot tables never give
+## items above the level allowed for the floor (LootTable.item_level_cap).
+@export var item_level: int = 1
+## Unique / legendary: only from bosses, special rooms and floors 8+.
+@export var unique: bool = false
 @export_range(1, 999) var max_stack: int = 1
 ## Bonuses keyed by StatTypes names (only applied while equipped).
 @export var stat_bonuses: Dictionary = {}
@@ -57,7 +62,7 @@ func make_instance() -> ItemData:
 	return inst
 
 
-const AUTO_PRICES := {ItemType.EQUIPMENT: [30, 120, 400], ItemType.USABLE: [15, 50, 120], ItemType.MATERIAL: [4, 20, 60]}
+const AUTO_PRICES := {ItemType.EQUIPMENT: [30, 120, 400, 1000], ItemType.USABLE: [15, 50, 120, 300], ItemType.MATERIAL: [4, 20, 60, 150]}
 const SELL_FACTOR := 0.4
 
 

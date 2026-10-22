@@ -20,7 +20,7 @@ func _activate(player: Node) -> bool:
 	AudioManager.play_sfx(&"skill_cast", global_position)
 	var roll := randf()
 	if roll < 0.4:
-		_reward_item(&"chest_rare", level.floor_number if level else 1)
+		_reward_item(&"special", level.floor_number if level else 1)
 		EventBus.message.emit("Алтарь принимает жертву и дарит сокровище")
 	elif roll < 0.7:
 		var stat: String = StatTypes.PRIMARY.pick_random()

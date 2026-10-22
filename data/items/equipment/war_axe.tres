@@ -38,6 +38,7 @@ description = "Тяжёлый, медленный и очень убедител
 icon = ExtResource("1_iidf5")
 item_type = 0
 rarity = 1
+item_level = 5
 max_stack = 1
 stat_bonuses = {
 "speed": -5,

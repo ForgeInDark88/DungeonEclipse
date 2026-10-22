@@ -11,6 +11,7 @@ description = "Тёмный кристалл. После забега уходи
 icon = ExtResource("1_icon")
 item_type = 2
 rarity = 1
+item_level = 3
 max_stack = 99
 stat_bonuses = {}
 price = 40

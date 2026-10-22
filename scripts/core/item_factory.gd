@@ -40,7 +40,7 @@ static func _roll_affixes(w: WeaponItemData, floor_number: int, rng: RandomNumbe
 	match w.rarity:
 		ItemData.Rarity.RARE:
 			count = 1
-		ItemData.Rarity.EPIC:
+		ItemData.Rarity.EPIC, ItemData.Rarity.LEGENDARY:
 			count = 2
 	var pool: Array[AffixData] = []
 	for a in ItemDatabase.affixes:

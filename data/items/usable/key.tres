@@ -22,6 +22,7 @@ description = "Открывает золотые сундуки."
 icon = ExtResource("3_yqhxh")
 item_type = 1
 rarity = 1
+item_level = 2
 max_stack = 5
 stat_bonuses = {}
 price = 45
