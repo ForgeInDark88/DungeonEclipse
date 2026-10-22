@@ -20,7 +20,6 @@ const DROP_THROUGH_TIME := 0.25
 const CLIMB_SPEED := 75.0
 const INVULNERABLE_TIME := 0.7
 const PLATFORM_LAYER := 2
-const BASE_LIGHT_SCALE := 1.4
 const PROJECTILE_SCENE := preload("res://scenes/world/projectile.tscn")
 
 var hero: Hero
@@ -41,7 +40,6 @@ var _casting_icon: Texture2D
 ## Multiplier of the skill being cast (weapon synergy, SkillData.power_with); read by skill effects.
 var skill_power := 1.0
 var _external_velocity := Vector2.ZERO
-var _light_tween: Tween
 var _hint := ""
 var _dash_time := 0.0
 var _afterimage_timer := 0.0
@@ -54,15 +52,12 @@ const REVEAL_RADIUS := 7
 @onready var visual: HeroVisual = $Visual
 @onready var animator: HeroAnimator = $Animator
 @onready var camera: Camera2D = $Camera2D
-@onready var light: PointLight2D = $PointLight2D
 @onready var interact_area: Area2D = $InteractArea
 @onready var status: StatusEffects = $StatusEffects
 
 
 func _ready() -> void:
 	add_to_group("player")
-	light.texture = AssetPaths.tex(AssetPaths.LIGHT)
-	light.texture_scale = BASE_LIGHT_SCALE
 	animator.setup(visual)
 	var sv := StatusVisual.new()
 	add_child(sv)
@@ -82,7 +77,6 @@ func setup(p_hero: Hero, p_level: DungeonLevel) -> void:
 
 
 func apply_biome(biome: BiomeData) -> void:
-	light.color = biome.hero_light_color
 	($AmbientDust as CPUParticles2D).color = biome.ambient_particles
 
 
@@ -348,6 +342,12 @@ func _perform_attack(w: WeaponItemData, dir: float) -> void:
 	var reach := w.reach if w else 16.0
 	var thrust := w != null and w.attack_pattern == WeaponItemData.Pattern.THRUST
 	var color := w.damage_color() if w else Color.WHITE
+	# The weapon stops at the wall: shorter swing, sparks where it hits the brick.
+	var free := LineOfSight.free_length(self, _attack_origin(), Vector2(dir, 0), reach + 4.0)
+	if free < reach:
+		reach = maxf(free, 4.0)
+		Fx.sparks(get_parent(), _attack_origin() + Vector2(dir * free, 0), Color(1.0, 0.9, 0.6), 4, 50.0)
+		AudioManager.play_sfx(&"dig", global_position, -10.0)
 	SlashTrail.spawn(get_parent(), global_position + Vector2(dir * 4.0, -12.0), dir, reach, thrust, color)
 	var hits := _melee_targets(reach, thrust, dir)
 	for enemy in hits:
@@ -378,9 +378,15 @@ func _melee_targets(reach: float, thrust: bool, dir: float) -> Array[Node]:
 	for hit in get_world_2d().direct_space_state.intersect_shape(query, 16):
 		var body: Node = hit["collider"]
 		if body.is_in_group("enemies") and body not in result:
-			if thrust or (body.global_position.x - global_position.x) * dir > -6.0:
+			if (thrust or (body.global_position.x - global_position.x) * dir > -6.0) \
+					and LineOfSight.can_hit(self, _attack_origin(), body):
 				result.append(body)
 	return result
+
+
+## Where the weapon starts: the hero's hands.
+func _attack_origin() -> Vector2:
+	return global_position + Vector2(0, -12)
 
 
 ## Applies damage, knockback and the weapon's on-hit effects.
@@ -419,7 +425,7 @@ func _shoot(w: WeaponItemData, dir: float) -> void:
 			if is_instance_valid(enemy) and not enemy.is_dead():
 				hero.apply_passive_hits(self, enemy, _dmg)
 		hero.wear_weapon(1)
-	level.add_entity(p, global_position + Vector2(dir * 10.0, -13.0))
+	level.add_entity(p, LineOfSight.safe_point(self, global_position + Vector2(0, -13.0), global_position + Vector2(dir * 10.0, -13.0)))
 
 
 ## Called by enemies, enemy projectiles and traps. Elemental damage
@@ -517,15 +523,6 @@ func get_buffs() -> Array[Dictionary]:
 		out.append({"key": key, "left": _buffs[key], "duration": info.get("duration", 1.0),
 				"icon": info.get("icon"), "tint": info.get("tint", Color.WHITE)})
 	return out
-
-
-func boost_light(scale_mult: float, duration: float) -> void:
-	if _light_tween:
-		_light_tween.kill()
-	_light_tween = create_tween()
-	_light_tween.tween_property(light, "texture_scale", BASE_LIGHT_SCALE * scale_mult, 0.5)
-	_light_tween.tween_interval(duration)
-	_light_tween.tween_property(light, "texture_scale", BASE_LIGHT_SCALE, 2.0)
 
 
 # ------------------------------------------------------- skills and items

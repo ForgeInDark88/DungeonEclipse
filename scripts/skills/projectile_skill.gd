@@ -38,7 +38,8 @@ func execute(caster: Node, level: int) -> bool:
 		p.pierce = pierce
 		p.blast_radius = blast_radius
 		p.blast_color = color
-		level_node.add_entity(p, caster.global_position + Vector2(caster.facing * 8.0, -11.0))
+		var origin: Vector2 = caster.global_position + Vector2(0, -11.0)
+		level_node.add_entity(p, LineOfSight.safe_point(caster, origin, origin + Vector2(caster.facing * 8.0, 0)))
 	return true
 
 

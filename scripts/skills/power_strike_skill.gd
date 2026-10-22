@@ -10,8 +10,10 @@ extends SkillEffect
 func execute(caster: Node, level: int) -> bool:
 	var front: Vector2 = caster.global_position + Vector2(caster.facing * reach * 0.6, -10)
 	var mult := damage_multiplier + damage_per_level * (level - 1)
+	var origin: Vector2 = caster.global_position + Vector2(0, -12)
 	for enemy in caster.get_tree().get_nodes_in_group("enemies"):
-		if enemy.global_position.distance_to(front) <= reach:
+		# Damage first (with the walls as they are), the bricks break afterwards.
+		if enemy.global_position.distance_to(front) <= reach and LineOfSight.can_hit(caster, origin, enemy):
 			var d: Dictionary = caster.roll_damage(mult)
 			enemy.take_damage(d["amount"], d["crit"], caster.global_position)
 	var lvl: DungeonLevel = caster.level

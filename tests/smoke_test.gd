@@ -533,6 +533,15 @@ func _test_scenes() -> void:
 			player.level.start_position(), player.level.kind_at(player.global_position + Vector2(0, 4)), player.velocity, player.climbing])
 	await shot("03_game_start")
 	await _test_qol(game, player)
+	check(ItemDatabase.items.get(&"torch") == null, "no torch item in the game")
+	var old_brightness := SaveManager.brightness
+	SaveManager.brightness = 1.3
+	SaveManager.save_settings()
+	var post := (game.get_node("PostFX/Rect") as ColorRect).material as ShaderMaterial
+	check(is_equal_approx(float(post.get_shader_parameter("brightness")), 1.3), "brightness setting reaches the world shader")
+	SaveManager.brightness = old_brightness
+	SaveManager.save_settings()
+	check(not player.has_node("PointLight2D") and (game.get_node("Ambient") as CanvasModulate).color.v > 0.8, "bright dungeon: no hero light circle, light ambient")
 	var x0 := player.global_position.x
 	Input.action_press("move_right")
 	await frames(30)
@@ -614,14 +623,16 @@ func _test_scenes() -> void:
 	await frames(2)
 	check(player.visual._held_default == bow.icon, "bow in hand after equip")
 	player._attack_cooldown = 0.0
+	# Counted on creation: next to a wall the arrow bursts in its first frame.
+	var arrows := [0]
+	var count_arrow := func(n: Node) -> void:
+		if n is Projectile:
+			arrows[0] += 1
+	player.level.entities.child_entered_tree.connect(count_arrow)
 	player.attack()
-	var arrows := 0
-	for i in 30:
-		await frames(1)
-		for n in player.level.entities.get_children():
-			if n is Projectile:
-				arrows += 1
-	check(arrows > 0, "bow shoots an arrow")
+	await frames(30)
+	player.level.entities.child_entered_tree.disconnect(count_arrow)
+	check(arrows[0] > 0, "bow shoots an arrow")
 	player.camera.zoom = Vector2(4, 4)
 	await shot("12a_bow_zoom")
 	player.camera.zoom = Vector2.ONE
@@ -868,8 +879,9 @@ func _test_scenes() -> void:
 	player.use_item(ItemDatabase.get_item(&"health_potion"))
 	check(player.hero.stats.hp > hp, "potion heals")
 	var bombs := player.hero.inventory.count_of(&"bomb")
-	await press("quick_3")
-	check(player.hero.inventory.count_of(&"bomb") == bombs - 1, "quick slot 3 throws bomb")
+	var bomb_slot := player.hero.quick_bar.items.find(ItemDatabase.get_item(&"bomb"))
+	await press("quick_%d" % (bomb_slot + 1))
+	check(player.hero.inventory.count_of(&"bomb") == bombs - 1, "quick slot %d throws bomb" % (bomb_slot + 1))
 	await frames(120)
 	# damage enemies
 	var enemies := get_tree().get_nodes_in_group("enemies")
@@ -1054,6 +1066,15 @@ func _test_scenes() -> void:
 	game._load_floor()
 	await frames(5)
 	player = get_tree().get_first_node_in_group("player") as Player
+	# F3: AI overlay (paths, sight, states).
+	await press("debug_ai")
+	check(AIDebug.enabled, "F3 turns the AI overlay on")
+	for e in get_tree().get_nodes_in_group("enemies"):
+		e.hear(player.global_position)
+	await frames(40)
+	await shot("16_ai_debug")
+	await press("debug_ai")
+	check(not AIDebug.enabled, "F3 turns it off")
 	# next floor
 	GameState.next_floor()
 	await frames(10)

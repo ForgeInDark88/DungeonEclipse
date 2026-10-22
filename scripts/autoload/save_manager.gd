@@ -12,6 +12,8 @@ var music_volume: float = 0.6
 var sfx_volume: float = 0.8
 var ui_volume: float = 0.7
 var fullscreen: bool = false
+## World brightness multiplier (Settings → «Яркость»).
+var brightness: float = 1.0
 var show_damage_numbers: bool = true
 var show_hints: bool = true
 ## Ids of beginner hints already shown (HintManager).
@@ -38,6 +40,7 @@ func load_settings() -> void:
 	sfx_volume = cfg.get_value("audio", "sfx_volume", sfx_volume)
 	ui_volume = cfg.get_value("audio", "ui_volume", ui_volume)
 	fullscreen = cfg.get_value("video", "fullscreen", fullscreen)
+	brightness = cfg.get_value("video", "brightness", brightness)
 	show_damage_numbers = cfg.get_value("game", "damage_numbers", show_damage_numbers)
 	show_hints = cfg.get_value("game", "hints", show_hints)
 	seen_hints = cfg.get_value("game", "seen_hints", [])
@@ -51,6 +54,7 @@ func save_settings() -> void:
 	cfg.set_value("audio", "sfx_volume", sfx_volume)
 	cfg.set_value("audio", "ui_volume", ui_volume)
 	cfg.set_value("video", "fullscreen", fullscreen)
+	cfg.set_value("video", "brightness", brightness)
 	cfg.set_value("game", "damage_numbers", show_damage_numbers)
 	cfg.set_value("game", "hints", show_hints)
 	cfg.set_value("game", "seen_hints", seen_hints)

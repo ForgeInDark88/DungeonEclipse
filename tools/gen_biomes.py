@@ -25,19 +25,21 @@ import gen_sheets as gs
 
 A = gp.A
 
+# Background colors (back wall, parallax) are only a little darker than the
+# foreground stone: the dungeon is lit evenly, depth comes from the shading.
 BIOMES = {
-    "catacombs": dict(stone=(92, 70, 58), bedrock=(46, 42, 52), mortar=(50, 36, 30), back=(34, 28, 32),
+    "catacombs": dict(stone=(92, 70, 58), bedrock=(46, 42, 52), mortar=(50, 36, 30), back=(64, 54, 58),
                       top=(150, 140, 120), top_kind="dust", ore=(200, 140, 90), ore_glow=(255, 170, 90),
-                      wood=(120, 82, 48), sky=(18, 14, 22), far=(30, 24, 34), mid=(44, 36, 46), near=(60, 50, 58)),
-    "fungal": dict(stone=(52, 74, 78), bedrock=(30, 40, 46), mortar=(24, 36, 40), back=(20, 32, 34),
+                      wood=(120, 82, 48), sky=(44, 36, 50), far=(62, 52, 68), mid=(80, 68, 82), near=(98, 84, 92)),
+    "fungal": dict(stone=(52, 74, 78), bedrock=(30, 40, 46), mortar=(24, 36, 40), back=(38, 58, 60),
                    top=(60, 200, 170), top_kind="moss", ore=(80, 230, 240), ore_glow=(120, 255, 255),
-                   wood=(90, 70, 60), sky=(8, 18, 20), far=(16, 34, 36), mid=(22, 50, 52), near=(30, 70, 70)),
-    "ruins": dict(stone=(150, 132, 100), bedrock=(80, 72, 60), mortar=(100, 86, 64), back=(58, 50, 42),
+                   wood=(90, 70, 60), sky=(18, 38, 40), far=(32, 62, 64), mid=(42, 84, 86), near=(54, 104, 104)),
+    "ruins": dict(stone=(150, 132, 100), bedrock=(80, 72, 60), mortar=(100, 86, 64), back=(100, 88, 74),
                   top=(80, 150, 60), top_kind="grass", ore=(230, 200, 80), ore_glow=(255, 230, 120),
-                  wood=(130, 95, 60), sky=(26, 22, 18), far=(44, 38, 32), mid=(64, 56, 46), near=(84, 74, 60)),
-    "lava": dict(stone=(70, 40, 38), bedrock=(30, 18, 18), mortar=(40, 20, 18), back=(36, 18, 16),
+                  wood=(130, 95, 60), sky=(56, 50, 42), far=(80, 70, 58), mid=(100, 88, 72), near=(120, 106, 86)),
+    "lava": dict(stone=(70, 40, 38), bedrock=(30, 18, 18), mortar=(40, 20, 18), back=(70, 36, 30),
                  top=(255, 120, 30), top_kind="magma", ore=(255, 80, 40), ore_glow=(255, 140, 60),
-                 wood=(70, 50, 40), sky=(30, 8, 6), far=(50, 16, 12), mid=(70, 24, 16), near=(90, 34, 20)),
+                 wood=(70, 50, 40), sky=(60, 18, 12), far=(90, 32, 22), mid=(110, 44, 28), near=(130, 58, 34)),
 }
 
 

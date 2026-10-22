@@ -1,6 +1,7 @@
 class_name AreaBlastSkill
 extends SkillEffect
-## Damages every enemy around the caster (optionally breaks bricks, slows).
+## Damages every enemy around the caster in plain view (walls shield;
+## optionally breaks bricks afterwards, stuns).
 
 @export var radius: float = 48.0
 @export var radius_per_level: float = 6.0
@@ -20,7 +21,8 @@ func execute(caster: Node, level: int) -> bool:
 	var r := radius + radius_per_level * (level - 1)
 	var mult := damage_multiplier + damage_per_level * (level - 1)
 	for enemy in caster.get_tree().get_nodes_in_group("enemies"):
-		if enemy.global_position.distance_to(center) <= r:
+		# Walls shield (checked before bricks break).
+		if enemy.global_position.distance_to(center) <= r and LineOfSight.can_hit(caster, center, enemy):
 			var d: Dictionary = caster.roll_damage(mult)
 			enemy.take_damage(d["amount"], d["crit"], center, damage_type)
 			if enemy.hp > 0:

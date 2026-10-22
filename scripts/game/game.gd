@@ -41,6 +41,13 @@ func _ready() -> void:
 	skill_tree = SkillTreeBook.new()
 	add_child(skill_tree)
 	skill_tree.setup(hero)
+	# F3: monster AI overlay. Own layer that follows the camera, so the world
+	# light tint does not affect it.
+	var debug_layer := CanvasLayer.new()
+	debug_layer.layer = 5
+	debug_layer.follow_viewport_enabled = true
+	add_child(debug_layer)
+	debug_layer.add_child(AIDebugDraw.new())
 	hints = HintManager.new()
 	add_child(hints)
 	hints.setup(player)
@@ -51,6 +58,7 @@ func _ready() -> void:
 	EventBus.screen_shake.connect(func(s: float) -> void: _shake = maxf(_shake, s))
 	EventBus.floor_changed.connect(func(_f: int) -> void: _load_floor.call_deferred())
 	EventBus.player_died.connect(_on_player_died)
+	SaveManager.settings_changed.connect(_apply_brightness)
 	EventBus.shop_requested.connect(_open_shop)
 	EventBus.boss_spawned.connect(func(b: Node) -> void: AudioManager.play_music((b as Boss).boss.music))
 	EventBus.boss_defeated.connect(func(_b: BossData, _p: Vector2) -> void:
@@ -86,11 +94,11 @@ func _load_floor() -> void:
 		EventBus.message.emit("Этаж %d — %s" % [floor_number, biome.display_name] if biome else "Этаж %d" % floor_number)
 
 
-## Palette, light, parallax and post effects of the biome.
+## Palette, ambient light, parallax and post effects of the biome.
 func _apply_biome(biome: BiomeData) -> void:
 	if biome == null:
 		return
-	($Darkness as CanvasModulate).color = biome.darkness
+	($Ambient as CanvasModulate).color = biome.ambient
 	AudioManager.play_music(biome.music)
 	player.apply_biome(biome)
 	var textures := [biome.parallax_far, biome.parallax_mid, biome.parallax_near]
@@ -98,16 +106,22 @@ func _apply_biome(biome: BiomeData) -> void:
 	for i in layers.size():
 		var sprite: Sprite2D = layers[i].get_child(0)
 		sprite.texture = textures[i]
-		# The parallax is its own canvas layer: darken it like the world.
-		sprite.modulate = biome.darkness.lightened(0.25 + 0.1 * i)
+		# Only a light shading of the far layers, for depth.
+		sprite.modulate = biome.ambient.darkened(0.22 - 0.07 * i)
 		layers[i].visible = textures[i] != null
 	var m := ($PostFX/Rect as ColorRect).material as ShaderMaterial
 	m.set_shader_parameter("tint", biome.grade_tint)
 	m.set_shader_parameter("saturation", biome.saturation)
 	m.set_shader_parameter("contrast", biome.contrast)
-	m.set_shader_parameter("vignette", biome.vignette)
+	_apply_brightness()
 	m.set_shader_parameter("fog_color", biome.fog_color)
 	m.set_shader_parameter("fog_amount", biome.fog_amount)
+
+
+## Settings → «Яркость»: multiplies the picture of the world (not the HUD).
+func _apply_brightness() -> void:
+	var m := ($PostFX/Rect as ColorRect).material as ShaderMaterial
+	m.set_shader_parameter("brightness", SaveManager.brightness)
 
 
 func _process(delta: float) -> void:

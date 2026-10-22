@@ -201,15 +201,6 @@ def icon_bomb():
     return im
 
 
-def icon_torch():
-    im = new(16, 16)
-    d = ImageDraw.Draw(im)
-    d.line((4, 15, 9, 8), fill=(120, 80, 40, 255), width=2)
-    d.ellipse((7, 2, 13, 9), fill=(255, 120, 20, 255))
-    d.ellipse((9, 4, 12, 8), fill=(255, 230, 80, 255))
-    return im
-
-
 def icon_rope():
     im = new(16, 16)
     d = ImageDraw.Draw(im)
@@ -754,7 +745,6 @@ def main() -> None:
         "big_health_potion": icon_potion((255, 60, 90, 255)),
         "mana_crystal": icon_crystal(),
         "bomb": icon_bomb(),
-        "torch": icon_torch(),
         "rope": icon_rope(),
         "key": icon_key(),
         "pickaxe": icon_pickaxe(),

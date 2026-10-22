@@ -49,12 +49,6 @@ position = Vector2(0, -10)
 position_smoothing_enabled = true
 position_smoothing_speed = 8.0
 
-[node name="PointLight2D" type="PointLight2D" parent="."]
-position = Vector2(0, -12)
-color = Color(1, 0.86, 0.65, 1)
-energy = 1.5
-shadow_enabled = false
-
 [node name="AmbientDust" type="CPUParticles2D" parent="."]
 position = Vector2(0, -60)
 amount = 40

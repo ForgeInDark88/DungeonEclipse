@@ -1,6 +1,6 @@
 class_name DamageNumber
 extends Label
-## Floating number / text in the world. Not affected by dungeon darkness.
+## Floating number / text in the world. Not affected by the world light tint.
 
 
 ## `size_mult` > 1 for critical hits: bigger font and a pop.

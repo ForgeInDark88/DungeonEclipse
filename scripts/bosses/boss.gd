@@ -228,7 +228,8 @@ func _shockwave(a: BossAttack) -> void:
 	EventBus.screen_shake.emit(8.0)
 	Fx.dust(get_parent(), global_position, true)
 	Fx.explosion(get_parent(), global_position + Vector2(0, -4), a.radius, Color(0.9, 0.8, 0.6))
-	if _player and _player.global_position.distance_to(global_position) <= a.radius + 6.0:
+	if _player and _player.global_position.distance_to(global_position) <= a.radius + 6.0 \
+			and LineOfSight.can_hit(self, global_position + Vector2(0, -8), _player):
 		_player.take_damage(roundi(damage * a.damage_mult), global_position, a.damage_type)
 		_apply_attack_effects(a, _player)
 
@@ -262,7 +263,8 @@ func _drop_fire(spot: Vector2, a: BossAttack, dmg: int) -> void:
 	p.blast_color = Color(1.0, 0.45, 0.15)
 	p.lifetime = 2.0
 	p.on_hit = func(target: Node, _d: int) -> void: _apply_attack_effects(a, target)
-	lvl.add_entity(p, spot + Vector2(0, -150))
+	# Falls from below the ceiling, never from inside the bricks.
+	lvl.add_entity(p, LineOfSight.safe_point(self, spot + Vector2(0, -8), spot + Vector2(0, -150)))
 
 
 func _summon(a: BossAttack) -> void:
@@ -292,7 +294,8 @@ func _contact_damage() -> void:
 		return
 	var reach := data.collision_size * 0.5 + Vector2(6, 10)
 	var rel := _player.global_position - global_position
-	if absf(rel.x) < reach.x and rel.y > -data.collision_size.y - 10.0 and rel.y < 10.0:
+	if absf(rel.x) < reach.x and rel.y > -data.collision_size.y - 10.0 and rel.y < 10.0 \
+			and LineOfSight.can_hit(self, global_position + Vector2(0, -data.collision_size.y * 0.5), _player):
 		var mult := boss.contact_damage_mult * (2.0 if act == Act.ACTING else 1.0)
 		_player.take_damage(roundi(damage * mult), global_position)
 		_contact_cd = 0.8

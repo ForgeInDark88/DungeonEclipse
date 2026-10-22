@@ -137,7 +137,8 @@ func _spikes(delta: float) -> void:
 func _victims() -> Array[Node]:
 	var out: Array[Node] = []
 	for b in get_overlapping_bodies():
-		if (b.is_in_group("player") and not b.dead) or (b.is_in_group("enemies") and not b.is_dead()):
+		# Monsters know their dungeon: traps never hurt them (see README).
+		if b.is_in_group("player") and not b.dead:
 			out.append(b)
 	return out
 

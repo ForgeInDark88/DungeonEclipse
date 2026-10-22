@@ -30,3 +30,5 @@ signal gold_earned(amount: int)
 signal event_completed(event: Node)
 signal item_bought(item: ItemData)
 signal achievement_unlocked(achievement: AchievementData)
+## A loud sound at `pos` heard by monsters within `radius` (fights, explosions).
+signal noise(pos: Vector2, radius: float)

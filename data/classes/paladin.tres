@@ -49,11 +49,10 @@ starting_items = {
 "mana_crystal": 2,
 "pickaxe": 1,
 "rope": 1,
-"torch": 2,
 "whetstone": 1
 }
 starting_equipment = Array[StringName]([&"club", &"leather_armor"])
-starting_quick_bar = Array[StringName]([&"pickaxe", &"torch", &"mana_crystal", &"health_potion", &"rope"])
+starting_quick_bar = Array[StringName]([&"pickaxe", &"mana_crystal", &"health_potion", &"rope"])
 skills = Array[ExtResource("3_skill")]([ExtResource("4_holy"), ExtResource("5_strike"), ExtResource("6_skin"), ExtResource("7_shield"), ExtResource("sk_blessing"), ExtResource("sk_holy_strike"), ExtResource("sk_light_aura"), ExtResource("sk_righteous_wrath")])
 allowed_weapon_types = Array[int]([6, 0])
 unlock_shards = 20
