@@ -13,6 +13,8 @@ var _goods: GridContainer
 var _gold: Label
 var _repair: Button
 var _heal: Button
+var _identify: Button
+var _uncurse: Button
 var _inv_slots: Array[ItemSlot] = []
 
 
@@ -88,6 +90,14 @@ func _build() -> void:
 	_heal = BookPageScreen.button("", _do_heal)
 	services.add_child(_repair)
 	services.add_child(_heal)
+	var services2 := HBoxContainer.new()
+	services2.alignment = BoxContainer.ALIGNMENT_CENTER
+	services2.add_theme_constant_override("separation", 4)
+	_left.add_child(services2)
+	_identify = BookPageScreen.button("", _do_identify)
+	_uncurse = BookPageScreen.button("", _do_uncurse)
+	services2.add_child(_identify)
+	services2.add_child(_uncurse)
 	var close_btn := BookPageScreen.button("Уйти", close)
 	close_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_left.add_child(close_btn)
@@ -144,6 +154,12 @@ func _on_gold(gold: int) -> void:
 	var hc := Merchant.heal_cost(hero)
 	_heal.text = "Вылечить — %d з." % hc if hc > 0 else "Вы здоровы"
 	_heal.disabled = hc <= 0 or hero.gold < hc
+	var ic := Identify.unidentified_count(hero) * Identify.IDENTIFY_PRICE
+	_identify.text = "Опознать всё — %d з." % ic if ic > 0 else "Опознавать нечего"
+	_identify.disabled = ic <= 0 or hero.gold < ic
+	var uc := Identify.cursed_count(hero) * Identify.UNCURSE_PRICE
+	_uncurse.text = "Снять проклятия — %d з." % uc if uc > 0 else "Проклятий нет"
+	_uncurse.disabled = uc <= 0 or hero.gold < uc
 
 
 func buy(index: int) -> void:
@@ -177,6 +193,7 @@ func sell(index: int) -> void:
 	var price := item.sell_price()
 	hero.inventory.take_at(index, 1)
 	hero.add_gold(price)
+	item.identify()  # the merchant knows what he bought
 	if not item.is_stackable() and merchant.stock.size() < 18:
 		merchant.stock.append(item)
 		_refresh_goods()
@@ -192,6 +209,22 @@ func _do_repair() -> void:
 		if item and item.has_durability and item.is_instance():
 			item.durability = item.max_durability
 	hero.equipment.changed.emit()
+	_on_gold(hero.gold)
+
+
+func _do_identify() -> void:
+	var cost := Identify.unidentified_count(hero) * Identify.IDENTIFY_PRICE
+	if cost <= 0 or not hero.spend_gold(cost):
+		return
+	EventBus.message.emit("Опознано: %s" % ", ".join(Identify.all(hero)))
+	_on_gold(hero.gold)
+
+
+func _do_uncurse() -> void:
+	var cost := Identify.cursed_count(hero) * Identify.UNCURSE_PRICE
+	if cost <= 0 or not hero.spend_gold(cost):
+		return
+	EventBus.message.emit("Проклятия сняты: %d" % Identify.lift_curses(hero))
 	_on_gold(hero.gold)
 
 

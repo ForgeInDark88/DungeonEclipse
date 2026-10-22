@@ -45,6 +45,14 @@ var affixes: Array[AffixData] = []
 ## Blacksmith: upgrade +N and the enchantment bonus (already in stat_bonuses).
 var upgrade_level: int = 0
 var enchant_bonuses: Dictionary = {}
+## Unidentified: only the kind is shown (name and stats hidden) until it is
+## worn, read with a scroll or shown to a merchant. See ItemFactory.mystify.
+var unidentified := false
+var real_name: String = ""
+## Cursed: cannot be taken off; `curse_bonuses` (penalties) are already in
+## stat_bonuses. Merchants lift curses.
+var cursed := false
+var curse_bonuses: Dictionary = {}
 
 
 func is_instance() -> bool:
@@ -81,7 +89,28 @@ func buy_price() -> int:
 
 
 func sell_price() -> int:
-	return maxi(1, roundi(buy_price() * SELL_FACTOR))
+	var mult := (0.5 if unidentified else 1.0) * (0.5 if cursed else 1.0)
+	return maxi(1, roundi(buy_price() * SELL_FACTOR * mult))
+
+
+## Reveals the real name and stats. Returns true if it was unidentified.
+func identify() -> bool:
+	if not unidentified:
+		return false
+	unidentified = false
+	display_name = real_name
+	return true
+
+
+func lift_curse() -> void:
+	if not cursed:
+		return
+	cursed = false
+	for k in curse_bonuses:
+		stat_bonuses[k] = float(stat_bonuses.get(k, 0.0)) - float(curse_bonuses[k])
+		if absf(float(stat_bonuses[k])) < 0.0001:
+			stat_bonuses.erase(k)
+	curse_bonuses = {}
 
 
 ## Bonuses that currently apply (none while broken).

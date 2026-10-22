@@ -55,14 +55,32 @@ func slot_for(item: EquipmentItemData) -> StringName:
 func equip(item: EquipmentItemData, slot_id: StringName) -> EquipmentItemData:
 	if not can_equip_in(item, slot_id):
 		return item
+	if is_locked(slot_id):
+		return item
 	var previous: EquipmentItemData = items[slot_id]
 	items[slot_id] = item
+	# Wearing reveals what the item is (and whether it is cursed).
+	if item.identify():
+		EventBus.message.emit("Опознано: %s" % item.display_name)
+		if item.cursed:
+			EventBus.message.emit("Проклятие! %s не снять — его снимет торговец" % item.display_name)
 	changed.emit()
 	return previous
 
 
+## A cursed item is worn here: it cannot be taken off or replaced.
+func is_locked(slot_id: StringName) -> bool:
+	var it: EquipmentItemData = items.get(slot_id)
+	if it != null and it.cursed:
+		EventBus.message.emit("%s проклят — его не снять" % it.display_name)
+		return true
+	return false
+
+
 func unequip(slot_id: StringName) -> EquipmentItemData:
 	var previous: EquipmentItemData = items.get(slot_id)
+	if previous != null and is_locked(slot_id):
+		return null
 	if previous != null:
 		items[slot_id] = null
 		changed.emit()

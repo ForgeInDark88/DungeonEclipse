@@ -702,6 +702,9 @@ def build():
     usable("detection_scroll", "Свиток обнаружения", C, 2, "Карта этажа проступает на пергаменте.",
            [("detect_effect", [("duration", 30.0)])], stack=5, price=35, anim="attack_cast", sound="skill_cast")
     icon("detection_scroll", "scroll", (90, 200, 120))
+    usable("identify_scroll", "Свиток опознания", C, 1, "Руны шепчут истинные имена вещей.",
+           [("identify_effect", [])], stack=5, price=30, anim="attack_cast", sound="skill_cast")
+    icon("identify_scroll", "scroll", (200, 170, 255))
     usable("healing_scroll", "Свиток исцеления", R, 3, "Молитва, записанная святым отшельником.",
            [("heal_effect", [("amount", 10), ("percent", 0.5)])], stack=5, price=60, anim="attack_cast", sound="skill_cast")
     icon("healing_scroll", "scroll", (255, 230, 120))

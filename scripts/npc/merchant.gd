@@ -4,7 +4,7 @@ extends Area2D
 ## data/loot_tables/merchant.tres plus always-available basics.
 
 const STOCK_TABLE := &"merchant"
-const BASICS: Array[StringName] = [&"health_potion", &"antidote", &"whetstone", &"bomb", &"map_scroll"]
+const BASICS: Array[StringName] = [&"health_potion", &"antidote", &"whetstone", &"bomb", &"map_scroll", &"identify_scroll"]
 const STOCK_ROLLS := 3
 ## Chance that the merchant also sells a pet egg.
 const EGG_CHANCE := 0.35

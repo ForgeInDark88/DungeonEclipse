@@ -99,7 +99,7 @@ func equip_from_inventory(index: int, slot_id: StringName = StringName()) -> boo
 	var item := stack.item as EquipmentItemData
 	if slot_id == StringName():
 		slot_id = equipment.slot_for(item)
-	if not equipment.can_equip_in(item, slot_id):
+	if not equipment.can_equip_in(item, slot_id) or equipment.is_locked(slot_id):
 		return false
 	inventory.take_at(index)
 	var previous := equipment.equip(item, slot_id)
@@ -111,7 +111,7 @@ func equip_from_inventory(index: int, slot_id: StringName = StringName()) -> boo
 ## Moves a worn item back to the backpack (optionally to a given slot).
 func unequip_to_inventory(slot_id: StringName, index: int = -1) -> bool:
 	var item := equipment.get_item(slot_id)
-	if item == null:
+	if item == null or equipment.is_locked(slot_id):
 		return false
 	if index >= 0:
 		var target := inventory.stack_at(index)
@@ -138,6 +138,8 @@ func unequip_to_inventory(slot_id: StringName, index: int = -1) -> bool:
 func move_equipment(from_slot: StringName, to_slot: StringName) -> void:
 	var a := equipment.get_item(from_slot)
 	if a == null or from_slot == to_slot or not equipment.can_equip_in(a, to_slot):
+		return
+	if equipment.is_locked(from_slot) or equipment.is_locked(to_slot):
 		return
 	var b := equipment.get_item(to_slot)
 	equipment.items[to_slot] = a
