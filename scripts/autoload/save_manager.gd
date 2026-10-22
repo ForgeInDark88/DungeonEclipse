@@ -14,6 +14,8 @@ var ui_volume: float = 0.7
 var fullscreen: bool = false
 ## World brightness multiplier (Settings → «Яркость»).
 var brightness: float = 1.0
+## Size of the bottom HUD panel (Settings → «Размер панели»), 0.6–1.0.
+var hud_scale: float = 1.0
 var show_damage_numbers: bool = true
 var show_hints: bool = true
 ## Ids of beginner hints already shown (HintManager).
@@ -41,6 +43,7 @@ func load_settings() -> void:
 	ui_volume = cfg.get_value("audio", "ui_volume", ui_volume)
 	fullscreen = cfg.get_value("video", "fullscreen", fullscreen)
 	brightness = cfg.get_value("video", "brightness", brightness)
+	hud_scale = cfg.get_value("video", "hud_scale", hud_scale)
 	show_damage_numbers = cfg.get_value("game", "damage_numbers", show_damage_numbers)
 	show_hints = cfg.get_value("game", "hints", show_hints)
 	seen_hints = cfg.get_value("game", "seen_hints", [])
@@ -55,6 +58,7 @@ func save_settings() -> void:
 	cfg.set_value("audio", "ui_volume", ui_volume)
 	cfg.set_value("video", "fullscreen", fullscreen)
 	cfg.set_value("video", "brightness", brightness)
+	cfg.set_value("video", "hud_scale", hud_scale)
 	cfg.set_value("game", "damage_numbers", show_damage_numbers)
 	cfg.set_value("game", "hints", show_hints)
 	cfg.set_value("game", "seen_hints", seen_hints)

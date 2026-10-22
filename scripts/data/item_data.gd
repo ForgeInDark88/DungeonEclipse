@@ -42,6 +42,17 @@ const TYPE_NAMES := ["Снаряжение", "Используемое", "Рес
 var template: ItemData
 var durability: int = -1
 var affixes: Array[AffixData] = []
+## Blacksmith: upgrade +N and the enchantment bonus (already in stat_bonuses).
+var upgrade_level: int = 0
+var enchant_bonuses: Dictionary = {}
+## Unidentified: only the kind is shown (name and stats hidden) until it is
+## worn, read with a scroll or shown to a merchant. See ItemFactory.mystify.
+var unidentified := false
+var real_name: String = ""
+## Cursed: cannot be taken off; `curse_bonuses` (penalties) are already in
+## stat_bonuses. Merchants lift curses.
+var cursed := false
+var curse_bonuses: Dictionary = {}
 
 
 func is_instance() -> bool:
@@ -71,14 +82,35 @@ func buy_price() -> int:
 	var p := price if price > 0 else int(AUTO_PRICES[item_type][rarity])
 	if self is WeaponItemData and price <= 0:
 		p = roundi(p * 1.2)
-	p = roundi(p * (1.0 + 0.25 * affixes.size()))
+	p = roundi(p * (1.0 + 0.25 * affixes.size() + 0.2 * upgrade_level + (0.3 if not enchant_bonuses.is_empty() else 0.0)))
 	if has_durability and is_instance() and max_durability > 0:
 		p = roundi(p * (0.4 + 0.6 * float(durability) / max_durability))
 	return maxi(1, p)
 
 
 func sell_price() -> int:
-	return maxi(1, roundi(buy_price() * SELL_FACTOR))
+	var mult := (0.5 if unidentified else 1.0) * (0.5 if cursed else 1.0)
+	return maxi(1, roundi(buy_price() * SELL_FACTOR * mult))
+
+
+## Reveals the real name and stats. Returns true if it was unidentified.
+func identify() -> bool:
+	if not unidentified:
+		return false
+	unidentified = false
+	display_name = real_name
+	return true
+
+
+func lift_curse() -> void:
+	if not cursed:
+		return
+	cursed = false
+	for k in curse_bonuses:
+		stat_bonuses[k] = float(stat_bonuses.get(k, 0.0)) - float(curse_bonuses[k])
+		if absf(float(stat_bonuses[k])) < 0.0001:
+			stat_bonuses.erase(k)
+	curse_bonuses = {}
 
 
 ## Bonuses that currently apply (none while broken).

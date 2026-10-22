@@ -471,6 +471,18 @@ SHAPES = {
 }
 
 
+def ic_egg(c, spots):
+    im, d = _img()
+    d.ellipse((4, 2, 12, 14), fill=col(c))
+    d.ellipse((5, 3, 8, 7), fill=gp.shade(col(c), 1.3))
+    for x, y in ((9, 6), (6, 10), (10, 11)):
+        d.rectangle((x, y, x + 1, y + 1), fill=col(spots))
+    return im
+
+
+SHAPES["egg"] = ic_egg
+
+
 def icon(item_id, shape, *args):
     ICONS[item_id] = SHAPES[shape](*args)
 
@@ -690,6 +702,9 @@ def build():
     usable("detection_scroll", "Свиток обнаружения", C, 2, "Карта этажа проступает на пергаменте.",
            [("detect_effect", [("duration", 30.0)])], stack=5, price=35, anim="attack_cast", sound="skill_cast")
     icon("detection_scroll", "scroll", (90, 200, 120))
+    usable("identify_scroll", "Свиток опознания", C, 1, "Руны шепчут истинные имена вещей.",
+           [("identify_effect", [])], stack=5, price=30, anim="attack_cast", sound="skill_cast")
+    icon("identify_scroll", "scroll", (200, 170, 255))
     usable("healing_scroll", "Свиток исцеления", R, 3, "Молитва, записанная святым отшельником.",
            [("heal_effect", [("amount", 10), ("percent", 0.5)])], stack=5, price=60, anim="attack_cast", sound="skill_cast")
     icon("healing_scroll", "scroll", (255, 230, 120))
@@ -766,8 +781,103 @@ def build():
     icon("moon_crystal", "orb", (170, 180, 255))
 
 
+RECIPES = [  # id, result, count, ingredients, gold
+    ("r_small_potion", "small_health_potion", 2, {"slime_gel": 2, "bone": 1}, 0),
+    ("r_health_potion", "health_potion", 1, {"slime_gel": 2, "monster_fang": 1}, 0),
+    ("r_antidote", "antidote", 1, {"slime_gel": 1, "bone": 1}, 0),
+    ("r_mana_potion", "mana_potion", 1, {"slime_gel": 2}, 10),
+    ("r_bomb", "bomb", 2, {"iron_ore": 2, "bone": 1}, 0),
+    ("r_fire_bomb", "fire_bomb", 1, {"bomb": 1, "ember_essence": 1}, 0),
+    ("r_ice_bomb", "ice_bomb", 1, {"bomb": 1, "frost_essence": 1}, 0),
+    ("r_poison_bomb", "poison_bomb", 1, {"bomb": 1, "slime_gel": 2}, 0),
+    ("r_rope", "rope", 1, {"cloth_roll": 1}, 0),
+    ("r_long_rope", "long_rope", 1, {"rope": 2}, 0),
+    ("r_lockpick", "lockpick", 2, {"iron_ore": 1}, 0),
+    ("r_whetstone", "whetstone", 1, {"iron_ore": 2}, 0),
+    ("r_leather_armor", "leather_armor", 1, {"leather_scrap": 4}, 0),
+    ("r_wanderer_gloves", "wanderer_gloves", 1, {"leather_scrap": 3, "cloth_roll": 1}, 0),
+    ("r_iron_ring", "iron_ring", 1, {"iron_ore": 3}, 15),
+    ("r_steel_pickaxe", "steel_pickaxe", 1, {"pickaxe": 1, "iron_ore": 4, "gold_ore": 1}, 30),
+]
+
+
+def recipes():
+    for order, (rid, result, count, ingredients, gold) in enumerate(RECIPES):
+        t = Tres("RecipeData")
+        t.write(os.path.join(DATA, "recipes", rid + ".tres"), [
+            ("script", t.ext_res("Script", "res://scripts/data/recipe_data.gd")), ("id", SN(rid)), ("result", SN(result)),
+            ("count", count), ("ingredients", ingredients), ("gold", gold), ("order", order)])
+
+
+BLESSING, CURSE = 0, 1
+PACTS = [  # id, kind, name, description, stats, effects, min_floor
+    ("b_might", BLESSING, "Сила предков", "+2 к урону", {"damage": 2}, {}, 1),
+    ("b_stone", BLESSING, "Каменная кожа", "+6 к броне", {"armor": 6}, {}, 1),
+    ("b_vigor", BLESSING, "Живучесть", "+25 к здоровью", {"max_hp": 25}, {}, 1),
+    ("b_swift", BLESSING, "Лёгкие ноги", "+15 к скорости", {"speed": 15}, {}, 1),
+    ("b_eagle", BLESSING, "Глаз орла", "+8% к шансу крита", {"crit_chance": 0.08}, {}, 1),
+    ("b_greed", BLESSING, "Дар жадности", "+40% золота с монстров", {}, {"gold": 0.4}, 1),
+    ("b_wisdom", BLESSING, "Мудрость", "+30% опыта", {}, {"xp": 0.3}, 1),
+    ("b_spring", BLESSING, "Источник жизни", "+0.6 HP в секунду", {"hp_regen": 0.6}, {}, 2),
+    ("b_wings", BLESSING, "Крылья", "Ещё один прыжок в воздухе", {"extra_jumps": 1}, {}, 3),
+    ("b_wards", BLESSING, "Обереги", "+15% ко всем сопротивлениям",
+     {"res_fire": 0.15, "res_ice": 0.15, "res_poison": 0.15, "res_magic": 0.15}, {}, 2),
+    ("b_mind", BLESSING, "Ясный ум", "+3 к интеллекту, +15 маны", {"intellect": 3, "max_mana": 15}, {}, 1),
+    ("b_titan", BLESSING, "Мощь титана", "+3 к силе и выносливости", {"strength": 3, "vitality": 3}, {}, 4),
+    ("c_frail", CURSE, "Хрупкость", "−20 к здоровью", {"max_hp": -20}, {}, 1),
+    ("c_brittle", CURSE, "Ржавые доспехи", "−5 к броне", {"armor": -5}, {}, 1),
+    ("c_heavy", CURSE, "Тяжесть", "−12 к скорости", {"speed": -12}, {}, 1),
+    ("c_rage", CURSE, "Ярость тьмы", "Монстры бьют на 20% сильнее", {}, {"enemy_damage": 0.2}, 1),
+    ("c_hide", CURSE, "Толстокожие враги", "У монстров на 25% больше здоровья", {}, {"enemy_hp": 0.25}, 1),
+    ("c_poverty", CURSE, "Нищета", "−35% золота с монстров", {}, {"gold": -0.35}, 1),
+    ("c_fog", CURSE, "Туман разума", "−25% опыта", {}, {"xp": -0.25}, 1),
+    ("c_weak", CURSE, "Слабость", "−2 к силе и ловкости", {"strength": -2, "agility": -2}, {}, 1),
+    ("c_drain", CURSE, "Иссушение", "−20 маны, −2 к интеллекту", {"max_mana": -20, "intellect": -2}, {}, 1),
+]
+
+
+def pacts():
+    for pid, kind, name, desc, stats, effects, min_floor in PACTS:
+        t = Tres("RunPactData")
+        t.write(os.path.join(DATA, "pacts", pid + ".tres"), [
+            ("script", t.ext_res("Script", "res://scripts/data/run_pact_data.gd")), ("id", SN(pid)),
+            ("display_name", name), ("description", desc), ("kind", kind), ("stats", stats),
+            ("effects", effects), ("min_floor", min_floor)])
+
+
+PETS = [  # id, name, description, sheet, tint, damage, dtype, cooldown, speed, status, gold_radius, egg rarity, egg level, egg colors
+    ("owl", "Совёнок", "Клюёт врагов.", "owl", (1, 1, 1), 5, PHYS, 1.1, 150.0, ("", 0, 0), 110.0, R, 2,
+     ((170, 130, 80), (90, 60, 30))),
+    ("fire_wisp", "Огонёк", "Поджигает врагов.", "wisp", (1.0, 0.6, 0.25), 3, FIRE, 1.3, 140.0, ("burn", 3.0, 1.0), 110.0, R, 3,
+     ((240, 130, 50), (255, 230, 120))),
+    ("frost_wisp", "Морозный дух", "Замедляет врагов.", "wisp", (0.55, 0.85, 1.0), 3, ICE, 1.3, 140.0, ("slow", 2.5, 0.5), 110.0, R, 3,
+     ((150, 210, 255), (240, 250, 255))),
+    ("coin_bat", "Мышь-копилка", "Слабо кусается, зато собирает золото издалека.", "bat", (1, 1, 1), 2, PHYS, 1.0, 190.0, ("", 0, 0), 240.0, R, 1,
+     ((120, 80, 140), (240, 200, 70))),
+    ("dragonling", "Дракончик", "Сильно кусается и поджигает.", "dragon", (1, 1, 1), 8, FIRE, 1.2, 160.0, ("burn", 2.0, 1.0), 120.0, E, 6,
+     ((200, 60, 45), (255, 200, 80))),
+]
+
+
+def pets():
+    for pid, name, desc, sheet, tint, dmg, dtype, cd, speed, st, gold_r, rarity, level, colors in PETS:
+        t = Tres("PetData")
+        t.write(os.path.join(DATA, "pets", pid + ".tres"), [
+            ("script", t.ext_res("Script", "res://scripts/data/pet_data.gd")), ("id", SN(pid)), ("display_name", name),
+            ("description", desc), ("sheet", "res://assets/sprites/pets/%s_sheet.png" % sheet),
+            ("tint", ("COL", tint[0], tint[1], tint[2], 1.0)), ("damage", dmg), ("damage_type", dtype),
+            ("attack_cooldown", cd), ("speed", speed), ("status", SN(st[0])), ("status_duration", float(st[1])),
+            ("status_power", float(st[2])), ("gold_radius", gold_r)])
+        usable("egg_" + pid, "Яйцо: " + name, rarity, level, "Тёплое. Внутри что-то шевелится.",
+               [("hatch_pet_effect", [("pet", SN(pid))])], stack=1, anim="use", sound="item_use")
+        icon("egg_" + pid, "egg", colors[0], colors[1])
+
+
 def main():
     build()
+    recipes()
+    pacts()
+    pets()
     for item_id, im in ICONS.items():
         gp.save(im, "sprites/items/%s.png" % item_id)
     print("items generated: %d" % len(ICONS))

@@ -1,0 +1,61 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=10 format=3]
+
+[ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="1_gbajf"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_eamu5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/snowball.png" id="2_mls8h"]
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="3_achw7"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="3_cvi2d"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/frost_imp.png" id="4_gycwh"]
+[ext_resource type="Resource" path="res://data/animations/cultist_layout.tres" id="sheet_lay"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/frost_imp_sheet.png" id="sheet_tex"]
+
+[sub_resource type="Resource" id="Resource_0di6u"]
+script = ExtResource("3_cvi2d")
+status = &"slow"
+duration = 2.5
+power = 0.45
+chance = 1.0
+
+[resource]
+script = ExtResource("3_achw7")
+id = &"frost_imp"
+display_name = "Ледяной бесёнок"
+description = "Швыряет снежки, от которых стынут ноги. Держится поодаль."
+texture = ExtResource("4_gycwh")
+sheet = ExtResource("sheet_tex")
+sheet_layout = ExtResource("sheet_lay")
+behavior = 2
+collision_size = Vector2(10, 20)
+max_hp = 18
+damage = 4
+armor = 0
+speed = 34.0
+chase_speed = 46.0
+aggro_range = 180.0
+attack_range = 120.0
+attack_cooldown = 1.8
+jumps = false
+projectile_texture = ExtResource("2_mls8h")
+projectile_speed = 150.0
+xp_reward = 14
+loot_table = ExtResource("1_gbajf")
+loot_chance = 0.4
+gold_min = 3
+gold_max = 8
+min_floor = 2
+spawn_weight = 0.9
+biomes = Array[StringName]([&"fungal", &"ruins", &"catacombs"])
+tint = Color(1, 1, 1, 1)
+resistances = {
+"res_ice": 0.6,
+"res_fire": -0.3
+}
+"res_fire": 0.3,
+"res_magic": 0.4
+}
+status_immunities = Array[StringName]([])
+on_hit_effects = Array[ExtResource("2_eamu5")]([SubResource("Resource_0di6u")])
+sound_hurt = &"enemy_hurt"
+sound_death = &"enemy_death"
+sound_attack = &""
+gender = "m"

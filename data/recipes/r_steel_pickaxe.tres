@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RecipeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/recipe_data.gd" id="e1"]
+
+[resource]
+script = ExtResource("e1")
+id = &"r_steel_pickaxe"
+result = &"steel_pickaxe"
+count = 1
+ingredients = {
+"gold_ore": 1,
+"iron_ore": 4,
+"pickaxe": 1
+}
+gold = 30
+order = 15

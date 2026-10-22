@@ -14,6 +14,7 @@ const TORCH_SCENE := "res://scenes/world/wall_torch.tscn"
 const DRIP_SCENE := "res://scenes/world/water_drip.tscn"
 const TRAP_SCENE := "res://scenes/traps/trap.tscn"
 const MERCHANT_SCENE := "res://scenes/npc/merchant.tscn"
+const SMITH_SCENE := "res://scenes/npc/blacksmith.tscn"
 const BOSS_SCENE := "res://scenes/bosses/boss.tscn"
 ## No traps this close (in cells) to the start.
 const SAFE_START_RADIUS := 8
@@ -36,6 +37,9 @@ var explored_version := 0
 ## Monster navigation (walk graph + flying grid), see LevelNav.
 var nav: LevelNav
 var _nav_dirty := false
+var _nav_timer := 0.0
+## Cells whose look changed (explored or dug): the minimap redraws only these.
+var changed_cells: Array[Vector2i] = []
 
 
 func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeData = null) -> void:
@@ -181,12 +185,22 @@ func _refresh_around(cell: Vector2i) -> void:
 			_apply_tile(c, layout.get_tile(c.x, c.y))
 
 
-## Navigation is rebuilt once per physics frame at most, after digging/bombs/ropes.
-func _physics_process(_delta: float) -> void:
-	if _nav_dirty and nav:
+## Navigation is rebuilt shortly after digging / bombs / ropes: a burst of
+## broken bricks costs one rebuild, not one per brick.
+func _physics_process(delta: float) -> void:
+	if not _nav_dirty or nav == null:
+		return
+	_nav_timer -= delta
+	if _nav_timer <= 0.0:
 		_nav_dirty = false
 		nav.rebuild()
 		AIDebug.log_event(self, "nav", "граф навигации перестроен (v%d)" % nav.version)
+
+
+func _mark_nav_dirty() -> void:
+	if not _nav_dirty:
+		_nav_timer = 0.2
+	_nav_dirty = true
 
 
 # ------------------------------------------------------------- exploration
@@ -201,6 +215,7 @@ func reveal_around(world_pos: Vector2, radius: int) -> void:
 				if explored[i] == 0:
 					explored[i] = 1
 					changed = true
+					changed_cells.append(Vector2i(x, y))
 	if changed:
 		explored_version += 1
 
@@ -265,7 +280,8 @@ func break_tile(cell: Vector2i, effects := true) -> bool:
 	if layout.get_tile(cell.x, cell.y) != T.BRICK:
 		return false
 	layout.set_tile(cell.x, cell.y, T.EMPTY)
-	_nav_dirty = true
+	_mark_nav_dirty()
+	changed_cells.append(cell)
 	var was_ore := ore_cells.erase(cell)
 	_refresh_around(cell)
 	if was_ore:
@@ -308,7 +324,8 @@ func place_rope(cell: Vector2i, max_length: int) -> int:
 		y += 1
 	while count < max_length and layout.get_tile(cell.x, y) == T.EMPTY:
 		layout.set_tile(cell.x, y, T.LADDER)
-		_nav_dirty = true
+		_mark_nav_dirty()
+		changed_cells.append(Vector2i(cell.x, y))
 		_refresh_around(Vector2i(cell.x, y))
 		count += 1
 		y -= 1
@@ -354,6 +371,8 @@ func _spawn_specials() -> void:
 				var m: Merchant = (load(MERCHANT_SCENE) as PackedScene).instantiate()
 				m.floor_number = floor_number
 				add_entity(m, cell_bottom(info["cell"]))
+			&"smith":
+				add_entity((load(SMITH_SCENE) as PackedScene).instantiate(), cell_bottom(info["cell"]))
 			&"event":
 				_spawn_event(info)
 

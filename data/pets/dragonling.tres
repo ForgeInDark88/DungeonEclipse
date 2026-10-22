@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="PetData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/pet_data.gd" id="e1"]
+
+[resource]
+script = ExtResource("e1")
+id = &"dragonling"
+display_name = "Дракончик"
+description = "Сильно кусается и поджигает."
+sheet = "res://assets/sprites/pets/dragon_sheet.png"
+tint = Color(1.0, 1.0, 1.0, 1.0)
+damage = 8
+damage_type = 1
+attack_cooldown = 1.2
+speed = 160.0
+status = &"burn"
+status_duration = 2.0
+status_power = 1.0
+gold_radius = 120.0

@@ -1,0 +1,60 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=10 format=3]
+
+[ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="1_gbajf"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_eamu5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/goo.png" id="2_mls8h"]
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="3_achw7"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="3_cvi2d"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/bog_spitter.png" id="4_gycwh"]
+[ext_resource type="Resource" path="res://data/animations/slime_layout.tres" id="sheet_lay"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/bog_spitter_sheet.png" id="sheet_tex"]
+
+[sub_resource type="Resource" id="Resource_0di6u"]
+script = ExtResource("3_cvi2d")
+status = &"slow"
+duration = 3.0
+power = 0.55
+chance = 1.0
+
+[resource]
+script = ExtResource("3_achw7")
+id = &"bog_spitter"
+display_name = "Болотный плевун"
+description = "Плюётся липкой грязью: попавший в неё еле переставляет ноги."
+texture = ExtResource("4_gycwh")
+sheet = ExtResource("sheet_tex")
+sheet_layout = ExtResource("sheet_lay")
+behavior = 2
+collision_size = Vector2(14, 10)
+max_hp = 26
+damage = 5
+armor = 0
+speed = 22.0
+chase_speed = 30.0
+aggro_range = 180.0
+attack_range = 110.0
+attack_cooldown = 2.2
+jumps = false
+projectile_texture = ExtResource("2_mls8h")
+projectile_speed = 120.0
+xp_reward = 15
+loot_table = ExtResource("1_gbajf")
+loot_chance = 0.4
+gold_min = 3
+gold_max = 8
+min_floor = 3
+spawn_weight = 0.8
+biomes = Array[StringName]([&"fungal", &"catacombs", &"lava"])
+tint = Color(1, 1, 1, 1)
+resistances = {
+"res_poison": 0.5
+}
+"res_fire": 0.3,
+"res_magic": 0.4
+}
+status_immunities = Array[StringName]([])
+on_hit_effects = Array[ExtResource("2_eamu5")]([SubResource("Resource_0di6u")])
+sound_hurt = &"enemy_hurt"
+sound_death = &"enemy_death"
+sound_attack = &""
+gender = "m"

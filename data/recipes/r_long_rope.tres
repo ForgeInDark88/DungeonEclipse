@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RecipeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/recipe_data.gd" id="e1"]
+
+[resource]
+script = ExtResource("e1")
+id = &"r_long_rope"
+result = &"long_rope"
+count = 1
+ingredients = {
+"rope": 2
+}
+gold = 0
+order = 9

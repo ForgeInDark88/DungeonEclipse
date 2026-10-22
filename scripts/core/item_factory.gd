@@ -28,8 +28,38 @@ static func instantiate_loot(loot: Array, floor_number: int, rng: RandomNumberGe
 			out.append(e)
 		else:
 			for i in int(e["count"]):
-				out.append({"item": create(item, floor_number, rng), "count": 1})
+				out.append({"item": mystify(create(item, floor_number, rng), floor_number, rng), "count": 1})
 	return out
+
+
+const UNIDENTIFIED_CHANCE := 0.35
+## Share of unidentified items that are cursed.
+const CURSED_CHANCE := 0.3
+
+
+## Found gear (rare and better, not unique) may come unidentified, and then
+## sometimes cursed: a penalty to a primary stat that cannot be taken off.
+static func mystify(item: ItemData, floor_number: int, rng: RandomNumberGenerator = null) -> ItemData:
+	if not (item is EquipmentItemData) or item.rarity == ItemData.Rarity.COMMON or item.unique:
+		return item
+	if rng == null:
+		rng = RandomNumberGenerator.new()
+		rng.randomize()
+	if rng.randf() >= UNIDENTIFIED_CHANCE:
+		return item
+	if not item.is_instance():
+		item = item.make_instance()
+	item.stat_bonuses = item.stat_bonuses.duplicate()
+	item.real_name = item.display_name
+	item.display_name = "Неопознанный предмет (%s)" % item.subtitle()
+	item.unidentified = true
+	if rng.randf() < CURSED_CHANCE:
+		var stat: String = StatTypes.PRIMARY[rng.randi() % StatTypes.PRIMARY.size()]
+		var penalty := -(2 + floor_number / 3)
+		item.cursed = true
+		item.curse_bonuses = {stat: penalty}
+		item.stat_bonuses[stat] = float(item.stat_bonuses.get(stat, 0.0)) + penalty
+	return item
 
 
 static func _roll_affixes(w: WeaponItemData, floor_number: int, rng: RandomNumberGenerator) -> void:

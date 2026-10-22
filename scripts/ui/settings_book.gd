@@ -51,6 +51,7 @@ func _build() -> void:
 	for entry in [["Общая", "master_volume"], ["Музыка", "music_volume"], ["Звуки", "sfx_volume"], ["Интерфейс", "ui_volume"]]:
 		left.add_child(_volume_row(entry[0], entry[1]))
 	left.add_child(_slider_row("Яркость", "brightness", 0.6, 1.5))
+	left.add_child(_slider_row("Размер панели", "hud_scale", 0.6, 1.0))
 	_fullscreen = _check("Полный экран", SaveManager.fullscreen, func(on: bool) -> void:
 		SaveManager.fullscreen = on
 		SaveManager.apply_settings())

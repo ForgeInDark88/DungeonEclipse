@@ -21,6 +21,13 @@ signal item_collected(item: ItemData, world_pos: Vector2)
 signal trap_disarmed(trap: TrapData)
 ## A merchant wants to open its shop UI.
 signal shop_requested(merchant: Node, player: Node)
+## A blacksmith wants to open the forge UI.
+signal smith_requested(smith: Node, player: Node)
+signal item_crafted(item: ItemData)
+signal pact_taken(pact: RunPactData)
+signal pet_changed(pet: PetData)
+## Kill streak without taking damage (0 = broken).
+signal combo_changed(combo: int)
 signal boss_spawned(boss: Node)
 signal boss_hp_changed(hp: int, max_hp: int)
 signal boss_defeated(boss: BossData, world_pos: Vector2)

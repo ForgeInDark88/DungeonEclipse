@@ -32,6 +32,9 @@ const SHIELD_BUBBLE := SPRITES_DIR + "fx/shield_bubble.png"
 const TRAP_ROCK := SPRITES_DIR + "traps/rock.png"
 const TRAP_CRACK := SPRITES_DIR + "traps/ceiling_crack.png"
 const MERCHANT_SHEET := SPRITES_DIR + "npc/merchant_sheet.png"
+## Pets: one sheet per pet (PetData.sheet), shared frame layout.
+const PET_SCENE := "res://scenes/pets/pet.tscn"
+const PET_LAYOUT := "res://data/animations/pet_layout.tres"
 const MERCHANT_LAYOUT := ANIM_DIR + "merchant_layout.tres"
 const COIN_ICON := UI_DIR + "coin.png"
 ## Sanctum of the Eclipse currency (meta progression).

@@ -8,6 +8,7 @@ const GRAVITY := 700.0
 var item: ItemData
 var count: int = 1
 var _bob := 0.0
+var _settle_check := 0.0
 var _glow: PointLight2D
 
 @onready var sprite: Sprite2D = $Sprite2D
@@ -37,10 +38,15 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	velocity.y = minf(velocity.y + GRAVITY * delta, 400.0)
-	if is_on_floor():
-		velocity.x = move_toward(velocity.x, 0.0, 400.0 * delta)
-	move_and_slide()
+	# Lying still: physics only twice a second (the floor may be dug away).
+	_settle_check -= delta
+	var settled := is_on_floor() and absf(velocity.x) < 1.0 and absf(velocity.y) < 1.0
+	if not settled or _settle_check <= 0.0:
+		_settle_check = 0.5
+		velocity.y = minf(velocity.y + GRAVITY * delta, 400.0)
+		if is_on_floor():
+			velocity.x = move_toward(velocity.x, 0.0, 400.0 * delta)
+		move_and_slide()
 	_bob += delta * 3.0
 	sprite.position.y = -8.0 + sin(_bob) * 1.5
 	if _glow:

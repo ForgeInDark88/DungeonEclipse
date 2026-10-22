@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="RunPactData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/run_pact_data.gd" id="e1"]
+
+[resource]
+script = ExtResource("e1")
+id = &"c_drain"
+display_name = "Иссушение"
+description = "−20 маны, −2 к интеллекту"
+kind = 1
+stats = {
+"intellect": -2,
+"max_mana": -20
+}
+effects = {}
+min_floor = 1

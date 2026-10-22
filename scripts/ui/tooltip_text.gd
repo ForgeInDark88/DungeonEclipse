@@ -11,6 +11,11 @@ static func item(item: ItemData, hero: Hero, is_equipped := false) -> String:
 	var lines: Array[String] = []
 	lines.append("[font_size=10][b]%s[/b][/font_size]" % _c(item.rarity_color().darkened(0.35), item.display_name))
 	lines.append(_c(UIStyle.INK_SOFT, "%s · %s · ур. %d" % [item.rarity_name(), item.subtitle(), item.item_level]))
+	if item.unidentified:
+		lines.append("[i]Свойства неизвестны. Наденьте предмет, прочтите свиток опознания или покажите торговцу. Может оказаться проклятым.[/i]")
+		return "\n".join(lines)
+	if item.cursed:
+		lines.append(_c(UIStyle.BAD, "Проклят: нельзя снять. Проклятие снимает торговец."))
 	if item.description != "":
 		lines.append("[i]%s[/i]" % item.description)
 
@@ -35,6 +40,11 @@ static func item(item: ItemData, hero: Hero, is_equipped := false) -> String:
 				var col := UIStyle.GOOD if diff > 0.0 else UIStyle.BAD
 				line += "  " + _c(col, "(%s)" % StatTypes.format_value(k, diff, true))
 		lines.append(line)
+	if not item.enchant_bonuses.is_empty():
+		var ench: Array[String] = []
+		for k in item.enchant_bonuses:
+			ench.append("%s %s" % [StatTypes.label(k), StatTypes.format_value(k, float(item.enchant_bonuses[k]), true)])
+		lines.append(_c(Color(0.35, 0.55, 0.85), "Зачарование: " + ", ".join(ench)))
 	if item.has_durability and item.is_instance():
 		var low := item.durability <= item.max_durability / 5
 		var dur_text := "Прочность: %d / %d" % [item.durability, item.max_durability]

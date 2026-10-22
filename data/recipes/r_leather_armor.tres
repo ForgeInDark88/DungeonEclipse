@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RecipeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/recipe_data.gd" id="e1"]
+
+[resource]
+script = ExtResource("e1")
+id = &"r_leather_armor"
+result = &"leather_armor"
+count = 1
+ingredients = {
+"leather_scrap": 4
+}
+gold = 0
+order = 12

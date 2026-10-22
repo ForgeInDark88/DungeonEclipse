@@ -22,10 +22,27 @@ var run_active: bool = false
 var run_stats: Dictionary = {}
 ## Non-empty during a daily run: its date "YYYY-MM-DD" (seed and leaderboard key).
 var daily_date: String = ""
+## Blessings and curses of the altars of fate taken this run (RunPactData).
+var pacts: Array[RunPactData] = []
+## Pet of this run (null = none).
+var pet: PetData
+## Combo: kills in a row, each within COMBO_WINDOW of the previous one,
+## without taking damage. Every step adds COMBO_STEP to XP and gold.
+const COMBO_WINDOW := 4.0
+const COMBO_STEP := 0.05
+const COMBO_MAX_BONUS := 0.5
+var combo: int = 0
+var _combo_time := 0.0
 
 
 func _ready() -> void:
-	EventBus.enemy_killed.connect(func(_d: EnemyData, _p: Vector2) -> void: kills += 1)
+	EventBus.enemy_killed.connect(func(_d: EnemyData, _p: Vector2) -> void:
+		kills += 1
+		_add_combo())
+	EventBus.damage_dealt.connect(func(_pos: Vector2, _a: int, _c: bool, on_player: bool) -> void:
+		if on_player:
+			_set_combo(0))
+	EventBus.floor_changed.connect(func(_f: int) -> void: _set_combo(0))
 	EventBus.elite_killed.connect(func(_d: EnemyData) -> void:
 		run_stats["elites"] = int(run_stats.get("elites", 0)) + 1)
 
@@ -38,6 +55,9 @@ func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, 
 	MetaProgress.apply_to(hero, daily == "")
 	floor_number = 1
 	kills = 0
+	pacts.clear()
+	pet = null
+	combo = 0
 	reset_run_stats()
 	run_seed = randi() if seed_value < 0 else seed_value
 	run_active = true
@@ -47,6 +67,58 @@ func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, 
 
 func reset_run_stats() -> void:
 	run_stats = {"gold": 0, "found": [0, 0, 0, 0], "bosses": 0, "elites": 0, "start_ms": Time.get_ticks_msec()}
+
+
+func set_pet(p_pet: PetData) -> void:
+	pet = p_pet
+	EventBus.pet_changed.emit(pet)
+
+
+func _process(delta: float) -> void:
+	if combo > 0:
+		_combo_time -= delta
+		if _combo_time <= 0.0:
+			_set_combo(0)
+
+
+func _add_combo() -> void:
+	_combo_time = COMBO_WINDOW
+	_set_combo(combo + 1)
+	if combo > int(run_stats.get("best_combo", 0)):
+		run_stats["best_combo"] = combo
+
+
+func _set_combo(value: int) -> void:
+	if value == combo:
+		return
+	combo = value
+	EventBus.combo_changed.emit(combo)
+
+
+## Seconds left before the combo breaks.
+func combo_time_left() -> float:
+	return _combo_time if combo > 0 else 0.0
+
+
+## XP / gold bonus of the current combo (the first kill gives none).
+func combo_bonus() -> float:
+	return minf(COMBO_MAX_BONUS, COMBO_STEP * maxi(0, combo - 1))
+
+
+## Takes a blessing / curse until the end of the run.
+func add_pact(pact: RunPactData) -> void:
+	pacts.append(pact)
+	if hero and not pact.stats.is_empty():
+		hero.stats.set_modifier("pact_%s_%d" % [pact.id, pacts.size()], pact.stats)
+	EventBus.pact_taken.emit(pact)
+
+
+## Sum of a run multiplier over every pact (see RunPactData.effects).
+func run_effect(key: String) -> float:
+	var v := 0.0
+	for p in pacts:
+		v += float(p.effects.get(key, 0.0))
+	return v
 
 
 ## Seed of the current floor: each run and each floor is different.

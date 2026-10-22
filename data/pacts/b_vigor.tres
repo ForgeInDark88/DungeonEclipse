@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RunPactData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/run_pact_data.gd" id="e1"]
+
+[resource]
+script = ExtResource("e1")
+id = &"b_vigor"
+display_name = "Живучесть"
+description = "+25 к здоровью"
+kind = 0
+stats = {
+"max_hp": 25
+}
+effects = {}
+min_floor = 1

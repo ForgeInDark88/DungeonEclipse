@@ -698,6 +698,122 @@ def achievement_icons():
             gp.save(im, "sprites/achievements/%s_%s.png" % (gname, tier))
 
 
+# --------------------------------------------- monsters that throw "slow"
+def slow_throwers():
+    """Frost imp (recoloured cultist) and bog spitter (recoloured slime) with
+    their projectiles: a snowball and a lump of sticky mud."""
+    def recolor(src, dst, k):
+        im = Image.open(os.path.join(A, src)).convert("RGBA")
+        px = im.load()
+        for y in range(im.height):
+            for x in range(im.width):
+                r, g, b, a = px[x, y]
+                if a:
+                    px[x, y] = k(r, g, b, a)
+        im.save(os.path.join(A, dst))
+    icy = lambda r, g, b, a: (min(255, int(b * 0.6 + 40)), min(255, int(g * 0.8 + 60)), min(255, int(r * 0.4 + g * 0.3 + 120)), a)
+    mud = lambda r, g, b, a: (min(255, int(g * 0.55 + 40)), min(255, int(g * 0.6 + 30)), min(255, int(b * 0.3 + 15)), a)
+    recolor("sprites/enemies/cultist_sheet.png", "sprites/enemies/frost_imp_sheet.png", icy)
+    recolor("sprites/enemies/cultist.png", "sprites/enemies/frost_imp.png", icy)
+    recolor("sprites/enemies/slime_sheet.png", "sprites/enemies/bog_spitter_sheet.png", mud)
+    recolor("sprites/enemies/slime.png", "sprites/enemies/bog_spitter.png", mud)
+    snow = gp.new(8, 8)
+    d = ImageDraw.Draw(snow)
+    d.ellipse((1, 1, 6, 6), fill=(230, 245, 255, 255))
+    d.point((3, 2), fill=(255, 255, 255, 255))
+    d.point((5, 5), fill=(150, 200, 240, 255))
+    gp.save(snow, "sprites/fx/snowball.png")
+    goo = gp.new(8, 8)
+    d = ImageDraw.Draw(goo)
+    d.ellipse((1, 2, 7, 7), fill=(95, 90, 40, 255))
+    d.point((3, 3), fill=(160, 150, 80, 255))
+    gp.save(goo, "sprites/fx/goo.png")
+
+
+def anvil():
+    im = gp.new(16, 10)
+    d = ImageDraw.Draw(im)
+    d.polygon([(0, 1), (13, 1), (15, 3), (10, 4), (10, 7), (12, 9), (3, 9), (5, 7), (5, 4), (2, 4)], fill=(70, 72, 80, 255))
+    d.line((1, 1, 13, 1), fill=(140, 145, 155, 255))
+    d.point((7, 5), fill=(255, 140, 50, 255))
+    gp.save(im, "sprites/npc/anvil.png")
+
+
+# ------------------------------------------------------------------ pets
+def pets():
+    """Flying familiars 16x14: fly (4 frames, wings / flame) and attack (3)."""
+    lay = gs.simple_layout("pet_layout", 16, 14, (8, 14), [("fly", 4, 8, True), ("attack", 3, 14, False)])
+    os.makedirs(os.path.join(A, "sprites/pets"), exist_ok=True)
+
+    def wings(d, cy, flap, c):
+        up = [-3, -1, 1, -1][flap]
+        d.polygon([(5, cy), (1, cy + up), (2, cy + 3)], fill=c)
+        d.polygon([(10, cy), (14, cy + up), (13, cy + 3)], fill=c)
+
+    def owl(name, i, n):
+        im = gp.new(16, 14)
+        d = ImageDraw.Draw(im)
+        lunge = i if name == "attack" else 0
+        body = (150, 105, 60, 255)
+        wings(d, 7, i % 4, gp.shade(body, 0.8))
+        d.ellipse((4 + lunge, 3, 11 + lunge, 12), fill=body)
+        d.ellipse((5 + lunge, 7, 10 + lunge, 12), fill=(215, 190, 150, 255))
+        for ex in (6, 9):
+            d.point((ex + lunge, 5), fill=(255, 220, 60, 255))
+        d.point((7 + lunge, 7), fill=(230, 160, 40, 255))
+        d.point((5 + lunge, 2), fill=body)
+        d.point((10 + lunge, 2), fill=body)
+        return im
+
+    def wisp(name, i, n):
+        im = gp.new(16, 14)
+        d = ImageDraw.Draw(im)
+        grow = i if name == "attack" else 0
+        outer = (255, 255, 255, 120)
+        core = (255, 255, 255, 255)
+        flick = [0, 1, 0, -1][i % 4]
+        d.polygon([(4 - grow, 9), (8 + flick, 1 - grow), (12 + grow, 9)], fill=outer)
+        d.ellipse((4 - grow, 5 - grow, 12 + grow, 13), fill=outer)
+        d.ellipse((6, 7, 10, 11), fill=core)
+        d.point((7, 8), fill=(40, 40, 60, 255))
+        d.point((9, 8), fill=(40, 40, 60, 255))
+        return im
+
+    def bat(name, i, n):
+        im = gp.new(16, 14)
+        d = ImageDraw.Draw(im)
+        lunge = i if name == "attack" else 0
+        body = (95, 60, 110, 255)
+        up = [-3, -1, 2, -1][i % 4]
+        d.polygon([(6, 6), (0, 4 + up), (2, 9), (4, 8)], fill=gp.shade(body, 0.8))
+        d.polygon([(10, 6), (16, 4 + up), (14, 9), (12, 8)], fill=gp.shade(body, 0.8))
+        d.ellipse((5 + lunge, 4, 11 + lunge, 11), fill=body)
+        d.polygon([(6 + lunge, 4), (6 + lunge, 1), (8 + lunge, 4)], fill=body)
+        d.polygon([(10 + lunge, 4), (10 + lunge, 1), (8 + lunge, 4)], fill=body)
+        d.point((7 + lunge, 6), fill=(255, 210, 80, 255))
+        d.point((9 + lunge, 6), fill=(255, 210, 80, 255))
+        d.ellipse((6 + lunge, 9, 9 + lunge, 12), fill=(230, 190, 60, 255))  # coin purse
+        return im
+
+    def dragon(name, i, n):
+        im = gp.new(16, 14)
+        d = ImageDraw.Draw(im)
+        lunge = i if name == "attack" else 0
+        body = (200, 60, 45, 255)
+        wings(d, 5, i % 4, (240, 150, 60, 255))
+        d.ellipse((3, 5, 11, 12), fill=body)
+        d.line((3, 10, 0, 12), fill=body)
+        d.ellipse((8 + lunge, 2, 14 + lunge, 7), fill=body)
+        d.point((12 + lunge, 3), fill=(255, 240, 120, 255))
+        d.line((5, 10, 9, 10), fill=(250, 200, 120, 255))
+        if name == "attack" and i > 0:
+            d.line((15, 5, 16, 5), fill=(255, 190, 60, 255))
+        return im
+
+    for nm, fn in (("owl", owl), ("wisp", wisp), ("bat", bat), ("dragon", dragon)):
+        gs.render_sheet(lay, fn, "sprites/pets/%s_sheet.png" % nm)
+
+
 def main():
     os.makedirs(os.path.join(A, "ui/status"), exist_ok=True)
     status_icons()
@@ -708,6 +824,9 @@ def main():
     events()
     meta_icons()
     achievement_icons()
+    slow_throwers()
+    anvil()
+    pets()
     print("mechanics generated")
 
 

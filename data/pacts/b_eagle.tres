@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RunPactData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/run_pact_data.gd" id="e1"]
+
+[resource]
+script = ExtResource("e1")
+id = &"b_eagle"
+display_name = "Глаз орла"
+description = "+8% к шансу крита"
+kind = 0
+stats = {
+"crit_chance": 0.08
+}
+effects = {}
+min_floor = 1
