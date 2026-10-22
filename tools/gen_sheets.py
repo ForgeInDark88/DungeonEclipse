@@ -195,7 +195,11 @@ def skel(p, race, cx=CX, ground=GROUND):
 
 
 def _leg(d, s, side, color):
-    d.line([s["hip"], s[side + "knee"], s[side + "foot"]], fill=color, width=2)
+    """Two-pixel leg: thigh and shin with a lit front edge and a knee."""
+    hip, knee, foot = s["hip"], s[side + "knee"], s[side + "foot"]
+    d.line([hip, knee, foot], fill=color, width=2)
+    d.line([(hip[0] + 1, hip[1]), (knee[0] + 1, knee[1]), (foot[0] + 1, foot[1] - 1)], fill=shade(color, 1.18))
+    d.point((round(knee[0]), round(knee[1])), fill=shade(color, 0.78))
 
 
 def _torso(d, s, color, wide=0, extra_top=0):
@@ -203,15 +207,62 @@ def _torso(d, s, color, wide=0, extra_top=0):
     nx, ny = s["neck"]
     w = 3 + wide
     d.polygon([(hx - w, hy), (hx + w - 1, hy), (nx + w - 1, ny - extra_top), (nx - w, ny - extra_top)], fill=color)
-    # Simple shading: darker back edge, lighter front edge.
-    d.line((hx - w, hy, nx - w, ny - extra_top), fill=shade(color, 0.7))
-    d.line((hx + w - 1, hy, nx + w - 1, ny - extra_top), fill=shade(color, 1.2))
+    # Shading: dark back edge, lit front edge, darker lower half, chest highlight.
+    d.line((hx - w, hy, nx - w, ny - extra_top), fill=shade(color, 0.68))
+    d.line((hx - w + 1, hy, nx - w + 1, ny - extra_top), fill=shade(color, 0.86))
+    d.line((hx + w - 1, hy, nx + w - 1, ny - extra_top), fill=shade(color, 1.22))
+    d.line((hx - w + 1, hy - 1, hx + w - 2, hy - 1), fill=shade(color, 0.84))
+    d.point((nx + 1, ny + 2), fill=shade(color, 1.3))
 
 
 def _arm(d, s, side, color, hand_color):
-    d.line([s["shoulder"], s[side + "hand"]], fill=color, width=2)
+    sx, sy = s["shoulder"]
     hx, hy = s[side + "hand"]
+    ex, ey = (sx + hx) / 2 - 0.5, (sy + hy) / 2 + 0.5
+    d.line([(sx, sy), (ex, ey), (hx, hy)], fill=color, width=2)
+    d.line([(sx, sy - 1), (ex, ey - 1)], fill=shade(color, 1.2))
     d.rectangle((hx - 1, hy - 1, hx, hy), fill=hand_color)
+    d.point((hx, hy - 1), fill=shade(hand_color, 1.2))
+    d.point((hx - 1, hy), fill=shade(hand_color, 0.75))
+
+
+def _head(d, p, race, s):
+    """7x7 head: shaded skin, eye with a white, brow, nose, mouth, hair with a
+    sheen, race features."""
+    hx, hy = s["head"]
+    skin = rgba(race["skin"])
+    hair = rgba(race["hair"])
+    d.ellipse((hx - 3, hy - 3, hx + 3, hy + 3), fill=skin)
+    d.line((hx - 3, hy - 1, hx - 3, hy + 2), fill=shade(skin, 0.78))  # back of the head
+    d.point((hx - 2, hy + 3), fill=shade(skin, 0.75))
+    d.point((hx + 2, hy + 3), fill=shade(skin, 0.82))  # jaw
+    if p["back"]:
+        d.ellipse((hx - 3, hy - 3, hx + 3, hy + 2), fill=hair)
+        d.line((hx - 2, hy - 2, hx + 1, hy - 2), fill=shade(hair, 1.35))
+        d.line((hx - 1, hy, hx - 1, hy + 2), fill=shade(hair, 0.7))
+    else:
+        d.pieslice((hx - 3, hy - 4, hx + 3, hy + 2), 180, 360, fill=hair)
+        d.rectangle((hx - 3, hy - 1, hx - 2, hy + 2), fill=hair)
+        d.line((hx - 1, hy - 3, hx + 1, hy - 3), fill=shade(hair, 1.4))  # sheen
+        d.point((hx + 3, hy - 1), fill=hair)  # fringe
+        d.point((hx - 3, hy + 2), fill=shade(hair, 0.7))
+        # eye: white + pupil, brow, nose, mouth
+        d.point((hx + 1, hy), fill=(235, 232, 225, 255))
+        d.point((hx + 2, hy), fill=(25, 18, 18, 255))
+        d.line((hx + 1, hy - 1, hx + 2, hy - 1), fill=shade(hair, 0.8))
+        d.point((hx + 3, hy + 1), fill=shade(skin, 0.82))
+        d.point((hx + 2, hy + 2), fill=(150, 75, 70, 255))
+        if race["beard"]:
+            beard = rgba(race["beard"])
+            d.polygon([(hx - 1, hy + 1), (hx + 3, hy + 1), (hx + 2, hy + 5), (hx, hy + 5)], fill=beard)
+            d.line((hx, hy + 2, hx + 1, hy + 4), fill=shade(beard, 1.3))
+            d.point((hx + 1, hy + 5), fill=(220, 180, 70, 255))  # clasp
+    if race["ears"]:
+        d.polygon([(hx - 2, hy), (hx - 6, hy - 3), (hx - 2, hy - 2)], fill=skin)
+        d.point((hx - 4, hy - 2), fill=shade(skin, 0.8))
+    if race.get("tusks") and not p["back"]:
+        d.point((hx + 2, hy + 2), fill=(240, 240, 220, 255))
+        d.point((hx, hy + 2), fill=(240, 240, 220, 255))
 
 
 def draw_body(p, race):
@@ -223,22 +274,7 @@ def draw_body(p, race):
     _leg(d, s, "l", shade(rgba(PANTS), 0.8))
     _leg(d, s, "r", rgba(PANTS))
     _torso(d, s, rgba(SHIRT), race["wide"])
-    hx, hy = s["head"]
-    d.ellipse((hx - 3, hy - 3, hx + 3, hy + 3), fill=skin)
-    hair = rgba(race["hair"])
-    if p["back"]:
-        d.ellipse((hx - 3, hy - 3, hx + 3, hy + 2), fill=hair)
-    else:
-        d.pieslice((hx - 3, hy - 4, hx + 3, hy + 2), 180, 360, fill=hair)
-        d.rectangle((hx - 3, hy - 1, hx - 2, hy + 2), fill=hair)
-        d.point((hx + 2, hy), fill=(20, 15, 15, 255))
-        if race["beard"]:
-            d.polygon([(hx - 1, hy + 1), (hx + 3, hy + 1), (hx + 2, hy + 5), (hx, hy + 5)], fill=rgba(race["beard"]))
-    if race["ears"]:
-        d.polygon([(hx - 2, hy), (hx - 6, hy - 3), (hx - 2, hy - 2)], fill=skin)
-    if race.get("tusks") and not p["back"]:
-        d.point((hx + 2, hy + 2), fill=(240, 240, 220, 255))
-        d.point((hx, hy + 2), fill=(240, 240, 220, 255))
+    _head(d, p, race, s)
     _arm(d, s, "r", skin, skin)
     return im
 
@@ -246,15 +282,23 @@ def draw_body(p, race):
 def _boots(d, s, color):
     for side in ("l", "r"):
         fx, fy = s[side + "foot"]
-        d.rectangle((fx - 1, fy - 1, fx + 2, fy), fill=color if side == "r" else shade(color, 0.8))
+        c = color if side == "r" else shade(color, 0.8)
+        d.rectangle((fx - 1, fy - 2, fx + 2, fy), fill=c)
+        d.line((fx - 1, fy - 2, fx + 1, fy - 2), fill=shade(c, 1.3))  # cuff
+        d.line((fx - 1, fy, fx + 2, fy), fill=shade(c, 0.6))  # sole
+        d.point((fx + 2, fy - 1), fill=shade(c, 1.15))  # toe
 
 
 OUTFITS = {
-    # class: torso, trim, boots, sleeve, robe(bool)
-    "warrior": dict(torso=(140, 40, 40), trim=(90, 60, 30), boots=(80, 55, 35), sleeve=(150, 50, 45), robe=False),
-    "rogue": dict(torso=(50, 90, 50), trim=(40, 60, 40), boots=(55, 45, 35), sleeve=(45, 80, 45), robe=False),
-    "mage": dict(torso=(60, 50, 140), trim=(200, 170, 60), boots=(50, 40, 70), sleeve=(70, 60, 155), robe=True),
-    "paladin": dict(torso=(220, 220, 230), trim=(220, 180, 60), boots=(120, 120, 135), sleeve=(200, 200, 215), robe=False),
+    # class: torso, trim, boots, sleeve, robe(bool), kind (details)
+    "warrior": dict(torso=(140, 40, 40), trim=(90, 60, 30), boots=(80, 55, 35), sleeve=(150, 50, 45), robe=False,
+                    kind="warrior"),
+    "rogue": dict(torso=(50, 90, 50), trim=(40, 60, 40), boots=(55, 45, 35), sleeve=(45, 80, 45), robe=False,
+                  kind="rogue"),
+    "mage": dict(torso=(60, 50, 140), trim=(200, 170, 60), boots=(50, 40, 70), sleeve=(70, 60, 155), robe=True,
+                 kind="mage"),
+    "paladin": dict(torso=(220, 220, 230), trim=(220, 180, 60), boots=(120, 120, 135), sleeve=(200, 200, 215),
+                    robe=False, kind="paladin"),
 }
 
 
@@ -263,18 +307,50 @@ def draw_outfit(p, o, race=RACES["human"]):
     d = ImageDraw.Draw(im)
     s = skel(p, race)
     torso = rgba(o["torso"])
+    trim = rgba(o["trim"])
     _boots(d, s, rgba(o["boots"]))
-    if o["robe"]:
-        hx, hy = s["hip"]
-        lf, rf = s["lfoot"], s["rfoot"]
-        d.polygon([(hx - 3, hy - 1), (hx + 3, hy - 1), (max(rf[0], hx + 3) + 1, GROUND - 2), (min(lf[0], hx - 3) - 1, GROUND - 2)], fill=shade(torso, 0.85))
-    _torso(d, s, torso)
     hx, hy = s["hip"]
-    d.line((hx - 3, hy - 1, hx + 2, hy - 1), fill=rgba(o["trim"]))
+    nx, ny = s["neck"]
+    if o["robe"]:
+        lf, rf = s["lfoot"], s["rfoot"]
+        x0, x1 = min(lf[0], hx - 3) - 1, max(rf[0], hx + 3) + 1
+        d.polygon([(hx - 3, hy - 1), (hx + 3, hy - 1), (x1, GROUND - 2), (x0, GROUND - 2)], fill=shade(torso, 0.85))
+        d.line((x0, GROUND - 2, x1, GROUND - 2), fill=trim)  # hem
+        d.line((hx, hy, (x0 + x1) / 2, GROUND - 3), fill=shade(torso, 0.65))  # fold
+    _torso(d, s, torso)
+    kind = o.get("kind")
+    # Belt with a buckle.
+    d.line((hx - 3, hy - 1, hx + 2, hy - 1), fill=trim)
+    d.point((hx + 1, hy - 1), fill=(230, 200, 90, 255) if kind != "mage" else (255, 90, 110, 255))
     if not p["back"]:
-        nx, ny = s["neck"]
-        d.line((nx, ny, nx, ny + 4), fill=shade(torso, 1.25))
+        if kind == "warrior":
+            d.line((nx - 2, ny + 1, hx + 2, hy - 2), fill=rgba((95, 62, 35)))  # strap
+            d.point((nx + 1, ny + 3), fill=rgba((200, 170, 80)))
+        elif kind == "rogue":
+            d.line((nx - 2, ny + 1, hx + 2, hy - 2), fill=rgba((40, 32, 25)))
+            d.rectangle((hx - 3, hy - 3, hx - 2, hy - 2), fill=rgba((90, 65, 40)))  # pouch
+            d.line((nx - 1, ny, nx + 2, ny), fill=rgba((120, 40, 40)))  # scarf
+        elif kind == "mage":
+            d.line((nx, ny, nx, hy - 1), fill=trim)
+            d.point((nx, ny + 3), fill=(120, 220, 255, 255))  # amulet
+        elif kind == "paladin":
+            d.rectangle((nx - 1, ny + 2, nx + 2, hy - 2), fill=rgba((240, 236, 225)))  # tabard
+            d.line((nx + 1, ny + 2, nx + 1, hy - 2), fill=trim)
+            d.line((nx, ny + 4, nx + 2, ny + 4), fill=trim)
+        else:
+            d.line((nx, ny, nx, ny + 4), fill=shade(torso, 1.25))
+    # Shoulder pad for armoured classes.
+    if kind in ("warrior", "paladin"):
+        sx, sy = s["shoulder"]
+        pad = rgba((120, 85, 50)) if kind == "warrior" else rgba((210, 210, 222))
+        d.ellipse((sx - 2, sy - 2, sx + 2, sy + 1), fill=pad)
+        d.point((sx - 1, sy - 2), fill=shade(pad, 1.35))
+        if kind == "paladin":
+            d.line((sx - 2, sy + 1, sx + 2, sy + 1), fill=trim)
     _arm(d, s, "r", rgba(o["sleeve"]), rgba(GLOVE))
+    if kind == "mage":
+        hx2, hy2 = s["rhand"]
+        d.point((hx2 - 1, hy2 - 2), fill=trim)  # cuff
     return im
 
 
@@ -295,30 +371,53 @@ def draw_head(p, kind, color):
     s = skel(p, RACES["human"])
     hx, hy = s["head"]
     c = rgba(color)
+    hi, lo = shade(c, 1.35), shade(c, 0.68)
     if kind == "miner":
         d.pieslice((hx - 4, hy - 5, hx + 4, hy + 2), 180, 360, fill=c)
-        d.line((hx - 4, hy - 1, hx + 4, hy - 1), fill=shade(c, 0.75))
+        d.line((hx - 3, hy - 4, hx, hy - 5), fill=hi)
+        d.line((hx - 5, hy - 1, hx + 5, hy - 1), fill=lo)
+        d.point((hx - 2, hy - 2), fill=hi)  # rivet
         if not p["back"]:
             d.rectangle((hx + 1, hy - 4, hx + 2, hy - 3), fill=(255, 240, 160, 255))
+            d.point((hx + 3, hy - 4), fill=(255, 255, 220, 200))
     elif kind == "hood":
-        d.polygon([(hx - 4, hy + 3), (hx - 4, hy - 2), (hx - 1, hy - 5), (hx + 3, hy - 4), (hx + 4, hy - 1), (hx + 2, hy - 2), (hx - 2, hy + 3)], fill=c)
+        d.polygon([(hx - 4, hy + 3), (hx - 4, hy - 2), (hx - 1, hy - 5), (hx + 3, hy - 4), (hx + 4, hy - 1), (hx + 2, hy - 2),
+                   (hx - 2, hy + 3)], fill=c)
+        d.line((hx - 3, hy - 2, hx - 1, hy - 4), fill=hi)
+        d.line((hx - 4, hy, hx - 4, hy + 3), fill=lo)
         if p["back"]:
             d.ellipse((hx - 4, hy - 4, hx + 4, hy + 3), fill=c)
+            d.line((hx - 2, hy - 3, hx + 1, hy - 3), fill=hi)
+        else:
+            d.point((hx + 1, hy - 1), fill=(20, 25, 20, 200))  # shadow over the eye
     elif kind == "wizard":
         d.polygon([(hx - 5, hy - 2), (hx + 5, hy - 2), (hx + 1, hy - 7), (hx - 3, hy - 10)], fill=c)
-        d.line((hx - 5, hy - 2, hx + 5, hy - 2), fill=shade(c, 0.7))
-        d.point((hx, hy - 5), fill=rgba(gp.GOLD))
+        d.line((hx - 2, hy - 8, hx - 3, hy - 3), fill=hi)
+        d.line((hx - 5, hy - 2, hx + 5, hy - 2), fill=lo)
+        d.line((hx - 4, hy - 3, hx + 4, hy - 3), fill=rgba(gp.GOLD))  # band
+        d.point((hx, hy - 6), fill=(255, 245, 170, 255))  # star
     elif kind == "cap":
         d.pieslice((hx - 4, hy - 5, hx + 3, hy + 1), 180, 360, fill=c)
-        d.line((hx, hy - 2, hx + 4, hy - 2), fill=shade(c, 0.8))
+        d.line((hx - 3, hy - 4, hx - 1, hy - 5), fill=hi)
+        d.line((hx, hy - 2, hx + 4, hy - 2), fill=lo)
+        d.point((hx - 2, hy - 2), fill=lo)  # stitch
     elif kind == "helm":
         d.pieslice((hx - 4, hy - 5, hx + 4, hy + 3), 180, 360, fill=c)
         d.rectangle((hx - 4, hy - 1, hx - 2, hy + 2), fill=shade(c, 0.85))
+        d.line((hx - 3, hy - 4, hx, hy - 5), fill=hi)
+        d.line((hx - 4, hy - 1, hx + 4, hy - 1), fill=lo)
         if not p["back"]:
             d.line((hx + 1, hy - 4, hx + 1, hy + 1), fill=shade(c, 1.2))
+            if color == (225, 215, 170):  # paladin: gold band and plume
+                d.line((hx - 4, hy - 2, hx + 4, hy - 2), fill=rgba((225, 180, 60)))
+                d.line((hx - 1, hy - 6, hx - 4, hy - 7), fill=rgba((190, 40, 45)))
+                d.point((hx - 2, hy - 7), fill=rgba((230, 80, 80)))
     elif kind == "crown":
-        d.polygon([(hx - 4, hy - 2), (hx - 4, hy - 6), (hx - 2, hy - 4), (hx, hy - 7), (hx + 2, hy - 4), (hx + 4, hy - 6), (hx + 4, hy - 2)], fill=c)
+        d.polygon([(hx - 4, hy - 2), (hx - 4, hy - 6), (hx - 2, hy - 4), (hx, hy - 7), (hx + 2, hy - 4), (hx + 4, hy - 6),
+                   (hx + 4, hy - 2)], fill=c)
+        d.line((hx - 4, hy - 2, hx + 4, hy - 2), fill=lo)
         d.point((hx, hy - 4), fill=(160, 40, 220, 255))
+        d.point((hx, hy - 6), fill=hi)
     return im
 
 
@@ -336,12 +435,21 @@ def draw_armor(p, a):
     torso = rgba(a["torso"])
     _torso(d, s, torso)
     hx, hy = s["hip"]
+    nx, ny = s["neck"]
     d.line((hx - 3, hy - 1, hx + 2, hy - 1), fill=rgba(a["trim"]))
     if a["pads"]:
         sx, sy = s["shoulder"]
         d.ellipse((sx - 3, sy - 2, sx + 2, sy + 1), fill=shade(torso, 1.2))
-        for y in range(int(s["neck"][1]) + 2, int(hy) - 1, 2):
+        d.point((sx - 2, sy - 2), fill=shade(torso, 1.5))
+        for y in range(int(ny) + 2, int(hy) - 1, 2):
             d.line((hx - 2 + p["lean"] * 0.5, y, hx + 2 + p["lean"] * 0.5, y), fill=shade(torso, 0.8))
+            d.point((hx + p["lean"] * 0.5, y + 1), fill=shade(torso, 1.25))  # rings
+    elif a["torso"] == (140, 95, 55):
+        d.point((nx, ny + 3), fill=shade(torso, 0.7))  # stitched panels
+        d.point((nx + 1, ny + 5), fill=shade(torso, 0.7))
+        d.line((nx - 2, ny + 1, nx + 2, ny + 1), fill=shade(torso, 1.25))
+    else:
+        d.line((nx, ny, nx, hy - 1), fill=rgba(a["trim"]))
     _arm(d, s, "r", rgba(a["sleeve"]), rgba(GLOVE))
     return im
 

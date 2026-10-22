@@ -6,7 +6,7 @@ extends CanvasLayer
 
 const PADDING := 12
 const GAP := 3
-const PORTRAIT := Vector2(56, 56)
+const PORTRAIT := Vector2(72, 72)
 const BARS_W := 104
 
 var hero: Hero
@@ -117,10 +117,13 @@ func _build() -> void:
 	portrait.size = PORTRAIT
 	portrait.mouse_filter = Control.MOUSE_FILTER_STOP
 	portrait.add_child(UIStyle.frame(AssetPaths.SLOT, 5))
-	_portrait_holder = UIStyle.portrait(hero.race, hero.class_data, PORTRAIT - Vector2(8, 8))
-	_portrait_holder.position = Vector2(4, 4)
-	_portrait_holder.size = PORTRAIT - Vector2(8, 8)
-	portrait.add_child(_portrait_holder)
+	# Living portrait (breathing, blinking, reactions): only in the game HUD.
+	var live := AnimatedPortrait.new()
+	live.position = Vector2(4, 4)
+	live.size = PORTRAIT - Vector2(8, 8)
+	portrait.add_child(live)
+	live.setup(hero, _player)
+	_portrait_holder = live
 	portrait.mouse_entered.connect(func() -> void: Tooltip.show_text(TooltipText.hero_stats(hero), portrait))
 	portrait.mouse_exited.connect(func() -> void: Tooltip.hide_tip(portrait))
 	panel.add_child(portrait)

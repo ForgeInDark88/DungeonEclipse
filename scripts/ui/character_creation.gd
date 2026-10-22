@@ -50,7 +50,7 @@ func _ready() -> void:
 	head.add_theme_constant_override("separation", 8)
 	right_page.add_child(head)
 	var frame_box := Control.new()
-	frame_box.custom_minimum_size = Vector2(60, 60)
+	frame_box.custom_minimum_size = Vector2(72, 72)
 	frame_box.add_child(UIStyle.frame(AssetPaths.SLOT, 5))
 	head.add_child(frame_box)
 	_portrait_box = frame_box
@@ -142,9 +142,9 @@ func _refresh_preview() -> void:
 	for child in _portrait_box.get_children():
 		if not (child is PixelFrame):
 			child.queue_free()
-	var p := UIStyle.portrait(_race, _class, Vector2(48, 48))
-	p.position = Vector2(6, 6)
-	p.size = Vector2(48, 48)
+	var p := UIStyle.portrait(_race, _class, Vector2(64, 64))
+	p.position = Vector2(4, 4)
+	p.size = Vector2(64, 64)
 	_portrait_box.add_child(p)
 
 	var s := Stats.new()
