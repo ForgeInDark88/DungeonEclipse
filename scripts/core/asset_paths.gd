@@ -128,7 +128,18 @@ const MUSIC := {
 	&"ruins": MUSIC_DIR + "music_ruins.wav",
 	&"lava": MUSIC_DIR + "music_lava.wav",
 	&"boss": MUSIC_DIR + "music_boss.wav",
+	&"boss_bone_king": MUSIC_DIR + "music_boss_bone_king.wav",
+	&"boss_flame_witch": MUSIC_DIR + "music_boss_flame_witch.wav",
+	&"victory": MUSIC_DIR + "music_victory.wav",
+	&"death": MUSIC_DIR + "music_death.wav",
 }
+## When a track file is missing, these ids are tried instead (then silence).
+const MUSIC_FALLBACK := {
+	&"boss_bone_king": &"boss",
+	&"boss_flame_witch": &"boss",
+}
+## Tracks played once (not looped): AudioManager.play_sting().
+const MUSIC_ONE_SHOT: Array[StringName] = [&"victory", &"death"]
 
 # --- Shaders ---
 const SHADER_FLASH := "res://assets/shaders/flash.gdshader"
