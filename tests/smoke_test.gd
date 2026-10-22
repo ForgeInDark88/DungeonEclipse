@@ -1054,6 +1054,15 @@ func _test_scenes() -> void:
 	game._load_floor()
 	await frames(5)
 	player = get_tree().get_first_node_in_group("player") as Player
+	# F3: AI overlay (paths, sight, states).
+	await press("debug_ai")
+	check(AIDebug.enabled, "F3 turns the AI overlay on")
+	for e in get_tree().get_nodes_in_group("enemies"):
+		e.hear(player.global_position)
+	await frames(40)
+	await shot("16_ai_debug")
+	await press("debug_ai")
+	check(not AIDebug.enabled, "F3 turns it off")
 	# next floor
 	GameState.next_floor()
 	await frames(10)

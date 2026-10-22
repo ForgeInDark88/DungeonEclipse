@@ -41,6 +41,13 @@ func _ready() -> void:
 	skill_tree = SkillTreeBook.new()
 	add_child(skill_tree)
 	skill_tree.setup(hero)
+	# F3: monster AI overlay. Own layer that follows the camera, so the level's
+	# darkness does not dim it.
+	var debug_layer := CanvasLayer.new()
+	debug_layer.layer = 5
+	debug_layer.follow_viewport_enabled = true
+	add_child(debug_layer)
+	debug_layer.add_child(AIDebugDraw.new())
 	hints = HintManager.new()
 	add_child(hints)
 	hints.setup(player)

@@ -33,6 +33,9 @@ var ore_cells: Dictionary = {}
 ## Minimap fog of war: 1 = explored.
 var explored := PackedByteArray()
 var explored_version := 0
+## Monster navigation (walk graph + flying grid), see LevelNav.
+var nav: LevelNav
+var _nav_dirty := false
 
 
 func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeData = null) -> void:
@@ -49,6 +52,7 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	explored.resize(layout.width * layout.height)
 	explored.fill(0)
 	_place_ore()
+	nav = LevelNav.new(layout)
 	# Back wall with gaps: through them the parallax cave is visible.
 	var noise := FastNoiseLite.new()
 	noise.seed = seed_value
@@ -71,6 +75,7 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	_spawn_ambience()
 	_spawn_decorations()
 	_spawn_traps()
+	nav._apply_dangers()
 
 
 ## Arena: the boss; door and reward chest appear when it dies.
@@ -175,6 +180,14 @@ func _refresh_around(cell: Vector2i) -> void:
 			_apply_tile(c, layout.get_tile(c.x, c.y))
 
 
+## Navigation is rebuilt once per physics frame at most, after digging/bombs/ropes.
+func _physics_process(_delta: float) -> void:
+	if _nav_dirty and nav:
+		_nav_dirty = false
+		nav.rebuild()
+		AIDebug.log_event(self, "nav", "граф навигации перестроен (v%d)" % nav.version)
+
+
 # ------------------------------------------------------------- exploration
 ## Marks cells around a world position as explored (minimap).
 func reveal_around(world_pos: Vector2, radius: int) -> void:
@@ -251,6 +264,7 @@ func break_tile(cell: Vector2i, effects := true) -> bool:
 	if layout.get_tile(cell.x, cell.y) != T.BRICK:
 		return false
 	layout.set_tile(cell.x, cell.y, T.EMPTY)
+	_nav_dirty = true
 	var was_ore := ore_cells.erase(cell)
 	_refresh_around(cell)
 	if was_ore:
@@ -271,6 +285,7 @@ func break_tile(cell: Vector2i, effects := true) -> bool:
 
 
 func explode(center: Vector2, radius: float) -> void:
+	EventBus.noise.emit(center, 260.0)
 	var c := world_to_cell(center)
 	var r := ceili(radius / TILE)
 	var broke := false
@@ -292,6 +307,7 @@ func place_rope(cell: Vector2i, max_length: int) -> int:
 		y += 1
 	while count < max_length and layout.get_tile(cell.x, y) == T.EMPTY:
 		layout.set_tile(cell.x, y, T.LADDER)
+		_nav_dirty = true
 		_refresh_around(Vector2i(cell.x, y))
 		count += 1
 		y -= 1
@@ -438,6 +454,10 @@ func _spawn_traps() -> void:
 	for c in layout.chests:
 		used[c["cell"]] = true
 	used[layout.exit_cell] = true
+	# No trap right under a monster's spawn point (and its first steps).
+	for c in layout.enemy_cells:
+		for dx in range(-1, 2):
+			used[c + Vector2i(dx, 0)] = true
 	for info in layout.specials:
 		for dx in range(-3, 4):
 			used[info["cell"] + Vector2i(dx, 0)] = true
@@ -505,7 +525,28 @@ func _place_trap(data: TrapData, used: Dictionary) -> Trap:
 			pos = cell_bottom(cell)
 	used[cell] = true
 	add_entity(trap, pos)
+	_mark_trap_danger(data, cell, trap.facing)
 	return trap
+
+
+## Tells the monster navigation where this trap hurts.
+func _mark_trap_danger(data: TrapData, cell: Vector2i, facing: float) -> void:
+	match data.kind:
+		TrapData.Kind.SPIKES, TrapData.Kind.ACID_POOL, TrapData.Kind.PRESSURE_PLATE:
+			nav.set_danger(cell, LevelNav.Danger.FORBIDDEN, 50.0)
+		TrapData.Kind.ARROW_WALL:
+			var x := cell.x
+			for i in 10:
+				x += int(facing)
+				if LevelLayout.is_solid(layout.get_tile(x, cell.y)):
+					break
+				nav.set_danger(Vector2i(x, cell.y), LevelNav.Danger.COSTLY, 6.0)
+		TrapData.Kind.FALLING_ROCK:
+			for dy in range(1, 8):
+				var c := Vector2i(cell.x, cell.y + dy)
+				nav.set_danger(c, LevelNav.Danger.COSTLY, 10.0)
+				if LevelLayout.is_ground(layout.get_tile(c.x, c.y + 1)):
+					break
 
 
 func _spawn_enemies() -> void:
