@@ -9,6 +9,8 @@ const CODEX := "res://scenes/ui/codex.tscn"
 const DAILY := "res://scenes/ui/daily.tscn"
 ## A new biome every N floors (see data/biomes, BiomeData.order).
 const FLOORS_PER_BIOME := 3
+## Floor number of the town where every run starts.
+const TOWN_FLOOR := 0
 ## Every N-th floor is a boss arena.
 const BOSS_EVERY := 5
 
@@ -58,7 +60,7 @@ func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, 
 	hero.female = female
 	hero.give_starting_kit()
 	MetaProgress.apply_to(hero, daily == "")
-	floor_number = 1
+	floor_number = TOWN_FLOOR
 	kills = 0
 	pacts.clear()
 	pet = null
@@ -171,10 +173,17 @@ func floor_seed() -> int:
 
 
 func is_boss_floor(f: int = -1) -> bool:
-	return (floor_number if f < 0 else f) % BOSS_EVERY == 0
+	var n := floor_number if f < 0 else f
+	return n > TOWN_FLOOR and n % BOSS_EVERY == 0
+
+
+func is_town() -> bool:
+	return floor_number == TOWN_FLOOR
 
 
 func current_biome() -> BiomeData:
+	if is_town():
+		return load(AssetPaths.TOWN_BIOME) as BiomeData
 	return ItemDatabase.biome_for_floor(floor_number)
 
 

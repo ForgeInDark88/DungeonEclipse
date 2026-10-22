@@ -281,6 +281,8 @@ func _refresh_xp() -> void:
 func _refresh_floor() -> void:
 	var biome := GameState.current_biome()
 	_floor_label.text = "Этаж %d · %s" % [GameState.floor_number, biome.display_name] if biome else "Этаж %d" % GameState.floor_number
+	if GameState.is_town():
+		_floor_label.text = biome.display_name if biome else "Город"
 	var diff := GameState.difficulty
 	if diff and diff.id != &"normal":
 		_floor_label.text += " · " + diff.display_name

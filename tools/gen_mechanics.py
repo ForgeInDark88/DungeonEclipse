@@ -938,6 +938,8 @@ def main():
     gen_bosses.main()
     import gen_structures  # detailed altars, cage, traps, merchant... over the ones above
     gen_structures.main()
+    import gen_town  # the town before the dungeon: tiles, sky, buildings, props
+    gen_town.main()
     print("mechanics generated")
 
 

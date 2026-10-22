@@ -56,6 +56,9 @@ const LEVER_LAYOUT := ANIM_DIR + "lever_layout.tres"
 const RUNES := SPRITES_DIR + "events/runes.png"
 const EXIT_DOOR := SPRITES_DIR + "props/exit_door.png"
 const LIGHT := SPRITES_DIR + "fx/light.png"
+## Town buildings and props (tools/gen_town.py): TOWN_DIR + name + ".png".
+const TOWN_DIR := SPRITES_DIR + "town/"
+const TOWN_BIOME := "res://data/town/town.tres"
 ## Mouse cursor during the run (aiming).
 const CROSSHAIR := "res://assets/ui/crosshair.png"
 const PIXEL := SPRITES_DIR + "fx/pixel.png"
@@ -137,6 +140,7 @@ const SFX := {
 const WEAPON_SFX: Array[StringName] = [&"attack_sword", &"attack_axe", &"attack_spear", &"attack_dagger", &"attack_bow", &"attack_staff", &"attack_mace", &"attack_bow", &"attack_staff"]
 const MUSIC := {
 	&"menu": MUSIC_DIR + "music_menu.ogg",
+	&"town": MUSIC_DIR + "music_town.ogg",
 	&"catacombs": MUSIC_DIR + "music_catacombs.ogg",
 	&"fungal": MUSIC_DIR + "music_fungal.ogg",
 	&"ruins": MUSIC_DIR + "music_ruins.ogg",
