@@ -99,6 +99,12 @@ var _stuck_origin := Vector2.ZERO
 var _still_time := 0.0
 var _mark: Label
 var _mark_time := 0.0
+## Far from the hero and idle: AI and physics sleep (see _sleep_far_away).
+const WAKE_RANGE := 520.0
+static var _group_cache: Array[Node] = []
+static var _group_frame := -1
+var _dormant := false
+var _dormant_check := 0.0
 ## Statistics read by tests/ai_sim: longest time it wanted to move but could
 ## not, and time spent standing in a trap cell.
 var _home_set := false
@@ -240,6 +246,31 @@ func _update_ambush() -> bool:
 
 
 
+## All monsters, fetched from the scene tree once per physics frame.
+func all_enemies() -> Array[Node]:
+	var frame := Engine.get_physics_frames()
+	if frame != _group_frame:
+		_group_frame = frame
+		_group_cache = get_tree().get_nodes_in_group("enemies")
+	return _group_cache
+
+
+## Monsters far from the hero that are only patrolling stop thinking and
+## moving until the hero comes closer or something wakes them (noise, hit).
+func _sleep_far_away(delta: float) -> bool:
+	_dormant_check -= delta
+	if _dormant_check <= 0.0:
+		_dormant_check = 0.5 + randf() * 0.2
+		var far := _player == null or global_position.distance_to(_player.global_position) > WAKE_RANGE
+		var landed := data.behavior == EnemyData.Behavior.FLYER or (is_on_floor() and absf(velocity.y) < 1.0)
+		_dormant = far and landed and state == State.PATROL and not _ambushing
+	if not _dormant:
+		return false
+	velocity = Vector2.ZERO
+	_play(&"idle")
+	return true
+
+
 func _physics_process(delta: float) -> void:
 	if not _home_set:
 		# The spawn point is known only after DungeonLevel.add_entity placed us.
@@ -249,6 +280,8 @@ func _physics_process(delta: float) -> void:
 	if _player == null or not is_instance_valid(_player):
 		_player = get_tree().get_first_node_in_group("player") as Player
 	if _update_ambush():
+		return
+	if _sleep_far_away(delta):
 		return
 	if not global_position.is_finite() or not velocity.is_finite():
 		push_warning("Enemy %s: invalid position, back to spawn (home %s, state %s, vel %s, ambush %s)" % [data.id, _home, state_name(), velocity, _ambushing])
@@ -439,7 +472,7 @@ func _notice() -> void:
 	var call_range := 70.0 + 110.0 * coordination()
 	if coordination() <= 0.0:
 		return
-	for e in get_tree().get_nodes_in_group("enemies"):
+	for e in all_enemies():
 		var other := e as Enemy
 		if other == null or other == self or other.is_dead():
 			continue
@@ -449,6 +482,8 @@ func _notice() -> void:
 
 ## A sound at `pos` (fight, explosion, an ally calling).
 func hear(pos: Vector2) -> void:
+	_dormant = false
+	_dormant_check = 1.0
 	if _dead or state in [State.CHASE, State.ATTACK, State.ALERT, State.HURT]:
 		return
 	_last_seen = pos
@@ -486,7 +521,7 @@ func coordination() -> float:
 ## Monsters do not stand inside each other: a small push away from neighbours.
 func _update_separation() -> void:
 	_sep = Vector2.ZERO
-	for e in get_tree().get_nodes_in_group("enemies"):
+	for e in all_enemies():
 		var other := e as Enemy
 		if other == null or other == self or other.is_dead():
 			continue
@@ -512,7 +547,7 @@ func _update_tactics() -> void:
 	var closer_allies := 0
 	var far_allies := 0
 	var my_dist := _distance_to_player()
-	for e in get_tree().get_nodes_in_group("enemies"):
+	for e in all_enemies():
 		var other := e as Enemy
 		if other == null or other == self or other.is_dead() or other.state not in [State.CHASE, State.ATTACK]:
 			continue
@@ -1326,6 +1361,7 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 		EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 4), "Иммунитет", Color(0.7, 0.7, 0.7))
 		return
 	hp -= dealt
+	_dormant = false
 	hp_bar.visible = true
 	hp_bar.max_value = max_hp
 	hp_bar.value = hp

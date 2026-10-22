@@ -26,6 +26,8 @@ var _texture: ImageTexture
 var _level: DungeonLevel
 var _version := -1
 var _blink := 0.0
+var _marks: Array = []  # [cell, color]
+var _marks_timer := 0.0
 var _legend: RichTextLabel
 
 
@@ -121,13 +123,54 @@ func _process(delta: float) -> void:
 		_texture = ImageTexture.create_from_image(_image)
 		_small_tex.texture = _texture
 		_big_tex.texture = _texture
-	if _level.explored_version != _version:
+	if _version == -1:
 		_version = _level.explored_version
+		_level.changed_cells.clear()
 		_redraw_image()
+	elif not _level.changed_cells.is_empty():
+		_version = _level.explored_version
+		_update_cells(_level.changed_cells)
+		_level.changed_cells.clear()
 	_layout(player)
-	_small_marks.queue_redraw()
-	if _big.visible:
-		_big_marks.queue_redraw()
+	# Marks (chests, door, elites...) refresh 10 times a second, not every frame.
+	_marks_timer -= delta
+	if _marks_timer <= 0.0:
+		_marks_timer = 0.1
+		_collect_marks()
+		_small_marks.queue_redraw()
+		if _big.visible:
+			_big_marks.queue_redraw()
+
+
+## Only the cells that changed since the last frame.
+func _update_cells(cells: Array[Vector2i]) -> void:
+	var lay := _level.layout
+	for c in cells:
+		if lay.in_bounds(c.x, c.y):
+			_image.set_pixel(c.x, c.y, COLORS.get(lay.get_tile(c.x, c.y), Color.MAGENTA) if _level.explored[c.y * lay.width + c.x] == 1 else Color(0, 0, 0, 0))
+	_texture.update(_image)
+
+
+## Entities worth a mark, gathered once per refresh.
+func _collect_marks() -> void:
+	_marks.clear()
+	for n in _level.entities.get_children():
+		var color := Color(0, 0, 0, 0)
+		if n is ExitDoor:
+			color = Color(0.8, 0.4, 1.0)
+		elif n is Chest and not n.opened:
+			color = Color(1.0, 0.85, 0.2)
+		elif n is Merchant:
+			color = Color(0.3, 1.0, 0.4)
+		elif n is EventObject and not n.used:
+			color = Color(0.3, 0.9, 1.0)
+		elif n is Boss or (n is Enemy and n.elite != null and not n.is_dead()):
+			color = Color(1.0, 0.25, 0.2)
+		if color.a == 0.0:
+			continue
+		var cell := _level.world_to_cell(n.global_position + Vector2(0, -4))
+		if _level.is_explored(cell):
+			_marks.append([cell, color])
 
 
 func _redraw_image() -> void:
@@ -167,24 +210,9 @@ func _draw_marks(canvas: Control, scale_default: float, small: bool) -> void:
 		return
 	var sc: float = canvas.get_meta("scale", scale_default)
 	var dot := maxf(2.0, sc)
-	for n in _level.entities.get_children():
-		var color := Color(0, 0, 0, 0)
-		if n is ExitDoor:
-			color = Color(0.8, 0.4, 1.0)
-		elif n is Chest and not n.opened:
-			color = Color(1.0, 0.85, 0.2)
-		elif n is Merchant:
-			color = Color(0.3, 1.0, 0.4)
-		elif n is EventObject and not n.used:
-			color = Color(0.3, 0.9, 1.0)
-		elif n is Boss or (n is Enemy and n.elite != null and not n.is_dead()):
-			color = Color(1.0, 0.25, 0.2)
-		if color.a == 0.0:
-			continue
-		var cell := _level.world_to_cell(n.global_position + Vector2(0, -4))
-		if not _level.is_explored(cell):
-			continue
-		canvas.draw_rect(Rect2(Vector2(cell) * sc - Vector2(dot, dot) / 2.0 + Vector2(sc, sc) / 2.0, Vector2(dot, dot)), color)
+	for m in _marks:
+		var cell: Vector2i = m[0]
+		canvas.draw_rect(Rect2(Vector2(cell) * sc - Vector2(dot, dot) / 2.0 + Vector2(sc, sc) / 2.0, Vector2(dot, dot)), m[1])
 	var player := get_tree().get_first_node_in_group("player") as Node2D
 	if player and int(_blink * 4.0) % 2 == 0:
 		var pc := _level.world_to_cell(player.global_position + Vector2(0, -8))

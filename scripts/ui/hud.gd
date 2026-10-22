@@ -29,6 +29,7 @@ var _status_keys: Array[String] = []
 var _boss_box: Control
 var _boss_bar: StatBar
 var _boss_name: Label
+var _panel: Control
 
 
 func _ready() -> void:
@@ -53,6 +54,8 @@ func setup(p_hero: Hero, player: Player) -> void:
 	hero.skills.changed.connect(_refresh_skills)
 	EventBus.message.connect(show_message)
 	SaveManager.settings_changed.connect(_refresh_key_labels)
+	SaveManager.settings_changed.connect(_apply_scale)
+	_apply_scale()
 	EventBus.item_collected.connect(_fly_item)
 	EventBus.boss_spawned.connect(_on_boss_spawned)
 	EventBus.boss_hp_changed.connect(func(hp: int, mx: int) -> void: _boss_bar.set_values(hp, mx))
@@ -85,6 +88,9 @@ func _build() -> void:
 	panel.offset_left = -panel_size.x / 2.0
 	panel.offset_right = panel_size.x / 2.0
 	panel.offset_top = -panel_size.y
+	# Shrinks towards the bottom edge (Settings → «Размер панели»).
+	panel.pivot_offset = Vector2(panel_size.x / 2.0, panel_size.y)
+	_panel = panel
 	root.add_child(panel)
 	panel.add_child(UIStyle.frame(AssetPaths.BOOK_PANEL, 30, 0.5))
 	# Metal rivets along the panel border (like the reference HUD).
@@ -221,6 +227,11 @@ func _on_boss_spawned(b: Node) -> void:
 func _refresh_quick() -> void:
 	for q in _quick_slots:
 		q.refresh()
+
+
+func _apply_scale() -> void:
+	var k := clampf(SaveManager.hud_scale, 0.6, 1.0)
+	_panel.scale = Vector2(k, k)
 
 
 ## Key hints follow the player's bindings (settings → controls).

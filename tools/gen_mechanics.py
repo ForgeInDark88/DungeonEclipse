@@ -698,6 +698,38 @@ def achievement_icons():
             gp.save(im, "sprites/achievements/%s_%s.png" % (gname, tier))
 
 
+# --------------------------------------------- monsters that throw "slow"
+def slow_throwers():
+    """Frost imp (recoloured cultist) and bog spitter (recoloured slime) with
+    their projectiles: a snowball and a lump of sticky mud."""
+    def recolor(src, dst, k):
+        im = Image.open(os.path.join(A, src)).convert("RGBA")
+        px = im.load()
+        for y in range(im.height):
+            for x in range(im.width):
+                r, g, b, a = px[x, y]
+                if a:
+                    px[x, y] = k(r, g, b, a)
+        im.save(os.path.join(A, dst))
+    icy = lambda r, g, b, a: (min(255, int(b * 0.6 + 40)), min(255, int(g * 0.8 + 60)), min(255, int(r * 0.4 + g * 0.3 + 120)), a)
+    mud = lambda r, g, b, a: (min(255, int(g * 0.55 + 40)), min(255, int(g * 0.6 + 30)), min(255, int(b * 0.3 + 15)), a)
+    recolor("sprites/enemies/cultist_sheet.png", "sprites/enemies/frost_imp_sheet.png", icy)
+    recolor("sprites/enemies/cultist.png", "sprites/enemies/frost_imp.png", icy)
+    recolor("sprites/enemies/slime_sheet.png", "sprites/enemies/bog_spitter_sheet.png", mud)
+    recolor("sprites/enemies/slime.png", "sprites/enemies/bog_spitter.png", mud)
+    snow = gp.new(8, 8)
+    d = ImageDraw.Draw(snow)
+    d.ellipse((1, 1, 6, 6), fill=(230, 245, 255, 255))
+    d.point((3, 2), fill=(255, 255, 255, 255))
+    d.point((5, 5), fill=(150, 200, 240, 255))
+    gp.save(snow, "sprites/fx/snowball.png")
+    goo = gp.new(8, 8)
+    d = ImageDraw.Draw(goo)
+    d.ellipse((1, 2, 7, 7), fill=(95, 90, 40, 255))
+    d.point((3, 3), fill=(160, 150, 80, 255))
+    gp.save(goo, "sprites/fx/goo.png")
+
+
 def main():
     os.makedirs(os.path.join(A, "ui/status"), exist_ok=True)
     status_icons()
@@ -708,6 +740,7 @@ def main():
     events()
     meta_icons()
     achievement_icons()
+    slow_throwers()
     print("mechanics generated")
 
 

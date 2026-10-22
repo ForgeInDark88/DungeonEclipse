@@ -41,12 +41,7 @@ func setup(tex: Texture2D, dir: Vector2, p_speed: float, p_damage: int, group: S
 func _ready() -> void:
 	rotation = direction.angle()
 	body_entered.connect(_on_body_entered)
-	var light := PointLight2D.new()
-	light.texture = AssetPaths.tex(AssetPaths.LIGHT)
-	light.texture_scale = 0.25
-	light.energy = 0.8
-	light.color = blast_color
-	add_child(light)
+	sprite.modulate = Color.WHITE.lerp(blast_color, 0.15)  # (no light per shot: cheaper)
 
 
 func _physics_process(delta: float) -> void:
