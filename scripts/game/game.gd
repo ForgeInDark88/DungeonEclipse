@@ -61,10 +61,10 @@ func _ready() -> void:
 	SaveManager.settings_changed.connect(_apply_brightness)
 	EventBus.shop_requested.connect(_open_shop)
 	EventBus.boss_spawned.connect(func(b: Node) -> void: AudioManager.play_music((b as Boss).boss.music))
+	# Boss defeated: a victory sting, then back to the floor's music.
 	EventBus.boss_defeated.connect(func(_b: BossData, _p: Vector2) -> void:
 		var biome := GameState.current_biome()
-		if biome:
-			AudioManager.play_music(biome.music))
+		AudioManager.play_sting(&"victory", biome.music if biome else &""))
 	_load_floor()
 
 
@@ -235,6 +235,7 @@ func _exit_tree() -> void:
 
 
 func _on_player_died() -> void:
+	AudioManager.play_sting(&"death")
 	book.close()
 	skill_tree.close()
 	await get_tree().create_timer(1.2).timeout

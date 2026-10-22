@@ -3,18 +3,29 @@ extends Node
 ## UI sounds and music with cross-fade. Buses Music / SFX / UI are created at
 ## start-up under Master; volumes come from SaveManager.
 ## Sounds are referenced by id (AssetPaths.SFX / AssetPaths.MUSIC); a missing
-## file is skipped silently, so placeholder files can be removed or replaced.
+## file is skipped silently (music first tries AssetPaths.MUSIC_FALLBACK), so
+## placeholder files can be removed or replaced at any time.
+##
+## Music by situation (who calls what): menus → "menu"; a floor → the biome
+## track (BiomeData.music); boss arena → BossData.music; boss defeated →
+## sting "victory", then back to the biome; hero died → sting "death".
+## Every change is a cross-fade of MUSIC_FADE seconds.
 
 const BUSES: Array[StringName] = [&"Music", &"SFX", &"UI"]
 const WORLD_VOICES := 16
 const UI_VOICES := 4
-const MUSIC_FADE := 1.2
+const MUSIC_FADE := 1.5
+
+## A one-shot track (victory, death) ended.
+signal music_finished(id: StringName)
 
 var _world: Array[AudioStreamPlayer2D] = []
 var _ui: Array[AudioStreamPlayer] = []
 var _music: Array[AudioStreamPlayer] = []
 var _music_index := 0
 var _music_id: StringName = &""
+## Track to return to when the current sting ends (&"" = stay silent).
+var _after_sting: StringName = &""
 var _cache: Dictionary = {}  # path -> AudioStream
 var _last_played: Dictionary = {}  # id -> msec (avoid stacking the same sound)
 
@@ -45,7 +56,7 @@ func _ready() -> void:
 		p.volume_db = -80.0
 		p.finished.connect(func() -> void:
 			if p == _music[_music_index]:
-				p.play())  # loop
+				_on_music_finished(p))
 		add_child(p)
 		_music.append(p)
 	apply_volumes()
@@ -118,6 +129,37 @@ func play_ui(id: StringName, volume_db := 0.0) -> void:
 
 ## Cross-fades to another music track (same id = keep playing).
 func play_music(id: StringName) -> void:
+	_after_sting = &""
+	_switch_music(id)
+
+
+## Plays a one-shot track, then cross-fades to `then_id` (&"" = silence).
+func play_sting(id: StringName, then_id: StringName = &"") -> void:
+	_switch_music(id)
+	_after_sting = then_id
+	if _music_stream(id) == null:  # no file: go on right away
+		_after_sting = &""
+		if then_id != &"":
+			_switch_music(then_id)
+
+
+func current_music() -> StringName:
+	return _music_id
+
+
+## The stream for `id`, following AssetPaths.MUSIC_FALLBACK when a file is missing.
+func _music_stream(id: StringName) -> AudioStream:
+	var tried := {}
+	while id != &"" and not tried.has(id):
+		tried[id] = true
+		var stream := _stream(AssetPaths.MUSIC.get(id, ""))
+		if stream:
+			return stream
+		id = AssetPaths.MUSIC_FALLBACK.get(id, &"")
+	return null
+
+
+func _switch_music(id: StringName) -> void:
 	if id == _music_id:
 		return
 	_music_id = id
@@ -128,13 +170,27 @@ func play_music(id: StringName) -> void:
 		var tw := create_tween()
 		tw.tween_property(old, "volume_db", -80.0, MUSIC_FADE)
 		tw.tween_callback(old.stop)
-	var stream: AudioStream = _stream(AssetPaths.MUSIC.get(id, ""))
+	new.stop()
+	var stream := _music_stream(id)
 	if stream == null:
 		return
 	new.stream = stream
 	new.volume_db = -40.0
 	new.play()
 	create_tween().tween_property(new, "volume_db", 0.0, MUSIC_FADE)
+
+
+func _on_music_finished(p: AudioStreamPlayer) -> void:
+	if _music_id not in AssetPaths.MUSIC_ONE_SHOT:
+		p.play()  # loop
+		return
+	var done := _music_id
+	music_finished.emit(done)
+	var next := _after_sting
+	_after_sting = &""
+	_music_id = &""
+	if next != &"":
+		_switch_music(next)
 
 
 func stop_music() -> void:

@@ -162,6 +162,26 @@ def chord_loop(root, minor=True, dur=16.0, tempo=0.5, flavor="drone"):
     return x
 
 
+def _fit(a, n):
+    """Exactly n samples (rounding in tone()/env() can differ by one)."""
+    return a[:n] if len(a) >= n else np.pad(a, (0, n - len(a)))
+
+
+def sting(notes, dur, kind="tri"):
+    """One-shot jingle: notes one after another, the last one rings out."""
+    x = np.zeros(int(dur * SR))
+    step = dur / (len(notes) + 2)
+    for i, f in enumerate(notes):
+        start = int(i * step * SR)
+        n = len(x) - start if i == len(notes) - 1 else int(step * SR * 1.6)
+        seg = (_fit(tone(f, n / SR, kind), n) + 0.5 * _fit(tone(f * 2, n / SR, "sine"), n)) * _fit(env(n, 0.01, n / SR * (0.9 if i == len(notes) - 1 else 0.6)), n) * 0.3
+        end = min(len(x), start + n)
+        x[start:end] += seg[: end - start]
+    x += 0.15 * np.sin(2 * np.pi * notes[0] / 2 * np.arange(len(x)) / SR) * np.linspace(1, 0, len(x))
+    x[-int(0.05 * SR):] *= np.linspace(1, 0, int(0.05 * SR))
+    return x
+
+
 def make_music():
     save(os.path.join(MUSIC, "music_menu.wav"), chord_loop(110.0, True, 16, 0.6), 0.35)
     save(os.path.join(MUSIC, "music_catacombs.wav"), chord_loop(98.0, True, 16, 0.55), 0.35)
@@ -169,6 +189,11 @@ def make_music():
     save(os.path.join(MUSIC, "music_ruins.wav"), chord_loop(116.5, True, 16, 0.5), 0.35)
     save(os.path.join(MUSIC, "music_lava.wav"), chord_loop(87.3, True, 16, 0.35), 0.4)
     save(os.path.join(MUSIC, "music_boss.wav"), chord_loop(73.4, True, 16, 0.25, "boss"), 0.45)
+    save(os.path.join(MUSIC, "music_boss_bone_king.wav"), chord_loop(65.4, True, 16, 0.3, "boss"), 0.45)
+    save(os.path.join(MUSIC, "music_boss_flame_witch.wav"), chord_loop(82.4, True, 16, 0.2, "boss"), 0.45)
+    # Stings (not looped): victory — rising major arpeggio, death — falling minor line.
+    save(os.path.join(MUSIC, "music_victory.wav"), sting([261.6, 329.6, 392.0, 523.3, 659.3], 4.0), 0.45)
+    save(os.path.join(MUSIC, "music_death.wav"), sting([220.0, 196.0, 174.6, 164.8, 110.0], 4.5, "sine"), 0.45)
 
 
 if __name__ == "__main__":

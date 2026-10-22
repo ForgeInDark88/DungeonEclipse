@@ -458,6 +458,14 @@ func _test_audio() -> void:
 	check(missing.is_empty(), "data sound ids are known %s" % str(missing))
 	AudioManager.play_sfx(&"explosion")
 	AudioManager.play_ui(&"ui_click")
+	# Missing music: no errors, silence or the fallback.
+	AudioManager.play_music(&"no_such_track")
+	check(AudioManager.current_music() == &"no_such_track" and AudioManager._music_stream(&"no_such_track") == null, "unknown track: silence, no error")
+	AudioManager.play_sting(&"no_such_sting", &"menu")
+	check(AudioManager.current_music() == &"menu", "missing sting goes straight to the next track")
+	check(AudioManager._music_stream(&"boss_bone_king") != null, "boss theme loads")
+	for b in ItemDatabase.bosses:
+		check(AssetPaths.MUSIC.has(b.music), "boss %s has a known music id (%s)" % [b.id, b.music])
 
 
 func _test_statuses() -> void:
@@ -1044,6 +1052,7 @@ func _test_scenes() -> void:
 		var b: Boss = boss_nodes[0]
 		var boss_hud: HUD = game.get_node("HUD")
 		check(boss_hud._boss_box.visible, "boss bar shown for %s" % b.boss.display_name)
+		check(AudioManager.current_music() == b.boss.music, "boss music on entering the arena (%s)" % AudioManager.current_music())
 		player.status.apply(&"shield", 30.0, 99999.0)
 		await get_tree().create_timer(3.5).timeout
 		player.camera.reset_smoothing()
@@ -1061,6 +1070,13 @@ func _test_scenes() -> void:
 			if n is Chest and n.tier == 2 and not n.locked:
 				boss_chests += 1
 		check(boss_doors == 1 and boss_chests == 1, "boss death opens the door and drops an epic chest")
+		check(AudioManager.current_music() == &"victory", "victory sting after the boss (%s)" % AudioManager.current_music())
+		var back_to: StringName = GameState.current_biome().music
+		for i in 70:
+			await frames(10)
+			if AudioManager.current_music() == back_to:
+				break
+		check(AudioManager.current_music() == back_to, "music returns to the biome after the sting (%s)" % AudioManager.current_music())
 		player.status.clear()
 	GameState.floor_number = 1
 	game._load_floor()
@@ -1084,9 +1100,14 @@ func _test_scenes() -> void:
 	await frames(20)
 	await shot("09_floor2")
 	# death
+	var stings := []
+	var on_sting := func(id: StringName) -> void: stings.append(id)
+	AudioManager.music_finished.connect(on_sting)
 	player.hero.stats.take_damage(99999)
 	await frames(100)
 	check(player.dead, "player died")
+	check(AudioManager.current_music() == &"death" or &"death" in stings, "death sting (%s, finished %s)" % [AudioManager.current_music(), stings])
+	AudioManager.music_finished.disconnect(on_sting)
 	await shot("10_death")
 	GameState.go_to_menu()
 	await frames(10)
