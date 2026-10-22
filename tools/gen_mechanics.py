@@ -934,6 +934,8 @@ def main():
     pets()
     crosshair()
     illusionist()
+    import gen_bosses  # detailed bosses over the ones above
+    gen_bosses.main()
     import gen_structures  # detailed altars, cage, traps, merchant... over the ones above
     gen_structures.main()
     print("mechanics generated")
