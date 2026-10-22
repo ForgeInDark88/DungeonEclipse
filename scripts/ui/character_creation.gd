@@ -142,9 +142,9 @@ func _refresh_preview() -> void:
 	for child in _portrait_box.get_children():
 		if not (child is PixelFrame):
 			child.queue_free()
-	var p := UIStyle.portrait(_race, _class, Vector2(52, 52))
-	p.position = Vector2(4, 4)
-	p.size = Vector2(52, 52)
+	var p := UIStyle.portrait(_race, _class, Vector2(48, 48))
+	p.position = Vector2(6, 6)
+	p.size = Vector2(48, 48)
 	_portrait_box.add_child(p)
 
 	var s := Stats.new()
