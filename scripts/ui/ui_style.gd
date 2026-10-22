@@ -64,7 +64,8 @@ static func portrait(race: RaceData, class_data: ClassData, size_px: Vector2) ->
 		var hero_path := AssetPaths.hero_portrait_path(race.id, class_data.id)
 		if ResourceLoader.exists(hero_path):
 			var bg_path := AssetPaths.portrait_bg_path(class_data.id)
-			layers = [load(bg_path) if ResourceLoader.exists(bg_path) else null, load(hero_path)]
+			layers = [load(bg_path) if ResourceLoader.exists(bg_path) else null,
+					AssetPaths.hero_portrait_frame(load(hero_path), &"neutral0")]
 	for tex: Texture2D in layers:
 		var t := TextureRect.new()
 		t.texture = tex

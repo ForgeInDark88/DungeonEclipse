@@ -33,9 +33,13 @@ const TRAP_ROCK := SPRITES_DIR + "traps/rock.png"
 const TRAP_CRACK := SPRITES_DIR + "traps/ceiling_crack.png"
 const MERCHANT_SHEET := SPRITES_DIR + "npc/merchant_sheet.png"
 ## Heroic close-up portraits per race x class (tools/gen_hero_portraits.py):
-## hero_<race>_<class>[_<expression>].png over bg_<class>.png. When a pair has
-## none, the old layers (RaceData.portrait + ClassData.portrait_overlay) are used.
+## hero_<race>_<class>.png is a sheet of HERO_PORTRAIT_FRAMES (64x64 each)
+## over bg_<class>.png. When a pair has none, the old layers
+## (RaceData.portrait + ClassData.portrait_overlay) are used.
 const PORTRAITS_DIR := SPRITES_DIR + "portraits/"
+const HERO_PORTRAIT_SIZE := 64
+const HERO_PORTRAIT_FRAMES: Array[StringName] = [&"neutral0", &"neutral1", &"blink_half", &"blink", &"glance",
+		&"hurt0", &"hurt1", &"wounded0", &"wounded1", &"fierce0", &"fierce1"]
 ## Pets: one sheet per pet (PetData.sheet), shared frame layout.
 const PET_SCENE := "res://scenes/pets/pet.tscn"
 const PET_LAYOUT := "res://data/animations/pet_layout.tres"
@@ -191,9 +195,17 @@ static func flash_material() -> ShaderMaterial:
 	return m
 
 
-static func hero_portrait_path(race_id: StringName, class_id: StringName, expression := "") -> String:
-	var suffix := "" if expression == "" else "_" + expression
-	return PORTRAITS_DIR + "hero_%s_%s%s.png" % [race_id, class_id, suffix]
+static func hero_portrait_path(race_id: StringName, class_id: StringName) -> String:
+	return PORTRAITS_DIR + "hero_%s_%s.png" % [race_id, class_id]
+
+
+## One frame of a hero portrait sheet (see HERO_PORTRAIT_FRAMES).
+static func hero_portrait_frame(sheet: Texture2D, frame: StringName) -> AtlasTexture:
+	var a := AtlasTexture.new()
+	a.atlas = sheet
+	var i := maxi(0, HERO_PORTRAIT_FRAMES.find(frame))
+	a.region = Rect2(i * HERO_PORTRAIT_SIZE, 0, HERO_PORTRAIT_SIZE, HERO_PORTRAIT_SIZE)
+	return a
 
 
 static func portrait_bg_path(class_id: StringName) -> String:
