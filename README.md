@@ -81,9 +81,9 @@
 ```
 assets/            картинки (заглушки), ui/ — книга, рамки, тема
 data/              ВСЕ игровые данные в .tres
+  items/{equipment,usable,materials}/
   races/  classes/  skills/  enemies/  loot_tables/  animations/  affixes/  biomes/
   traps/  bosses/  elites/  events/  meta/ (Святилище)  achievements/
-  races/  classes/  skills/  enemies/  loot_tables/
   equipment_layout.tres   список слотов экипировки
 scenes/            player/ enemies/ levels/ world/ ui/ game/
 scripts/
