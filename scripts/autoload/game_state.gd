@@ -26,6 +26,8 @@ var daily_date: String = ""
 
 func _ready() -> void:
 	EventBus.enemy_killed.connect(func(_d: EnemyData, _p: Vector2) -> void: kills += 1)
+	EventBus.elite_killed.connect(func(_d: EnemyData) -> void:
+		run_stats["elites"] = int(run_stats.get("elites", 0)) + 1)
 
 
 ## `seed_value` >= 0 makes the whole run reproducible (daily runs, tests).
@@ -44,7 +46,7 @@ func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, 
 
 
 func reset_run_stats() -> void:
-	run_stats = {"gold": 0, "found": [0, 0, 0], "bosses": 0, "start_ms": Time.get_ticks_msec()}
+	run_stats = {"gold": 0, "found": [0, 0, 0], "bosses": 0, "elites": 0, "start_ms": Time.get_ticks_msec()}
 
 
 ## Seed of the current floor: each run and each floor is different.

@@ -296,3 +296,9 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 				hero.quick_bar.assign(index, data["item"])
 			elif src == Kind.QUICK:
 				hero.quick_bar.swap(data["index"], index)
+
+
+func set_key_label(text: String) -> void:
+	key_label = text
+	if _key:
+		_key.text = text

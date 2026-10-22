@@ -53,6 +53,11 @@ func add_text(text: String, font_size: int = 8) -> Label:
 	return l
 
 
+func add_control(c: Control) -> Control:
+	_box.add_child(c)
+	return c
+
+
 func add_button(text: String, cb: Callable) -> Button:
 	var b := BookPageScreen.button(text, cb)
 	_box.add_child(b)

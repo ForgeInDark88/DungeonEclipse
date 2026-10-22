@@ -156,3 +156,9 @@ func _gui_input(event: InputEvent) -> void:
 			var player := get_tree().get_first_node_in_group("player") as Player
 			if player and not get_tree().paused:
 				player.use_skill(index)
+
+
+func set_key_label(text: String) -> void:
+	key_label = text
+	if _key:
+		_key.text = text

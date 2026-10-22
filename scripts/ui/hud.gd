@@ -8,7 +8,6 @@ const PADDING := 12
 const GAP := 3
 const PORTRAIT := Vector2(56, 56)
 const BARS_W := 104
-const SKILL_KEYS := ["Q", "E", "R", "F", "Z", "X", "C", "V"]
 
 var hero: Hero
 var _skill_slots: Array[SkillSlot] = []
@@ -53,6 +52,7 @@ func setup(p_hero: Hero, player: Player) -> void:
 	hero.quick_bar.changed.connect(_refresh_quick)
 	hero.skills.changed.connect(_refresh_skills)
 	EventBus.message.connect(show_message)
+	SaveManager.settings_changed.connect(_refresh_key_labels)
 	EventBus.item_collected.connect(_fly_item)
 	EventBus.boss_spawned.connect(_on_boss_spawned)
 	EventBus.boss_hp_changed.connect(func(hp: int, mx: int) -> void: _boss_bar.set_values(hp, mx))
@@ -123,7 +123,7 @@ func _build() -> void:
 	# Skills (top row) and quick slots (bottom row)
 	var x0 := PADDING + PORTRAIT.x + 8
 	for i in SkillSet.SLOT_COUNT:
-		var s := SkillSlot.create(hero, i, SKILL_KEYS[i])
+		var s := SkillSlot.create(hero, i, InputBindings.key_for("skill_%d" % (i + 1)))
 		s.position = Vector2(x0 + i * (UIStyle.SLOT_SIZE.x + GAP), PADDING)
 		panel.add_child(s)
 		_skill_slots.append(s)
@@ -131,7 +131,7 @@ func _build() -> void:
 	var quick_x := x0 + (UIStyle.SLOT_SIZE.x + GAP) / 2.0
 	for i in QuickBar.SIZE:
 		var q := ItemSlot.create(ItemSlot.Kind.QUICK, hero, i)
-		q.key_label = str(i + 1)
+		q.key_label = InputBindings.key_for("quick_%d" % (i + 1))
 		q.position = Vector2(quick_x + i * (UIStyle.SLOT_SIZE.x + GAP), quick_y)
 		panel.add_child(q)
 		_quick_slots.append(q)
@@ -221,6 +221,14 @@ func _on_boss_spawned(b: Node) -> void:
 func _refresh_quick() -> void:
 	for q in _quick_slots:
 		q.refresh()
+
+
+## Key hints follow the player's bindings (settings → controls).
+func _refresh_key_labels() -> void:
+	for i in _skill_slots.size():
+		_skill_slots[i].set_key_label(InputBindings.key_for("skill_%d" % (i + 1)))
+	for i in _quick_slots.size():
+		_quick_slots[i].set_key_label(InputBindings.key_for("quick_%d" % (i + 1)))
 
 
 func _refresh_skills() -> void:

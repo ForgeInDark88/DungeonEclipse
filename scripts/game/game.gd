@@ -13,6 +13,7 @@ const DAMAGE_NUMBER_SCENE := preload("res://scenes/world/damage_number.tscn")
 @onready var book: InventoryBook = $InventoryBook
 @onready var overlay: OverlayPanel = $Overlay
 var skill_tree: SkillTreeBook
+var hints: HintManager
 
 var level: DungeonLevel
 var player: Player
@@ -40,6 +41,9 @@ func _ready() -> void:
 	skill_tree = SkillTreeBook.new()
 	add_child(skill_tree)
 	skill_tree.setup(hero)
+	hints = HintManager.new()
+	add_child(hints)
+	hints.setup(player)
 
 	EventBus.spawn_items.connect(_on_spawn_items)
 	EventBus.floating_text.connect(_on_floating_text)
@@ -127,9 +131,13 @@ func _toggle_pause() -> void:
 		return
 	get_tree().paused = true
 	overlay.clear()
-	overlay.set_panel_size(Vector2(220, 160))
+	overlay.set_panel_size(Vector2(220, 200))
 	overlay.add_text("Пауза", 12)
 	overlay.add_button("Продолжить", _toggle_pause).grab_focus()
+	overlay.add_button("Настройки", open_settings)
+	overlay.add_button("Дерево навыков", func() -> void:
+		_toggle_pause()
+		skill_tree.open())
 	overlay.add_button("В главное меню", func() -> void: GameState.go_to_menu())
 	overlay.add_text("(забег будет потерян)", 7)
 	overlay.visible = true
@@ -160,19 +168,25 @@ func _open_shop(merchant: Node, _player: Node) -> void:
 
 ## Damage numbers + game feel: hit-stop, camera shake, red flash on the hero.
 func _on_damage_dealt(pos: Vector2, amount: int, crit: bool, on_player: bool) -> void:
-	var n: DamageNumber = DAMAGE_NUMBER_SCENE.instantiate()
-	world.add_child(n)
+	# Numbers can be turned off in the settings; the game feel stays.
+	var n: DamageNumber = null
+	if SaveManager.show_damage_numbers:
+		n = DAMAGE_NUMBER_SCENE.instantiate()
+		world.add_child(n)
 	if on_player:
-		n.show_text(str(amount), Color(1.0, 0.3, 0.3), pos, 1.2)
+		if n:
+			n.show_text(str(amount), Color(1.0, 0.3, 0.3), pos, 1.2)
 		_shake = maxf(_shake, 4.0)
 		_flash_screen(Color(0.8, 0.05, 0.05, 0.35))
 		hit_stop(0.06)
 	elif crit:
-		n.show_text("%d!" % amount, Color(1.0, 0.85, 0.2), pos, 1.6)
+		if n:
+			n.show_text("%d!" % amount, Color(1.0, 0.85, 0.2), pos, 1.6)
 		_shake = maxf(_shake, 3.0)
 		hit_stop(0.07)
 	else:
-		n.show_text(str(amount), Color.WHITE, pos)
+		if n:
+			n.show_text(str(amount), Color.WHITE, pos)
 		_shake = maxf(_shake, 1.2)
 		hit_stop(0.03)
 
@@ -184,6 +198,15 @@ func hit_stop(duration: float) -> void:
 	Engine.time_scale = 0.05
 	await get_tree().create_timer(duration, true, false, true).timeout
 	Engine.time_scale = 1.0
+
+
+## Settings book over the pause menu; the pause menu comes back when it closes.
+func open_settings() -> SettingsBook:
+	overlay.visible = false
+	var sb := SettingsBook.new()
+	add_child(sb)
+	sb.closed.connect(func() -> void: overlay.visible = true)
+	return sb
 
 
 func _flash_screen(color: Color) -> void:
@@ -203,12 +226,21 @@ func _on_player_died() -> void:
 	await get_tree().create_timer(1.2).timeout
 	var hero := GameState.hero
 	get_tree().paused = true
-	overlay.clear()
-	overlay.set_panel_size(Vector2(300, 230))
-	overlay.add_text("Герой погиб", 14)
-	overlay.add_text("%s %s, уровень %d\nДостигнут этаж: %d\nУбито врагов: %d" % [
-		hero.race.display_name, hero.class_data.display_name, hero.level, GameState.floor_number, GameState.kills])
+	var stats := GameState.run_stats.duplicate()
+	var seconds := (Time.get_ticks_msec() - int(stats.get("start_ms", 0))) / 1000
 	var reward := GameState.end_run()
+	overlay.clear()
+	overlay.set_panel_size(Vector2(340, 236))
+	overlay.add_text("Герой погиб", 14)
+	overlay.add_text("%s %s · уровень %d" % [hero.race.display_name, hero.class_data.display_name, hero.level], 8)
+	var found: Array = stats.get("found", [0, 0, 0])
+	overlay.add_control(_stats_grid([
+		["Этаж", str(GameState.floor_number)], ["Время", "%d:%02d" % [seconds / 60, seconds % 60]],
+		["Убито врагов", str(GameState.kills)], ["Элиты / стражи", "%d / %d" % [int(stats.get("elites", 0)), int(stats.get("bosses", 0))]],
+		["Золото собрано", str(int(stats.get("gold", 0)))], ["Находки", "[color=#%s]%d[/color] · [color=#%s]%d[/color] · [color=#%s]%d[/color]" % [
+			UIStyle.INK.to_html(false), found[0], ItemData.RARITY_COLORS[1].darkened(0.3).to_html(false), found[1],
+			ItemData.RARITY_COLORS[2].darkened(0.2).to_html(false), found[2]]],
+	]))
 	if reward.has("daily"):
 		var d: Dictionary = reward["daily"]
 		overlay.add_text("Ежедневный забег: %d очков%s" % [d["score"], (", место %d за сегодня" % d["place"]) if d["place"] > 0 else ""], 9)
@@ -216,6 +248,31 @@ func _on_player_died() -> void:
 		var text := "Святилище Затмения: +%d осколков, +%d золота" % [reward["shards"], reward["gold"]]
 		if not reward["parts"].is_empty():
 			text += "\n(" + ", ".join(reward["parts"]) + ")"
-		overlay.add_text(text, 8)
+		overlay.add_text(text, 7)
 	overlay.add_button("В главное меню", func() -> void: GameState.go_to_menu()).grab_focus()
 	overlay.visible = true
+
+
+## Two-column table of run statistics: [[label, value (bbcode)], ...].
+func _stats_grid(rows: Array) -> Control:
+	var grid := GridContainer.new()
+	grid.columns = 4
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 1)
+	for r in rows:
+		var l := UIStyle.label(r[0] + ":", 7, UIStyle.INK_SOFT)
+		grid.add_child(l)
+		var v := RichTextLabel.new()
+		v.bbcode_enabled = true
+		v.fit_content = true
+		v.scroll_active = false
+		v.autowrap_mode = TextServer.AUTOWRAP_OFF
+		v.custom_minimum_size = Vector2(56, 0)
+		v.add_theme_color_override("default_color", UIStyle.INK)
+		v.add_theme_font_size_override("normal_font_size", 8)
+		v.text = "[b]%s[/b]" % r[1]
+		v.add_theme_font_size_override("bold_font_size", 8)
+		grid.add_child(v)
+	var center := CenterContainer.new()
+	center.add_child(grid)
+	return center

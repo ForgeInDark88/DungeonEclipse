@@ -269,7 +269,7 @@ func _show(s: SkillData) -> void:
 	if not s.is_passive():
 		var slot := sk.skills.find(s)
 		if slot >= 0:
-			text += "\n[color=#%s]Слот HUD: %s[/color]" % [UIStyle.INK_SOFT.to_html(false), HUD.SKILL_KEYS[slot]]
+			text += "\n[color=#%s]Слот HUD: %s[/color]" % [UIStyle.INK_SOFT.to_html(false), InputBindings.key_for("skill_%d" % (slot + 1))]
 	_text.text = text
 	var reason := sk.block_reason(s, hero.level)
 	_reason.text = reason

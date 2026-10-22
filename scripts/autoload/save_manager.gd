@@ -1,6 +1,9 @@
 extends Node
 ## Saves settings and meta progress (the run itself is not saved: permadeath).
 
+## Emitted after settings are saved (HUD refreshes key hints).
+signal settings_changed
+
 const SETTINGS_PATH := "user://settings.cfg"
 const META_PATH := "user://meta.cfg"
 
@@ -9,6 +12,10 @@ var music_volume: float = 0.6
 var sfx_volume: float = 0.8
 var ui_volume: float = 0.7
 var fullscreen: bool = false
+var show_damage_numbers: bool = true
+var show_hints: bool = true
+## Ids of beginner hints already shown (HintManager).
+var seen_hints: Array = []
 
 var best_floor: int = 0
 var total_runs: int = 0
@@ -16,6 +23,7 @@ var total_kills: int = 0
 
 
 func _ready() -> void:
+	InputBindings.capture_defaults()
 	load_settings()
 	load_meta()
 	apply_settings()
@@ -30,6 +38,10 @@ func load_settings() -> void:
 	sfx_volume = cfg.get_value("audio", "sfx_volume", sfx_volume)
 	ui_volume = cfg.get_value("audio", "ui_volume", ui_volume)
 	fullscreen = cfg.get_value("video", "fullscreen", fullscreen)
+	show_damage_numbers = cfg.get_value("game", "damage_numbers", show_damage_numbers)
+	show_hints = cfg.get_value("game", "hints", show_hints)
+	seen_hints = cfg.get_value("game", "seen_hints", [])
+	InputBindings.apply_overrides(cfg.get_value("input", "bindings", {}))
 
 
 func save_settings() -> void:
@@ -39,7 +51,12 @@ func save_settings() -> void:
 	cfg.set_value("audio", "sfx_volume", sfx_volume)
 	cfg.set_value("audio", "ui_volume", ui_volume)
 	cfg.set_value("video", "fullscreen", fullscreen)
+	cfg.set_value("game", "damage_numbers", show_damage_numbers)
+	cfg.set_value("game", "hints", show_hints)
+	cfg.set_value("game", "seen_hints", seen_hints)
+	cfg.set_value("input", "bindings", InputBindings.overrides())
 	cfg.save(SETTINGS_PATH)
+	settings_changed.emit()
 
 
 func apply_settings() -> void:

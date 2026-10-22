@@ -60,6 +60,7 @@ func _ready() -> void:
 	# The player's real Sanctum progress must neither affect nor be changed by the test.
 	var meta_backup := [MetaProgress.shards, MetaProgress.gold, MetaProgress.levels.duplicate(), MetaProgress.unlocked.duplicate()]
 	var codex_backup := Codex.snapshot()
+	var settings_backup := [SaveManager.show_damage_numbers, SaveManager.show_hints, SaveManager.seen_hints.duplicate()]
 	_test_meta()
 	_test_codex()
 	_test_daily()
@@ -73,6 +74,11 @@ func _ready() -> void:
 	MetaProgress.apply_upgrades = true
 	MetaProgress.save_progress()
 	Codex.restore(codex_backup)
+	SaveManager.show_damage_numbers = settings_backup[0]
+	SaveManager.show_hints = settings_backup[1]
+	SaveManager.seen_hints = settings_backup[2]
+	InputBindings.reset_all()
+	SaveManager.save_settings()
 	if not _finished:
 		failures.append("scenario did not reach the end (script error?)")
 	print("FAILURES: ", failures.size())
@@ -194,6 +200,66 @@ func _test_daily_run() -> void:
 	await frames(5)
 	check(not GameState.is_daily() or not GameState.run_active, "daily run ended")
 	Leaderboard.clear_day(day)
+
+
+func _test_qol(game: Node, player: Player) -> void:
+	# Gamepad events live in the InputMap next to the keyboard.
+	for action in ["move_left", "jump", "attack", "pause", "skill_1", "interact"]:
+		var pad := InputMap.action_get_events(action).filter(func(e: InputEvent) -> bool:
+			return e is InputEventJoypadButton or e is InputEventJoypadMotion)
+		check(not pad.is_empty(), "gamepad bound to %s" % action)
+	var jp := InputEventJoypadButton.new()
+	jp.button_index = JOY_BUTTON_A
+	check(InputMap.event_is_action(jp, "jump"), "pad A = jump")
+	# Beginner hint on the first floor, with the real key names.
+	check("Space" in game.hints.current_text() or "A" in game.hints.current_text(), "move hint shown: %s" % game.hints.current_text())
+	check(&"move" in SaveManager.seen_hints, "hint remembered as seen")
+	game.hints.show_hint(&"move")
+	check(SaveManager.seen_hints.count(&"move") == 1, "hint shown only once")
+	# Damage numbers toggle.
+	SaveManager.show_damage_numbers = false
+	var before := _count_numbers(game)
+	EventBus.damage_dealt.emit(player.global_position, 5, false, false)
+	await frames(1)
+	check(_count_numbers(game) == before, "no damage numbers when disabled")
+	SaveManager.show_damage_numbers = true
+	EventBus.damage_dealt.emit(player.global_position, 5, false, false)
+	await frames(1)
+	check(_count_numbers(game) > before, "damage numbers back on")
+	# Pause menu → settings → rebinding; HUD key hints follow.
+	await press("pause")
+	check(get_tree().paused and game.overlay.visible, "pause menu open")
+	var sb: SettingsBook = game.open_settings()
+	await frames(3)
+	await shot("15_12_settings")
+	var t := InputEventKey.new()
+	t.physical_keycode = KEY_T
+	sb.rebind("skill_1", t)
+	check(InputBindings.key_for("skill_1") == "T", "skill 1 rebound to T")
+	check(game.hud._skill_slots[0].key_label == "T", "HUD shows the new key")
+	var cfg := ConfigFile.new()
+	cfg.load(SaveManager.SETTINGS_PATH)
+	check(cfg.get_value("input", "bindings", {}).has("skill_1"), "binding saved to settings.cfg")
+	var ev := InputEventKey.new()
+	ev.physical_keycode = KEY_T
+	check(InputMap.event_is_action(ev, "skill_1"), "T triggers skill 1")
+	InputBindings.reset_all()
+	SaveManager.save_settings()
+	check(InputBindings.key_for("skill_1") == "Q", "bindings reset to defaults")
+	sb.close()
+	await frames(2)
+	check(game.overlay.visible, "pause menu back after settings")
+	game._toggle_pause()
+	await frames(2)
+	check(not get_tree().paused, "game resumed")
+
+
+func _count_numbers(root: Node) -> int:
+	var n := 0
+	for c in root.find_children("*", "", true, false):
+		if c is DamageNumber and not c.is_queued_for_deletion():
+			n += 1
+	return n
 
 
 func _test_skill_tree() -> void:
@@ -451,6 +517,8 @@ func _test_scenes() -> void:
 	await shot("02b_sanctum")
 	# Fixed seeds: the scripted play-through is reproducible (variety is
 	# covered by the generator test above).
+	SaveManager.show_hints = true
+	SaveManager.seen_hints = []
 	seed(4242)
 	GameState.start_new_run(ItemDatabase.races[1], ItemDatabase.classes[0], 777)
 	await frames(30)
@@ -464,6 +532,7 @@ func _test_scenes() -> void:
 	check(player.is_on_floor(), "player standing on floor (pos %s, start %s, tile below %d, vel %s, climbing %s)" % [player.global_position,
 			player.level.start_position(), player.level.kind_at(player.global_position + Vector2(0, 4)), player.velocity, player.climbing])
 	await shot("03_game_start")
+	await _test_qol(game, player)
 	var x0 := player.global_position.x
 	Input.action_press("move_right")
 	await frames(30)
