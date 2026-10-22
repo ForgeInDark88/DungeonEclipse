@@ -135,6 +135,16 @@ func _back_variant(cell: Vector2i) -> int:
 	return 3 if h == 95 else 2 if h >= 93 else h % 2
 
 
+## A gap in the back wall gets a crumbling rim from the wall next to it.
+func _rim_back_gap(cell: Vector2i) -> void:
+	const DIRS: Array[Vector2i] = [Vector2i.DOWN, Vector2i.UP, Vector2i.RIGHT, Vector2i.LEFT]
+	const COLS: Array[int] = [1, 0, 3, 2]  # atlas column: wall above, below, left, right
+	for k in DIRS.size():
+		if back.get_cell_source_id(cell + DIRS[k]) >= 0:
+			back_detail.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(COLS[k], AssetPaths.TILE_ROW_BACK_EDGE))
+			return
+
+
 func _near_solid(cell: Vector2i) -> bool:
 	for d in [Vector2i.ZERO, Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
 		if LevelLayout.is_solid(layout.get_tile(cell.x + d.x, cell.y + d.y)):
@@ -200,6 +210,8 @@ func _apply_tile(cell: Vector2i, kind: int) -> void:
 func _apply_detail(cell: Vector2i) -> void:
 	detail.erase_cell(cell)
 	back_detail.erase_cell(cell)
+	if back.get_cell_source_id(cell) < 0:
+		_rim_back_gap(cell)
 	if layout.get_tile(cell.x, cell.y) != T.EMPTY:
 		return
 	var h := absi(hash(cell * 17 + Vector2i(floor_number, 5)))

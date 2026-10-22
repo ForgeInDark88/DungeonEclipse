@@ -13,6 +13,7 @@ Tileset atlas (16x16 cells, 4 columns x 7 rows) — see docs/ANIMATION_GUIDE.md:
   row 7: floor fringe (grass, pebbles, tiny crystals) in the cell above a floor
   row 8: ceiling fringe (roots, vines, cobwebs, icicles) under a ceiling
   row 9: back wall details (crack, stain, protruding stone, biome sign)
+  row 10: crumbling back wall rims inside the gaps (wall above, below, left, right)
 """
 from __future__ import annotations
 
@@ -462,19 +463,149 @@ def wall_detail(b, v):
     return im
 
 
+def _is_mortar(c, mortar):
+    return abs(c[0] - mortar[0]) + abs(c[1] - mortar[1]) + abs(c[2] - mortar[2]) < 10
+
+
+def enrich_stone(im, b, seed, back=False):
+    """Material detail over a brick / back wall tile: mineral speckle
+    clusters, grime under the joints, depth in the mortar and a biome
+    feature (bone chips, lichen, erosion, ember veins, marble gloss)."""
+    rnd = random.Random(seed * 97 + (5 if back else 1))
+    px = im.load()
+    mortar = gp.shade(c4(b["mortar"]), 0.9) if not back else gp.shade(c4(b["back"]), 0.68)
+    kind = b["top_kind"]
+    stone = [(x, y) for y in range(16) for x in range(16) if px[x, y][3] and not _is_mortar(px[x, y], mortar)]
+    if not stone:
+        return im
+    if back:
+        # each big block is lit from above and falls into shadow at its foot
+        for (x, y) in stone:
+            r = y % 8
+            _px_shade(px, x, y, 1.08 - 0.035 * r)
+    # mortar depth: dark seam with a lit lip under it
+    for y in range(16):
+        for x in range(16):
+            if px[x, y][3] and _is_mortar(px[x, y], mortar):
+                _px_shade(px, x, y, 0.82)
+                if y + 1 < 16 and not _is_mortar(px[x, y + 1], mortar) and (x + y) % 3:
+                    _px_shade(px, x, y + 1, 1.06)
+    # mineral speckle clusters (light + dark pairs)
+    for _ in range(4 if not back else 2):
+        x, y = rnd.choice(stone)
+        f = rnd.choice((1.14, 0.84))
+        for dx, dy in ((0, 0), (1, 0), (0, 1)):
+            if 0 <= x + dx < 16 and 0 <= y + dy < 16 and (x + dx, y + dy) in stone and rnd.random() < 0.8:
+                _px_shade(px, x + dx, y + dy, f)
+    # grime: darker pixels just above each horizontal joint
+    for y in range(1, 16):
+        for x in range(16):
+            if _is_mortar(px[x, y], mortar) and not _is_mortar(px[x, y - 1], mortar) and (x * 5 + seed) % 4 == 0:
+                _px_shade(px, x, y - 1, 0.9)
+    accent = c4(b.get("accent", b["top"]))
+    if kind == "dust" and not back and seed % 2 == 0:
+        x, y = rnd.choice([p for p in stone if 2 < p[0] < 13 and p[1] not in (0, 5, 10, 15)])
+        px[x, y] = (214, 206, 182, 255)  # bone chip in the brick
+        if x + 1 < 16 and (x + 1, y) in stone:
+            px[x + 1, y] = (178, 170, 150, 255)
+    elif kind == "moss":
+        for _ in range(3 if not back else 2):
+            x, y = rnd.choice(stone)
+            px[x, y] = gp.shade(accent, 0.75 if back else 0.9)
+            if (x + 1, y) in stone and rnd.random() < 0.6:
+                px[x + 1, y] = gp.shade(accent, 0.6)
+    elif kind == "grass":
+        # eroded corner chips
+        for _ in range(2):
+            x, y = rnd.choice(stone)
+            if (x, y - 1) not in stone or (x - 1, y) not in stone:
+                px[x, y] = gp.shade(c4(b["stone"] if not back else b["back"]), 0.62)
+        if not back and seed % 2:
+            x, y = rnd.randint(3, 11), rnd.choice((2, 7, 12))
+            for k in range(3):
+                if (x + k, y) in stone:
+                    _px_shade(px, x + k, y, 0.7)  # carved groove
+    elif kind == "magma":
+        if seed % 2 == 1 or back:
+            x, y = rnd.randint(3, 12), rnd.choice((1, 6, 11))
+            for k in range(3):
+                xx, yy = x + (k if not back else 0), y + k
+                if (xx, yy) in stone:
+                    px[xx, yy] = (200, 70, 30, 255) if not back else (130, 50, 30, 255)
+            if (x, y) in stone and not back:
+                px[x, y] = (255, 160, 60, 255)
+        for _ in range(2):
+            x, y = rnd.choice(stone)
+            _px_shade(px, x, y, 0.7)  # soot
+    elif kind == "crystal":
+        # diagonal gloss on the polished stone and fine veins
+        off = rnd.randint(0, 15)
+        for (x, y) in stone:
+            if (x + y + off) % 13 == 0:
+                _px_shade(px, x, y, 1.16 if not back else 1.08)
+        x, y = rnd.choice(stone)
+        for k in range(4):
+            if (x + k, y + k // 2) in stone:
+                _px_shade(px, x + k, y + k // 2, 0.82)
+    return im
+
+
+def back_edge(b, direction):
+    """Crumbling rim of the back wall drawn inside a gap cell, so the gaps
+    (where the parallax cave shows through) get broken, jagged edges instead
+    of straight tile borders. direction: where the wall is (0 above, 1 below,
+    2 left, 3 right)."""
+    wall = enrich_stone(backwall(b, direction % 2), b, direction, back=True)
+    src = wall.load()
+    im = gp.new(16, 16)
+    px = im.load()
+    rnd = random.Random(direction * 7 + len(b["top_kind"]))
+    depth = [rnd.choice((1, 2, 2, 3, 4)) for _ in range(16)]
+    for k in range(1, 15):  # smooth a little so the rim reads as rock, not noise
+        depth[k] = max(1, (depth[k - 1] + depth[k] * 2 + depth[k + 1]) // 4 + rnd.choice((0, 0, 1)))
+    shadow = gp.shade(c4(b["back"]), 0.4)
+    for k in range(16):
+        dk = depth[k]
+        for t in range(dk + 1):
+            if direction == 0:
+                x, y = k, t
+            elif direction == 1:
+                x, y = k, 15 - t
+            elif direction == 2:
+                x, y = t, k
+            else:
+                x, y = 15 - t, k
+            if t == dk:
+                px[x, y] = shadow  # dark broken edge facing the gap
+            else:
+                c = src[x, y]
+                f = 1.15 if (t == dk - 1 and direction in (1, 3)) else 1.0
+                px[x, y] = gp.shade(c, f)
+    # a few loose pebbles / fragments
+    for _ in range(2):
+        k = rnd.randint(2, 13)
+        t = depth[k] + rnd.randint(2, 4)
+        x, y = {0: (k, t), 1: (k, 15 - t), 2: (t, k), 3: (15 - t, k)}[direction]
+        if 0 <= x < 16 and 0 <= y < 16:
+            px[x, y] = gp.shade(c4(b["back"]), 0.85)
+    return im
+
+
 def tileset(name, b):
-    atlas = gp.new(16 * 4, 16 * 10)
+    atlas = gp.new(16 * 4, 16 * 11)
     rows = [
         [bedrock(b, i) for i in range(4)],
-        [brick(b, 0), brick(b, 1), brick(b, 2, cracked=True), brick(b, 3, ore=True)],
-        [top_edge(b, i) for i in range(4)],
-        [bottom_edge(b, i) for i in range(4)],
+        [enrich_stone(brick(b, 0), b, 0), enrich_stone(brick(b, 1), b, 1), enrich_stone(brick(b, 2, cracked=True), b, 2),
+         brick(b, 3, ore=True)],
+        [enrich_stone(top_edge(b, i), b, i + 4) for i in range(4)],
+        [enrich_stone(bottom_edge(b, i), b, i + 8) for i in range(4)],
         [platform(b, 0), platform(b, 1), platform(b, 2), gp.tile_ladder()],
-        [backwall(b, i) for i in range(4)],
+        [enrich_stone(backwall(b, i), b, i, back=True) for i in range(4)],
         [ore_glow(b)],
         [floor_fringe(b, i) for i in range(4)],
         [ceil_fringe(b, i) for i in range(4)],
         [wall_detail(b, i) for i in range(4)],
+        [back_edge(b, i) for i in range(4)],
     ]
     for y, row in enumerate(rows):
         for x, t in enumerate(row):

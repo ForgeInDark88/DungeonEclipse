@@ -180,6 +180,7 @@ const TILE_ORE_GLOW := Vector2i(0, 6)
 const TILE_ROW_FLOOR_FRINGE := 7
 const TILE_ROW_CEIL_FRINGE := 8
 const TILE_ROW_WALL_DETAIL := 9
+const TILE_ROW_BACK_EDGE := 10  # crumbling rims of the back wall gaps: wall above, below, left, right
 const TILE_ORE := Vector2i(3, 1)
 
 
