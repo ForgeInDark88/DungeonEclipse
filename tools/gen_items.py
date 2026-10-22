@@ -743,12 +743,6 @@ def build():
     usable("long_rope", "Длинная верёвка", C, 2, "Вдвое длиннее обычной.",
            [("rope_effect", [("max_length", 18)])], stack=5, price=18)
     icon("long_rope", "rope")
-    usable("steel_pickaxe", "Стальная кирка", R, 3, "Достаёт кирпич через одну клетку.",
-           [("dig_effect", [("reach_tiles", 2), ("bricks_per_use", 1)])], stack=1, price=70, consume=False, cooldown=0.3, anim="attack_slash")
-    icon("steel_pickaxe", "pickaxe", (200, 205, 215))
-    usable("mithril_pickaxe", "Мифриловая кирка", E, 6, "Прорубает тоннель в три кирпича за удар.",
-           [("dig_effect", [("reach_tiles", 3), ("bricks_per_use", 3)])], stack=1, price=200, consume=False, cooldown=0.3, anim="attack_slash")
-    icon("mithril_pickaxe", "pickaxe", (170, 230, 255))
 
     # ---- relics (work from the backpack)
     relic("jumper_talisman", "Талисман прыгуна", R, 4, "Можно оттолкнуться от воздуха ещё раз.", {"extra_jumps": 1})
@@ -797,7 +791,6 @@ RECIPES = [  # id, result, count, ingredients, gold
     ("r_leather_armor", "leather_armor", 1, {"leather_scrap": 4}, 0),
     ("r_wanderer_gloves", "wanderer_gloves", 1, {"leather_scrap": 3, "cloth_roll": 1}, 0),
     ("r_iron_ring", "iron_ring", 1, {"iron_ore": 3}, 15),
-    ("r_steel_pickaxe", "steel_pickaxe", 1, {"pickaxe": 1, "iron_ore": 4, "gold_ore": 1}, 30),
 ]
 
 

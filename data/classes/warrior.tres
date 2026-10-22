@@ -20,7 +20,7 @@ script = ExtResource("2_3268n")
 id = &"warrior"
 display_name = "Воин"
 order = 0
-description = "Крепкий боец ближнего боя с киркой и щитом. Урон зависит от Силы."
+description = "Крепкий боец ближнего боя с мечом и щитом. Урон зависит от Силы."
 portrait_overlay = ExtResource("1_1y7wg")
 sprite = ExtResource("8_h8h0d")
 outfit_sheet = ExtResource("sheet_outfit")
@@ -48,12 +48,11 @@ starting_items = {
 "key": 1,
 "leather_armor": 1,
 "mana_crystal": 1,
-"pickaxe": 1,
 "rope": 1,
 "rusty_sword": 1,
 "whetstone": 1
 }
 starting_equipment = Array[StringName]([&"rusty_sword", &"leather_armor"])
-starting_quick_bar = Array[StringName]([&"pickaxe", &"bomb", &"mana_crystal", &"health_potion", &"rope", &"key"])
+starting_quick_bar = Array[StringName]([&"bomb", &"mana_crystal", &"health_potion", &"rope", &"key"])
 skills = Array[ExtResource("3_o3gbp")]([ExtResource("4_vp7vw"), ExtResource("5_c13nv"), ExtResource("6_pse82"), ExtResource("7_ontb7"), ExtResource("sk_toughness"), ExtResource("sk_blade_master"), ExtResource("sk_war_cry"), ExtResource("sk_bloodletting")])
 allowed_weapon_types = Array[int]([0, 1, 2, 6])

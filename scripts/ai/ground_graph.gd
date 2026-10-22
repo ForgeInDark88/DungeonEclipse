@@ -18,11 +18,20 @@ const KEY := 1 << 20
 
 func link(from: int, to: int, kind: int, cost: float) -> void:
 	var k := from * KEY + to
-	if edge_cost.has(k) and edge_cost[k] <= cost:
+	if are_points_connected(from, to, false) and edge_cost.get(k, INF) <= cost:
 		return
 	edge_cost[k] = cost
 	edge_kind[k] = kind
 	connect_points(from, to, false)
+
+
+## Removes the edge from -> to (only that direction).
+func unlink(from: int, to: int) -> void:
+	var k := from * KEY + to
+	if edge_kind.has(k):
+		disconnect_points(from, to, false)
+		edge_cost.erase(k)
+		edge_kind.erase(k)
 
 
 func kind_of(from: int, to: int) -> int:

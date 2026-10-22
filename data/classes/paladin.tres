@@ -42,17 +42,17 @@ base_damage = 4
 attack_range = 18.0
 attack_cooldown = 0.42
 starting_items = {
+"bomb": 2,
 "antidote": 1,
 "club": 1,
 "health_potion": 3,
 "leather_armor": 1,
 "mana_crystal": 2,
-"pickaxe": 1,
 "rope": 1,
 "whetstone": 1
 }
 starting_equipment = Array[StringName]([&"club", &"leather_armor"])
-starting_quick_bar = Array[StringName]([&"pickaxe", &"mana_crystal", &"health_potion", &"rope"])
+starting_quick_bar = Array[StringName]([&"bomb", &"mana_crystal", &"health_potion", &"rope"])
 skills = Array[ExtResource("3_skill")]([ExtResource("4_holy"), ExtResource("5_strike"), ExtResource("6_skin"), ExtResource("7_shield"), ExtResource("sk_blessing"), ExtResource("sk_holy_strike"), ExtResource("sk_light_aura"), ExtResource("sk_righteous_wrath")])
 allowed_weapon_types = Array[int]([6, 0])
 unlock_shards = 20

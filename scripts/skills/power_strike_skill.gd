@@ -1,6 +1,6 @@
 class_name PowerStrikeSkill
 extends SkillEffect
-## Heavy pickaxe blow: big melee damage in front and breaks bricks there.
+## Heavy blow: big melee damage in front and breaks bricks there.
 
 @export var damage_multiplier: float = 2.2
 @export var damage_per_level: float = 0.4
@@ -26,4 +26,4 @@ func execute(caster: Node, level: int) -> bool:
 
 
 func describe(level: int) -> String:
-	return "Мощный удар киркой: урон %d%%, ломает кирпич перед героем" % roundi((damage_multiplier + damage_per_level * (level - 1)) * 100)
+	return "Сокрушающий удар: урон %d%%, ломает кирпич перед героем" % roundi((damage_multiplier + damage_per_level * (level - 1)) * 100)
