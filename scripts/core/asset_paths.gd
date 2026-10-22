@@ -127,18 +127,18 @@ const SFX := {
 ## Weapon type (WeaponItemData.WeaponType) -> swing sound id.
 const WEAPON_SFX: Array[StringName] = [&"attack_sword", &"attack_axe", &"attack_spear", &"attack_dagger", &"attack_bow", &"attack_staff", &"attack_mace", &"attack_bow", &"attack_staff"]
 const MUSIC := {
-	&"menu": MUSIC_DIR + "music_menu.wav",
-	&"catacombs": MUSIC_DIR + "music_catacombs.wav",
-	&"fungal": MUSIC_DIR + "music_fungal.wav",
-	&"ruins": MUSIC_DIR + "music_ruins.wav",
-	&"lava": MUSIC_DIR + "music_lava.wav",
-	&"mirror_halls": MUSIC_DIR + "music_mirror_halls.wav",
-	&"boss": MUSIC_DIR + "music_boss.wav",
-	&"boss_bone_king": MUSIC_DIR + "music_boss_bone_king.wav",
-	&"boss_flame_witch": MUSIC_DIR + "music_boss_flame_witch.wav",
-	&"boss_illusionist": MUSIC_DIR + "music_boss_illusionist.wav",
-	&"victory": MUSIC_DIR + "music_victory.wav",
-	&"death": MUSIC_DIR + "music_death.wav",
+	&"menu": MUSIC_DIR + "music_menu.ogg",
+	&"catacombs": MUSIC_DIR + "music_catacombs.ogg",
+	&"fungal": MUSIC_DIR + "music_fungal.ogg",
+	&"ruins": MUSIC_DIR + "music_ruins.ogg",
+	&"lava": MUSIC_DIR + "music_lava.ogg",
+	&"mirror_halls": MUSIC_DIR + "music_mirror_halls.ogg",
+	&"boss": MUSIC_DIR + "music_boss.ogg",
+	&"boss_bone_king": MUSIC_DIR + "music_boss_bone_king.ogg",
+	&"boss_flame_witch": MUSIC_DIR + "music_boss_flame_witch.ogg",
+	&"boss_illusionist": MUSIC_DIR + "music_boss_illusionist.ogg",
+	&"victory": MUSIC_DIR + "music_victory.ogg",
+	&"death": MUSIC_DIR + "music_death.ogg",
 }
 ## When a track file is missing, these ids are tried instead (then silence).
 const MUSIC_FALLBACK := {
