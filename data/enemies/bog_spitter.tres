@@ -49,9 +49,6 @@ tint = Color(1, 1, 1, 1)
 resistances = {
 "res_poison": 0.5
 }
-"res_fire": 0.3,
-"res_magic": 0.4
-}
 status_immunities = Array[StringName]([])
 on_hit_effects = Array[ExtResource("2_eamu5")]([SubResource("Resource_0di6u")])
 sound_hurt = &"enemy_hurt"
