@@ -893,10 +893,10 @@ def gen_fx():
 
 def main():
     gen_hero()
-    gen_slime()
-    gen_skeleton()
-    gen_bat()
-    gen_cultist()
+    # Monsters: the detailed versions (the old gen_slime / gen_skeleton /
+    # gen_bat / gen_cultist are kept only as references).
+    import gen_monsters
+    gen_monsters.main()
     gen_torch()
     gen_chests()
     gen_portal()
