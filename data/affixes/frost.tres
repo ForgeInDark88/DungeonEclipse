@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="AffixData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="1_xrri3"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="2_ubrtf"]
+[ext_resource type="Script" path="res://scripts/data/affix_data.gd" id="3_43ic3"]
+
+[sub_resource type="Resource" id="Resource_wsexe"]
+script = ExtResource("2_ubrtf")
+status = &"slow"
+duration = 2.0
+power = 0.4
+chance = 0.4
+
+[resource]
+script = ExtResource("3_43ic3")
+id = &"frost"
+prefix_forms = {
+"f": "Ледяная",
+"m": "Ледяной",
+"n": "Ледяное"
+}
+suffix = ""
+description = "Ледяной урон, замедляет"
+min_rarity = 1
+weight = 1.0
+allowed_types = Array[int]([])
+stat_bonuses = {}
+damage_mult = 0.0
+speed_mult = 0.0
+reach_add = 0.0
+knockback_add = 0.0
+damage_type = 2
+hit_effects = Array[ExtResource("1_xrri3")]([SubResource("Resource_wsexe")])

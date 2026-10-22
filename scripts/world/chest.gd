@@ -4,30 +4,30 @@ extends Area2D
 ## Loot comes from data/loot_tables/chest_<tier>.tres.
 
 const TIER_TABLES: Array[StringName] = [&"chest_common", &"chest_rare", &"chest_epic"]
-const TIER_TEXTURES := [
-	["res://assets/sprites/props/chest_wood.png", "res://assets/sprites/props/chest_wood_open.png"],
-	["res://assets/sprites/props/chest_iron.png", "res://assets/sprites/props/chest_iron_open.png"],
-	["res://assets/sprites/props/chest_gold.png", "res://assets/sprites/props/chest_gold_open.png"],
-]
 const TIER_NAMES := ["Деревянный сундук", "Железный сундук", "Золотой сундук"]
 
 var tier: int = 0
 var floor_number: int = 1
 var locked := false
 var opened := false
+## Golden chests are locked unless this is set (boss rewards).
+var unlocked_by_default := false
+## Behind a puzzle barrier: cannot be opened until the puzzle is solved.
+var sealed := false
 
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var sprite: AnimatedSprite2D = $Sprite
 
 
 func _ready() -> void:
 	add_to_group("interactable")
 	add_to_group("chests")
-	locked = tier == 2
-	sprite.texture = load(TIER_TEXTURES[tier][0])
+	locked = tier == 2 and not unlocked_by_default
+	AssetPaths.layout(AssetPaths.CHEST_LAYOUT).apply_to(sprite, AssetPaths.tex(AssetPaths.CHEST_SHEETS[tier]))
+	sprite.play(&"closed")
 
 
 func can_interact() -> bool:
-	return not opened
+	return not opened and not sealed
 
 
 func get_prompt() -> String:
@@ -43,6 +43,7 @@ func interact(player: Node) -> void:
 		var hero: Hero = player.hero
 		if hero.inventory.remove_by_id(&"key", 1) == 0:
 			EventBus.message.emit("Сундук заперт. Нужен ключ.")
+			AudioManager.play_sfx(&"chest_locked", global_position)
 			_shake()
 			return
 		unlock()
@@ -56,12 +57,17 @@ func unlock() -> void:
 
 func open() -> void:
 	opened = true
-	sprite.texture = load(TIER_TEXTURES[tier][1])
+	AudioManager.play_sfx(&"chest_open", global_position)
+	sprite.play(&"opening")
+	sprite.animation_finished.connect(func() -> void: sprite.play(&"open"), CONNECT_ONE_SHOT)
 	var table := ItemDatabase.get_loot_table(TIER_TABLES[tier])
-	if table:
-		var loot := table.roll(floor_number)
-		if not loot.is_empty():
-			EventBus.spawn_items.emit(global_position + Vector2(0, -10), loot)
+	var loot: Array = table.roll(floor_number) if table else []
+	if not loot.is_empty():
+		Fx.loot_popup(get_parent(), global_position + Vector2(0, -12), loot)
+		# Items jump out when the lid is up.
+		var pos := global_position + Vector2(0, -10)
+		get_tree().create_timer(0.25).timeout.connect(func() -> void: EventBus.spawn_items.emit(pos, loot))
+	Fx.sparks(get_parent(), global_position + Vector2(0, -10), Color(1.0, 0.85, 0.4), 10, 70.0)
 	EventBus.chest_opened.emit(self)
 
 

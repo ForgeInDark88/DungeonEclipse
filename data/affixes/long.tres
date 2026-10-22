@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="AffixData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="1_q5688"]
+[ext_resource type="Script" path="res://scripts/data/affix_data.gd" id="2_106nd"]
+
+[resource]
+script = ExtResource("2_106nd")
+id = &"long"
+prefix_forms = {
+"f": "Длинная",
+"m": "Длинный",
+"n": "Длинное"
+}
+suffix = ""
+description = "+8 к дальности"
+min_rarity = 1
+weight = 1.0
+allowed_types = Array[int]([0, 1, 2, 6, 3])
+stat_bonuses = {}
+damage_mult = 0.0
+speed_mult = 0.0
+reach_add = 8.0
+knockback_add = 0.0
+damage_type = -1
+hit_effects = Array[ExtResource("1_q5688")]([])

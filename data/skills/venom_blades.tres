@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/venom_blades.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/passive_skill.gd" id="eff"]
+[ext_resource type="Resource" path="res://data/skills/throw_knives.tres" id="req_throw_knives"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="hit"]
+
+[sub_resource type="Resource" id="Hit"]
+script = ExtResource("hit")
+status = &"poison"
+duration = 4.0
+power = 2.0
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+bonuses = {}
+bonuses_per_level = {}
+hit_effect = SubResource("Hit")
+hit_chance = 0.2
+hit_chance_per_level = 0.08
+
+[resource]
+script = ExtResource("skill")
+id = &"venom_blades"
+display_name = "Ядовитые клинки"
+description = "Клинки смазаны ядом пещерных пауков."
+icon = ExtResource("icon")
+mana_cost = 0
+cooldown = 0.0
+max_level = 3
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+required_level = 4
+requires = Array[ExtResource("skill")]([ExtResource("req_throw_knives")])
+tree_row = 1
+synergy_weapons = Array[int]([3])
+synergy_power = 0.3

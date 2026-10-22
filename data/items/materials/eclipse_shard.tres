@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/eclipse_shard.png" id="1_icon"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = &"eclipse_shard"
+display_name = "Осколок Затмения"
+description = "Тёмный кристалл. После забега уходит в Святилище Затмения, где на осколки покупаются постоянные улучшения."
+icon = ExtResource("1_icon")
+item_type = 2
+rarity = 1
+max_stack = 99
+stat_bonuses = {}
+price = 40
+currency_value = 0
+shard_value = 1
+has_durability = false
+max_durability = 100

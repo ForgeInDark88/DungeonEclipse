@@ -17,7 +17,16 @@ const ARMOR := "armor"
 const SPEED := "speed"
 const CRIT_CHANCE := "crit_chance"
 
+# Resistances 0..0.75 (fraction of damage of that type ignored)
+const RES_FIRE := "res_fire"
+const RES_ICE := "res_ice"
+const RES_POISON := "res_poison"
+const RES_MAGIC := "res_magic"
+
 const PRIMARY: Array[String] = [STRENGTH, AGILITY, INTELLECT, VITALITY]
+const RESISTANCES: Array[String] = [RES_FIRE, RES_ICE, RES_POISON, RES_MAGIC]
+## WeaponItemData.DamageType -> resistance stat ("" = physical: armor).
+const DAMAGE_TYPE_RES: Array[String] = ["", RES_FIRE, RES_ICE, RES_POISON, RES_MAGIC]
 const DERIVED: Array[String] = [MAX_HP, MAX_MANA, DAMAGE, ARMOR, SPEED, CRIT_CHANCE]
 
 const LABELS := {
@@ -31,6 +40,10 @@ const LABELS := {
 	ARMOR: "Броня",
 	SPEED: "Скорость",
 	CRIT_CHANCE: "Шанс крита",
+	RES_FIRE: "Сопр. огню",
+	RES_ICE: "Сопр. холоду",
+	RES_POISON: "Сопр. яду",
+	RES_MAGIC: "Сопр. магии",
 }
 
 
@@ -41,7 +54,7 @@ static func label(stat: String) -> String:
 ## Formats a value for UI: crit chance is stored as 0..1 and shown as percent.
 static func format_value(stat: String, value: float, signed := false) -> String:
 	var text: String
-	if stat == CRIT_CHANCE:
+	if stat == CRIT_CHANCE or stat in RESISTANCES:
 		text = "%d%%" % roundi(value * 100.0)
 	else:
 		text = str(roundi(value))

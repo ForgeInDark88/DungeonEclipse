@@ -12,6 +12,8 @@ var slot_id: StringName
 var hero: Hero
 ## Tooltip of an empty equipment slot.
 var hint := ""
+## When set (ShopBook), activating the slot sells the item instead.
+var shop: Node
 ## Faded icon of an empty equipment slot.
 var placeholder: Texture2D
 var key_label := ""
@@ -20,8 +22,14 @@ var _frame: PixelFrame
 var _icon: TextureRect
 var _count: Label
 var _placeholder: TextureRect
+var _durability: ColorRect
 var _key: Label
 var _hovered := false
+var _last_item: ItemData
+var _last_count := 0
+var _pulse_t := 0.0
+var _rarity_tint := Color.WHITE
+var _scale_tween: Tween
 
 
 static func create(p_kind: Kind, p_hero: Hero, p_index: int = -1, p_slot_id: StringName = StringName()) -> ItemSlot:
@@ -60,6 +68,12 @@ func _ready() -> void:
 	_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_icon)
+	# Thin durability strip at the bottom of the slot.
+	_durability = ColorRect.new()
+	_durability.position = Vector2(4, UIStyle.SLOT_SIZE.y - 5)
+	_durability.size = Vector2(UIStyle.SLOT_SIZE.x - 8, 1)
+	_durability.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_durability)
 	_count = UIStyle.outlined_label("", 7, Color.WHITE)
 	_count.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_count.offset_right = -3
@@ -114,17 +128,63 @@ func refresh() -> void:
 	elif item and kind == Kind.QUICK and item.max_stack > 1:
 		_count.text = str(c)
 	_placeholder.visible = item == null
+	_durability.visible = item != null and item.has_durability and item.is_instance() and item.durability < item.max_durability
+	if _durability.visible:
+		var r := float(item.durability) / item.max_durability
+		_durability.size.x = maxf(1.0, (UIStyle.SLOT_SIZE.x - 8) * r)
+		_durability.color = Color(0.85, 0.15, 0.1) if r < 0.25 else (Color(0.95, 0.75, 0.2) if r < 0.6 else Color(0.3, 0.8, 0.3))
+	_icon.modulate = Color(1.0, 0.45, 0.45) if item and item.is_broken() else _icon.modulate
 	var tex := AssetPaths.SLOT_EMPTY if item == null else AssetPaths.SLOT
 	if _hovered:
 		tex = AssetPaths.SLOT_HOVER
 	_frame.texture = AssetPaths.tex(tex)
-	_frame.modulate = item.rarity_color().lerp(Color.WHITE, 0.55) if item and item.rarity > ItemData.Rarity.COMMON else Color.WHITE
+	_rarity_tint = item.rarity_color().lerp(Color.WHITE, 0.55) if item and item.rarity > ItemData.Rarity.COMMON else Color.WHITE
+	_frame.modulate = _rarity_tint
+	# Rare and epic items pulse softly.
+	set_process(item != null and item.rarity > ItemData.Rarity.COMMON)
+	# A new item (or more of it) arrived: small pop.
+	if item != null and (item != _last_item or c > _last_count) and is_visible_in_tree():
+		pop()
+	_last_item = item
+	_last_count = c
 	if _hovered and item:
-		Tooltip.show_text(TooltipText.item(item, hero, kind == Kind.EQUIPMENT), self)
+		var text := TooltipText.item(item, hero, kind == Kind.EQUIPMENT)
+		if shop:
+			text += "\n[color=%s]Продать за %d з. (ПКМ)[/color]" % [UIStyle.GOOD_HEX, item.sell_price()]
+		Tooltip.show_text(text, self)
+
+
+func _process(delta: float) -> void:
+	_pulse_t += delta
+	var item := get_item()
+	var speed := 5.0 if item and item.rarity == ItemData.Rarity.EPIC else 3.0
+	var k := (sin(_pulse_t * speed) + 1.0) * 0.5
+	_frame.modulate = _rarity_tint.lerp(_rarity_tint * 1.45, k)
+
+
+## Scale bounce (item arrived / used).
+func pop(strength := 0.25) -> void:
+	pivot_offset = size / 2.0
+	if _scale_tween:
+		_scale_tween.kill()
+	scale = Vector2.ONE * (1.0 + strength)
+	_scale_tween = create_tween()
+	_scale_tween.tween_property(self, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+func _hover_scale(target: float) -> void:
+	pivot_offset = size / 2.0
+	if _scale_tween:
+		_scale_tween.kill()
+	_scale_tween = create_tween()
+	_scale_tween.tween_property(self, "scale", Vector2.ONE * target, 0.1)
 
 
 func _on_mouse_entered() -> void:
 	_hovered = true
+	_hover_scale(1.08)
+	if get_item():
+		AudioManager.play_ui(&"ui_hover", -8.0)
 	refresh()
 	if get_item() == null:
 		if kind == Kind.EQUIPMENT and hint != "":
@@ -133,6 +193,7 @@ func _on_mouse_entered() -> void:
 
 func _on_mouse_exited() -> void:
 	_hovered = false
+	_hover_scale(1.0)
 	Tooltip.hide_tip(self)
 	refresh()
 
@@ -160,6 +221,10 @@ func activate(right_click: bool) -> void:
 	if item == null:
 		return
 	var player := get_tree().get_first_node_in_group("player") as Player
+	if shop and kind == Kind.INVENTORY:
+		shop.sell(index)
+		Tooltip.hide_tip(self)
+		return
 	match kind:
 		Kind.INVENTORY:
 			if item is EquipmentItemData:
@@ -178,6 +243,8 @@ func activate(right_click: bool) -> void:
 
 # ------------------------------------------------------------- drag & drop
 func _get_drag_data(_at_position: Vector2) -> Variant:
+	if shop:
+		return null
 	var item := get_item()
 	if item == null:
 		return null
@@ -229,3 +296,9 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 				hero.quick_bar.assign(index, data["item"])
 			elif src == Kind.QUICK:
 				hero.quick_bar.swap(data["index"], index)
+
+
+func set_key_label(text: String) -> void:
+	key_label = text
+	if _key:
+		_key.text = text

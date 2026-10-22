@@ -14,6 +14,8 @@ const PROJECTILE_SCENE := preload("res://scenes/world/projectile.tscn")
 @export var spread_degrees: float = 10.0
 @export var pierce: int = 0
 @export var blast_radius: float = 0.0
+## WeaponItemData.DamageType (resistances apply).
+@export var damage_type: int = 0
 @export var color: Color = Color(1.0, 0.6, 0.2)
 
 
@@ -32,6 +34,7 @@ func execute(caster: Node, level: int) -> bool:
 		var d: Dictionary = caster.roll_damage(mult)
 		p.setup(texture, dir, speed, d["amount"], "enemies")
 		p.crit = d["crit"]
+		p.damage_type = damage_type
 		p.pierce = pierce
 		p.blast_radius = blast_radius
 		p.blast_color = color

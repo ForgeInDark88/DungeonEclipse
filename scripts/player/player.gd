@@ -21,6 +21,7 @@ const CLIMB_SPEED := 75.0
 const INVULNERABLE_TIME := 0.7
 const PLATFORM_LAYER := 2
 const BASE_LIGHT_SCALE := 1.4
+const PROJECTILE_SCENE := preload("res://scenes/world/projectile.tscn")
 
 var hero: Hero
 var level: DungeonLevel
@@ -35,35 +36,65 @@ var _invulnerable := 0.0
 var _attack_cooldown := 0.0
 var _item_cooldowns: Dictionary = {}  # item id -> seconds
 var _buffs: Dictionary = {}  # modifier key -> seconds left
+var _buff_info: Dictionary = {}  # modifier key -> {"icon": Texture2D, "duration": float}
+var _casting_icon: Texture2D
+## Multiplier of the skill being cast (weapon synergy, SkillData.power_with); read by skill effects.
+var skill_power := 1.0
 var _external_velocity := Vector2.ZERO
 var _light_tween: Tween
 var _hint := ""
 var _dash_time := 0.0
+var _afterimage_timer := 0.0
+var _run_dust_timer := 0.0
+var _step_timer := 0.0
+var _reveal_timer := 0.0
+## Minimap reveal radius in cells.
+const REVEAL_RADIUS := 7
 
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var visual: HeroVisual = $Visual
+@onready var animator: HeroAnimator = $Animator
 @onready var camera: Camera2D = $Camera2D
 @onready var light: PointLight2D = $PointLight2D
-@onready var attack_area: Area2D = $AttackArea
 @onready var interact_area: Area2D = $InteractArea
-@onready var swing: Sprite2D = $Swing
+@onready var status: StatusEffects = $StatusEffects
 
 
 func _ready() -> void:
 	add_to_group("player")
 	light.texture = AssetPaths.tex(AssetPaths.LIGHT)
 	light.texture_scale = BASE_LIGHT_SCALE
-	swing.visible = false
+	animator.setup(visual)
+	var sv := StatusVisual.new()
+	add_child(sv)
+	sv.setup(status, visual, 22.0)
 
 
 func setup(p_hero: Hero, p_level: DungeonLevel) -> void:
 	hero = p_hero
 	level = p_level
-	sprite.texture = hero.class_data.sprite
 	if not hero.stats.died.is_connected(_on_died):
 		hero.stats.died.connect(_on_died)
-	_update_swing_texture()
-	if not hero.equipment.changed.is_connected(_update_swing_texture):
-		hero.equipment.changed.connect(_update_swing_texture)
+	visual.refresh_from(hero)
+	if not hero.leveled_up.is_connected(_on_leveled_up):
+		hero.leveled_up.connect(_on_leveled_up)
+	if not hero.equipment.changed.is_connected(_on_equipment_changed):
+		hero.equipment.changed.connect(_on_equipment_changed)
+
+
+func apply_biome(biome: BiomeData) -> void:
+	light.color = biome.hero_light_color
+	($AmbientDust as CPUParticles2D).color = biome.ambient_particles
+
+
+func _on_leveled_up(_level: int) -> void:
+	AudioManager.play_ui(&"level_up")
+	visual.flash(Color(1.0, 0.9, 0.4), 0.5)
+	visual.squash_to(Vector2(0.8, 1.25), 0.3)
+	Fx.sparks(get_parent(), global_position + Vector2(0, -12), Color(1.0, 0.85, 0.3), 24, 120.0)
+
+
+func _on_equipment_changed() -> void:
+	visual.refresh_from(hero)
 
 
 func set_level(p_level: DungeonLevel) -> void:
@@ -85,17 +116,28 @@ func _physics_process(delta: float) -> void:
 		return
 	_tick_timers(delta)
 	var input_x := Input.get_axis("move_left", "move_right")
-	if input_x != 0.0:
+	if input_x != 0.0 and not animator.is_busy():
 		facing = signf(input_x)
-		sprite.flip_h = facing < 0.0
-		attack_area.scale.x = facing
+		visual.facing = facing
 
 	if _dash_time > 0.0:
 		_dash_time -= delta
 		velocity.y = 0.0
 		move_and_slide()
+		_afterimage_timer -= delta
+		if _afterimage_timer <= 0.0:
+			_afterimage_timer = 0.035
+			Fx.afterimage(visual, get_parent())
+		animator.update(delta, is_on_floor(), velocity, false, true)
 		return
 
+	if status.is_stunned():
+		# Stunned: physics only, no control.
+		velocity.y = minf(velocity.y + GRAVITY * delta, MAX_FALL_SPEED)
+		velocity.x = move_toward(velocity.x, 0.0, FRICTION * delta)
+		move_and_slide()
+		animator.update(delta, is_on_floor(), velocity, false, false)
+		return
 	_update_ladder_state()
 	if climbing:
 		_climb(input_x)
@@ -103,19 +145,61 @@ func _physics_process(delta: float) -> void:
 		_walk(input_x, delta)
 	velocity += _external_velocity
 	_external_velocity = Vector2.ZERO
+	var was_on_floor := is_on_floor()
+	var fall_speed := velocity.y
 	move_and_slide()
+	if not was_on_floor and is_on_floor() and not climbing:
+		_on_landed(fall_speed)
+	elif is_on_floor() and absf(velocity.x) > 30.0:
+		_step_timer -= delta
+		if _step_timer <= 0.0:
+			_step_timer = 0.28
+			AudioManager.play_sfx(_step_sound(), global_position, -6.0, 0.15)
+	if is_on_floor() and absf(velocity.x) > 60.0:
+		_run_dust_timer -= delta
+		if _run_dust_timer <= 0.0:
+			_run_dust_timer = 0.28
+			Fx.dust(get_parent(), global_position - Vector2(facing * 5.0, 0))
+	animator.update(delta, is_on_floor(), velocity, climbing, false)
 	_update_interact_hint()
 
 
+## Footstep by the tile under the feet: wood on platforms/ladders,
+## the biome's step sound on bricks.
+func _step_sound() -> StringName:
+	if level == null:
+		return &"step_stone"
+	var kind := level.kind_at(global_position + Vector2(0, 2))
+	if kind == LevelLayout.Tile.PLATFORM or LevelLayout.is_ladder(kind):
+		return &"step_wood"
+	return level.biome.step_sound if level.biome else &"step_stone"
+
+
+func _on_landed(fall_speed: float) -> void:
+	if fall_speed < 60.0:
+		return
+	AudioManager.play_sfx(&"land", global_position, -4.0)
+	var k := clampf(fall_speed / MAX_FALL_SPEED, 0.2, 1.0)
+	visual.squash_to(Vector2(1.0 + 0.35 * k, 1.0 - 0.3 * k), 0.2)
+	animator.landed()
+	Fx.dust(get_parent(), global_position, k > 0.6)
+	if k > 0.8:
+		EventBus.screen_shake.emit(1.5)
+
+
 func _tick_timers(delta: float) -> void:
+	_reveal_timer -= delta
+	if _reveal_timer <= 0.0 and level:
+		_reveal_timer = 0.15
+		level.reveal_around(global_position + Vector2(0, -10), REVEAL_RADIUS)
 	_coyote = COYOTE_TIME if is_on_floor() else maxf(0.0, _coyote - delta)
 	_jump_buffer = maxf(0.0, _jump_buffer - delta)
 	_attack_cooldown = maxf(0.0, _attack_cooldown - delta)
 	if _invulnerable > 0.0:
 		_invulnerable -= delta
-		sprite.modulate.a = 0.4 if int(_invulnerable * 20.0) % 2 == 0 else 1.0
+		visual.alpha = 0.4 if int(_invulnerable * 20.0) % 2 == 0 else 1.0
 		if _invulnerable <= 0.0:
-			sprite.modulate.a = 1.0
+			visual.alpha = 1.0
 	if _drop_timer > 0.0:
 		_drop_timer -= delta
 		if _drop_timer <= 0.0 and not climbing:
@@ -130,7 +214,7 @@ func _tick_timers(delta: float) -> void:
 			_buffs.erase(key)
 			hero.stats.remove_modifier(key)
 			if _buffs.is_empty():
-				sprite.self_modulate = Color.WHITE
+				visual.tint = Color.WHITE
 	hero.skills.tick(delta)
 
 
@@ -142,6 +226,14 @@ func _update_ladder_state() -> void:
 			or level.is_ladder_at(global_position + Vector2(0, -2))
 	if climbing:
 		if not on_ladder:
+			_stop_climbing()
+		elif velocity.y < 0.0 and not level.is_ladder_at(global_position + Vector2(0, -6)) \
+				and level.kind_at(global_position + Vector2(0, 1)) == LevelLayout.Tile.LADDER_TOP:
+			# Reached the top: stand on the ladder top platform instead of
+			# stopping a few pixels inside it and falling back through.
+			var top := level.cell_bottom(level.world_to_cell(global_position + Vector2(0, 1))).y - DungeonLevel.TILE
+			global_position.y = top
+			velocity.y = 0.0
 			_stop_climbing()
 		return
 	if on_ladder and Input.is_action_pressed("move_up"):
@@ -182,7 +274,7 @@ func _climb(input_x: float) -> void:
 
 func _walk(input_x: float, delta: float) -> void:
 	velocity.y = minf(velocity.y + GRAVITY * delta, MAX_FALL_SPEED)
-	var target := input_x * hero.stats.speed()
+	var target := input_x * hero.stats.speed() * status.speed_multiplier()
 	var accel := ACCELERATION if is_on_floor() else AIR_ACCELERATION
 	if input_x == 0.0:
 		accel = FRICTION if is_on_floor() else AIR_ACCELERATION * 0.5
@@ -194,13 +286,16 @@ func _walk(input_x: float, delta: float) -> void:
 		velocity.y = JUMP_VELOCITY
 		_jump_buffer = 0.0
 		_coyote = 0.0
+		visual.squash_to(Vector2(0.75, 1.25), 0.22)
+		Fx.dust(get_parent(), global_position)
+		AudioManager.play_sfx(&"jump", global_position, -6.0)
 	if Input.is_action_just_released("jump") and velocity.y < 0.0:
 		velocity.y *= JUMP_CUT
 
 
 # -------------------------------------------------------------------- input
 func _unhandled_input(event: InputEvent) -> void:
-	if hero == null or dead:
+	if hero == null or dead or status.is_stunned():
 		return
 	if event.is_action_pressed("interact") and try_interact():
 		get_viewport().set_input_as_handled()
@@ -209,7 +304,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		attack()
 		get_viewport().set_input_as_handled()
 		return
-	for i in 4:
+	for i in SkillSet.SLOT_COUNT:
 		if event.is_action_pressed("skill_%d" % (i + 1)):
 			use_skill(i)
 			get_viewport().set_input_as_handled()
@@ -223,7 +318,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # ------------------------------------------------------------------ combat
 func roll_damage(multiplier := 1.0) -> Dictionary:
-	var dmg := hero.stats.damage() * multiplier * randf_range(0.85, 1.15)
+	var dmg := hero.stats.damage() * multiplier * skill_power * randf_range(0.85, 1.15)
 	var crit := randf() < hero.stats.crit_chance()
 	if crit:
 		dmg *= 2.0
@@ -233,39 +328,123 @@ func roll_damage(multiplier := 1.0) -> Dictionary:
 func attack() -> void:
 	if _attack_cooldown > 0.0 or climbing:
 		return
-	_attack_cooldown = hero.class_data.attack_cooldown
-	_play_swing()
-	for body in attack_area.get_overlapping_bodies():
-		if body.is_in_group("enemies") and body.has_method("take_damage"):
-			var d := roll_damage()
-			body.take_damage(d["amount"], d["crit"], global_position)
+	var w := hero.weapon()
+	var interval := hero.attack_interval()
+	_attack_cooldown = interval
+	# Fists use the quick jab; weapons their own animation.
+	animator.play_action(w.animation() if w else &"attack_quick", interval * 0.95)
+	AudioManager.play_sfx(AssetPaths.WEAPON_SFX[w.weapon_type] if w else &"attack_dagger", global_position, -2.0)
+	# The hit lands on the "active" part of the swing.
+	var delay := clampf(interval * 0.35, 0.04, 0.22)
+	get_tree().create_timer(delay, false).timeout.connect(_perform_attack.bind(w, facing))
 
 
-func _play_swing() -> void:
-	swing.visible = true
-	swing.position = Vector2(8 * facing, -10)
-	swing.flip_h = facing < 0.0
-	var from := -100.0 if facing > 0.0 else 100.0
-	var to := 40.0 if facing > 0.0 else -40.0
-	swing.rotation_degrees = from
-	var tw := create_tween()
-	tw.tween_property(swing, "rotation_degrees", to, 0.12)
-	tw.tween_callback(func() -> void: swing.visible = false)
+func _perform_attack(w: WeaponItemData, dir: float) -> void:
+	if dead or not is_inside_tree():
+		return
+	if w and w.is_ranged():
+		_shoot(w, dir)
+		return
+	var reach := w.reach if w else 16.0
+	var thrust := w != null and w.attack_pattern == WeaponItemData.Pattern.THRUST
+	var color := w.damage_color() if w else Color.WHITE
+	SlashTrail.spawn(get_parent(), global_position + Vector2(dir * 4.0, -12.0), dir, reach, thrust, color)
+	var hits := _melee_targets(reach, thrust, dir)
+	for enemy in hits:
+		hit_enemy(enemy, w, 1.0)
+	if not hits.is_empty() and w:
+		hero.wear_weapon(1)
 
 
-func _update_swing_texture() -> void:
-	var weapon := hero.equipment.get_item(&"weapon") if hero else null
-	swing.texture = weapon.icon if weapon else AssetPaths.tex("res://assets/sprites/items/rusty_sword.png")
+## Enemies inside the weapon hit shape: a long narrow box for thrusts,
+## a half circle in front for swings.
+func _melee_targets(reach: float, thrust: bool, dir: float) -> Array[Node]:
+	var query := PhysicsShapeQueryParameters2D.new()
+	query.collision_mask = 8
+	query.collide_with_bodies = true
+	var center: Vector2
+	if thrust:
+		var rect := RectangleShape2D.new()
+		rect.size = Vector2(reach, 14)
+		query.shape = rect
+		center = global_position + Vector2(dir * (reach / 2.0 + 3.0), -11.0)
+	else:
+		var circle := CircleShape2D.new()
+		circle.radius = reach
+		query.shape = circle
+		center = global_position + Vector2(dir * reach * 0.3, -12.0)
+	query.transform = Transform2D(0.0, center)
+	var result: Array[Node] = []
+	for hit in get_world_2d().direct_space_state.intersect_shape(query, 16):
+		var body: Node = hit["collider"]
+		if body.is_in_group("enemies") and body not in result:
+			if thrust or (body.global_position.x - global_position.x) * dir > -6.0:
+				result.append(body)
+	return result
 
 
-## Called by enemies, enemy projectiles and traps.
-func take_damage(amount: int, from_pos: Vector2 = Vector2.INF) -> void:
+## Applies damage, knockback and the weapon's on-hit effects.
+func hit_enemy(enemy: Node, w: WeaponItemData, multiplier: float) -> void:
+	var d := roll_damage(multiplier)
+	enemy.take_damage(d["amount"], d["crit"], global_position, w.damage_type if w else 0)
+	if not is_instance_valid(enemy) or enemy.is_dead():
+		return
+	if w:
+		enemy.apply_knockback(signf(enemy.global_position.x - global_position.x), w.knockback)
+		for e in w.on_hit_effects:
+			if e:
+				e.try_apply(self, enemy, d["amount"])
+	if is_instance_valid(enemy) and not enemy.is_dead():
+		hero.apply_passive_hits(self, enemy, d["amount"])
+
+
+func _shoot(w: WeaponItemData, dir: float) -> void:
+	if level == null:
+		return
+	var p: Projectile = PROJECTILE_SCENE.instantiate()
+	var d := roll_damage()
+	p.setup(w.projectile_texture, Vector2(dir, 0), w.projectile_speed, d["amount"], "enemies")
+	p.crit = d["crit"]
+	p.damage_type = w.damage_type
+	p.pierce = w.projectile_pierce
+	p.blast_radius = w.projectile_blast_radius
+	p.blast_color = w.damage_color()
+	p.lifetime = w.reach / maxf(1.0, w.projectile_speed) + 0.4
+	p.on_hit = func(enemy: Node, _dmg: int) -> void:
+		if is_instance_valid(enemy) and not enemy.is_dead():
+			enemy.apply_knockback(dir, w.knockback)
+			for e in w.on_hit_effects:
+				if e:
+					e.try_apply(self, enemy, _dmg)
+			if is_instance_valid(enemy) and not enemy.is_dead():
+				hero.apply_passive_hits(self, enemy, _dmg)
+		hero.wear_weapon(1)
+	level.add_entity(p, global_position + Vector2(dir * 10.0, -13.0))
+
+
+## Called by enemies, enemy projectiles and traps. Elemental damage
+## (damage_type > 0) is reduced by resistances, then a shield absorbs it.
+func take_damage(amount: int, from_pos: Vector2 = Vector2.INF, damage_type: int = 0) -> void:
 	if dead or _invulnerable > 0.0 or _dash_time > 0.0:
 		return
+	if damage_type > 0:
+		amount = roundi(amount * (1.0 - hero.stats.resistance(damage_type)))
+	if status.has(&"curse"):
+		amount = roundi(amount * StatusEffects.CURSE_DAMAGE_MULT)
+	amount = status.absorb(amount)
+	if amount <= 0:
+		visual.flash(Color(0.6, 0.8, 1.0), 0.12)
+		_invulnerable = INVULNERABLE_TIME * 0.5
+		EventBus.floating_text.emit(global_position + Vector2(0, -26), "Поглощено", Color(0.6, 0.8, 1.0))
+		return
 	var lost := hero.stats.take_damage(amount)
-	EventBus.floating_text.emit(global_position + Vector2(0, -24), str(lost), Color(1.0, 0.3, 0.3))
-	EventBus.screen_shake.emit(3.0)
+	hero.wear_armor(1)
+	EventBus.damage_dealt.emit(global_position + Vector2(0, -24), lost, false, true)
 	_invulnerable = INVULNERABLE_TIME
+	visual.flash(Color(1.0, 0.3, 0.3))
+	AudioManager.play_sfx(&"player_hurt", global_position)
+	if not dead:
+		animator.hurt()
 	if from_pos != Vector2.INF:
 		var dir := signf(global_position.x - from_pos.x)
 		if dir == 0.0:
@@ -280,10 +459,33 @@ func _on_died() -> void:
 		return
 	dead = true
 	velocity = Vector2.ZERO
-	sprite.modulate = Color(0.6, 0.1, 0.1)
-	var tw := create_tween()
-	tw.tween_property(sprite, "rotation_degrees", 90.0 * facing, 0.4)
+	visual.alpha = 1.0
+	animator.die()
+	AudioManager.play_sfx(&"player_death", global_position)
+	Fx.sparks(get_parent(), global_position + Vector2(0, -10), Color(0.7, 0.1, 0.1), 16, 80.0)
 	EventBus.player_died.emit()
+
+
+## Damage over time from statuses: ignores armor and invulnerability.
+func take_status_damage(amount: int, p_status: StringName, color: Color) -> void:
+	if dead:
+		return
+	amount = roundi(amount * (1.0 - status_resistance(p_status)))
+	if amount <= 0:
+		return
+	hero.stats.lose_hp(amount)
+	EventBus.floating_text.emit(global_position + Vector2(randf_range(-4, 4), -26), str(amount), color)
+
+
+func heal_status(amount: int) -> void:
+	if dead or hero.stats.hp >= hero.stats.max_hp():
+		return
+	hero.stats.heal(amount)
+	EventBus.floating_text.emit(global_position + Vector2(0, -26), "+%d" % amount, Color(0.4, 1.0, 0.5))
+
+
+func status_resistance(id: StringName) -> float:
+	return hero.stats.resistance(StatusEffects.damage_type_of(id))
 
 
 func push(impulse: Vector2) -> void:
@@ -296,12 +498,25 @@ func dash(speed: float, duration: float) -> void:
 		_stop_climbing()
 	velocity = Vector2(facing * speed, 0.0)
 	_dash_time = duration
+	AudioManager.play_sfx(&"dash", global_position)
+	visual.squash_to(Vector2(1.25, 0.85), duration + 0.1)
 
 
 func apply_buff(key: String, bonuses: Dictionary, duration: float, tint := Color.WHITE) -> void:
 	hero.stats.set_modifier(key, bonuses)
 	_buffs[key] = duration
-	sprite.self_modulate = tint
+	_buff_info[key] = {"icon": _casting_icon, "duration": duration, "tint": tint}
+	visual.tint = tint
+
+
+## Active buffs for the HUD: [{key, left, duration, icon, tint}].
+func get_buffs() -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for key: String in _buffs:
+		var info: Dictionary = _buff_info.get(key, {})
+		out.append({"key": key, "left": _buffs[key], "duration": info.get("duration", 1.0),
+				"icon": info.get("icon"), "tint": info.get("tint", Color.WHITE)})
+	return out
 
 
 func boost_light(scale_mult: float, duration: float) -> void:
@@ -326,9 +541,17 @@ func use_skill(index: int) -> void:
 	if hero.stats.mana < skill.mana_cost:
 		EventBus.message.emit("Недостаточно маны")
 		return
-	if skill.effect.execute(self, skills.get_level(index)):
+	_casting_icon = skill.icon
+	skill_power = skill.power_with(hero.weapon())
+	var fired := skill.effect.execute(self, skills.get_level(index))
+	skill_power = 1.0
+	_casting_icon = null
+	if fired:
 		hero.stats.spend_mana(skill.mana_cost)
 		skills.start_cooldown(index)
+		if skill.cast_animation != &"":
+			animator.play_action(skill.cast_animation, 0.4)
+		AudioManager.play_sfx(&"skill_cast", global_position, -4.0)
 
 
 func use_quick_slot(index: int) -> void:
@@ -345,7 +568,7 @@ func use_item(item: ItemData) -> bool:
 		EventBus.message.emit("Нет предмета: %s" % item.display_name)
 		return false
 	if item is EquipmentItemData:
-		return hero.equip_from_inventory(hero.inventory.find_index(item.id))
+		return hero.equip_from_inventory(hero.inventory.find_item(item))
 	if not (item is UsableItemData):
 		return false
 	if _item_cooldowns.has(item.id):
@@ -354,6 +577,10 @@ func use_item(item: ItemData) -> bool:
 	if not usable.use(self):
 		return false
 	_item_cooldowns[item.id] = usable.cooldown
+	AudioManager.play_sfx(usable.use_sound, global_position)
+	if usable.use_animation != &"":
+		animator.play_action(usable.use_animation, 0.45)
+		visual.hold_temporarily(usable.icon, 0.45)
 	if usable.consume_on_use:
 		hero.inventory.remove_by_id(item.id, 1)
 	return true
@@ -380,6 +607,8 @@ func try_interact() -> bool:
 	var target := _nearest_interactable()
 	if target == null:
 		return false
+	if target is Chest:
+		animator.play_action(&"interact", 0.35)
 	target.interact(self)
 	return true
 

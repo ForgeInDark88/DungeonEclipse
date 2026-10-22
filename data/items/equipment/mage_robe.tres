@@ -1,11 +1,14 @@
-[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=4 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/items/mage_robe.png" id="1_ddywp"]
 [ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_licm1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/equip_mage_robe.png" id="sheet_visual"]
 
 [resource]
 script = ExtResource("2_licm1")
 slot_type = &"chest"
+visual_sheet = ExtResource("sheet_visual")
+visual_layer = &"armor"
 id = &"mage_robe"
 display_name = "Мантия мага"
 description = "Расшита защитными рунами."
@@ -18,3 +21,5 @@ stat_bonuses = {
 "intellect": 3,
 "max_mana": 15
 }
+has_durability = true
+max_durability = 120

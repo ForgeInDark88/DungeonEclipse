@@ -8,6 +8,7 @@ const GRAVITY := 700.0
 var item: ItemData
 var count: int = 1
 var _bob := 0.0
+var _glow: PointLight2D
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var count_label: Label = $Count
@@ -25,6 +26,14 @@ func _ready() -> void:
 	sprite.texture = item.icon if item else null
 	count_label.text = str(count) if count > 1 else ""
 	_bob = randf() * TAU
+	# Rare and epic items glow on the floor.
+	if item and item.rarity > ItemData.Rarity.COMMON:
+		_glow = PointLight2D.new()
+		_glow.texture = AssetPaths.tex(AssetPaths.LIGHT)
+		_glow.color = item.rarity_color()
+		_glow.texture_scale = 0.25 if item.rarity == ItemData.Rarity.RARE else 0.35
+		_glow.position = Vector2(0, -8)
+		add_child(_glow)
 
 
 func _physics_process(delta: float) -> void:
@@ -34,6 +43,9 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_bob += delta * 3.0
 	sprite.position.y = -8.0 + sin(_bob) * 1.5
+	if _glow:
+		_glow.energy = 0.9 + sin(_bob * 1.7) * 0.35
+		sprite.modulate = Color.WHITE.lerp(item.rarity_color() * 1.5, (sin(_bob * 1.7) + 1.0) * 0.2)
 
 
 func get_prompt() -> String:
@@ -55,9 +67,22 @@ func interact(player: Node) -> void:
 func collect(hero: Hero) -> void:
 	if item == null or is_queued_for_deletion():
 		return
+	if item.currency_value > 0:
+		var amount := item.currency_value * count
+		hero.add_gold(amount)
+		EventBus.floating_text.emit(global_position + Vector2(0, -16), "+%d з." % amount, Color(1.0, 0.85, 0.3))
+		AudioManager.play_sfx(&"coin", global_position)
+		queue_free()
+		return
 	var left := hero.inventory.add_item(item, count)
 	var taken := count - left
 	if taken > 0:
+		EventBus.item_collected.emit(item, global_position + Vector2(0, -8))
+		var found: Array = GameState.run_stats.get("found", [0, 0, 0])
+		if found.size() == 3:
+			found[item.rarity] += 1
+		var snd: StringName = [&"pickup_common", &"pickup_rare", &"pickup_epic"][item.rarity]
+		AudioManager.play_sfx(&"coin" if item.id == &"gold_coin" else snd, global_position)
 		EventBus.floating_text.emit(global_position + Vector2(0, -16), "+%d %s" % [taken, item.display_name], item.rarity_color())
 	if left > 0:
 		count = left

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="UsableItemData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/usable_item_data.gd" id="1_usable"]
+[ext_resource type="Script" path="res://scripts/effects/reveal_map_effect.gd" id="2_reveal"]
+[ext_resource type="Script" path="res://scripts/effects/item_effect.gd" id="3_effect"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/map_scroll.png" id="4_icon"]
+
+[sub_resource type="Resource" id="Effect_reveal"]
+script = ExtResource("2_reveal")
+
+[resource]
+script = ExtResource("1_usable")
+effects = Array[ExtResource("3_effect")]([SubResource("Effect_reveal")])
+consume_on_use = true
+cooldown = 0.5
+use_animation = &"use"
+use_sound = &"item_use"
+id = &"map_scroll"
+display_name = "Карта этажа"
+description = "Набросок ходов этого этажа. Сгорает после прочтения."
+icon = ExtResource("4_icon")
+item_type = 1
+rarity = 0
+max_stack = 5
+price = 30

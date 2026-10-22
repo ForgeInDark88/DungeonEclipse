@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SpriteSheetLayout" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/sprite_sheet_layout.gd" id="1_layout"]
+
+[resource]
+script = ExtResource("1_layout")
+frame_size = Vector2i(16, 16)
+origin = Vector2(8, 16)
+animations = {
+"hidden": {"fps": 1.0, "frames": 1, "loop": false, "row": 0},
+"rise": {"fps": 20.0, "frames": 3, "loop": false, "row": 1},
+"up": {"fps": 1.0, "frames": 1, "loop": false, "row": 2},
+"retract": {"fps": 12.0, "frames": 3, "loop": false, "row": 3}
+}

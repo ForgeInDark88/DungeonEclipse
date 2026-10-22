@@ -1,0 +1,90 @@
+[gd_resource type="Resource" script_class="BiomeData" load_steps=17 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="1_ase3j"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/statue.png" id="2_tthib"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/column.png" id="3_ic8gm"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/barrel.png" id="4_iy81m"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/vines.png" id="5_iy0kn"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/candles.png" id="6_y7ltg"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/ruins_far.png" id="7_alwl3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/ruins_mid.png" id="8_72lie"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/ruins_near.png" id="9_ctfa8"]
+[ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="10_0ie7r"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/tiles_ruins.png" id="11_jgxml"]
+
+[sub_resource type="Resource" id="Resource_mbtgo"]
+script = ExtResource("1_ase3j")
+texture = ExtResource("2_tthib")
+placement = 0
+weight = 1.0
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.35
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Resource_5po7i"]
+script = ExtResource("1_ase3j")
+texture = ExtResource("3_ic8gm")
+placement = 0
+weight = 2.0
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Resource_juyo7"]
+script = ExtResource("1_ase3j")
+texture = ExtResource("4_iy81m")
+placement = 0
+weight = 2.0
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Resource_37t48"]
+script = ExtResource("1_ase3j")
+texture = ExtResource("5_iy0kn")
+placement = 1
+weight = 2.5
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = true
+
+[sub_resource type="Resource" id="Resource_yvy1r"]
+script = ExtResource("1_ase3j")
+texture = ExtResource("6_y7ltg")
+placement = 0
+weight = 0.8
+light_color = Color(1, 0.75, 0.4, 1)
+light_scale = 0.25
+unshaded = true
+sway = false
+
+[resource]
+script = ExtResource("10_0ie7r")
+music = &"ruins"
+step_sound = &"step_stone"
+id = &"ruins"
+display_name = "Руины"
+order = 2
+tileset_texture = ExtResource("11_jgxml")
+parallax_far = ExtResource("7_alwl3")
+parallax_mid = ExtResource("8_72lie")
+parallax_near = ExtResource("9_ctfa8")
+darkness = Color(0.18, 0.16, 0.14, 1)
+back_wall_modulate = Color(0.7, 0.65, 0.58, 1)
+torch_color = Color(1, 0.8, 0.45, 1)
+hero_light_color = Color(1, 0.92, 0.75, 1)
+ambient_particles = Color(0.9, 0.85, 0.6, 1)
+fog_color = Color(0.6, 0.55, 0.45, 1)
+fog_amount = 0.06
+grade_tint = Color(1.05, 1, 0.92, 1)
+saturation = 0.95
+contrast = 1.08
+vignette = 0.35
+decorations = Array[ExtResource("1_ase3j")]([SubResource("Resource_mbtgo"), SubResource("Resource_5po7i"), SubResource("Resource_juyo7"), SubResource("Resource_37t48"), SubResource("Resource_yvy1r")])
+decor_per_room = 3.0
+ore_chance = 0.04
+ore_item = &"gold_coin"

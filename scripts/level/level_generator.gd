@@ -18,6 +18,12 @@ var _connected: Dictionary = {}  # Vector2i room -> true
 var _path: Array[Vector2i] = []
 var _spots: Dictionary = {}  # Vector2i room -> Array[Vector2i]
 var _used: Dictionary = {}
+## Rooms taken by merchants / events: no chests or monsters there.
+var _reserved: Dictionary = {}
+## Chance that a floor has a merchant room.
+const MERCHANT_CHANCE := 0.4
+## Event rooms per floor: 1, sometimes 2.
+const SECOND_EVENT_CHANCE := 0.4
 
 
 func generate(floor_number: int, seed_value: int) -> LevelLayout:
@@ -29,6 +35,7 @@ func generate(floor_number: int, seed_value: int) -> LevelLayout:
 	_path.clear()
 	_spots.clear()
 	_used.clear()
+	_reserved.clear()
 
 	_make_border()
 	for r in rows:
@@ -43,8 +50,34 @@ func generate(floor_number: int, seed_value: int) -> LevelLayout:
 		for c in cols:
 			_collect_spots(Vector2i(c, r))
 	_place_start_and_exit()
+	_place_specials(floor_number)
 	_place_chests(floor_number)
 	_place_enemies(floor_number)
+	return layout
+
+
+## Boss arena: one wide hall with platforms on two tiers.
+func generate_arena(floor_number: int, seed_value: int) -> LevelLayout:
+	rng.seed = seed_value
+	var w := 46
+	var h := 16
+	layout = LevelLayout.new(w, h, T.BRICK)
+	_make_border()
+	for y in range(1, h - 2):
+		for x in range(1, w - 1):
+			layout.set_tile(x, y, T.EMPTY)
+	var fy := h - 2  # floor row
+	for seg in [[7, 12, fy - 4], [w - 13, w - 8, fy - 4], [w / 2 - 4, w / 2 + 3, fy - 7]]:
+		for x in range(seg[0], seg[1] + 1):
+			layout.set_tile(x, seg[2], T.PLATFORM)
+	# Pillars at the walls so the boss cannot be cheesed in a corner.
+	for y in range(fy - 2, fy):
+		layout.set_tile(1, y, T.BRICK)
+		layout.set_tile(w - 2, y, T.BRICK)
+	layout.start_cell = Vector2i(4, fy - 1)
+	layout.exit_cell = Vector2i(w - 5, fy - 1)
+	layout.boss_cell = Vector2i(w / 2 + 6, fy - 1)
+	layout.is_arena = true
 	return layout
 
 
@@ -223,10 +256,35 @@ func _place_start_and_exit() -> void:
 	layout.exit_cell = exit
 
 
+## Reserves side rooms for the merchant (and random events, see below).
+func _place_specials(_floor_number: int) -> void:
+	var rooms: Array[Vector2i] = []
+	for room: Vector2i in _spots:
+		if room != _path[0] and room != _path[_path.size() - 1] and _connected.has(room):
+			rooms.append(room)
+	_shuffle(rooms)
+	if not rooms.is_empty() and rng.randf() < MERCHANT_CHANCE:
+		var room: Vector2i = rooms.pop_back()
+		var cell: Variant = _take_spot(room, true)
+		if cell != null:
+			layout.specials.append({"type": &"merchant", "cell": cell})
+			_reserved[room] = true
+	# Random event rooms (altar, fountain, cursed chest, puzzle, prisoner...).
+	var events := 1 + (1 if rng.randf() < SECOND_EVENT_CHANCE else 0)
+	for i in events:
+		if rooms.is_empty():
+			break
+		var room: Vector2i = rooms.pop_back()
+		var cell: Variant = _take_spot(room, true)
+		if cell != null:
+			layout.specials.append({"type": &"event", "cell": cell, "room": _room_rect(room), "roll": rng.randi()})
+			_reserved[room] = true
+
+
 func _place_chests(floor_number: int) -> void:
 	var rooms: Array[Vector2i] = []
 	for room: Vector2i in _spots:
-		if room != _path[0]:
+		if room != _path[0] and not _reserved.has(room):
 			rooms.append(room)
 	_shuffle(rooms)
 	var count := 2 + (cols * rows) / 3
@@ -256,7 +314,7 @@ func _place_chests(floor_number: int) -> void:
 func _place_enemies(floor_number: int) -> void:
 	var rooms: Array[Vector2i] = []
 	for room: Vector2i in _spots:
-		if room != _path[0] and _connected.has(room):
+		if room != _path[0] and _connected.has(room) and not _reserved.has(room):
 			rooms.append(room)
 	if rooms.is_empty():
 		return

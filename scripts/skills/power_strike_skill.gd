@@ -18,7 +18,6 @@ func execute(caster: Node, level: int) -> bool:
 	if lvl:
 		for dy in [-18, -6]:
 			lvl.break_tile(lvl.world_to_cell(caster.global_position + Vector2(caster.facing * 14.0, dy)))
-	caster._play_swing()
 	Fx.sparks(caster.get_parent(), front, Color(0.9, 0.9, 1.0), 10, 80.0)
 	EventBus.screen_shake.emit(3.0)
 	return true

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AchievementData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/achievement_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/achievements/crown_gold.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"eclipse_breaker"
+display_name = "Разрушитель Затмения"
+description = "Победите 5 боссов."
+icon = ExtResource("2_icon")
+order = 5
+counter = &"bosses"
+target = 5
+reward_shards = 8
+hidden = false

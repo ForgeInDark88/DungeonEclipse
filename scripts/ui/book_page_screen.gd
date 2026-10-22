@@ -60,5 +60,6 @@ static func button(text: String, callback: Callable) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.focus_mode = Control.FOCUS_ALL
+	b.pressed.connect(func() -> void: AudioManager.play_ui(&"ui_click"))
 	b.pressed.connect(callback)
 	return b

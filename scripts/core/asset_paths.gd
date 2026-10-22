@@ -23,7 +23,25 @@ const TOOLTIP := UI_DIR + "tooltip.png"
 const DOLL := UI_DIR + "doll.png"
 
 # --- World ---
-const TILES := SPRITES_DIR + "tiles/dungeon_tiles.png"
+const TILES := SPRITES_DIR + "tiles/tiles_catacombs.png"  # fallback biome tileset
+const SHADOW := SPRITES_DIR + "fx/shadow.png"
+const RIVET := UI_DIR + "rivet.png"
+## Status icons: STATUS_ICON_DIR + "<status id>.png" (8x8).
+const STATUS_ICON_DIR := UI_DIR + "status/"
+const SHIELD_BUBBLE := SPRITES_DIR + "fx/shield_bubble.png"
+const TRAP_ROCK := SPRITES_DIR + "traps/rock.png"
+const TRAP_CRACK := SPRITES_DIR + "traps/ceiling_crack.png"
+const MERCHANT_SHEET := SPRITES_DIR + "npc/merchant_sheet.png"
+const MERCHANT_LAYOUT := ANIM_DIR + "merchant_layout.tres"
+const COIN_ICON := UI_DIR + "coin.png"
+## Sanctum of the Eclipse currency (meta progression).
+const ECLIPSE_SHARD_ICON := SPRITES_DIR + "items/eclipse_shard.png"
+const BARRIER_SHEET := SPRITES_DIR + "events/barrier_sheet.png"
+const BARRIER_LAYOUT := ANIM_DIR + "barrier_layout.tres"
+const LEVER_SHEET := SPRITES_DIR + "events/lever_sheet.png"
+const LEVER_LAYOUT := ANIM_DIR + "lever_layout.tres"
+## Puzzle runes: 4 symbols of 8x8 in a row.
+const RUNES := SPRITES_DIR + "events/runes.png"
 const EXIT_DOOR := SPRITES_DIR + "props/exit_door.png"
 const LIGHT := SPRITES_DIR + "fx/light.png"
 const PIXEL := SPRITES_DIR + "fx/pixel.png"
@@ -32,12 +50,116 @@ const KNIFE := SPRITES_DIR + "fx/knife.png"
 const DARK_BOLT := SPRITES_DIR + "fx/dark_bolt.png"
 const BOMB := SPRITES_DIR + "items/bomb.png"
 
-# Atlas coordinates inside TILES (16x16 cells).
-const TILE_BEDROCK := Vector2i(0, 0)
-const TILE_BRICK := Vector2i(1, 0)
-const TILE_PLATFORM := Vector2i(2, 0)
-const TILE_LADDER := Vector2i(3, 0)
-const TILE_BACKWALL := Vector2i(4, 0)
+# --- Animated sheets (grid PNG + SpriteSheetLayout .tres, see docs/ANIMATION_GUIDE.md) ---
+const ANIM_DIR := "res://data/animations/"
+const HERO_LAYOUT := ANIM_DIR + "hero_layout.tres"
+const TORCH_SHEET := SPRITES_DIR + "props/torch_sheet.png"
+const TORCH_LAYOUT := ANIM_DIR + "torch_layout.tres"
+const CHEST_LAYOUT := ANIM_DIR + "chest_layout.tres"
+const CHEST_SHEETS: Array[String] = [
+	SPRITES_DIR + "props/chest_wood_sheet.png",
+	SPRITES_DIR + "props/chest_iron_sheet.png",
+	SPRITES_DIR + "props/chest_gold_sheet.png",
+]
+const PORTAL_SHEET := SPRITES_DIR + "props/portal_sheet.png"
+const PORTAL_LAYOUT := ANIM_DIR + "portal_layout.tres"
+const DROP_SHEET := SPRITES_DIR + "fx/drop_sheet.png"
+const DROP_LAYOUT := ANIM_DIR + "drop_layout.tres"
+const EXPLOSION_SHEET := SPRITES_DIR + "fx/explosion_sheet.png"
+const EXPLOSION_LAYOUT := ANIM_DIR + "explosion_layout.tres"
+const DUST_SHEET := SPRITES_DIR + "fx/dust_sheet.png"
+const DUST_LAYOUT := ANIM_DIR + "dust_layout.tres"
+const HIT_SHEET := SPRITES_DIR + "fx/hit_sheet.png"
+const HIT_LAYOUT := ANIM_DIR + "hit_layout.tres"
+const SHARD := SPRITES_DIR + "fx/shard.png"
+const FALLBACK_WEAPON := SPRITES_DIR + "items/rusty_sword.png"
+
+# --- Audio (see docs/AUDIO_LIST.md) ---
+const SFX_DIR := "res://assets/audio/sfx/"
+const MUSIC_DIR := "res://assets/audio/music/"
+## Sound id -> file. Any id used by code or data (UsableItemData.use_sound,
+## EnemyData.sound_*) must be listed here.
+const SFX := {
+	&"ui_click": SFX_DIR + "ui_click.wav",
+	&"ui_hover": SFX_DIR + "ui_hover.wav",
+	&"ui_book_open": SFX_DIR + "ui_book_open.wav",
+	&"ui_book_close": SFX_DIR + "ui_book_close.wav",
+	&"ui_equip": SFX_DIR + "ui_equip.wav",
+	&"level_up": SFX_DIR + "level_up.wav",
+	&"step_stone": SFX_DIR + "step_stone.wav",
+	&"step_wood": SFX_DIR + "step_wood.wav",
+	&"step_soft": SFX_DIR + "step_soft.wav",
+	&"jump": SFX_DIR + "jump.wav",
+	&"land": SFX_DIR + "land.wav",
+	&"dash": SFX_DIR + "dash.wav",
+	&"attack_sword": SFX_DIR + "attack_sword.wav",
+	&"attack_axe": SFX_DIR + "attack_axe.wav",
+	&"attack_spear": SFX_DIR + "attack_spear.wav",
+	&"attack_dagger": SFX_DIR + "attack_dagger.wav",
+	&"attack_bow": SFX_DIR + "attack_bow.wav",
+	&"attack_staff": SFX_DIR + "attack_staff.wav",
+	&"attack_mace": SFX_DIR + "attack_mace.wav",
+	&"hit_flesh": SFX_DIR + "hit_flesh.wav",
+	&"hit_crit": SFX_DIR + "hit_crit.wav",
+	&"player_hurt": SFX_DIR + "player_hurt.wav",
+	&"player_death": SFX_DIR + "player_death.wav",
+	&"enemy_hurt": SFX_DIR + "enemy_hurt.wav",
+	&"enemy_death": SFX_DIR + "enemy_death.wav",
+	&"enemy_shoot": SFX_DIR + "enemy_shoot.wav",
+	&"chest_open": SFX_DIR + "chest_open.wav",
+	&"chest_locked": SFX_DIR + "chest_locked.wav",
+	&"pickup_common": SFX_DIR + "pickup_common.wav",
+	&"pickup_rare": SFX_DIR + "pickup_rare.wav",
+	&"pickup_epic": SFX_DIR + "pickup_epic.wav",
+	&"coin": SFX_DIR + "coin.wav",
+	&"potion_drink": SFX_DIR + "potion_drink.wav",
+	&"item_use": SFX_DIR + "item_use.wav",
+	&"dig": SFX_DIR + "dig.wav",
+	&"explosion": SFX_DIR + "explosion.wav",
+	&"portal": SFX_DIR + "portal.wav",
+	&"skill_cast": SFX_DIR + "skill_cast.wav",
+}
+## Weapon type (WeaponItemData.WeaponType) -> swing sound id.
+const WEAPON_SFX: Array[StringName] = [&"attack_sword", &"attack_axe", &"attack_spear", &"attack_dagger", &"attack_bow", &"attack_staff", &"attack_mace"]
+const MUSIC := {
+	&"menu": MUSIC_DIR + "music_menu.wav",
+	&"catacombs": MUSIC_DIR + "music_catacombs.wav",
+	&"fungal": MUSIC_DIR + "music_fungal.wav",
+	&"ruins": MUSIC_DIR + "music_ruins.wav",
+	&"lava": MUSIC_DIR + "music_lava.wav",
+	&"boss": MUSIC_DIR + "music_boss.wav",
+}
+
+# --- Shaders ---
+const SHADER_FLASH := "res://assets/shaders/flash.gdshader"
+const SHADER_POST_FX := "res://assets/shaders/post_fx.gdshader"
+
+# Biome tileset atlas (16x16 cells, 4 columns): rows of variants.
+# The texture itself comes from BiomeData.tileset_texture.
+const TILE_ROW_BEDROCK := 0
+const TILE_ROW_BRICK := 1  # columns 0-1 plain, 2 cracked, 3 ore
+const TILE_ROW_BRICK_TOP := 2  # exposed top (moss / dust / magma)
+const TILE_ROW_BRICK_BOTTOM := 3  # exposed bottom (ceiling)
+const TILE_PLATFORM_LEFT := Vector2i(0, 4)
+const TILE_PLATFORM_MID := Vector2i(1, 4)
+const TILE_PLATFORM_RIGHT := Vector2i(2, 4)
+const TILE_LADDER := Vector2i(3, 4)
+const TILE_ROW_BACKWALL := 5
+const TILE_ORE_GLOW := Vector2i(0, 6)
+const TILE_ORE := Vector2i(3, 1)
+
+
+static func layout(path: String) -> SpriteSheetLayout:
+	if ResourceLoader.exists(path):
+		return load(path) as SpriteSheetLayout
+	push_warning("Missing sheet layout: %s" % path)
+	return null
+
+
+static func flash_material() -> ShaderMaterial:
+	var m := ShaderMaterial.new()
+	m.shader = load(SHADER_FLASH)
+	return m
 
 
 static func tex(path: String) -> Texture2D:

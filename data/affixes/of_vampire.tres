@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="AffixData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="1_b0438"]
+[ext_resource type="Script" path="res://scripts/combat/life_steal_hit_effect.gd" id="2_fis3j"]
+[ext_resource type="Script" path="res://scripts/data/affix_data.gd" id="3_w6drg"]
+
+[sub_resource type="Resource" id="Resource_h6hor"]
+script = ExtResource("2_fis3j")
+percent = 0.06
+chance = 1.0
+
+[resource]
+script = ExtResource("3_w6drg")
+id = &"of_vampire"
+prefix_forms = {}
+suffix = "кровопийцы"
+description = "Кража жизни 6%"
+min_rarity = 2
+weight = 1.0
+allowed_types = Array[int]([])
+stat_bonuses = {}
+damage_mult = 0.0
+speed_mult = 0.0
+reach_add = 0.0
+knockback_add = 0.0
+damage_type = -1
+hit_effects = Array[ExtResource("1_b0438")]([SubResource("Resource_h6hor")])

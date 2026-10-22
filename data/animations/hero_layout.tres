@@ -1,0 +1,65 @@
+[gd_resource type="Resource" script_class="SpriteSheetLayout" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/sprite_sheet_layout.gd" id="1_layout"]
+
+[resource]
+script = ExtResource("1_layout")
+frame_size = Vector2i(32, 32)
+origin = Vector2(16, 32)
+animations = {
+"idle": {"fps": 5.0, "frames": 4, "loop": true, "row": 0},
+"run": {"fps": 12.0, "frames": 6, "loop": true, "row": 1},
+"jump": {"fps": 8.0, "frames": 2, "loop": false, "row": 2},
+"fall": {"fps": 8.0, "frames": 2, "loop": true, "row": 3},
+"land": {"fps": 14.0, "frames": 3, "loop": false, "row": 4},
+"climb": {"fps": 8.0, "frames": 4, "loop": true, "row": 5},
+"dash": {"fps": 14.0, "frames": 3, "loop": true, "row": 6},
+"attack_slash": {"fps": 14.0, "frames": 4, "loop": false, "row": 7},
+"attack_thrust": {"fps": 14.0, "frames": 4, "loop": false, "row": 8},
+"attack_quick": {"fps": 18.0, "frames": 3, "loop": false, "row": 9},
+"attack_heavy": {"fps": 10.0, "frames": 5, "loop": false, "row": 10},
+"attack_shoot": {"fps": 10.0, "frames": 4, "loop": false, "row": 11},
+"attack_cast": {"fps": 10.0, "frames": 4, "loop": false, "row": 12},
+"hurt": {"fps": 10.0, "frames": 2, "loop": false, "row": 13},
+"death": {"fps": 8.0, "frames": 6, "loop": false, "row": 14},
+"use": {"fps": 8.0, "frames": 4, "loop": false, "row": 15},
+"interact": {"fps": 8.0, "frames": 4, "loop": false, "row": 16}
+}
+hand_points = {
+"idle": PackedVector2Array(2, -7, 2, -8, 2, -6, 2, -5),
+"run": PackedVector2Array(5, -8, 7, -7, 7, -8, 5, -8, 3, -7, 3, -8),
+"jump": PackedVector2Array(4, -17, 5, -18),
+"fall": PackedVector2Array(5, -15, 5, -14),
+"land": PackedVector2Array(4, -5, 3, -5, 2, -6),
+"climb": PackedVector2Array(3, -19, 3, -21, 3, -19, 3, -21),
+"dash": PackedVector2Array(3, -9, 2, -9, 1, -8),
+"attack_slash": PackedVector2Array(-2, -21, 2, -21, 10, -14, 8, -11),
+"attack_thrust": PackedVector2Array(-3, -12, -6, -12, 13, -13, 9, -12),
+"attack_quick": PackedVector2Array(2, -13, 12, -14, 5, -12),
+"attack_heavy": PackedVector2Array(-3, -22, -6, -24, 4, -20, 12, -11, 11, -7),
+"attack_shoot": PackedVector2Array(7, -15, 6, -15, 6, -15, 7, -15),
+"attack_cast": PackedVector2Array(3, -20, 4, -23, 10, -17, 7, -14),
+"hurt": PackedVector2Array(-1, -11, 0, -10),
+"death": PackedVector2Array(1, -6, 4, -2, 6, -1, 12, -2, 11, -3, 9, -6),
+"use": PackedVector2Array(3, -10, 3, -15, 2, -18, 2, -18),
+"interact": PackedVector2Array(9, -9, 11, -7, 11, -9, 8, -9)
+}
+hand_angles = {
+"idle": PackedFloat32Array(-50.0, -50.0, -50.0, -50.0),
+"run": PackedFloat32Array(-45.0, -37.0, -37.0, -45.0, -53.0, -53.0),
+"jump": PackedFloat32Array(-30.0, -40.0),
+"fall": PackedFloat32Array(-20.0, -15.0),
+"land": PackedFloat32Array(-50.0, -50.0, -50.0),
+"climb": PackedFloat32Array(-90.0, -90.0, -90.0, -90.0),
+"dash": PackedFloat32Array(180.0, 180.0, 180.0),
+"attack_slash": PackedFloat32Array(-130.0, -80.0, 10.0, 45.0),
+"attack_thrust": PackedFloat32Array(0.0, 0.0, 0.0, 5.0),
+"attack_quick": PackedFloat32Array(-20.0, 0.0, 10.0),
+"attack_heavy": PackedFloat32Array(-150.0, -165.0, -60.0, 30.0, 70.0),
+"attack_shoot": PackedFloat32Array(0.0, 0.0, 0.0, 0.0),
+"attack_cast": PackedFloat32Array(-70.0, -80.0, -30.0, -10.0),
+"hurt": PackedFloat32Array(60.0, 50.0),
+"death": PackedFloat32Array(60.0, 80.0, 90.0, 50.0, 15.0, 0.0),
+"use": PackedFloat32Array(-90.0, -100.0, -150.0, -160.0),
+"interact": PackedFloat32Array(-50.0, -50.0, -50.0, -50.0)
+}

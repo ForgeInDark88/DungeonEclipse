@@ -13,6 +13,7 @@ damage_multiplier = 1.0
 
 [resource]
 script = ExtResource("3_40a0e")
+cast_animation = &""
 id = &"dash"
 display_name = "Рывок"
 description = "Стремительный рывок сквозь врагов."
@@ -21,3 +22,5 @@ mana_cost = 8
 cooldown = 3.0
 max_level = 4
 effect = SubResource("Resource_2s1hv")
+synergy_weapons = Array[int]([3])
+synergy_power = 0.3

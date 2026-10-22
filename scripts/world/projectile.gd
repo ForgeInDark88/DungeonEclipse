@@ -7,12 +7,16 @@ var direction := Vector2.RIGHT
 var speed: float = 200.0
 var damage: int = 10
 var crit := false
+## WeaponItemData.DamageType of the hit.
+var damage_type: int = 0
 var target_group := "enemies"
 var pierce := 0
 var lifetime: float = 2.5
 ## Optional: explodes on impact with this radius (0 = no explosion).
 var blast_radius: float = 0.0
 var blast_color := Color(1.0, 0.5, 0.2)
+## Optional: called as on_hit.call(target, damage) for each target hit.
+var on_hit: Callable
 
 var _hit: Array[Node] = []
 
@@ -65,9 +69,11 @@ func _on_body_entered(body: Node) -> void:
 
 func _damage(body: Node) -> void:
 	if target_group == "player":
-		body.take_damage(damage, global_position)
+		body.take_damage(damage, global_position, damage_type)
 	else:
-		body.take_damage(damage, crit, global_position)
+		body.take_damage(damage, crit, global_position, damage_type)
+	if on_hit.is_valid():
+		on_hit.call(body, damage)
 
 
 func _finish() -> void:

@@ -12,6 +12,9 @@ extends Resource
 @export var rare_bonus_per_floor: float = 3.0
 @export var epic_bonus_per_floor: float = 1.5
 @export var entries: Array[LootEntry] = []
+## Gold added to every roll (scaled +25% per floor). 0 = none.
+@export var gold_min: int = 0
+@export var gold_max: int = 0
 
 
 ## Returns an Array of {item: ItemData, count: int}.
@@ -25,7 +28,12 @@ func roll(floor_number: int, rng: RandomNumberGenerator = null) -> Array:
 		var entry := _pick_entry(floor_number, rng)
 		if entry != null and entry.item != null:
 			result.append({"item": entry.item, "count": rng.randi_range(entry.min_count, maxi(entry.min_count, entry.max_count))})
-	return result
+	if gold_max > 0:
+		var coin := ItemDatabase.get_item(&"gold_coin")
+		if coin:
+			result.append({"item": coin, "count": roundi(rng.randi_range(gold_min, gold_max) * (1.0 + 0.25 * (floor_number - 1)))})
+	# Weapons/armor become unique copies (affixes, durability) when they drop.
+	return ItemFactory.instantiate_loot(result, floor_number, rng)
 
 
 func _pick_entry(floor_number: int, rng: RandomNumberGenerator) -> LootEntry:

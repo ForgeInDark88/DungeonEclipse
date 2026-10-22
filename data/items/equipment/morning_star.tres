@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=6 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/morning_star.png" id="1_off25"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_po6rm"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="3_a5y2l"]
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="4_ytkmo"]
+
+[sub_resource type="Resource" id="Resource_61q5o"]
+script = ExtResource("3_a5y2l")
+status = &"stun"
+duration = 1.0
+power = 1.0
+chance = 0.25
+
+[resource]
+script = ExtResource("4_ytkmo")
+weapon_type = 6
+base_damage = 13.0
+attack_speed = 1.4
+reach = 24.0
+knockback = 220.0
+attack_pattern = 0
+two_handed = false
+damage_type = 0
+attack_animation = &""
+projectile_speed = 260.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("2_po6rm")]([SubResource("Resource_61q5o")])
+held_angle = -45.0
+grip_pixel = Vector2(3, 12)
+gender = "m"
+slot_type = &"weapon"
+visual_layer = &"armor"
+id = &"morning_star"
+display_name = "Моргенштерн"
+description = "Шипастый шар на рукояти."
+icon = ExtResource("1_off25")
+item_type = 0
+rarity = 1
+max_stack = 1
+stat_bonuses = {
+"strength": 2,
+"vitality": 1
+}
+has_durability = true
+max_durability = 180

@@ -1,0 +1,68 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=11 format=3]
+
+[ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="1_c82l7"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_6o66c"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="3_slkot"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/web.png" id="4_l376y"]
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="5_o5dl5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/spider_sheet.png" id="6_512pu"]
+[ext_resource type="Resource" path="res://data/animations/spider_layout.tres" id="7_sx0g2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/spider.png" id="8_lq5t7"]
+
+[sub_resource type="Resource" id="Resource_rru03"]
+script = ExtResource("3_slkot")
+status = &"slow"
+duration = 2.5
+power = 0.5
+chance = 1.0
+
+[sub_resource type="Resource" id="Resource_cl2t0"]
+script = ExtResource("3_slkot")
+status = &"poison"
+duration = 3.0
+power = 2.0
+chance = 0.2
+
+[resource]
+script = ExtResource("5_o5dl5")
+id = &"spider"
+display_name = "Пещерный паук"
+description = "Ждёт на потолке и падает на голову. Укус ядовит."
+texture = ExtResource("8_lq5t7")
+sheet = ExtResource("6_512pu")
+sheet_layout = ExtResource("7_sx0g2")
+behavior = 2
+collision_size = Vector2(14, 10)
+max_hp = 20
+damage = 6
+armor = 0
+speed = 45.0
+chase_speed = 75.0
+aggro_range = 140.0
+attack_range = 90.0
+attack_cooldown = 1.8
+jumps = false
+projectile_texture = ExtResource("4_l376y")
+projectile_speed = 150.0
+xp_reward = 12
+loot_table = ExtResource("1_c82l7")
+loot_chance = 0.35
+gold_min = 1
+gold_max = 4
+min_floor = 1
+spawn_weight = 1.0
+biomes = Array[StringName]([&"catacombs", &"fungal"])
+tint = Color(1, 1, 1, 1)
+gender = "m"
+phases_through_walls = false
+ceiling_ambush = true
+aoe_radius = 0.0
+max_summons = 3
+resistances = {
+"res_poison": 0.5
+}
+status_immunities = Array[StringName]([])
+on_hit_effects = Array[ExtResource("2_6o66c")]([SubResource("Resource_rru03"), SubResource("Resource_cl2t0")])
+sound_hurt = &"enemy_hurt"
+sound_death = &"enemy_death"
+sound_attack = &""

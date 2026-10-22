@@ -1,0 +1,212 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=23 format=3]
+
+[ext_resource type="Resource" path="res://data/loot_tables/chest_epic.tres" id="1_sgkg3"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_ujs5u"]
+[ext_resource type="Script" path="res://scripts/data/boss_phase.gd" id="3_bnep4"]
+[ext_resource type="Script" path="res://scripts/data/boss_attack.gd" id="4_yqdut"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="5_wgn0w"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/fireball.png" id="6_joth3"]
+[ext_resource type="Resource" path="res://data/enemies/bat.tres" id="7_xmyps"]
+[ext_resource type="Script" path="res://scripts/data/boss_data.gd" id="8_i8su4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bosses/flame_witch_sheet.png" id="9_qyhky"]
+[ext_resource type="Resource" path="res://data/animations/flame_witch_layout.tres" id="10_hy34l"]
+
+[sub_resource type="Resource" id="Resource_x13k7"]
+script = ExtResource("5_wgn0w")
+status = &"burn"
+duration = 3.0
+power = 3.0
+chance = 0.5
+
+[sub_resource type="Resource" id="Resource_1sguh"]
+script = ExtResource("4_yqdut")
+kind = 2
+windup = 0.8
+damage_mult = 0.8
+count = 5
+spread_degrees = 40.0
+projectile_texture = ExtResource("6_joth3")
+projectile_speed = 150.0
+damage_type = 1
+radius = 40.0
+speed = 260.0
+max_summons = 4
+hit_effects = Array[ExtResource("2_ujs5u")]([SubResource("Resource_x13k7")])
+
+[sub_resource type="Resource" id="Resource_or8d7"]
+script = ExtResource("4_yqdut")
+kind = 4
+windup = 0.6
+damage_mult = 0.7
+count = 3
+spread_degrees = 25.0
+projectile_texture = ExtResource("6_joth3")
+projectile_speed = 170.0
+damage_type = 1
+radius = 40.0
+speed = 260.0
+max_summons = 4
+hit_effects = Array[ExtResource("2_ujs5u")]([])
+
+[sub_resource type="Resource" id="Resource_q4j30"]
+script = ExtResource("3_bnep4")
+hp_threshold = 1.0
+message = ""
+attacks = Array[ExtResource("4_yqdut")]([SubResource("Resource_1sguh"), SubResource("Resource_or8d7")])
+attack_interval = 1.6
+speed_mult = 1.0
+tint = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_nr13o"]
+script = ExtResource("4_yqdut")
+kind = 5
+windup = 1.0
+damage_mult = 1.0
+count = 5
+spread_degrees = 50.0
+projectile_texture = ExtResource("6_joth3")
+projectile_speed = 160.0
+damage_type = 1
+radius = 30.0
+speed = 260.0
+max_summons = 4
+hit_effects = Array[ExtResource("2_ujs5u")]([SubResource("Resource_x13k7")])
+
+[sub_resource type="Resource" id="Resource_grd3c"]
+script = ExtResource("4_yqdut")
+kind = 2
+windup = 0.7
+damage_mult = 0.8
+count = 7
+spread_degrees = 55.0
+projectile_texture = ExtResource("6_joth3")
+projectile_speed = 160.0
+damage_type = 1
+radius = 40.0
+speed = 260.0
+max_summons = 4
+hit_effects = Array[ExtResource("2_ujs5u")]([SubResource("Resource_x13k7")])
+
+[sub_resource type="Resource" id="Resource_tyyge"]
+script = ExtResource("4_yqdut")
+kind = 4
+windup = 0.5
+damage_mult = 0.7
+count = 4
+spread_degrees = 30.0
+projectile_texture = ExtResource("6_joth3")
+projectile_speed = 180.0
+damage_type = 1
+radius = 40.0
+speed = 260.0
+max_summons = 4
+hit_effects = Array[ExtResource("2_ujs5u")]([])
+
+[sub_resource type="Resource" id="Resource_qxeet"]
+script = ExtResource("3_bnep4")
+hp_threshold = 0.55
+message = "Небо горит!"
+attacks = Array[ExtResource("4_yqdut")]([SubResource("Resource_nr13o"), SubResource("Resource_grd3c"), SubResource("Resource_tyyge")])
+attack_interval = 1.4
+speed_mult = 1.2
+tint = Color(1, 0.8, 0.6, 1)
+
+[sub_resource type="Resource" id="Resource_783uf"]
+script = ExtResource("4_yqdut")
+kind = 5
+windup = 0.8
+damage_mult = 1.1
+count = 7
+spread_degrees = 50.0
+projectile_texture = ExtResource("6_joth3")
+projectile_speed = 180.0
+damage_type = 1
+radius = 32.0
+speed = 260.0
+max_summons = 4
+hit_effects = Array[ExtResource("2_ujs5u")]([SubResource("Resource_x13k7")])
+
+[sub_resource type="Resource" id="Resource_6dwq1"]
+script = ExtResource("4_yqdut")
+kind = 3
+windup = 0.7
+damage_mult = 1.0
+count = 3
+spread_degrees = 50.0
+projectile_speed = 160.0
+damage_type = 0
+radius = 40.0
+speed = 260.0
+summon = ExtResource("7_xmyps")
+max_summons = 4
+hit_effects = Array[ExtResource("2_ujs5u")]([])
+
+[sub_resource type="Resource" id="Resource_w5arl"]
+script = ExtResource("4_yqdut")
+kind = 2
+windup = 0.6
+damage_mult = 0.8
+count = 9
+spread_degrees = 70.0
+projectile_texture = ExtResource("6_joth3")
+projectile_speed = 170.0
+damage_type = 1
+radius = 40.0
+speed = 260.0
+max_summons = 4
+hit_effects = Array[ExtResource("2_ujs5u")]([SubResource("Resource_x13k7")])
+
+[sub_resource type="Resource" id="Resource_j6s8v"]
+script = ExtResource("3_bnep4")
+hp_threshold = 0.25
+message = "Владычица зовёт стаю!"
+attacks = Array[ExtResource("4_yqdut")]([SubResource("Resource_783uf"), SubResource("Resource_6dwq1"), SubResource("Resource_w5arl")])
+attack_interval = 1.1
+speed_mult = 1.4
+tint = Color(1, 0.55, 0.4, 1)
+
+[resource]
+script = ExtResource("8_i8su4")
+glow_color = Color(1, 0.6, 0.3, 1)
+glow_scale = 1.1
+title = "Владычица пламени — Пламя Затмения"
+order = 1
+phases = Array[ExtResource("3_bnep4")]([SubResource("Resource_q4j30"), SubResource("Resource_qxeet"), SubResource("Resource_j6s8v")])
+music = &"boss"
+contact_damage_mult = 0.5
+reward_items = Array[StringName]([&"guardian_seal", &"eclipse_shard", &"eclipse_shard"])
+id = &"flame_witch"
+display_name = "Владычица пламени"
+description = "Пламя Затмения во плоти. Огненные шары, кольца огня и горящая земля."
+sheet = ExtResource("9_qyhky")
+sheet_layout = ExtResource("10_hy34l")
+behavior = 1
+collision_size = Vector2(18, 34)
+max_hp = 220
+damage = 12
+armor = 1
+speed = 50.0
+chase_speed = 50.0
+aggro_range = 600.0
+attack_range = 16.0
+attack_cooldown = 1.0
+jumps = false
+projectile_speed = 140.0
+xp_reward = 120
+loot_table = ExtResource("1_sgkg3")
+loot_chance = 1.0
+gold_min = 60
+gold_max = 100
+min_floor = 999
+spawn_weight = 0.0
+biomes = Array[StringName]([])
+tint = Color(1, 1, 1, 1)
+resistances = {
+"res_fire": 0.8,
+"res_ice": -0.3
+}
+status_immunities = Array[StringName]([&"burn"])
+on_hit_effects = Array[ExtResource("2_ujs5u")]([])
+sound_hurt = &"enemy_hurt"
+sound_death = &"explosion"
+sound_attack = &""

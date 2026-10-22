@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="TrapData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="1_20ghl"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="2_xgy8w"]
+[ext_resource type="Script" path="res://scripts/data/trap_data.gd" id="3_agx0v"]
+[ext_resource type="Texture2D" path="res://assets/sprites/traps/rock.png" id="4_wc20g"]
+
+[sub_resource type="Resource" id="Resource_yt5tl"]
+script = ExtResource("2_xgy8w")
+status = &"stun"
+duration = 0.8
+power = 1.0
+chance = 0.4
+
+[resource]
+script = ExtResource("3_agx0v")
+id = &"falling_rock"
+display_name = "Падающий камень"
+kind = 1
+damage = 16
+damage_per_floor = 0.2
+damage_type = 0
+hit_effects = Array[ExtResource("1_20ghl")]([SubResource("Resource_yt5tl")])
+cooldown = 6.0
+trigger_range = 64.0
+projectile_speed = 220.0
+disarm_difficulty = 0.5
+can_disarm = true
+xp_for_disarm = 6
+texture = ExtResource("4_wc20g")
+tint = Color(1, 1, 1, 1)
+min_floor = 1
+weight = 1.2
+biomes = Array[StringName]([])

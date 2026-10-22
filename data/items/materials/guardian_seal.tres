@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/guardian_seal.png" id="1_ovp3d"]
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="2_jcp2g"]
+
+[resource]
+script = ExtResource("2_jcp2g")
+id = &"guardian_seal"
+display_name = "Печать Стража"
+description = "Трофей хранителя этажа. В Святилище Затмения превращается в 5 осколков."
+icon = ExtResource("1_ovp3d")
+item_type = 2
+rarity = 2
+max_stack = 10
+stat_bonuses = {}
+price = 150
+currency_value = 0
+shard_value = 5
+has_durability = false
+max_durability = 100

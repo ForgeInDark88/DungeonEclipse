@@ -20,6 +20,7 @@ color = Color(0.85, 0.85, 0.95, 1)
 
 [resource]
 script = ExtResource("4_0rxit")
+cast_animation = &"attack_quick"
 id = &"throw_knives"
 display_name = "Метательные ножи"
 description = "Веер ножей."
@@ -28,3 +29,5 @@ mana_cost = 10
 cooldown = 2.5
 max_level = 4
 effect = SubResource("Resource_pdf45")
+synergy_weapons = Array[int]([3])
+synergy_power = 0.3

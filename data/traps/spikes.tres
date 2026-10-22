@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="TrapData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="1_h748l"]
+[ext_resource type="Script" path="res://scripts/data/trap_data.gd" id="2_kcdiq"]
+[ext_resource type="Texture2D" path="res://assets/sprites/traps/spikes_sheet.png" id="3_45rw3"]
+[ext_resource type="Resource" path="res://data/animations/spikes_layout.tres" id="4_g3aey"]
+
+[resource]
+script = ExtResource("2_kcdiq")
+id = &"spikes"
+display_name = "Шипы"
+kind = 0
+damage = 12
+damage_per_floor = 0.2
+damage_type = 0
+hit_effects = Array[ExtResource("1_h748l")]([])
+cooldown = 1.6
+trigger_range = 64.0
+projectile_speed = 220.0
+disarm_difficulty = 0.3
+can_disarm = true
+xp_for_disarm = 6
+sheet = ExtResource("3_45rw3")
+sheet_layout = ExtResource("4_g3aey")
+tint = Color(1, 1, 1, 1)
+min_floor = 1
+weight = 1.5
+biomes = Array[StringName]([])

@@ -10,6 +10,8 @@ extends SkillEffect
 @export var breaks_tiles: bool = false
 ## Freezes enemies for this long (seconds), 0 = no freeze.
 @export var stun_time: float = 0.0
+## WeaponItemData.DamageType (resistances apply).
+@export var damage_type: int = 0
 @export var color: Color = Color(1.0, 0.5, 0.2)
 
 
@@ -20,7 +22,7 @@ func execute(caster: Node, level: int) -> bool:
 	for enemy in caster.get_tree().get_nodes_in_group("enemies"):
 		if enemy.global_position.distance_to(center) <= r:
 			var d: Dictionary = caster.roll_damage(mult)
-			enemy.take_damage(d["amount"], d["crit"], center)
+			enemy.take_damage(d["amount"], d["crit"], center, damage_type)
 			if enemy.hp > 0:
 				var dir: Vector2 = (enemy.global_position - center).normalized()
 				enemy.velocity = dir * knockback + Vector2(0, -60)
@@ -36,7 +38,7 @@ func execute(caster: Node, level: int) -> bool:
 func describe(level: int) -> String:
 	var text := "Удар по области (радиус %d), урон %d%%" % [roundi(radius + radius_per_level * (level - 1)), roundi((damage_multiplier + damage_per_level * (level - 1)) * 100)]
 	if stun_time > 0.0:
-		text += ", замедляет на %.1f сек." % stun_time
+		text += ", оглушает на %.1f сек." % stun_time
 	if breaks_tiles:
 		text += ", ломает кирпич"
 	return text

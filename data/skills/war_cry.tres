@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/war_cry.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/area_blast_skill.gd" id="eff"]
+[ext_resource type="Resource" path="res://data/skills/toughness.tres" id="req_toughness"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+radius = 60.0
+radius_per_level = 6.0
+damage_multiplier = 0.6
+damage_per_level = 0.15
+knockback = 80.0
+breaks_tiles = false
+stun_time = 1.2
+damage_type = 0
+color = Color(1, 0.85, 0.3, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"war_cry"
+display_name = "Боевой клич"
+description = "Рёв оглушает всех врагов рядом."
+icon = ExtResource("icon")
+mana_cost = 22
+cooldown = 14.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_heavy"
+required_level = 6
+requires = Array[ExtResource("skill")]([ExtResource("req_toughness")])
+tree_row = 2
+synergy_weapons = Array[int]([6])
+synergy_power = 0.3

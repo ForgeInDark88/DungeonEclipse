@@ -12,6 +12,7 @@ reach = 26.0
 
 [resource]
 script = ExtResource("3_tk2sc")
+cast_animation = &"attack_heavy"
 id = &"power_strike"
 display_name = "Удар кирки"
 description = "Сокрушительный удар, ломающий стены."
@@ -20,3 +21,5 @@ mana_cost = 10
 cooldown = 4.0
 max_level = 4
 effect = SubResource("Resource_mqxto")
+synergy_weapons = Array[int]([0, 1, 6])
+synergy_power = 0.3

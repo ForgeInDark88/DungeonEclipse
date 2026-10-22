@@ -15,6 +15,9 @@ var hero: Hero
 var is_open := false
 
 var _root: Control
+var _catcher: DropCatcher
+var _page: ColorRect
+var _anim: Tween
 var _inv_slots: Array[ItemSlot] = []
 var _equip_slots: Array[ItemSlot] = []
 var _stat_labels: Dictionary = {}  # stat -> Label
@@ -33,6 +36,9 @@ func setup(p_hero: Hero) -> void:
 	_build()
 	hero.inventory.changed.connect(_refresh_inventory)
 	hero.equipment.changed.connect(_refresh_equipment)
+	hero.equipment.changed.connect(func() -> void:
+		if is_open:
+			AudioManager.play_ui(&"ui_equip"))
 	hero.stats.stats_changed.connect(_refresh_stats)
 	hero.stats.hp_changed.connect(func(_a: int, _b: int) -> void: _refresh_stats())
 	hero.leveled_up.connect(func(_l: int) -> void: _refresh_stats())
@@ -67,6 +73,8 @@ func open() -> void:
 	_refresh_inventory()
 	_refresh_equipment()
 	_refresh_stats()
+	_animate_open()
+	AudioManager.play_ui(&"ui_book_open")
 	EventBus.inventory_toggled.emit(true)
 
 
@@ -74,10 +82,45 @@ func close() -> void:
 	if not is_open:
 		return
 	is_open = false
-	visible = false
 	get_tree().paused = false
 	Tooltip.hide_tip()
+	_animate_close()
+	AudioManager.play_ui(&"ui_book_close")
 	EventBus.inventory_toggled.emit(false)
+
+
+# --------------------------------------------------------------- animation
+## Book grows in, the background darkens and a page turns over the spine.
+func _animate_open() -> void:
+	if _anim:
+		_anim.kill()
+	_catcher.modulate.a = 0.0
+	_root.modulate.a = 0.0
+	_root.pivot_offset = BOOK_SIZE / 2.0
+	_root.scale = Vector2(0.92, 0.92)
+	_anim = create_tween().set_parallel()
+	_anim.tween_property(_catcher, "modulate:a", 1.0, 0.2)
+	_anim.tween_property(_root, "modulate:a", 1.0, 0.12)
+	_anim.tween_property(_root, "scale", Vector2.ONE, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_page.visible = true
+	_page.scale = Vector2.ONE
+	_page.color = UIStyle.PARCHMENT
+	_anim.tween_property(_page, "scale:x", -1.0, 0.32).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT).set_delay(0.05)
+	_anim.tween_property(_page, "color", UIStyle.PARCHMENT.darkened(0.35), 0.16).set_delay(0.05)
+	_anim.chain().tween_callback(func() -> void: _page.visible = false)
+
+
+func _animate_close() -> void:
+	if _anim:
+		_anim.kill()
+	_root.pivot_offset = BOOK_SIZE / 2.0
+	_anim = create_tween().set_parallel()
+	_anim.tween_property(_catcher, "modulate:a", 0.0, 0.15)
+	_anim.tween_property(_root, "modulate:a", 0.0, 0.15)
+	_anim.tween_property(_root, "scale", Vector2(0.94, 0.94), 0.15)
+	_anim.chain().tween_callback(func() -> void:
+		if not is_open:
+			visible = false)
 
 
 # ------------------------------------------------------------------- build
@@ -90,6 +133,7 @@ func _build() -> void:
 	# Leave the HUD (quick slots) uncovered so items can be dropped there.
 	catcher.offset_bottom = -HUD_HEIGHT
 	add_child(catcher)
+	_catcher = catcher
 
 	_root = Control.new()
 	_root.anchor_left = 0.5
@@ -115,6 +159,14 @@ func _build() -> void:
 	_root.add_child(right)
 	_build_left_page(left)
 	_build_right_page(right)
+	# Page that flips over the spine when the book opens.
+	_page = ColorRect.new()
+	_page.position = Vector2(BOOK_SIZE.x / 2.0, BOOK_MARGIN - 2)
+	_page.size = Vector2(BOOK_SIZE.x / 2.0 - BOOK_MARGIN, BOOK_SIZE.y - BOOK_MARGIN * 2 + 4)
+	_page.pivot_offset = Vector2(0, _page.size.y / 2.0)
+	_page.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_page.visible = false
+	_root.add_child(_page)
 
 
 func _build_left_page(page: Control) -> void:
@@ -154,7 +206,7 @@ func _build_left_page(page: Control) -> void:
 	page.add_child(stats_box)
 	var header := UIStyle.label("Характеристики", 8, UIStyle.INK_SOFT)
 	stats_box.add_child(header)
-	for stat in ["level"] + StatTypes.PRIMARY + ["hp", "mana"] + [StatTypes.DAMAGE, StatTypes.ARMOR, StatTypes.SPEED, StatTypes.CRIT_CHANCE]:
+	for stat in ["level"] + StatTypes.PRIMARY + ["hp", "mana"] + [StatTypes.DAMAGE, StatTypes.ARMOR, StatTypes.SPEED, StatTypes.CRIT_CHANCE, "resist"]:
 		var row := HBoxContainer.new()
 		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var name_l := UIStyle.label("", 7, UIStyle.INK_SOFT)
@@ -229,6 +281,12 @@ func _refresh_stats() -> void:
 			"mana":
 				labels[0].text = "Мана"
 				labels[1].text = "%d / %d" % [st.mana, st.max_mana()]
+			"resist":
+				labels[0].text = "Огонь/Лёд/Яд/Магия"
+				var parts: Array[String] = []
+				for r in StatTypes.RESISTANCES:
+					parts.append(str(roundi(st.get_value(r) * 100.0)))
+				labels[1].text = "/".join(parts) + "%"
 			_:
 				labels[0].text = StatTypes.label(key)
 				labels[1].text = StatTypes.format_value(key, st.get_value(key))

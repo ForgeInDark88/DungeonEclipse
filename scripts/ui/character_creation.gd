@@ -12,11 +12,12 @@ var _portrait_box: Control
 var _name_label: Label
 var _stats_label: Label
 var _skills_row: HBoxContainer
-var _items_row: HBoxContainer
+var _items_row: HFlowContainer
 
 
 func _ready() -> void:
 	build_book(Vector2(580, 320))
+	AudioManager.play_music(&"menu")
 	left_page.add_theme_constant_override("separation", 3)
 	right_page.add_theme_constant_override("separation", 3)
 
@@ -26,6 +27,7 @@ func _ready() -> void:
 	var race_group := ButtonGroup.new()
 	for r in ItemDatabase.races:
 		var b := _toggle(r.display_name, race_group, func() -> void: _select_race(r))
+		_lock_if_needed(b, r)
 		race_row.add_child(b)
 		_race_buttons.append(b)
 	_race_desc = _wrap_label()
@@ -38,6 +40,7 @@ func _ready() -> void:
 	var class_group := ButtonGroup.new()
 	for c in ItemDatabase.classes:
 		var b := _toggle(c.display_name, class_group, func() -> void: _select_class(c))
+		_lock_if_needed(b, c)
 		class_row.add_child(b)
 		_class_buttons.append(b)
 	_class_desc = _wrap_label()
@@ -62,8 +65,9 @@ func _ready() -> void:
 	_skills_row = HBoxContainer.new()
 	right_page.add_child(_skills_row)
 	right_page.add_child(UIStyle.label("Стартовые предметы", 9, UIStyle.INK_SOFT))
-	_items_row = HBoxContainer.new()
-	_items_row.add_theme_constant_override("separation", 1)
+	_items_row = HFlowContainer.new()
+	_items_row.add_theme_constant_override("h_separation", 1)
+	_items_row.add_theme_constant_override("v_separation", 1)
 	right_page.add_child(_items_row)
 
 	var spacer := Control.new()
@@ -86,11 +90,21 @@ func _ready() -> void:
 	go.grab_focus()
 
 
+## Races / classes not bought in the Sanctum of the Eclipse are shown but locked.
+func _lock_if_needed(b: Button, what: Resource) -> void:
+	if MetaProgress.is_unlocked(what):
+		return
+	b.disabled = true
+	b.tooltip_text = "Открывается в Святилище Затмения"
+	b.modulate = Color(1, 1, 1, 0.55)
+
+
 func _toggle(text: String, group: ButtonGroup, cb: Callable) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.toggle_mode = true
 	b.button_group = group
+	b.pressed.connect(func() -> void: AudioManager.play_ui(&"ui_click"))
 	b.pressed.connect(cb)
 	return b
 

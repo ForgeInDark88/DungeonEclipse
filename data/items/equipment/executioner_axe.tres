@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=6 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/executioner_axe.png" id="1_e3qge"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_v4g0c"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="3_5j1dv"]
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="4_2ppg2"]
+
+[sub_resource type="Resource" id="Resource_n3voe"]
+script = ExtResource("3_5j1dv")
+status = &"bleed"
+duration = 4.0
+power = 3.0
+chance = 0.5
+
+[resource]
+script = ExtResource("4_2ppg2")
+weapon_type = 1
+base_damage = 22.0
+attack_speed = 0.9
+reach = 30.0
+knockback = 260.0
+attack_pattern = 0
+two_handed = true
+damage_type = 0
+attack_animation = &""
+projectile_speed = 260.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("2_v4g0c")]([SubResource("Resource_n3voe")])
+held_angle = -45.0
+grip_pixel = Vector2(3, 12)
+gender = "f"
+slot_type = &"weapon"
+visual_layer = &"armor"
+id = &"executioner_axe"
+display_name = "Секира палача"
+description = "От неё не уходят."
+icon = ExtResource("1_e3qge")
+item_type = 0
+rarity = 2
+max_stack = 1
+stat_bonuses = {
+"strength": 5
+}
+has_durability = true
+max_durability = 240

@@ -1,9 +1,31 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/game/game.gd" id="1_game"]
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="2_hud"]
 [ext_resource type="Script" path="res://scripts/ui/inventory_book.gd" id="3_book"]
 [ext_resource type="Script" path="res://scripts/ui/overlay_panel.gd" id="4_overlay"]
+[ext_resource type="Shader" path="res://assets/shaders/post_fx.gdshader" id="5_post"]
+[ext_resource type="Script" path="res://scripts/ui/minimap.gd" id="6_minimap"]
+
+[sub_resource type="FastNoiseLite" id="Noise_fog"]
+frequency = 0.02
+
+[sub_resource type="NoiseTexture2D" id="Tex_fog"]
+width = 256
+height = 256
+seamless = true
+noise = SubResource("Noise_fog")
+
+[sub_resource type="ShaderMaterial" id="Mat_post"]
+shader = ExtResource("5_post")
+shader_parameter/tint = Color(1, 1, 1, 1)
+shader_parameter/saturation = 1.0
+shader_parameter/contrast = 1.0
+shader_parameter/vignette = 0.35
+shader_parameter/fog_color = Color(0.5, 0.5, 0.6, 1)
+shader_parameter/fog_amount = 0.08
+shader_parameter/fog_speed = Vector2(0.012, 0.004)
+shader_parameter/noise_tex = SubResource("Tex_fog")
 
 [node name="Game" type="Node2D"]
 script = ExtResource("1_game")
@@ -11,10 +33,63 @@ script = ExtResource("1_game")
 [node name="Darkness" type="CanvasModulate" parent="."]
 color = Color(0.15, 0.13, 0.19, 1)
 
+[node name="Parallax" type="ParallaxBackground" parent="."]
+
+[node name="Far" type="ParallaxLayer" parent="Parallax"]
+motion_scale = Vector2(0.1, 0.05)
+motion_mirroring = Vector2(640, 360)
+
+[node name="Sprite" type="Sprite2D" parent="Parallax/Far"]
+scale = Vector2(2, 2)
+centered = false
+
+[node name="Mid" type="ParallaxLayer" parent="Parallax"]
+motion_scale = Vector2(0.3, 0.15)
+motion_mirroring = Vector2(640, 360)
+
+[node name="Sprite" type="Sprite2D" parent="Parallax/Mid"]
+scale = Vector2(2, 2)
+centered = false
+
+[node name="Near" type="ParallaxLayer" parent="Parallax"]
+motion_scale = Vector2(0.55, 0.35)
+motion_mirroring = Vector2(640, 360)
+
+[node name="Sprite" type="Sprite2D" parent="Parallax/Near"]
+scale = Vector2(2, 2)
+centered = false
+
 [node name="World" type="Node2D" parent="."]
+
+[node name="PostFX" type="CanvasLayer" parent="."]
+layer = 3
+
+[node name="Rect" type="ColorRect" parent="PostFX"]
+material = SubResource("Mat_post")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ScreenFlash" type="CanvasLayer" parent="."]
+layer = 5
+
+[node name="Rect" type="ColorRect" parent="ScreenFlash"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0, 0, 0)
 
 [node name="HUD" type="CanvasLayer" parent="."]
 script = ExtResource("2_hud")
+
+[node name="Minimap" type="CanvasLayer" parent="."]
+script = ExtResource("6_minimap")
 
 [node name="InventoryBook" type="CanvasLayer" parent="."]
 script = ExtResource("3_book")

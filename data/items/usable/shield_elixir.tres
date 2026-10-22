@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="UsableItemData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/item_effect.gd" id="1_hoawa"]
+[ext_resource type="Script" path="res://scripts/effects/status_self_effect.gd" id="2_18px8"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/shield_elixir.png" id="3_d6vsa"]
+[ext_resource type="Script" path="res://scripts/data/usable_item_data.gd" id="4_x60hq"]
+
+[sub_resource type="Resource" id="Resource_22sdr"]
+script = ExtResource("2_18px8")
+status = &"shield"
+duration = 15.0
+power = 40.0
+
+[resource]
+script = ExtResource("4_x60hq")
+effects = Array[ExtResource("1_hoawa")]([SubResource("Resource_22sdr")])
+consume_on_use = true
+cooldown = 0.3
+use_animation = &"use"
+use_sound = &"potion_drink"
+id = &"shield_elixir"
+display_name = "Эликсир щита"
+description = "Кожа покрывается мерцающей плёнкой."
+icon = ExtResource("3_d6vsa")
+item_type = 1
+rarity = 1
+max_stack = 5
+stat_bonuses = {}
+price = 60
+currency_value = 0
+has_durability = false
+max_durability = 100

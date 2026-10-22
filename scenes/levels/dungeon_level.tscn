@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/level/dungeon_level.gd" id="1_level"]
+
+[sub_resource type="CanvasItemMaterial" id="Mat_glow"]
+light_mode = 1
 
 [node name="DungeonLevel" type="Node2D"]
 script = ExtResource("1_level")
@@ -10,5 +13,8 @@ z_index = -5
 modulate = Color(0.6, 0.55, 0.65, 1)
 
 [node name="Tiles" type="TileMapLayer" parent="."]
+
+[node name="Glow" type="TileMapLayer" parent="."]
+material = SubResource("Mat_glow")
 
 [node name="Entities" type="Node2D" parent="."]

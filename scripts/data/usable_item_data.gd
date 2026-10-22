@@ -9,6 +9,11 @@ extends ItemData
 ## Removes one from the stack when at least one effect succeeded.
 @export var consume_on_use: bool = true
 @export var cooldown: float = 0.3
+## Hero animation played on use: "use" (drink), "attack_quick" (throw),
+## "attack_slash" (swing a tool), "interact" or "" for none.
+@export var use_animation: StringName = &"use"
+## Sound id from AssetPaths.SFX.
+@export var use_sound: StringName = &"item_use"
 
 
 func _init() -> void:

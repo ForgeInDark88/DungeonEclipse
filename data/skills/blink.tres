@@ -13,6 +13,7 @@ damage_multiplier = 0.0
 
 [resource]
 script = ExtResource("3_5lch1")
+cast_animation = &""
 id = &"blink"
 display_name = "Скачок"
 description = "Мгновенное перемещение вперёд."

@@ -1,11 +1,14 @@
-[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=4 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/items/leather_armor.png" id="1_b4d1j"]
 [ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_mqp7n"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/equip_leather_armor.png" id="sheet_visual"]
 
 [resource]
 script = ExtResource("2_mqp7n")
 slot_type = &"chest"
+visual_sheet = ExtResource("sheet_visual")
+visual_layer = &"armor"
 id = &"leather_armor"
 display_name = "Кожаная броня"
 description = "Лёгкая и удобная."
@@ -17,3 +20,5 @@ stat_bonuses = {
 "armor": 4,
 "max_hp": 5
 }
+has_durability = true
+max_durability = 80

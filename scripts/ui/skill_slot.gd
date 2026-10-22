@@ -12,7 +12,9 @@ var key_label := ""
 
 var _frame: PixelFrame
 var _icon: TextureRect
-var _shade: ColorRect
+var _shade: TextureProgressBar
+var _ready_flash: ColorRect
+var _was_cooling := false
 var _cd_label: Label
 var _key: Label
 var _plus: Label
@@ -46,10 +48,23 @@ func _ready() -> void:
 	_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(_icon)
-	_shade = ColorRect.new()
-	_shade.color = Color(0.05, 0.03, 0.08, 0.7)
+	# Radial cooldown: a dark sector that shrinks clockwise.
+	_shade = TextureProgressBar.new()
+	var img := Image.create(int(UIStyle.SLOT_SIZE.x) - 8, int(UIStyle.SLOT_SIZE.y) - 8, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0.05, 0.03, 0.08, 0.72))
+	_shade.texture_progress = ImageTexture.create_from_image(img)
+	_shade.fill_mode = TextureProgressBar.FILL_CLOCKWISE
+	_shade.max_value = 1.0
+	_shade.step = 0.001
+	_shade.position = Vector2(4, 4)
 	_shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(_shade)
+	_ready_flash = ColorRect.new()
+	_ready_flash.color = Color(1, 1, 0.85, 0)
+	_ready_flash.position = Vector2(4, 4)
+	_ready_flash.size = UIStyle.SLOT_SIZE - Vector2(8, 8)
+	_ready_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(_ready_flash)
 	_cd_label = UIStyle.outlined_label("", 8, Color.WHITE)
 	_cd_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_cd_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -103,15 +118,25 @@ func _update_cooldown() -> void:
 		return
 	var ratio := hero.skills.cooldown_ratio(index)
 	_shade.visible = ratio > 0.0
-	# Shade shrinks from the top as the skill recharges.
-	var h := UIStyle.SLOT_SIZE.y * ratio
-	_shade.position = Vector2(0, UIStyle.SLOT_SIZE.y - h)
-	_shade.size = Vector2(UIStyle.SLOT_SIZE.x, h)
-	var left: float = hero.skills.cooldowns[index]
+	_shade.value = ratio
+	if _was_cooling and ratio <= 0.0:
+		_flash_ready()
+	_was_cooling = ratio > 0.0
+	var left: float = hero.skills.cooldown_left(index)
 	_cd_label.text = ("%.1f" % left if left < 1.0 else str(ceili(left))) if left > 0.0 else ""
 	var skill := hero.skills.get_skill(index)
 	var no_mana := hero.stats.mana < skill.mana_cost
 	_icon.modulate = Color(0.5, 0.5, 0.8) if no_mana else Color.WHITE
+
+
+## Bright blink + bounce when the skill becomes available again.
+func _flash_ready() -> void:
+	_ready_flash.color.a = 0.8
+	var tw := create_tween()
+	tw.tween_property(_ready_flash, "color:a", 0.0, 0.3)
+	pivot_offset = UIStyle.SLOT_SIZE / 2.0
+	scale = Vector2(1.15, 1.15)
+	create_tween().tween_property(self, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func _show_tip() -> void:
@@ -131,3 +156,9 @@ func _gui_input(event: InputEvent) -> void:
 			var player := get_tree().get_first_node_in_group("player") as Player
 			if player and not get_tree().paused:
 				player.use_skill(index)
+
+
+func set_key_label(text: String) -> void:
+	key_label = text
+	if _key:
+		_key.text = text

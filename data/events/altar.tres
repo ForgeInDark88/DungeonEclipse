@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="RoomEventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/room_event_data.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"altar"
+display_name = "Кровавый алтарь"
+scene = "res://scenes/events/altar.tscn"
+weight = 1.0
+min_floor = 1

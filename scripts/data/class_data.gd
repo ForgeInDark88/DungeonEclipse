@@ -11,6 +11,10 @@ extends Resource
 @export var portrait_overlay: Texture2D
 ## In-world sprite of the hero.
 @export var sprite: Texture2D
+## Animated layers drawn over the race body (same layout as the body sheet).
+@export var outfit_sheet: Texture2D
+## Headgear when no helmet with its own visual is equipped.
+@export var head_sheet: Texture2D
 ## Base primary attributes, keyed by StatTypes names.
 @export var base_stats: Dictionary = {"strength": 5, "agility": 5, "intellect": 5, "vitality": 5}
 ## Added to primary attributes on every level up.
@@ -28,3 +32,25 @@ extends Resource
 ## Item ids placed into the quick bar at start, in order.
 @export var starting_quick_bar: Array[StringName] = []
 @export var skills: Array[SkillData] = []
+## WeaponItemData.WeaponType values this class is trained in (empty = all).
+## Other weapons still work but with WRONG_WEAPON_* penalties.
+@export var allowed_weapon_types: Array[int] = []
+## Price in the Sanctum of the Eclipse; 0/0 = available from the start.
+@export var unlock_shards: int = 0
+@export var unlock_gold: int = 0
+
+const WRONG_WEAPON_DAMAGE := 0.6
+const WRONG_WEAPON_SPEED := 0.75
+
+
+func allows_weapon(w: WeaponItemData) -> bool:
+	return w == null or allowed_weapon_types.is_empty() or int(w.weapon_type) in allowed_weapon_types
+
+
+func allowed_weapons_text() -> String:
+	if allowed_weapon_types.is_empty():
+		return "любое"
+	var names: Array[String] = []
+	for t in allowed_weapon_types:
+		names.append(String(WeaponItemData.WEAPON_TYPE_NAMES[t]).to_lower())
+	return ", ".join(names)

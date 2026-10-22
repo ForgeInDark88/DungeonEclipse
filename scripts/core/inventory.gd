@@ -68,6 +68,14 @@ func count_of(item_id: StringName) -> int:
 	return total
 
 
+## Index of this exact item (instances first by reference, then by id).
+func find_item(item: ItemData) -> int:
+	for i in slots.size():
+		if slots[i] != null and slots[i].item == item:
+			return i
+	return find_index(item.id)
+
+
 func find_index(item_id: StringName) -> int:
 	for i in slots.size():
 		if slots[i] != null and slots[i].item.id == item_id:

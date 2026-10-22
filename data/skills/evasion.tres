@@ -30,3 +30,5 @@ mana_cost = 15
 cooldown = 15.0
 max_level = 4
 effect = SubResource("Resource_a42kn")
+synergy_weapons = Array[int]([4])
+synergy_power = 0.3

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="RoomEventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/room_event_data.gd" id="1_event"]
+
+[resource]
+script = ExtResource("1_event")
+id = &"cursed_chest"
+display_name = "Проклятый сундук"
+scene = "res://scenes/events/cursed_chest.tscn"
+weight = 0.8
+min_floor = 2

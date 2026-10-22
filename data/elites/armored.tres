@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="EliteAffixData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="1_glg2p"]
+[ext_resource type="Script" path="res://scripts/data/elite_affix_data.gd" id="2_ox6br"]
+
+[resource]
+script = ExtResource("2_ox6br")
+id = &"armored"
+prefix_forms = {
+"f": "Бронированная",
+"m": "Бронированный",
+"n": "Бронированное"
+}
+hp_mult = 2.0
+damage_mult = 1.1
+speed_mult = 0.85
+attack_cooldown_mult = 1.0
+armor_add = 5
+resistances = {}
+immunities = Array[StringName]([])
+hit_effects = Array[ExtResource("1_glg2p")]([])
+spawn_status = &""
+spawn_status_power = 0.0
+life_steal = 0.0
+tint = Color(0.75, 0.8, 0.95, 1)
+xp_mult = 2.5
+gold_mult = 3.0
+weight = 1.0
+min_floor = 2

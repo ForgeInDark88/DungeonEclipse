@@ -1,11 +1,31 @@
-[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=5 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/items/arcane_staff.png" id="1_mqd5x"]
-[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_xrtyn"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_xej6r"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/magic_bolt.png" id="3_f0qkt"]
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="4_00kee"]
 
 [resource]
-script = ExtResource("2_xrtyn")
+script = ExtResource("4_00kee")
+weapon_type = 5
+base_damage = 13.0
+attack_speed = 1.5
+reach = 200.0
+knockback = 60.0
+attack_pattern = 2
+two_handed = true
+damage_type = 4
+attack_animation = &""
+projectile_texture = ExtResource("3_f0qkt")
+projectile_speed = 280.0
+projectile_pierce = 2
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("2_xej6r")]([])
+held_angle = -45.0
+grip_pixel = Vector2(3, 12)
+gender = "m"
 slot_type = &"weapon"
+visual_layer = &"armor"
 id = &"arcane_staff"
 display_name = "Посох тайн"
 description = "В навершии пульсирует фиолетовый огонь."
@@ -14,7 +34,8 @@ item_type = 0
 rarity = 2
 max_stack = 1
 stat_bonuses = {
-"damage": 9,
 "intellect": 6,
 "max_mana": 30
 }
+has_durability = true
+max_durability = 240

@@ -6,6 +6,7 @@ extends RefCounted
 
 signal xp_changed(xp: int, xp_to_next: int)
 signal leveled_up(level: int)
+signal gold_changed(gold: int)
 
 const INVENTORY_SIZE := 30
 
@@ -18,6 +19,7 @@ var quick_bar := QuickBar.new()
 var skills := SkillSet.new()
 var level: int = 1
 var xp: int = 0
+var gold: int = 0
 
 
 func _init(p_race: RaceData, p_class: ClassData, layout: EquipmentLayout) -> void:
@@ -26,6 +28,7 @@ func _init(p_race: RaceData, p_class: ClassData, layout: EquipmentLayout) -> voi
 	equipment = Equipment.new(layout)
 	equipment.changed.connect(_on_equipment_changed)
 	stats.setup(race, class_data, level)
+	skills.changed.connect(_refresh_passives)
 	skills.setup(class_data.skills)
 
 
@@ -33,8 +36,13 @@ func _init(p_race: RaceData, p_class: ClassData, layout: EquipmentLayout) -> voi
 func give_starting_kit() -> void:
 	for id: StringName in class_data.starting_items:
 		var item := ItemDatabase.get_item(id)
-		if item:
+		if item == null:
+			continue
+		if item.is_stackable():
 			inventory.add_item(item, int(class_data.starting_items[id]))
+		else:
+			for i in int(class_data.starting_items[id]):
+				inventory.add_item(ItemFactory.create(item))
 	for id in class_data.starting_equipment:
 		var idx := inventory.find_index(id)
 		if idx >= 0:
@@ -48,6 +56,22 @@ func give_starting_kit() -> void:
 	stats.hp = stats.max_hp()
 	stats.mana = stats.max_mana()
 	stats.recalculate()
+
+
+func add_gold(amount: int) -> void:
+	gold = maxi(0, gold + amount)
+	if amount > 0:
+		GameState.run_stats["gold"] = int(GameState.run_stats.get("gold", 0)) + amount
+		EventBus.gold_earned.emit(amount)
+	gold_changed.emit(gold)
+
+
+func spend_gold(amount: int) -> bool:
+	if gold < amount:
+		return false
+	gold -= amount
+	gold_changed.emit(gold)
+	return true
 
 
 func xp_to_next() -> int:
@@ -119,5 +143,72 @@ func move_equipment(from_slot: StringName, to_slot: StringName) -> void:
 	equipment.changed.emit()
 
 
+func weapon() -> WeaponItemData:
+	return equipment.get_item(&"weapon") as WeaponItemData
+
+
+## Seconds between attacks with the current weapon (class penalty included).
+func attack_interval() -> float:
+	var w := weapon()
+	if w == null:
+		return class_data.attack_cooldown
+	var interval := w.cooldown()
+	if not class_data.allows_weapon(w):
+		interval /= ClassData.WRONG_WEAPON_SPEED
+	return interval
+
+
+## Wears the weapon by `amount` (called on each hit).
+func wear_weapon(amount: int = 1) -> void:
+	_wear(weapon(), amount)
+
+
+## Wears a random worn armor piece (called when the hero is hit).
+func wear_armor(amount: int = 1) -> void:
+	var pieces: Array[EquipmentItemData] = []
+	for item: EquipmentItemData in equipment.items.values():
+		if item and not (item is WeaponItemData) and item.has_durability and item.is_instance() and item.durability > 0:
+			pieces.append(item)
+	if not pieces.is_empty():
+		_wear(pieces.pick_random(), amount)
+
+
+func _wear(item: EquipmentItemData, amount: int) -> void:
+	if item == null or not item.has_durability or not item.is_instance() or item.durability <= 0:
+		return
+	item.durability = maxi(0, item.durability - amount)
+	if item.durability == 0:
+		EventBus.message.emit("%s ломается! Нужен ремонт." % item.display_name)
+		equipment.changed.emit()
+	elif item.durability == item.max_durability / 5:
+		EventBus.message.emit("%s почти сломан(а)" % item.display_name)
+
+
 func _on_equipment_changed() -> void:
+	var w := weapon()
+	stats.weapon_base = w.effective_damage() if w else 0.0
+	stats.weapon_penalty = 1.0 if class_data.allows_weapon(w) else ClassData.WRONG_WEAPON_DAMAGE
 	stats.set_modifier("equipment", equipment.total_bonuses())
+	_refresh_passives()
+
+
+## Stat bonuses of learned passive skills (stronger with a synergy weapon).
+func _refresh_passives() -> void:
+	var total := {}
+	var w := weapon()
+	for s in skills.passives():
+		var b: Dictionary = (s.effect as PassiveSkill).bonuses_for(skills.rank(s), s.power_with(w))
+		for k in b:
+			total[k] = float(total.get(k, 0.0)) + float(b[k])
+	if total.is_empty() and not stats.has_modifier("passives"):
+		return
+	stats.set_modifier("passives", total)
+
+
+## Rolls the on-hit effects of passive skills (called by the Player on weapon hits).
+func apply_passive_hits(attacker: Node, target: Node, damage: int) -> void:
+	var w := weapon()
+	for s in skills.passives():
+		var p := s.effect as PassiveSkill
+		if p.hit_effect and randf() < p.chance_for(skills.rank(s), s.power_with(w)):
+			p.hit_effect.on_hit(attacker, target, damage)

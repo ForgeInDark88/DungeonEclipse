@@ -265,6 +265,59 @@ def icon_ore():
     return im
 
 
+def icon_spear(head, shaft=(130, 90, 50, 255), wide=False):
+    im = new(16, 16)
+    d = ImageDraw.Draw(im)
+    d.line((1, 15, 11, 5), fill=shaft, width=1)
+    d.line((2, 15, 12, 5), fill=shade(shaft, 0.8), width=1)
+    if wide:
+        d.polygon([(10, 3), (15, 0), (13, 6), (12, 8), (9, 6)], fill=head)
+    else:
+        d.polygon([(11, 3), (15, 0), (13, 5), (12, 6)], fill=head)
+    return im
+
+
+def icon_bow(wood, string=(230, 225, 205, 255)):
+    im = new(16, 16)
+    d = ImageDraw.Draw(im)
+    d.arc((2, 1, 13, 14), 280, 80, fill=wood, width=2)
+    d.line((8, 1, 8, 14), fill=string)
+    d.point((8, 7), fill=GOLD_D)
+    return im
+
+
+def icon_club(c, spikes=False):
+    im = new(16, 16)
+    d = ImageDraw.Draw(im)
+    d.line((2, 14, 8, 8), fill=(110, 75, 40, 255), width=2)
+    d.ellipse((7, 2, 14, 9), fill=c)
+    if spikes:
+        for p in ((10, 1), (15, 5), (11, 10), (6, 5)):
+            d.point(p, fill=(220, 220, 230, 255))
+    return im
+
+
+def icon_scroll():
+    im = new(16, 16)
+    d = ImageDraw.Draw(im)
+    d.rectangle((3, 3, 12, 12), fill=(230, 210, 160, 255))
+    d.rectangle((2, 2, 13, 4), fill=(180, 150, 100, 255))
+    d.rectangle((2, 11, 13, 13), fill=(180, 150, 100, 255))
+    d.line((5, 6, 9, 8), fill=(150, 60, 50, 255))
+    d.line((9, 8, 7, 10), fill=(150, 60, 50, 255))
+    d.point((10, 6), fill=(150, 60, 50, 255))
+    return im
+
+
+def icon_whetstone():
+    im = new(16, 16)
+    d = ImageDraw.Draw(im)
+    d.polygon([(2, 10), (11, 4), (14, 7), (5, 13)], fill=(120, 125, 135, 255))
+    d.line((3, 10, 11, 5), fill=(170, 175, 185, 255))
+    d.point((12, 3), fill=(255, 255, 220, 255))
+    return im
+
+
 # -------------------------------------------------------------------- skills
 def skill_bg(glow):
     im = new(16, 16)
@@ -538,6 +591,9 @@ def portrait_face(skin, beard=None, ears=False, hair=(70, 45, 30, 255)):
     d.point((19, 14), fill=(30, 20, 20, 255))
     d.line((14, 18, 17, 18), fill=shade(skin, 0.7))
     d.arc((8, 4, 23, 16), 180, 360, fill=hair, width=3)
+    if skin[1] > skin[0]:  # green skin: orc tusks
+        d.rectangle((12, 19, 13, 21), fill=(240, 240, 220, 255))
+        d.rectangle((18, 19, 19, 21), fill=(240, 240, 220, 255))
     if beard:
         d.polygon([(8, 16), (23, 16), (21, 27), (16, 30), (10, 27)], fill=beard)
         d.line((13, 20, 18, 20), fill=shade(skin, 0.6))
@@ -705,6 +761,24 @@ def main() -> None:
         "gold_coin": icon_coin(),
         "bone": icon_bone(),
         "iron_ore": icon_ore(),
+        # stage 12 weapons
+        "knight_sword": icon_sword((220, 225, 240, 255), guard=(60, 90, 200, 255)),
+        "hatchet": icon_axe((150, 150, 160, 255)),
+        "executioner_axe": icon_axe((90, 20, 30, 255)),
+        "wooden_spear": icon_spear((170, 170, 180, 255)),
+        "glaive": icon_spear((200, 210, 230, 255), wide=True),
+        "venom_fang": icon_dagger((90, 220, 80, 255)),
+        "short_bow": icon_bow((140, 95, 50, 255)),
+        "hunter_bow": icon_bow((90, 60, 35, 255)),
+        "ember_staff": icon_staff((255, 120, 30, 255)),
+        "club": icon_club((120, 85, 45, 255)),
+        "morning_star": icon_club((150, 155, 165, 255), spikes=True),
+        "whetstone": icon_whetstone(),
+        # stage 15 potions
+        "antidote": icon_potion((90, 210, 80, 255)),
+        "regen_potion": icon_potion((240, 120, 170, 255)),
+        "shield_elixir": icon_potion((90, 140, 255, 255)),
+        "map_scroll": icon_scroll(),
     }
     for name, im in items.items():
         save(im, f"sprites/items/{name}.png")
@@ -723,14 +797,28 @@ def main() -> None:
         "frost_nova": compose(skill_bg((40, 100, 200)), skill_explosion((90, 170, 255, 255), (230, 250, 255, 255))),
         "arcane_shield": compose(skill_bg((60, 60, 200)), skill_shield((90, 110, 255, 255))),
         "blink": compose(skill_bg((120, 40, 180)), skill_blink((200, 120, 255, 255))),
+        # stage 15.11: skill trees (passives on dark backgrounds)
+        "toughness": compose(skill_bg((60, 50, 40)), icon_armor((170, 120, 70, 255))),
+        "blade_master": compose(skill_bg((70, 60, 50)), icon_sword((220, 225, 240, 255))),
+        "bloodletting": compose(skill_bg((90, 20, 25)), icon_axe((200, 40, 50, 255))),
+        "war_cry": compose(skill_bg((230, 200, 60)), skill_explosion((255, 220, 80, 255), (255, 255, 220, 255))),
+        "keen_eye": compose(skill_bg((50, 60, 50)), icon_bow((120, 80, 40, 255))),
+        "venom_blades": compose(skill_bg((40, 80, 30)), icon_dagger((90, 220, 80, 255))),
+        "knife_fan": compose(skill_bg((180, 60, 60)), skill_knives()),
+        "shadow_step": compose(skill_bg((40, 35, 60)), icon_boots((60, 50, 90, 255))),
+        "arcane_mind": compose(skill_bg((40, 40, 80)), icon_crystal((120, 140, 255, 255))),
+        "chain_lightning": compose(skill_bg((150, 100, 255)), skill_projectile((230, 210, 255, 255))),
+        "meteor": compose(skill_bg((160, 40, 10)), skill_explosion((255, 60, 10, 255), (255, 200, 60, 255))),
+        "elemental_ward": compose(skill_bg((50, 70, 80)), skill_shield((240, 140, 60, 255))),
+        "blessing": compose(skill_bg((80, 70, 40)), icon_armor((235, 215, 150, 255))),
+        "holy_strike": compose(skill_bg((255, 230, 140)), icon_club((230, 230, 240, 255), spikes=True)),
+        "light_aura": compose(skill_bg((70, 70, 40)), skill_shield((255, 240, 160, 255))),
+        "righteous_wrath": compose(skill_bg((255, 240, 180)), skill_explosion((255, 240, 150, 255), (255, 255, 255, 255))),
     }
     for name, im in skills.items():
         save(im, f"sprites/skills/{name}.png", do_outline=False)
 
-    atlas = new(16 * 5, 16)
-    for i, t in enumerate((tile_bedrock(), tile_brick(), tile_platform(), tile_ladder(), tile_backwall())):
-        atlas.alpha_composite(t, (i * 16, 0))
-    save(atlas, "sprites/tiles/dungeon_tiles.png", do_outline=False)
+    # Tilesets are per biome now: see gen_biomes.py (sprites/tiles/tiles_<biome>.png).
 
     save(char_sprite((140, 40, 40, 255), (230, 190, 150, 255), (90, 60, 30, 255), "helm"), "sprites/player/warrior.png")
     save(char_sprite((50, 90, 50, 255), (230, 190, 150, 255), (40, 60, 40, 255), "hood"), "sprites/player/rogue.png")
@@ -752,6 +840,13 @@ def main() -> None:
     save(projectile((255, 120, 20, 255)), "sprites/fx/fireball.png")
     save(projectile((200, 205, 215, 255), 8, 3), "sprites/fx/knife.png")
     save(projectile((200, 60, 230, 255)), "sprites/fx/dark_bolt.png")
+    arrow = new(10, 3)
+    ImageDraw.Draw(arrow).line((0, 1, 8, 1), fill=(150, 110, 60, 255))
+    ImageDraw.Draw(arrow).point((9, 1), fill=(210, 210, 220, 255))
+    ImageDraw.Draw(arrow).point((0, 0), fill=(230, 230, 230, 255))
+    ImageDraw.Draw(arrow).point((0, 2), fill=(230, 230, 230, 255))
+    save(arrow, "sprites/fx/arrow.png", do_outline=False)
+    save(projectile((120, 160, 255, 255), 7, 5), "sprites/fx/magic_bolt.png")
     save(light_tex(), "sprites/fx/light.png", do_outline=False)
     spark = new(4, 4)
     ImageDraw.Draw(spark).rectangle((0, 0, 3, 3), fill=(255, 255, 255, 255))
@@ -759,12 +854,21 @@ def main() -> None:
 
     skins = {"human": ((230, 185, 145, 255), None, False, (90, 55, 30, 255)),
              "dwarf": ((215, 160, 120, 255), (120, 70, 40, 255), False, (120, 70, 40, 255)),
-             "elf": ((240, 215, 185, 255), None, True, (230, 220, 150, 255))}
+             "elf": ((240, 215, 185, 255), None, True, (230, 220, 150, 255)),
+             "orc": ((110, 160, 80, 255), None, False, (30, 30, 30, 255))}
     for name, (skin, beard, ears, hair) in skins.items():
         save(portrait_face(skin, beard, ears, hair), f"sprites/portraits/race_{name}.png")
     save(portrait_overlay("warrior", (110, 85, 50, 255)), "sprites/portraits/class_warrior.png")
     save(portrait_overlay("rogue", (50, 75, 50, 255)), "sprites/portraits/class_rogue.png")
     save(portrait_overlay("mage", (70, 50, 150, 255)), "sprites/portraits/class_mage.png")
+    save(portrait_overlay("warrior", (225, 215, 170, 255)), "sprites/portraits/class_paladin.png")
+    save(char_sprite((220, 220, 230, 255), (230, 190, 150, 255), (220, 180, 60, 255), "helm"), "sprites/player/paladin.png")
+    shard = new(16, 16)
+    ds = ImageDraw.Draw(shard)
+    ds.polygon([(8, 1), (12, 7), (9, 15), (5, 9)], fill=(170, 80, 240, 255))
+    ds.polygon([(8, 1), (9, 15), (5, 9)], fill=(120, 50, 190, 255))
+    ds.line((8, 3, 9, 10), fill=(230, 200, 255, 255))
+    save(shard, "sprites/items/eclipse_shard.png")
 
     save(book_panel(), "ui/book_panel.png", do_outline=False)
     save(slot_tex(), "ui/slot.png", do_outline=False)
@@ -782,6 +886,12 @@ def main() -> None:
     save(button_tex(PARCH_DD), "ui/button_pressed.png", do_outline=False)
     save(doll(), "ui/doll.png", do_outline=False)
     print("placeholders generated")
+    import gen_sheets  # animated sprite sheets (see docs/ANIMATION_GUIDE.md)
+    gen_sheets.main()
+    import gen_biomes  # biome tilesets, parallax, decorations, extra layers
+    gen_biomes.main()
+    import gen_mechanics  # status icons, traps, merchant, bosses, monsters...
+    gen_mechanics.main()
 
 
 if __name__ == "__main__":

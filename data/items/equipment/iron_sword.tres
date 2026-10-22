@@ -1,11 +1,29 @@
-[gd_resource type="Resource" script_class="EquipmentItemData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=4 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/items/iron_sword.png" id="1_2a6mt"]
-[ext_resource type="Script" path="res://scripts/data/equipment_item_data.gd" id="2_afqfm"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_5lmg1"]
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="3_0esfv"]
 
 [resource]
-script = ExtResource("2_afqfm")
+script = ExtResource("3_0esfv")
+weapon_type = 0
+base_damage = 9.0
+attack_speed = 2.2
+reach = 24.0
+knockback = 120.0
+attack_pattern = 0
+two_handed = false
+damage_type = 0
+attack_animation = &""
+projectile_speed = 260.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("2_5lmg1")]([])
+held_angle = -45.0
+grip_pixel = Vector2(3, 12)
+gender = "m"
 slot_type = &"weapon"
+visual_layer = &"armor"
 id = &"iron_sword"
 display_name = "Железный меч"
 description = "Надёжный клинок подземных кузнецов."
@@ -14,6 +32,7 @@ item_type = 0
 rarity = 0
 max_stack = 1
 stat_bonuses = {
-"damage": 6,
 "strength": 1
 }
+has_durability = true
+max_durability = 120

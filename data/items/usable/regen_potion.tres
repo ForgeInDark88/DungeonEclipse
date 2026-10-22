@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="UsableItemData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/item_effect.gd" id="1_rl83u"]
+[ext_resource type="Script" path="res://scripts/effects/status_self_effect.gd" id="2_5rpof"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/regen_potion.png" id="3_xb1yw"]
+[ext_resource type="Script" path="res://scripts/data/usable_item_data.gd" id="4_hjptq"]
+
+[sub_resource type="Resource" id="Resource_miu8u"]
+script = ExtResource("2_5rpof")
+status = &"regen"
+duration = 10.0
+power = 3.0
+
+[resource]
+script = ExtResource("4_hjptq")
+effects = Array[ExtResource("1_rl83u")]([SubResource("Resource_miu8u")])
+consume_on_use = true
+cooldown = 0.3
+use_animation = &"use"
+use_sound = &"potion_drink"
+id = &"regen_potion"
+display_name = "Зелье регенерации"
+description = "Раны затягиваются на глазах."
+icon = ExtResource("3_xb1yw")
+item_type = 1
+rarity = 1
+max_stack = 5
+stat_bonuses = {}
+price = 50
+currency_value = 0
+has_durability = false
+max_durability = 100

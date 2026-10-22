@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="TrapData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="1_8jfws"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="2_u8x4g"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/fireball.png" id="3_2nugc"]
+[ext_resource type="Script" path="res://scripts/data/trap_data.gd" id="4_eyn7o"]
+[ext_resource type="Texture2D" path="res://assets/sprites/traps/arrow_trap_sheet.png" id="5_s8lv5"]
+[ext_resource type="Resource" path="res://data/animations/arrow_trap_layout.tres" id="6_1k5uo"]
+
+[sub_resource type="Resource" id="Resource_2xgyi"]
+script = ExtResource("2_u8x4g")
+status = &"burn"
+duration = 3.0
+power = 2.0
+chance = 0.6
+
+[resource]
+script = ExtResource("4_eyn7o")
+id = &"fire_wall"
+display_name = "Огненная стена"
+kind = 2
+damage = 9
+damage_per_floor = 0.2
+damage_type = 1
+hit_effects = Array[ExtResource("1_8jfws")]([SubResource("Resource_2xgyi")])
+cooldown = 2.2
+trigger_range = 160.0
+projectile_texture = ExtResource("3_2nugc")
+projectile_speed = 220.0
+disarm_difficulty = 0.55
+can_disarm = true
+xp_for_disarm = 6
+sheet = ExtResource("5_s8lv5")
+sheet_layout = ExtResource("6_1k5uo")
+tint = Color(1, 0.6, 0.4, 1)
+min_floor = 4
+weight = 1.2
+biomes = Array[StringName]([&"lava", &"ruins"])

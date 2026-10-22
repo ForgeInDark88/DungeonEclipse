@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="EliteAffixData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="1_roffe"]
+[ext_resource type="Script" path="res://scripts/data/elite_affix_data.gd" id="2_bvlyg"]
+
+[resource]
+script = ExtResource("2_bvlyg")
+id = &"regenerating"
+prefix_forms = {
+"f": "Регенерирующая",
+"m": "Регенерирующий",
+"n": "Регенерирующее"
+}
+hp_mult = 1.6
+damage_mult = 1.1
+speed_mult = 1.0
+attack_cooldown_mult = 1.0
+armor_add = 0
+resistances = {}
+immunities = Array[StringName]([])
+hit_effects = Array[ExtResource("1_roffe")]([])
+spawn_status = &"regen"
+spawn_status_power = 2.0
+life_steal = 0.0
+tint = Color(0.5, 1, 0.5, 1)
+xp_mult = 2.5
+gold_mult = 3.0
+weight = 1.0
+min_floor = 1

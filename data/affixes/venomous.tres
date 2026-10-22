@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="AffixData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="1_y7nu4"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="2_7w1yk"]
+[ext_resource type="Script" path="res://scripts/data/affix_data.gd" id="3_at6sn"]
+
+[sub_resource type="Resource" id="Resource_ekdsb"]
+script = ExtResource("2_7w1yk")
+status = &"poison"
+duration = 4.0
+power = 2.0
+chance = 0.4
+
+[resource]
+script = ExtResource("3_at6sn")
+id = &"venomous"
+prefix_forms = {
+"f": "Ядовитая",
+"m": "Ядовитый",
+"n": "Ядовитое"
+}
+suffix = ""
+description = "Отравляет"
+min_rarity = 1
+weight = 1.0
+allowed_types = Array[int]([])
+stat_bonuses = {}
+damage_mult = 0.0
+speed_mult = 0.0
+reach_add = 0.0
+knockback_add = 0.0
+damage_type = 3
+hit_effects = Array[ExtResource("1_y7nu4")]([SubResource("Resource_ekdsb")])
