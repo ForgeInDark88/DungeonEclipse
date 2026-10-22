@@ -23,6 +23,11 @@ var _equip_slots: Array[ItemSlot] = []
 var _stat_labels: Dictionary = {}  # stat -> Label
 var _capacity_label: Label
 var _title_label: Label
+## Right page tabs: the backpack and the crafting list («Ремесло»).
+var _bag_page: Control
+var _craft_page: Control
+var _craft_list: VBoxContainer
+var _tab_buttons: Array[Button] = []
 
 
 func _ready() -> void:
@@ -226,17 +231,27 @@ func _build_left_page(page: Control) -> void:
 
 
 func _build_right_page(page: Control) -> void:
-	var title := UIStyle.label("Рюкзак", 10)
-	title.size = Vector2(page.size.x, 14)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	page.add_child(title)
+	var tabs := HBoxContainer.new()
+	tabs.size = Vector2(page.size.x, 14)
+	tabs.alignment = BoxContainer.ALIGNMENT_CENTER
+	tabs.add_theme_constant_override("separation", 6)
+	page.add_child(tabs)
+	for t in [["Рюкзак", false], ["Ремесло", true]]:
+		var craft: bool = t[1]
+		var b := BookPageScreen.button(t[0], func() -> void: _show_tab(craft))
+		b.add_theme_font_size_override("font_size", 8)
+		tabs.add_child(b)
+		_tab_buttons.append(b)
+	_bag_page = Control.new()
+	_bag_page.size = page.size
+	page.add_child(_bag_page)
 	var grid := GridContainer.new()
 	grid.columns = GRID_COLUMNS
 	grid.add_theme_constant_override("h_separation", 2)
 	grid.add_theme_constant_override("v_separation", 2)
 	var grid_w := GRID_COLUMNS * (UIStyle.SLOT_SIZE.x + 2) - 2
 	grid.position = Vector2((page.size.x - grid_w) / 2.0, 20)
-	page.add_child(grid)
+	_bag_page.add_child(grid)
 	for i in hero.inventory.capacity():
 		var s := ItemSlot.create(ItemSlot.Kind.INVENTORY, hero, i)
 		grid.add_child(s)
@@ -244,7 +259,86 @@ func _build_right_page(page: Control) -> void:
 	_capacity_label = UIStyle.label("", 7, UIStyle.INK_SOFT)
 	var rows := ceili(float(hero.inventory.capacity()) / GRID_COLUMNS)
 	_capacity_label.position = Vector2(grid.position.x, 20 + rows * (UIStyle.SLOT_SIZE.y + 2) + 2)
-	page.add_child(_capacity_label)
+	_bag_page.add_child(_capacity_label)
+
+	_craft_page = Control.new()
+	_craft_page.size = page.size
+	_craft_page.visible = false
+	page.add_child(_craft_page)
+	var scroll := ScrollContainer.new()
+	scroll.position = Vector2(0, 18)
+	scroll.size = Vector2(page.size.x, page.size.y - 18)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_craft_page.add_child(scroll)
+	_craft_list = VBoxContainer.new()
+	_craft_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_craft_list.add_theme_constant_override("separation", 2)
+	scroll.add_child(_craft_list)
+	_show_tab(false)
+
+
+func _show_tab(craft: bool) -> void:
+	_bag_page.visible = not craft
+	_craft_page.visible = craft
+	for i in _tab_buttons.size():
+		_tab_buttons[i].modulate = Color(1, 1, 1) if (i == 1) == craft else Color(1, 1, 1, 0.55)
+	if craft:
+		_refresh_crafting()
+
+
+## One row per recipe: result icon, name, what it takes (have / need), button.
+func _refresh_crafting() -> void:
+	if _craft_list == null or not _craft_page.visible:
+		return
+	for c in _craft_list.get_children():
+		c.queue_free()
+	if ItemDatabase.recipes.is_empty():
+		_craft_list.add_child(UIStyle.label("Рецептов нет", 7, UIStyle.INK_SOFT))
+	for r in ItemDatabase.recipes:
+		var item := ItemDatabase.get_item(r.result)
+		if item == null:
+			continue
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 3)
+		var icon := TextureRect.new()
+		icon.texture = item.icon
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.custom_minimum_size = Vector2(16, 16)
+		icon.mouse_filter = Control.MOUSE_FILTER_STOP
+		icon.mouse_entered.connect(func() -> void: Tooltip.show_text(TooltipText.item(item, hero), icon))
+		icon.mouse_exited.connect(func() -> void: Tooltip.hide_tip(icon))
+		row.add_child(icon)
+		var parts: Array[String] = []
+		for id in r.ingredients:
+			var ing := ItemDatabase.get_item(id)
+			var have := hero.inventory.count_of(id)
+			var need := int(r.ingredients[id])
+			var col := "#2e5a1e" if have >= need else "#8a2a1e"
+			parts.append("[color=%s]%s %d/%d[/color]" % [col, ing.display_name if ing else str(id), have, need])
+		if r.gold > 0:
+			parts.append("[color=%s]%d зол.[/color]" % ["#2e5a1e" if hero.gold >= r.gold else "#8a2a1e", r.gold])
+		var text := RichTextLabel.new()
+		text.bbcode_enabled = true
+		text.fit_content = true
+		text.scroll_active = false
+		text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		text.add_theme_color_override("default_color", UIStyle.INK)
+		for k in ["normal_font_size", "bold_font_size"]:
+			text.add_theme_font_size_override(k, 6)
+		text.text = "[b]%s%s[/b]\n%s" % [item.display_name, " ×%d" % r.count if r.count > 1 else "", ", ".join(parts)]
+		row.add_child(text)
+		var b := BookPageScreen.button("Создать", func() -> void:
+			if Crafting.craft(hero, r):
+				AudioManager.play_ui(&"ui_equip")
+				EventBus.message.emit("Создано: %s" % item.display_name)
+			_refresh_crafting())
+		b.add_theme_font_size_override("font_size", 6)
+		b.disabled = not Crafting.can_craft(hero, r)
+		row.add_child(b)
+		var gap := Control.new()  # room for the scroll bar
+		gap.custom_minimum_size = Vector2(8, 0)
+		row.add_child(gap)
+		_craft_list.add_child(row)
 
 
 # ----------------------------------------------------------------- refresh
@@ -257,6 +351,7 @@ func _refresh_inventory() -> void:
 			if st != null:
 				used += 1
 		_capacity_label.text = "Занято: %d / %d" % [used, hero.inventory.capacity()]
+	_refresh_crafting()
 
 
 func _refresh_equipment() -> void:

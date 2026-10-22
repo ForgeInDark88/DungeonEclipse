@@ -766,8 +766,37 @@ def build():
     icon("moon_crystal", "orb", (170, 180, 255))
 
 
+RECIPES = [  # id, result, count, ingredients, gold
+    ("r_small_potion", "small_health_potion", 2, {"slime_gel": 2, "bone": 1}, 0),
+    ("r_health_potion", "health_potion", 1, {"slime_gel": 2, "monster_fang": 1}, 0),
+    ("r_antidote", "antidote", 1, {"slime_gel": 1, "bone": 1}, 0),
+    ("r_mana_potion", "mana_potion", 1, {"slime_gel": 2}, 10),
+    ("r_bomb", "bomb", 2, {"iron_ore": 2, "bone": 1}, 0),
+    ("r_fire_bomb", "fire_bomb", 1, {"bomb": 1, "ember_essence": 1}, 0),
+    ("r_ice_bomb", "ice_bomb", 1, {"bomb": 1, "frost_essence": 1}, 0),
+    ("r_poison_bomb", "poison_bomb", 1, {"bomb": 1, "slime_gel": 2}, 0),
+    ("r_rope", "rope", 1, {"cloth_roll": 1}, 0),
+    ("r_long_rope", "long_rope", 1, {"rope": 2}, 0),
+    ("r_lockpick", "lockpick", 2, {"iron_ore": 1}, 0),
+    ("r_whetstone", "whetstone", 1, {"iron_ore": 2}, 0),
+    ("r_leather_armor", "leather_armor", 1, {"leather_scrap": 4}, 0),
+    ("r_wanderer_gloves", "wanderer_gloves", 1, {"leather_scrap": 3, "cloth_roll": 1}, 0),
+    ("r_iron_ring", "iron_ring", 1, {"iron_ore": 3}, 15),
+    ("r_steel_pickaxe", "steel_pickaxe", 1, {"pickaxe": 1, "iron_ore": 4, "gold_ore": 1}, 30),
+]
+
+
+def recipes():
+    for order, (rid, result, count, ingredients, gold) in enumerate(RECIPES):
+        t = Tres("RecipeData")
+        t.write(os.path.join(DATA, "recipes", rid + ".tres"), [
+            ("script", t.ext_res("Script", "res://scripts/data/recipe_data.gd")), ("id", SN(rid)), ("result", SN(result)),
+            ("count", count), ("ingredients", ingredients), ("gold", gold), ("order", order)])
+
+
 def main():
     build()
+    recipes()
     for item_id, im in ICONS.items():
         gp.save(im, "sprites/items/%s.png" % item_id)
     print("items generated: %d" % len(ICONS))
