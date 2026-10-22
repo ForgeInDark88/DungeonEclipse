@@ -82,7 +82,60 @@ func setup(p_hero: Hero, p_level: DungeonLevel) -> void:
 
 
 func apply_biome(biome: BiomeData) -> void:
-	($AmbientDust as CPUParticles2D).color = biome.ambient_particles
+	var p := $AmbientDust as CPUParticles2D
+	p.color = biome.ambient_particles
+	# Motion by BiomeData.particle_style; glowing kinds ignore the ambient light.
+	var glow := biome.particle_style in [&"spores", &"embers", &"sparkles"]
+	var m := CanvasItemMaterial.new()
+	m.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED if glow else CanvasItemMaterial.LIGHT_MODE_NORMAL
+	p.material = m
+	p.scale_amount_min = 1.0
+	p.scale_amount_max = 1.0
+	p.gravity = Vector2.ZERO
+	match biome.particle_style:
+		&"spores":
+			p.amount = 45
+			p.direction = Vector2(0, -1)
+			p.spread = 180.0
+			p.initial_velocity_min = 2.0
+			p.initial_velocity_max = 6.0
+			p.scale_amount_max = 2.0
+		&"pollen":
+			p.amount = 40
+			p.direction = Vector2(1, 0.3)
+			p.spread = 20.0
+			p.initial_velocity_min = 8.0
+			p.initial_velocity_max = 16.0
+		&"embers":
+			p.amount = 55
+			p.direction = Vector2(0.2, -1)
+			p.spread = 25.0
+			p.initial_velocity_min = 10.0
+			p.initial_velocity_max = 24.0
+			p.gravity = Vector2(0, -4)
+		&"sparkles":
+			p.amount = 50
+			p.direction = Vector2(0, 1)
+			p.spread = 180.0
+			p.initial_velocity_min = 1.0
+			p.initial_velocity_max = 4.0
+			p.scale_amount_max = 2.0
+		_:
+			p.amount = 40
+			p.direction = Vector2(0.3, 1)
+			p.spread = 30.0
+			p.initial_velocity_min = 3.0
+			p.initial_velocity_max = 10.0
+	# Sparkles twinkle (several alpha peaks); the rest fade in and out.
+	var g := Gradient.new()
+	if biome.particle_style == &"sparkles":
+		g.offsets = PackedFloat32Array([0.0, 0.15, 0.3, 0.45, 0.6, 0.75, 1.0])
+		g.colors = PackedColorArray([Color(1, 1, 1, 0), Color(1, 1, 1, 0.9), Color(1, 1, 1, 0.1), Color(1, 1, 1, 0.8),
+				Color(1, 1, 1, 0.1), Color(1, 1, 1, 0.7), Color(1, 1, 1, 0)])
+	else:
+		g.offsets = PackedFloat32Array([0.0, 0.3, 1.0])
+		g.colors = PackedColorArray([Color(1, 1, 1, 0), Color(1, 1, 1, 0.6 if glow else 0.5), Color(1, 1, 1, 0)])
+	p.color_ramp = g
 
 
 func _on_leveled_up(_level: int) -> void:

@@ -24,6 +24,13 @@ extends Resource
 ## Warm glow of the decorative wall torches (they do not change visibility).
 @export var torch_color: Color = Color(1.0, 0.62, 0.3)
 @export var ambient_particles: Color = Color(0.8, 0.75, 0.7)
+## How the ambient particles move: dust (drifts down), spores (float, glow),
+## pollen (wind), embers (rise, glow), sparkles (twinkle, glow).
+@export var particle_style: StringName = &"dust"
+## Share of floor / ceiling / back wall cells with small detail tiles.
+@export_range(0.0, 1.0) var floor_fringe: float = 0.45
+@export_range(0.0, 1.0) var ceiling_fringe: float = 0.3
+@export_range(0.0, 1.0) var wall_details: float = 0.03
 @export var fog_color: Color = Color(0.5, 0.5, 0.6)
 @export_range(0.0, 1.0) var fog_amount: float = 0.08
 @export var grade_tint: Color = Color.WHITE

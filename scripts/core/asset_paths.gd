@@ -166,6 +166,11 @@ const TILE_PLATFORM_RIGHT := Vector2i(2, 4)
 const TILE_LADDER := Vector2i(3, 4)
 const TILE_ROW_BACKWALL := 5
 const TILE_ORE_GLOW := Vector2i(0, 6)
+## Detail rows (no collision): floor fringe above a floor brick, ceiling
+## fringe under a ceiling, small marks on the back wall. 4 variants each.
+const TILE_ROW_FLOOR_FRINGE := 7
+const TILE_ROW_CEIL_FRINGE := 8
+const TILE_ROW_WALL_DETAIL := 9
 const TILE_ORE := Vector2i(3, 1)
 
 
