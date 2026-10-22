@@ -12,6 +12,7 @@ const DAMAGE_NUMBER_SCENE := preload("res://scenes/world/damage_number.tscn")
 @onready var hud: HUD = $HUD
 @onready var book: InventoryBook = $InventoryBook
 @onready var overlay: OverlayPanel = $Overlay
+var skill_tree: SkillTreeBook
 
 var level: DungeonLevel
 var player: Player
@@ -36,6 +37,9 @@ func _ready() -> void:
 	player.setup(hero, null)
 	hud.setup(hero, player)
 	book.setup(hero)
+	skill_tree = SkillTreeBook.new()
+	add_child(skill_tree)
+	skill_tree.setup(hero)
 
 	EventBus.spawn_items.connect(_on_spawn_items)
 	EventBus.floating_text.connect(_on_floating_text)
@@ -111,7 +115,7 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("pause") and not book.is_open and not player.dead:
+	if event.is_action_pressed("pause") and not book.is_open and not skill_tree.is_open and not player.dead:
 		_toggle_pause()
 		get_viewport().set_input_as_handled()
 
@@ -195,6 +199,7 @@ func _exit_tree() -> void:
 
 func _on_player_died() -> void:
 	book.close()
+	skill_tree.close()
 	await get_tree().create_timer(1.2).timeout
 	var hero := GameState.hero
 	get_tree().paused = true

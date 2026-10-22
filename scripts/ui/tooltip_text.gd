@@ -118,13 +118,18 @@ static func _weapon_lines(w: WeaponItemData, other: WeaponItemData, hero: Hero) 
 static func skill(skill: SkillData, level: int, hero_points: int) -> String:
 	var lines: Array[String] = []
 	lines.append("[font_size=10][b]%s[/b][/font_size]" % skill.display_name)
-	lines.append(_c(UIStyle.INK_SOFT, "Уровень %d/%d · Мана %d · Перезарядка %.1f с" % [level, skill.max_level, skill.mana_cost, skill.cooldown]))
+	if skill.is_passive():
+		lines.append(_c(UIStyle.INK_SOFT, "Пассивный · Уровень %d/%d" % [level, skill.max_level]))
+	else:
+		lines.append(_c(UIStyle.INK_SOFT, "Уровень %d/%d · Мана %d · Перезарядка %.1f с" % [level, skill.max_level, skill.mana_cost, skill.cooldown]))
 	if skill.description != "":
 		lines.append("[i]%s[/i]" % skill.description)
 	if skill.effect:
-		lines.append(_c(UIStyle.GOOD, "• " + skill.effect.describe(level)))
-		if level < skill.max_level:
+		lines.append(_c(UIStyle.GOOD, "• " + skill.effect.describe(maxi(level, 1))))
+		if level > 0 and level < skill.max_level:
 			lines.append(_c(UIStyle.INK_SOFT, "След. ур.: " + skill.effect.describe(level + 1)))
+	if skill.synergy_text() != "":
+		lines.append(_c(Color(0.45, 0.25, 0.65), skill.synergy_text()))
 	if hero_points > 0 and level < skill.max_level:
 		lines.append(_c(UIStyle.GOOD, "Клик — улучшить (очков: %d)" % hero_points))
 	return "\n".join(lines)

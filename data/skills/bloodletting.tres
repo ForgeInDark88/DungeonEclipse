@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/bloodletting.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/passive_skill.gd" id="eff"]
+[ext_resource type="Resource" path="res://data/skills/blade_master.tres" id="req_blade_master"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="hit"]
+
+[sub_resource type="Resource" id="Hit"]
+script = ExtResource("hit")
+status = &"bleed"
+duration = 3.0
+power = 3.0
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+bonuses = {}
+bonuses_per_level = {}
+hit_effect = SubResource("Hit")
+hit_chance = 0.15
+hit_chance_per_level = 0.08
+
+[resource]
+script = ExtResource("skill")
+id = &"bloodletting"
+display_name = "Кровопускание"
+description = "Удары оставляют глубокие раны."
+icon = ExtResource("icon")
+mana_cost = 0
+cooldown = 0.0
+max_level = 3
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+required_level = 5
+requires = Array[ExtResource("skill")]([ExtResource("req_blade_master")])
+tree_row = 2
+synergy_weapons = Array[int]([1])
+synergy_power = 0.3

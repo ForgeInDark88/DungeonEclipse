@@ -38,7 +38,7 @@ func execute(caster: Node, level: int) -> bool:
 func describe(level: int) -> String:
 	var text := "Удар по области (радиус %d), урон %d%%" % [roundi(radius + radius_per_level * (level - 1)), roundi((damage_multiplier + damage_per_level * (level - 1)) * 100)]
 	if stun_time > 0.0:
-		text += ", замедляет на %.1f сек." % stun_time
+		text += ", оглушает на %.1f сек." % stun_time
 	if breaks_tiles:
 		text += ", ломает кирпич"
 	return text

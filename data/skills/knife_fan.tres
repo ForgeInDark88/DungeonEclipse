@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/knife_fan.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/projectile_skill.gd" id="eff"]
+[ext_resource type="Resource" path="res://data/skills/throw_knives.tres" id="req_throw_knives"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/knife.png" id="tex"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+texture = ExtResource("tex")
+speed = 280.0
+damage_multiplier = 0.9
+damage_per_level = 0.2
+count = 5
+extra_every_levels = 0
+spread_degrees = 25.0
+pierce = 0
+blast_radius = 0.0
+damage_type = 0
+color = Color(0.8, 0.8, 0.9, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"knife_fan"
+display_name = "Веер ножей"
+description = "Пять ножей веером."
+icon = ExtResource("icon")
+mana_cost = 18
+cooldown = 6.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+required_level = 5
+requires = Array[ExtResource("skill")]([ExtResource("req_throw_knives")])
+tree_row = 2
+synergy_weapons = Array[int]([3])
+synergy_power = 0.3

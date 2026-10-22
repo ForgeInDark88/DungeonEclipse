@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/chain_lightning.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/projectile_skill.gd" id="eff"]
+[ext_resource type="Resource" path="res://data/skills/fireball.tres" id="req_fireball"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/magic_bolt.png" id="tex"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+texture = ExtResource("tex")
+speed = 320.0
+damage_multiplier = 1.4
+damage_per_level = 0.3
+count = 1
+extra_every_levels = 0
+spread_degrees = 0.0
+pierce = 3
+blast_radius = 0.0
+damage_type = 4
+color = Color(0.75, 0.6, 1, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"chain_lightning"
+display_name = "Цепная молния"
+description = "Молния прошивает несколько врагов."
+icon = ExtResource("icon")
+mana_cost = 14
+cooldown = 3.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+required_level = 4
+requires = Array[ExtResource("skill")]([ExtResource("req_fireball")])
+tree_row = 1
+synergy_weapons = Array[int]([5])
+synergy_power = 0.3

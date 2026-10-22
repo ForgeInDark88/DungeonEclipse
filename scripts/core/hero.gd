@@ -28,6 +28,7 @@ func _init(p_race: RaceData, p_class: ClassData, layout: EquipmentLayout) -> voi
 	equipment = Equipment.new(layout)
 	equipment.changed.connect(_on_equipment_changed)
 	stats.setup(race, class_data, level)
+	skills.changed.connect(_refresh_passives)
 	skills.setup(class_data.skills)
 
 
@@ -188,3 +189,26 @@ func _on_equipment_changed() -> void:
 	stats.weapon_base = w.effective_damage() if w else 0.0
 	stats.weapon_penalty = 1.0 if class_data.allows_weapon(w) else ClassData.WRONG_WEAPON_DAMAGE
 	stats.set_modifier("equipment", equipment.total_bonuses())
+	_refresh_passives()
+
+
+## Stat bonuses of learned passive skills (stronger with a synergy weapon).
+func _refresh_passives() -> void:
+	var total := {}
+	var w := weapon()
+	for s in skills.passives():
+		var b: Dictionary = (s.effect as PassiveSkill).bonuses_for(skills.rank(s), s.power_with(w))
+		for k in b:
+			total[k] = float(total.get(k, 0.0)) + float(b[k])
+	if total.is_empty() and not stats.has_modifier("passives"):
+		return
+	stats.set_modifier("passives", total)
+
+
+## Rolls the on-hit effects of passive skills (called by the Player on weapon hits).
+func apply_passive_hits(attacker: Node, target: Node, damage: int) -> void:
+	var w := weapon()
+	for s in skills.passives():
+		var p := s.effect as PassiveSkill
+		if p.hit_effect and randf() < p.chance_for(skills.rank(s), s.power_with(w)):
+			p.hit_effect.on_hit(attacker, target, damage)

@@ -38,6 +38,8 @@ var _item_cooldowns: Dictionary = {}  # item id -> seconds
 var _buffs: Dictionary = {}  # modifier key -> seconds left
 var _buff_info: Dictionary = {}  # modifier key -> {"icon": Texture2D, "duration": float}
 var _casting_icon: Texture2D
+## Multiplier of the skill being cast (weapon synergy, SkillData.power_with); read by skill effects.
+var skill_power := 1.0
 var _external_velocity := Vector2.ZERO
 var _light_tween: Tween
 var _hint := ""
@@ -302,7 +304,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		attack()
 		get_viewport().set_input_as_handled()
 		return
-	for i in 4:
+	for i in SkillSet.SLOT_COUNT:
 		if event.is_action_pressed("skill_%d" % (i + 1)):
 			use_skill(i)
 			get_viewport().set_input_as_handled()
@@ -316,7 +318,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # ------------------------------------------------------------------ combat
 func roll_damage(multiplier := 1.0) -> Dictionary:
-	var dmg := hero.stats.damage() * multiplier * randf_range(0.85, 1.15)
+	var dmg := hero.stats.damage() * multiplier * skill_power * randf_range(0.85, 1.15)
 	var crit := randf() < hero.stats.crit_chance()
 	if crit:
 		dmg *= 2.0
@@ -392,6 +394,8 @@ func hit_enemy(enemy: Node, w: WeaponItemData, multiplier: float) -> void:
 		for e in w.on_hit_effects:
 			if e:
 				e.try_apply(self, enemy, d["amount"])
+	if is_instance_valid(enemy) and not enemy.is_dead():
+		hero.apply_passive_hits(self, enemy, d["amount"])
 
 
 func _shoot(w: WeaponItemData, dir: float) -> void:
@@ -412,6 +416,8 @@ func _shoot(w: WeaponItemData, dir: float) -> void:
 			for e in w.on_hit_effects:
 				if e:
 					e.try_apply(self, enemy, _dmg)
+			if is_instance_valid(enemy) and not enemy.is_dead():
+				hero.apply_passive_hits(self, enemy, _dmg)
 		hero.wear_weapon(1)
 	level.add_entity(p, global_position + Vector2(dir * 10.0, -13.0))
 
@@ -536,7 +542,9 @@ func use_skill(index: int) -> void:
 		EventBus.message.emit("Недостаточно маны")
 		return
 	_casting_icon = skill.icon
+	skill_power = skill.power_with(hero.weapon())
 	var fired := skill.effect.execute(self, skills.get_level(index))
+	skill_power = 1.0
 	_casting_icon = null
 	if fired:
 		hero.stats.spend_mana(skill.mana_cost)

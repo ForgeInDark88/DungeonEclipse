@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/meteor.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/area_blast_skill.gd" id="eff"]
+[ext_resource type="Resource" path="res://data/skills/chain_lightning.tres" id="req_chain_lightning"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+radius = 70.0
+radius_per_level = 6.0
+damage_multiplier = 3.0
+damage_per_level = 0.6
+knockback = 160.0
+breaks_tiles = false
+stun_time = 0.0
+damage_type = 1
+color = Color(1, 0.4, 0.1, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"meteor"
+display_name = "Метеор"
+description = "Огненный удар с небес вокруг мага."
+icon = ExtResource("icon")
+mana_cost = 35
+cooldown = 16.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+required_level = 7
+requires = Array[ExtResource("skill")]([ExtResource("req_chain_lightning")])
+tree_row = 2
+synergy_weapons = Array[int]([5])
+synergy_power = 0.3

@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/holy_strike.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/area_blast_skill.gd" id="eff"]
+[ext_resource type="Resource" path="res://data/skills/power_strike.tres" id="req_power_strike"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+radius = 34.0
+radius_per_level = 6.0
+damage_multiplier = 2.0
+damage_per_level = 0.4
+knockback = 200.0
+breaks_tiles = false
+stun_time = 0.6
+damage_type = 4
+color = Color(1, 0.95, 0.6, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"holy_strike"
+display_name = "Священный удар"
+description = "Вспышка света вокруг паладина оглушает врагов."
+icon = ExtResource("icon")
+mana_cost = 14
+cooldown = 5.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_heavy"
+required_level = 3
+requires = Array[ExtResource("skill")]([ExtResource("req_power_strike")])
+tree_row = 1
+synergy_weapons = Array[int]([6])
+synergy_power = 0.3

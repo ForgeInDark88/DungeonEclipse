@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ClassData" load_steps=11 format=3]
+[gd_resource type="Resource" script_class="ClassData" load_steps=15 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/portraits/class_paladin.png" id="1_portrait"]
 [ext_resource type="Script" path="res://scripts/data/class_data.gd" id="2_script"]
@@ -10,6 +10,10 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/player/paladin.png" id="8_sprite"]
 [ext_resource type="Texture2D" path="res://assets/sprites/player/head_paladin.png" id="sheet_head"]
 [ext_resource type="Texture2D" path="res://assets/sprites/player/outfit_paladin.png" id="sheet_outfit"]
+[ext_resource type="Resource" path="res://data/skills/blessing.tres" id="sk_blessing"]
+[ext_resource type="Resource" path="res://data/skills/holy_strike.tres" id="sk_holy_strike"]
+[ext_resource type="Resource" path="res://data/skills/light_aura.tres" id="sk_light_aura"]
+[ext_resource type="Resource" path="res://data/skills/righteous_wrath.tres" id="sk_righteous_wrath"]
 
 [resource]
 script = ExtResource("2_script")
@@ -50,7 +54,7 @@ starting_items = {
 }
 starting_equipment = Array[StringName]([&"club", &"leather_armor"])
 starting_quick_bar = Array[StringName]([&"pickaxe", &"torch", &"mana_crystal", &"health_potion", &"rope"])
-skills = Array[ExtResource("3_skill")]([ExtResource("4_holy"), ExtResource("5_strike"), ExtResource("6_skin"), ExtResource("7_shield")])
+skills = Array[ExtResource("3_skill")]([ExtResource("4_holy"), ExtResource("5_strike"), ExtResource("6_skin"), ExtResource("7_shield"), ExtResource("sk_blessing"), ExtResource("sk_holy_strike"), ExtResource("sk_light_aura"), ExtResource("sk_righteous_wrath")])
 allowed_weapon_types = Array[int]([6, 0])
 unlock_shards = 20
 unlock_gold = 300

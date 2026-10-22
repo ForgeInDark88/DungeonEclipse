@@ -63,6 +63,7 @@ func _ready() -> void:
 	_test_meta()
 	_test_codex()
 	_test_daily()
+	_test_skill_tree()
 	MetaProgress.apply_upgrades = false
 	await _test_scenes()
 	MetaProgress.shards = meta_backup[0]
@@ -89,7 +90,9 @@ func _test_data() -> void:
 	check(ItemDatabase.loot_tables.size() >= 5, "loot tables loaded: %d" % ItemDatabase.loot_tables.size())
 	check(ItemDatabase.equipment_layout.slots.size() == 8, "8 equip slots")
 	for c in ItemDatabase.classes:
-		check(c.skills.size() == 4, "class %s has 4 skills" % c.id)
+		check(c.skills.size() >= 8, "class %s has %d skills" % [c.id, c.skills.size()])
+		var passive := c.skills.filter(func(sk: SkillData) -> bool: return sk.is_passive()).size()
+		check(passive >= 2 and c.skills.size() - passive >= 4, "class %s: active and passive skills" % c.id)
 		for id in c.starting_items:
 			check(ItemDatabase.items.has(id), "start item %s exists" % id)
 	var t: LootTable = ItemDatabase.get_loot_table(&"chest_common")
@@ -191,6 +194,41 @@ func _test_daily_run() -> void:
 	await frames(5)
 	check(not GameState.is_daily() or not GameState.run_active, "daily run ended")
 	Leaderboard.clear_day(day)
+
+
+func _test_skill_tree() -> void:
+	var warrior: ClassData = null
+	for c in ItemDatabase.classes:
+		if c.id == &"warrior":
+			warrior = c
+	var h := Hero.new(ItemDatabase.races[0], warrior, ItemDatabase.equipment_layout)
+	h.give_starting_kit()
+	var sk := h.skills
+	var by_id := {}
+	for s in sk.all:
+		by_id[s.id] = s
+	check(sk.get_skill(3) != null and sk.get_skill(4) == null, "4 starting skills in HUD slots")
+	var tough: SkillData = by_id[&"toughness"]
+	var master: SkillData = by_id[&"blade_master"]
+	var cry: SkillData = by_id[&"war_cry"]
+	check(not sk.learn(tough, 1), "cannot learn without points")
+	sk.add_points(3)
+	check(sk.block_reason(tough, 1).begins_with("Нужен уровень"), "level requirement")
+	var hp0 := h.stats.max_hp()
+	check(sk.learn(tough, 2) and h.stats.max_hp() > hp0, "passive learned -> stats (%d -> %d)" % [hp0, h.stats.max_hp()])
+	check(sk.get_skill(4) == null, "passive not placed in the HUD")
+	sk.ranks.erase(&"power_strike")
+	check(sk.block_reason(master, 9).begins_with("Сначала"), "prerequisite required")
+	sk.ranks[&"power_strike"] = 1
+	var dmg0 := h.stats.damage()
+	check(sk.learn(master, 9), "learned blade master")
+	var dmg_fist := h.stats.damage()
+	check(dmg_fist > dmg0, "blade master adds damage")
+	check(sk.learn(cry, 9) and sk.get_skill(4) == cry, "new active goes to slot 5")
+	# Weapon synergy: blade master is stronger with the starting sword equipped.
+	var bonus_sword: float = h.stats._modifiers["passives"].get("damage", 0.0)
+	check(is_equal_approx(bonus_sword, 1.5 * 1.5), "synergy boosts passive with a sword (%.2f)" % bonus_sword)
+	check(master.has_synergy(h.weapon()) and not cry.has_synergy(h.weapon()), "synergy by weapon type")
 
 
 func _test_daily() -> void:
@@ -732,8 +770,30 @@ func _test_scenes() -> void:
 		player.hero.stats.restore_mana(999)
 		player.use_skill(i)
 		await frames(20)
-	check(player.hero.skills.cooldowns.max() > 0.0, "skills on cooldown after use")
+	check(player.hero.skills.cooldowns.values().max() > 0.0, "skills on cooldown after use")
 	await shot("04_after_skills")
+	# Skill tree book (K): learn a passive, it changes stats; the new active gets slot 5.
+	var hero_s := player.hero
+	hero_s.level = maxi(hero_s.level, 6)
+	hero_s.skills.add_points(2)
+	await press("skill_tree")
+	var tree_ui: SkillTreeBook = game.skill_tree
+	check(tree_ui.is_open and get_tree().paused, "skill tree opens with K and pauses")
+	var tough: SkillData = hero_s.skills.all.filter(func(x: SkillData) -> bool: return x.id == &"toughness")[0]
+	var hp_tree := hero_s.stats.max_hp()
+	check(tree_ui.learn(tough) and hero_s.stats.max_hp() > hp_tree, "learned a passive from the tree")
+	var cry: SkillData = hero_s.skills.all.filter(func(x: SkillData) -> bool: return x.id == &"war_cry")[0]
+	tree_ui._selected = cry
+	tree_ui._refresh()
+	await frames(3)
+	await shot("15_11_skill_tree")
+	check(tree_ui.learn(cry) and hero_s.skills.get_skill(4) == cry, "war cry learned into slot 5")
+	await press("skill_tree")
+	check(not tree_ui.is_open and not get_tree().paused, "skill tree closes")
+	hero_s.stats.restore_mana(999)
+	await press("skill_5")
+	await frames(5)
+	check(hero_s.skills.cooldown_left(4) > 0.0, "slot 5 skill cast with Z")
 	player.hero.stats.take_damage(30)
 	var hp := player.hero.stats.hp
 	player.use_item(ItemDatabase.get_item(&"health_potion"))

@@ -797,6 +797,23 @@ def main() -> None:
         "frost_nova": compose(skill_bg((40, 100, 200)), skill_explosion((90, 170, 255, 255), (230, 250, 255, 255))),
         "arcane_shield": compose(skill_bg((60, 60, 200)), skill_shield((90, 110, 255, 255))),
         "blink": compose(skill_bg((120, 40, 180)), skill_blink((200, 120, 255, 255))),
+        # stage 15.11: skill trees (passives on dark backgrounds)
+        "toughness": compose(skill_bg((60, 50, 40)), icon_armor((170, 120, 70, 255))),
+        "blade_master": compose(skill_bg((70, 60, 50)), icon_sword((220, 225, 240, 255))),
+        "bloodletting": compose(skill_bg((90, 20, 25)), icon_axe((200, 40, 50, 255))),
+        "war_cry": compose(skill_bg((230, 200, 60)), skill_explosion((255, 220, 80, 255), (255, 255, 220, 255))),
+        "keen_eye": compose(skill_bg((50, 60, 50)), icon_bow((120, 80, 40, 255))),
+        "venom_blades": compose(skill_bg((40, 80, 30)), icon_dagger((90, 220, 80, 255))),
+        "knife_fan": compose(skill_bg((180, 60, 60)), skill_knives()),
+        "shadow_step": compose(skill_bg((40, 35, 60)), icon_boots((60, 50, 90, 255))),
+        "arcane_mind": compose(skill_bg((40, 40, 80)), icon_crystal((120, 140, 255, 255))),
+        "chain_lightning": compose(skill_bg((150, 100, 255)), skill_projectile((230, 210, 255, 255))),
+        "meteor": compose(skill_bg((160, 40, 10)), skill_explosion((255, 60, 10, 255), (255, 200, 60, 255))),
+        "elemental_ward": compose(skill_bg((50, 70, 80)), skill_shield((240, 140, 60, 255))),
+        "blessing": compose(skill_bg((80, 70, 40)), icon_armor((235, 215, 150, 255))),
+        "holy_strike": compose(skill_bg((255, 230, 140)), icon_club((230, 230, 240, 255), spikes=True)),
+        "light_aura": compose(skill_bg((70, 70, 40)), skill_shield((255, 240, 160, 255))),
+        "righteous_wrath": compose(skill_bg((255, 240, 180)), skill_explosion((255, 240, 150, 255), (255, 255, 255, 255))),
     }
     for name, im in skills.items():
         save(im, f"sprites/skills/{name}.png", do_outline=False)

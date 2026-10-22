@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/arcane_mind.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/passive_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+bonuses = {}
+bonuses_per_level = {
+"intellect": 1,
+"max_mana": 10
+}
+
+[resource]
+script = ExtResource("skill")
+id = &"arcane_mind"
+display_name = "Тайный разум"
+description = "Больше маны и острее ум; с посохом — ещё сильнее."
+icon = ExtResource("icon")
+mana_cost = 0
+cooldown = 0.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+required_level = 2
+requires = Array[ExtResource("skill")]([])
+tree_row = 1
+synergy_weapons = Array[int]([5])
+synergy_power = 0.3

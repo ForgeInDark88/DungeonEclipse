@@ -11,7 +11,7 @@ extends SkillEffect
 
 
 func execute(caster: Node, level: int) -> bool:
-	caster.status.apply(status, duration + duration_per_level * (level - 1), power + power_per_level * (level - 1))
+	caster.status.apply(status, duration + duration_per_level * (level - 1), (power + power_per_level * (level - 1)) * caster.skill_power)
 	Fx.sparks(caster.get_parent(), caster.global_position + Vector2(0, -10), StatusEffects.color_of(status), 12, 50.0)
 	return true
 

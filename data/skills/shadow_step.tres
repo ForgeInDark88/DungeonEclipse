@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/shadow_step.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/passive_skill.gd" id="eff"]
+[ext_resource type="Resource" path="res://data/skills/keen_eye.tres" id="req_keen_eye"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+bonuses = {}
+bonuses_per_level = {
+"agility": 1,
+"speed": 6
+}
+
+[resource]
+script = ExtResource("skill")
+id = &"shadow_step"
+display_name = "Шаг тени"
+description = "Лёгкая поступь и быстрые ноги."
+icon = ExtResource("icon")
+mana_cost = 0
+cooldown = 0.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+required_level = 6
+requires = Array[ExtResource("skill")]([ExtResource("req_keen_eye")])
+tree_row = 2
+synergy_weapons = Array[int]([])
+synergy_power = 0.3

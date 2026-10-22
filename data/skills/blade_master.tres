@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/blade_master.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/passive_skill.gd" id="eff"]
+[ext_resource type="Resource" path="res://data/skills/power_strike.tres" id="req_power_strike"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+bonuses = {}
+bonuses_per_level = {
+"damage": 1.5
+}
+
+[resource]
+script = ExtResource("skill")
+id = &"blade_master"
+display_name = "Мастер клинка"
+description = "Точные выверенные удары мечом и топором."
+icon = ExtResource("icon")
+mana_cost = 0
+cooldown = 0.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+required_level = 3
+requires = Array[ExtResource("skill")]([ExtResource("req_power_strike")])
+tree_row = 1
+synergy_weapons = Array[int]([0, 1])
+synergy_power = 0.5

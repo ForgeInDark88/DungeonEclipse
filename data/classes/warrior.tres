@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ClassData" load_steps=11 format=3]
+[gd_resource type="Resource" script_class="ClassData" load_steps=15 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/portraits/class_warrior.png" id="1_1y7wg"]
 [ext_resource type="Script" path="res://scripts/data/class_data.gd" id="2_3268n"]
@@ -10,6 +10,10 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/player/warrior.png" id="8_h8h0d"]
 [ext_resource type="Texture2D" path="res://assets/sprites/player/head_warrior.png" id="sheet_head"]
 [ext_resource type="Texture2D" path="res://assets/sprites/player/outfit_warrior.png" id="sheet_outfit"]
+[ext_resource type="Resource" path="res://data/skills/toughness.tres" id="sk_toughness"]
+[ext_resource type="Resource" path="res://data/skills/blade_master.tres" id="sk_blade_master"]
+[ext_resource type="Resource" path="res://data/skills/bloodletting.tres" id="sk_bloodletting"]
+[ext_resource type="Resource" path="res://data/skills/war_cry.tres" id="sk_war_cry"]
 
 [resource]
 script = ExtResource("2_3268n")
@@ -52,5 +56,5 @@ starting_items = {
 }
 starting_equipment = Array[StringName]([&"rusty_sword", &"leather_armor"])
 starting_quick_bar = Array[StringName]([&"pickaxe", &"torch", &"bomb", &"mana_crystal", &"health_potion", &"rope", &"key"])
-skills = Array[ExtResource("3_o3gbp")]([ExtResource("4_vp7vw"), ExtResource("5_c13nv"), ExtResource("6_pse82"), ExtResource("7_ontb7")])
+skills = Array[ExtResource("3_o3gbp")]([ExtResource("4_vp7vw"), ExtResource("5_c13nv"), ExtResource("6_pse82"), ExtResource("7_ontb7"), ExtResource("sk_toughness"), ExtResource("sk_blade_master"), ExtResource("sk_war_cry"), ExtResource("sk_bloodletting")])
 allowed_weapon_types = Array[int]([0, 1, 2, 6])

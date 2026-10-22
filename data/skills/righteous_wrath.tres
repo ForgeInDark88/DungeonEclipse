@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/righteous_wrath.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/area_blast_skill.gd" id="eff"]
+[ext_resource type="Resource" path="res://data/skills/holy_strike.tres" id="req_holy_strike"]
+[ext_resource type="Resource" path="res://data/skills/blessing.tres" id="req_blessing"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+radius = 80.0
+radius_per_level = 6.0
+damage_multiplier = 2.2
+damage_per_level = 0.5
+knockback = 160.0
+breaks_tiles = false
+stun_time = 1.5
+damage_type = 4
+color = Color(1, 1, 0.8, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"righteous_wrath"
+display_name = "Праведный гнев"
+description = "Вспышка света сокрушает и оглушает всех вокруг."
+icon = ExtResource("icon")
+mana_cost = 30
+cooldown = 15.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_heavy"
+required_level = 7
+requires = Array[ExtResource("skill")]([ExtResource("req_holy_strike"), ExtResource("req_blessing")])
+tree_row = 2
+synergy_weapons = Array[int]([6])
+synergy_power = 0.3

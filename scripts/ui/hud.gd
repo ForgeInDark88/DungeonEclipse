@@ -8,7 +8,7 @@ const PADDING := 12
 const GAP := 3
 const PORTRAIT := Vector2(56, 56)
 const BARS_W := 104
-const SKILL_KEYS := ["Q", "E", "R", "F", "", "", "", ""]
+const SKILL_KEYS := ["Q", "E", "R", "F", "Z", "X", "C", "V"]
 
 var hero: Hero
 var _skill_slots: Array[SkillSlot] = []
@@ -227,7 +227,7 @@ func _refresh_skills() -> void:
 	for s in _skill_slots:
 		s.refresh()
 	var pts := hero.skills.skill_points
-	_points_label.text = ("Очки навыков: %d (клик по навыку)" % pts) if pts > 0 else ""
+	_points_label.text = ("Очки навыков: %d (K — дерево навыков)" % pts) if pts > 0 else ""
 
 
 func _refresh_xp() -> void:
@@ -295,7 +295,7 @@ func _update_status_row(buffs: Array[Dictionary]) -> void:
 func _on_level_up(new_level: int) -> void:
 	_refresh_xp()
 	_refresh_skills()
-	show_message("Получено очко навыка — кликните по навыку.")
+	show_message("Получено очко навыка — K: дерево навыков, клик по слоту: улучшить.")
 	var banner := LevelUpBanner.new()
 	banner.level_number = new_level
 	add_child(banner)

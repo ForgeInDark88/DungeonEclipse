@@ -122,7 +122,7 @@ func _update_cooldown() -> void:
 	if _was_cooling and ratio <= 0.0:
 		_flash_ready()
 	_was_cooling = ratio > 0.0
-	var left: float = hero.skills.cooldowns[index]
+	var left: float = hero.skills.cooldown_left(index)
 	_cd_label.text = ("%.1f" % left if left < 1.0 else str(ceili(left))) if left > 0.0 else ""
 	var skill := hero.skills.get_skill(index)
 	var no_mana := hero.stats.mana < skill.mana_cost

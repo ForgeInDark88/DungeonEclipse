@@ -12,17 +12,17 @@ extends SkillEffect
 @export var heal_percent: float = 0.0
 
 
-func _bonuses_for(level: int) -> Dictionary:
+func _bonuses_for(level: int, power := 1.0) -> Dictionary:
 	var result := {}
 	for k in bonuses:
-		result[k] = float(bonuses[k]) + float(bonuses_per_level.get(k, 0)) * (level - 1)
+		result[k] = (float(bonuses[k]) + float(bonuses_per_level.get(k, 0)) * (level - 1)) * power
 	return result
 
 
 func execute(caster: Node, level: int) -> bool:
-	caster.apply_buff("buff_" + key, _bonuses_for(level), duration + duration_per_level * (level - 1), tint)
+	caster.apply_buff("buff_" + key, _bonuses_for(level, caster.skill_power), duration + duration_per_level * (level - 1), tint)
 	if heal_percent > 0.0:
-		caster.hero.stats.heal(roundi(caster.hero.stats.max_hp() * heal_percent))
+		caster.hero.stats.heal(roundi(caster.hero.stats.max_hp() * heal_percent * caster.skill_power))
 	Fx.sparks(caster.get_parent(), caster.global_position + Vector2(0, -10), tint, 12, 50.0)
 	return true
 

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ClassData" load_steps=11 format=3]
+[gd_resource type="Resource" script_class="ClassData" load_steps=15 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/portraits/class_rogue.png" id="1_8t6c3"]
 [ext_resource type="Script" path="res://scripts/data/class_data.gd" id="2_1ke0y"]
@@ -10,6 +10,10 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/player/rogue.png" id="8_fq2fb"]
 [ext_resource type="Texture2D" path="res://assets/sprites/player/head_rogue.png" id="sheet_head"]
 [ext_resource type="Texture2D" path="res://assets/sprites/player/outfit_rogue.png" id="sheet_outfit"]
+[ext_resource type="Resource" path="res://data/skills/keen_eye.tres" id="sk_keen_eye"]
+[ext_resource type="Resource" path="res://data/skills/venom_blades.tres" id="sk_venom_blades"]
+[ext_resource type="Resource" path="res://data/skills/knife_fan.tres" id="sk_knife_fan"]
+[ext_resource type="Resource" path="res://data/skills/shadow_step.tres" id="sk_shadow_step"]
 
 [resource]
 script = ExtResource("2_1ke0y")
@@ -50,5 +54,5 @@ starting_items = {
 }
 starting_equipment = Array[StringName]([&"dagger", &"leather_boots"])
 starting_quick_bar = Array[StringName]([&"pickaxe", &"torch", &"bomb", &"health_potion", &"rope", &"key"])
-skills = Array[ExtResource("3_j5d85")]([ExtResource("4_dc6po"), ExtResource("5_8yl4t"), ExtResource("6_bf3fw"), ExtResource("7_3b8my")])
+skills = Array[ExtResource("3_j5d85")]([ExtResource("4_dc6po"), ExtResource("5_8yl4t"), ExtResource("6_bf3fw"), ExtResource("7_3b8my"), ExtResource("sk_keen_eye"), ExtResource("sk_venom_blades"), ExtResource("sk_shadow_step"), ExtResource("sk_knife_fan")])
 allowed_weapon_types = Array[int]([3, 4, 0, 2])
