@@ -23,7 +23,7 @@ var levels: Dictionary = {}
 ## Ids of bought races / classes.
 var unlocked: Array[StringName] = []
 var upgrades: Array[MetaUpgradeData] = []
-## When false, upgrades are not applied to new runs (daily run: equal start for everybody).
+## When false, upgrades are never applied (tests keep runs independent of the player's save).
 var apply_upgrades := true
 
 
@@ -115,9 +115,10 @@ func stat_bonuses() -> Dictionary:
 	return total
 
 
-## Applies bought upgrades to a freshly created hero.
-func apply_to(hero: Hero) -> void:
-	if not apply_upgrades:
+## Applies bought upgrades to a freshly created hero. Daily runs pass
+## `use_upgrades = false`: an equal start for everybody.
+func apply_to(hero: Hero, use_upgrades := true) -> void:
+	if not apply_upgrades or not use_upgrades:
 		return
 	hero.stats.set_modifier("meta", stat_bonuses())
 	for up in upgrades:

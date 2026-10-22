@@ -58,6 +58,8 @@ func _load_floor() -> void:
 		level.queue_free()
 	var floor_number := GameState.floor_number
 	var seed_value := GameState.floor_seed()
+	if GameState.is_daily():
+		seed(seed_value)  # loot and monster rolls repeat for every player of the day
 	var gen := LevelGenerator.new()
 	var layout := gen.generate_arena(floor_number, seed_value) if GameState.is_boss_floor() else gen.generate(floor_number, seed_value)
 	var biome := GameState.current_biome()
@@ -121,6 +123,7 @@ func _toggle_pause() -> void:
 		return
 	get_tree().paused = true
 	overlay.clear()
+	overlay.set_panel_size(Vector2(220, 160))
 	overlay.add_text("Пауза", 12)
 	overlay.add_button("Продолжить", _toggle_pause).grab_focus()
 	overlay.add_button("В главное меню", func() -> void: GameState.go_to_menu())
@@ -196,11 +199,15 @@ func _on_player_died() -> void:
 	var hero := GameState.hero
 	get_tree().paused = true
 	overlay.clear()
+	overlay.set_panel_size(Vector2(300, 230))
 	overlay.add_text("Герой погиб", 14)
 	overlay.add_text("%s %s, уровень %d\nДостигнут этаж: %d\nУбито врагов: %d" % [
 		hero.race.display_name, hero.class_data.display_name, hero.level, GameState.floor_number, GameState.kills])
 	var reward := GameState.end_run()
-	if not reward.is_empty():
+	if reward.has("daily"):
+		var d: Dictionary = reward["daily"]
+		overlay.add_text("Ежедневный забег: %d очков%s" % [d["score"], (", место %d за сегодня" % d["place"]) if d["place"] > 0 else ""], 9)
+	if not reward.is_empty() and (reward["shards"] > 0 or reward["gold"] > 0):
 		var text := "Святилище Затмения: +%d осколков, +%d золота" % [reward["shards"], reward["gold"]]
 		if not reward["parts"].is_empty():
 			text += "\n(" + ", ".join(reward["parts"]) + ")"

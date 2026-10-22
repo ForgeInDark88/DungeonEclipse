@@ -62,6 +62,7 @@ func _ready() -> void:
 	var codex_backup := Codex.snapshot()
 	_test_meta()
 	_test_codex()
+	_test_daily()
 	MetaProgress.apply_upgrades = false
 	await _test_scenes()
 	MetaProgress.shards = meta_backup[0]
@@ -163,6 +164,52 @@ func _test_codex() -> void:
 	cfg.load(SaveManager.META_PATH)
 	check(cfg.get_value("codex", "achieved", {}).has(&"first_blood"), "codex saved to meta.cfg")
 	MetaProgress.reset()
+
+
+func _test_daily_run() -> void:
+	var day := "1999-01-02"
+	Leaderboard.clear_day(day)
+	get_tree().change_scene_to_file(GameState.DAILY)
+	await frames(10)
+	await shot("15_10_daily_menu")
+	MetaProgress.apply_upgrades = true
+	MetaProgress.levels[&"vitality"] = 3
+	GameState.start_daily_run(day)
+	await frames(30)
+	var d := GameState.daily_setup(day)
+	check(GameState.is_daily() and GameState.run_seed == d["seed"] and GameState.hero.class_data == d["class"], "daily run started with the day's seed and hero")
+	check(not GameState.hero.stats.has_modifier("meta"), "sanctum upgrades off in daily run")
+	MetaProgress.levels.erase(&"vitality")
+	MetaProgress.apply_upgrades = false
+	var p := get_tree().get_first_node_in_group("player") as Player
+	p.hero.stats.take_damage(99999)
+	await frames(100)
+	await shot("15_10_daily_death")
+	var top := Leaderboard.top(day)
+	check(top.size() == 1 and int(top[0]["floor"]) == 1, "daily result recorded: %s" % [top])
+	GameState.go_to_menu()
+	await frames(5)
+	check(not GameState.is_daily() or not GameState.run_active, "daily run ended")
+	Leaderboard.clear_day(day)
+
+
+func _test_daily() -> void:
+	var a := GameState.daily_setup("2026-01-01")
+	var b := GameState.daily_setup("2026-01-01")
+	var c := GameState.daily_setup("2026-01-02")
+	check(a["seed"] == b["seed"] and a["race"] == b["race"] and a["class"] == b["class"], "daily setup is deterministic")
+	check(a["seed"] != c["seed"], "daily seed changes with the date")
+	check(MetaProgress.is_unlocked(a["race"]) and MetaProgress.is_unlocked(a["class"]), "daily hero needs no unlocks")
+	var day := "1999-01-01"
+	Leaderboard.clear_day(day)
+	var e1 := {"score": 500, "floor": 4}
+	var e2 := {"score": 900, "floor": 7}
+	check(Leaderboard.submit(day, e1) == 1, "first result is place 1")
+	check(Leaderboard.submit(day, e2) == 1, "better result takes place 1")
+	var top := Leaderboard.top(day)
+	check(top.size() == 2 and int(top[0]["score"]) == 900, "leaderboard sorted")
+	Leaderboard.clear_day(day)
+	check(Leaderboard.top(day).is_empty(), "leaderboard day cleared")
 
 
 func _test_generator() -> void:
@@ -896,4 +943,5 @@ func _test_scenes() -> void:
 	check(get_tree().current_scene.name == "MainMenu", "back to menu after death")
 	check(SaveManager.total_runs >= 1, "run recorded")
 	check(MetaProgress.shards > 25, "death paid sanctum shards (%d)" % MetaProgress.shards)
+	await _test_daily_run()
 	_finished = true

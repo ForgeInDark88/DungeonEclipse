@@ -30,6 +30,15 @@ func _ready() -> void:
 	_panel.add_child(_box)
 
 
+## Panel size (the default fits a few buttons; the death screen needs more).
+func set_panel_size(sz: Vector2) -> void:
+	_panel.offset_left = -sz.x / 2.0
+	_panel.offset_right = sz.x / 2.0
+	_panel.offset_top = -sz.y / 2.0
+	_panel.offset_bottom = sz.y / 2.0
+	_box.size = sz - Vector2(40, 36)
+
+
 func clear() -> void:
 	Tooltip.hide_tip()
 	for c in _box.get_children():

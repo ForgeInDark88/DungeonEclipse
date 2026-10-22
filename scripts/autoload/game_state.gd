@@ -6,6 +6,7 @@ const CHARACTER_CREATION := "res://scenes/ui/character_creation.tscn"
 const GAME := "res://scenes/game/game.tscn"
 const SANCTUM := "res://scenes/ui/sanctum.tscn"
 const CODEX := "res://scenes/ui/codex.tscn"
+const DAILY := "res://scenes/ui/daily.tscn"
 ## A new biome every N floors (see data/biomes, BiomeData.order).
 const FLOORS_PER_BIOME := 3
 ## Every N-th floor is a boss arena.
@@ -19,6 +20,8 @@ var run_active: bool = false
 ## Statistics of the current run (death screen, achievements):
 ## gold, kills, floor, found_common/rare/epic, bosses, time.
 var run_stats: Dictionary = {}
+## Non-empty during a daily run: its date "YYYY-MM-DD" (seed and leaderboard key).
+var daily_date: String = ""
 
 
 func _ready() -> void:
@@ -26,10 +29,11 @@ func _ready() -> void:
 
 
 ## `seed_value` >= 0 makes the whole run reproducible (daily runs, tests).
-func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1) -> void:
+func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, daily := "") -> void:
+	daily_date = daily
 	hero = Hero.new(race, class_data, ItemDatabase.equipment_layout)
 	hero.give_starting_kit()
-	MetaProgress.apply_to(hero)
+	MetaProgress.apply_to(hero, daily == "")
 	floor_number = 1
 	kills = 0
 	reset_run_stats()
@@ -44,6 +48,33 @@ func reset_run_stats() -> void:
 
 
 ## Seed of the current floor: each run and each floor is different.
+## Today's date (local time) as used by daily runs.
+static func today() -> String:
+	return Time.get_date_string_from_system()
+
+
+## Seed, race and class of the daily run of `date`: the same for every player.
+## Only races / classes available without the Sanctum take part.
+static func daily_setup(date: String) -> Dictionary:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash("eclipse-daily:" + date)
+	var races := ItemDatabase.races.filter(func(r: RaceData) -> bool: return r.unlock_shards <= 0 and r.unlock_gold <= 0)
+	var classes := ItemDatabase.classes.filter(func(c: ClassData) -> bool: return c.unlock_shards <= 0 and c.unlock_gold <= 0)
+	return {"seed": rng.randi() & 0x7FFFFFFF, "race": races[rng.randi() % races.size()],
+		"class": classes[rng.randi() % classes.size()]}
+
+
+func start_daily_run(date: String = "") -> void:
+	if date == "":
+		date = today()
+	var d := daily_setup(date)
+	start_new_run(d["race"], d["class"], d["seed"], date)
+
+
+func is_daily() -> bool:
+	return daily_date != ""
+
+
 func floor_seed() -> int:
 	return hash([run_seed, floor_number])
 
@@ -68,10 +99,27 @@ func end_run() -> Dictionary:
 	if run_active:
 		SaveManager.record_run(floor_number, kills)
 		reward = MetaProgress.finish_run(hero, floor_number, run_stats)
+		if is_daily():
+			reward["daily"] = _submit_daily()
 		Codex.add(&"runs")
 		Codex.save_progress()
 	run_active = false
 	return reward
+
+
+## Daily leaderboard entry; returns {"place", "score"}.
+func _submit_daily() -> Dictionary:
+	var bosses := int(run_stats.get("bosses", 0))
+	var gold := int(run_stats.get("gold", 0))
+	var lvl := hero.level if hero else 1
+	var entry := {
+		"score": Leaderboard.score(floor_number, kills, gold, bosses, lvl),
+		"floor": floor_number, "kills": kills, "gold": gold, "bosses": bosses, "level": lvl,
+		"time_s": (Time.get_ticks_msec() - int(run_stats.get("start_ms", 0))) / 1000,
+		"race": hero.race.display_name if hero else "", "class": hero.class_data.display_name if hero else "",
+		"at": Time.get_datetime_string_from_system().right(8),
+	}
+	return {"place": Leaderboard.submit(daily_date, entry), "score": entry["score"]}
 
 
 func go_to_menu() -> void:

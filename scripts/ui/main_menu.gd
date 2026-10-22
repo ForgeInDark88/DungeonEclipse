@@ -6,7 +6,7 @@ var _fullscreen_button: Button
 
 func _ready() -> void:
 	get_tree().paused = false
-	build_book(Vector2(440, 250))
+	build_book(Vector2(440, 300))
 	AudioManager.play_music(&"menu")
 
 	var title := UIStyle.label("Dungeon\nEclipse", 20)
@@ -24,6 +24,7 @@ func _ready() -> void:
 	right_page.add_child(_spacer(4))
 	var start := BookPageScreen.button("Новый забег", func() -> void: get_tree().change_scene_to_file(GameState.CHARACTER_CREATION))
 	right_page.add_child(start)
+	right_page.add_child(BookPageScreen.button("Ежедневный забег", func() -> void: get_tree().change_scene_to_file(GameState.DAILY)))
 	right_page.add_child(BookPageScreen.button("Святилище Затмения (%d оск.)" % MetaProgress.shards,
 		func() -> void: get_tree().change_scene_to_file(GameState.SANCTUM)))
 	right_page.add_child(BookPageScreen.button("Летопись (%d/%d)" % [Codex.achieved.size(), Codex.achievements.size()],
