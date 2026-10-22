@@ -16,6 +16,7 @@ const EVENT_DIR := "res://data/events"
 const SET_DIR := "res://data/sets"
 const RECIPE_DIR := "res://data/recipes"
 const PACT_DIR := "res://data/pacts"
+const PET_DIR := "res://data/pets"
 const EQUIPMENT_LAYOUT := "res://data/equipment_layout.tres"
 
 var items: Dictionary = {}  # StringName -> ItemData
@@ -32,6 +33,7 @@ var room_events: Array[RoomEventData] = []
 var sets: Dictionary = {}  # StringName -> ItemSetData
 var recipes: Array[RecipeData] = []
 var pacts: Array[RunPactData] = []
+var pets: Dictionary = {}  # StringName -> PetData
 var equipment_layout: EquipmentLayout
 
 
@@ -54,6 +56,10 @@ func reload() -> void:
 	sets.clear()
 	recipes.clear()
 	pacts.clear()
+	pets.clear()
+	for res in load_dir(PET_DIR):
+		if res is PetData:
+			pets[res.id] = res
 	for res in load_dir(PACT_DIR):
 		if res is RunPactData:
 			pacts.append(res)

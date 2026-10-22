@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="LootTable" load_steps=193 format=3]
+[gd_resource type="Resource" script_class="LootTable" load_steps=203 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/loot_table.gd" id="table"]
 [ext_resource type="Script" path="res://scripts/data/loot_entry.gd" id="entry"]
@@ -97,6 +97,11 @@
 [ext_resource type="Resource" path="res://data/items/relics/lucky_coin.tres" id="i_lucky_coin"]
 [ext_resource type="Resource" path="res://data/items/relics/phoenix_feather.tres" id="i_phoenix_feather"]
 [ext_resource type="Resource" path="res://data/items/relics/wolf_fang.tres" id="i_wolf_fang"]
+[ext_resource type="Resource" path="res://data/items/usable/egg_coin_bat.tres" id="i_egg_coin_bat"]
+[ext_resource type="Resource" path="res://data/items/usable/egg_dragonling.tres" id="i_egg_dragonling"]
+[ext_resource type="Resource" path="res://data/items/usable/egg_fire_wisp.tres" id="i_egg_fire_wisp"]
+[ext_resource type="Resource" path="res://data/items/usable/egg_frost_wisp.tres" id="i_egg_frost_wisp"]
+[ext_resource type="Resource" path="res://data/items/usable/egg_owl.tres" id="i_egg_owl"]
 
 [sub_resource type="Resource" id="e_apprentice_wand"]
 script = ExtResource("entry")
@@ -953,6 +958,51 @@ max_count = 1
 min_floor = 1
 max_floor = 0
 
+[sub_resource type="Resource" id="e_egg_coin_bat"]
+script = ExtResource("entry")
+item = ExtResource("i_egg_coin_bat")
+weight = 0.50
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_egg_dragonling"]
+script = ExtResource("entry")
+item = ExtResource("i_egg_dragonling")
+weight = 0.50
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_egg_fire_wisp"]
+script = ExtResource("entry")
+item = ExtResource("i_egg_fire_wisp")
+weight = 0.50
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_egg_frost_wisp"]
+script = ExtResource("entry")
+item = ExtResource("i_egg_frost_wisp")
+weight = 0.50
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
+[sub_resource type="Resource" id="e_egg_owl"]
+script = ExtResource("entry")
+item = ExtResource("i_egg_owl")
+weight = 0.50
+min_count = 1
+max_count = 1
+min_floor = 1
+max_floor = 0
+
 [resource]
 script = ExtResource("table")
 rolls_min = 1
@@ -963,7 +1013,7 @@ rarity_min_floor = Array[int]([1, 1, 3, 4])
 item_level_base = 1.0
 item_level_per_floor = 0.75
 item_level_bonus = 2.0
-entries = Array[ExtResource("entry")]([SubResource("e_apprentice_wand"), SubResource("e_arcane_staff"), SubResource("e_bearded_axe"), SubResource("e_bloodthirster"), SubResource("e_bone_amulet"), SubResource("e_bronze_sword"), SubResource("e_chainmail"), SubResource("e_cloth_hood"), SubResource("e_club"), SubResource("e_copper_ring"), SubResource("e_crown_of_shadows"), SubResource("e_dagger"), SubResource("e_dragon_lance"), SubResource("e_eclipse_armor"), SubResource("e_eclipse_blade"), SubResource("e_eclipse_boots"), SubResource("e_eclipse_gloves"), SubResource("e_eclipse_helm"), SubResource("e_eclipse_ring"), SubResource("e_elven_bow"), SubResource("e_ember_cloak"), SubResource("e_ember_staff"), SubResource("e_executioner_axe"), SubResource("e_feather_amulet"), SubResource("e_fire_wand"), SubResource("e_flame_amulet"), SubResource("e_flanged_mace"), SubResource("e_frost_axe"), SubResource("e_frost_heart"), SubResource("e_frost_staff"), SubResource("e_gauntlets"), SubResource("e_glaive"), SubResource("e_guardian_gauntlets"), SubResource("e_guardian_greaves"), SubResource("e_guardian_helm"), SubResource("e_guardian_plate"), SubResource("e_hatchet"), SubResource("e_heavy_crossbow"), SubResource("e_holy_hammer"), SubResource("e_hunter_bow"), SubResource("e_iron_greaves"), SubResource("e_iron_helm"), SubResource("e_iron_mace"), SubResource("e_iron_ring"), SubResource("e_iron_spear"), SubResource("e_iron_sword"), SubResource("e_knight_sword"), SubResource("e_kris"), SubResource("e_leaping_boots"), SubResource("e_leather_armor"), SubResource("e_leather_boots"), SubResource("e_leather_cap"), SubResource("e_leather_gloves"), SubResource("e_light_crossbow"), SubResource("e_longbow"), SubResource("e_mage_robe"), SubResource("e_moon_amulet"), SubResource("e_morning_star"), SubResource("e_oak_staff"), SubResource("e_plate_armor"), SubResource("e_repeater"), SubResource("e_ring_of_fortune"), SubResource("e_ring_of_haste"), SubResource("e_ring_of_precision"), SubResource("e_ring_of_regeneration"), SubResource("e_ruby_ring"), SubResource("e_runeblade"), SubResource("e_rusty_sword"), SubResource("e_serpent_amulet"), SubResource("e_shadow_dagger"), SubResource("e_short_bow"), SubResource("e_sorcerer_gloves"), SubResource("e_sorcerer_hat"), SubResource("e_sorcerer_robe"), SubResource("e_steel_saber"), SubResource("e_stiletto"), SubResource("e_storm_wand"), SubResource("e_sun_blade"), SubResource("e_swift_boots"), SubResource("e_thorn_staff"), SubResource("e_trident"), SubResource("e_venom_fang"), SubResource("e_viper_sting"), SubResource("e_wanderer_boots"), SubResource("e_wanderer_coat"), SubResource("e_wanderer_gloves"), SubResource("e_wanderer_hood"), SubResource("e_war_axe"), SubResource("e_wooden_spear"), SubResource("e_woodsman_axe"), SubResource("e_golem_heart"), SubResource("e_jumper_talisman"), SubResource("e_lucky_coin"), SubResource("e_phoenix_feather"), SubResource("e_wolf_fang")])
+entries = Array[ExtResource("entry")]([SubResource("e_apprentice_wand"), SubResource("e_arcane_staff"), SubResource("e_bearded_axe"), SubResource("e_bloodthirster"), SubResource("e_bone_amulet"), SubResource("e_bronze_sword"), SubResource("e_chainmail"), SubResource("e_cloth_hood"), SubResource("e_club"), SubResource("e_copper_ring"), SubResource("e_crown_of_shadows"), SubResource("e_dagger"), SubResource("e_dragon_lance"), SubResource("e_eclipse_armor"), SubResource("e_eclipse_blade"), SubResource("e_eclipse_boots"), SubResource("e_eclipse_gloves"), SubResource("e_eclipse_helm"), SubResource("e_eclipse_ring"), SubResource("e_elven_bow"), SubResource("e_ember_cloak"), SubResource("e_ember_staff"), SubResource("e_executioner_axe"), SubResource("e_feather_amulet"), SubResource("e_fire_wand"), SubResource("e_flame_amulet"), SubResource("e_flanged_mace"), SubResource("e_frost_axe"), SubResource("e_frost_heart"), SubResource("e_frost_staff"), SubResource("e_gauntlets"), SubResource("e_glaive"), SubResource("e_guardian_gauntlets"), SubResource("e_guardian_greaves"), SubResource("e_guardian_helm"), SubResource("e_guardian_plate"), SubResource("e_hatchet"), SubResource("e_heavy_crossbow"), SubResource("e_holy_hammer"), SubResource("e_hunter_bow"), SubResource("e_iron_greaves"), SubResource("e_iron_helm"), SubResource("e_iron_mace"), SubResource("e_iron_ring"), SubResource("e_iron_spear"), SubResource("e_iron_sword"), SubResource("e_knight_sword"), SubResource("e_kris"), SubResource("e_leaping_boots"), SubResource("e_leather_armor"), SubResource("e_leather_boots"), SubResource("e_leather_cap"), SubResource("e_leather_gloves"), SubResource("e_light_crossbow"), SubResource("e_longbow"), SubResource("e_mage_robe"), SubResource("e_moon_amulet"), SubResource("e_morning_star"), SubResource("e_oak_staff"), SubResource("e_plate_armor"), SubResource("e_repeater"), SubResource("e_ring_of_fortune"), SubResource("e_ring_of_haste"), SubResource("e_ring_of_precision"), SubResource("e_ring_of_regeneration"), SubResource("e_ruby_ring"), SubResource("e_runeblade"), SubResource("e_rusty_sword"), SubResource("e_serpent_amulet"), SubResource("e_shadow_dagger"), SubResource("e_short_bow"), SubResource("e_sorcerer_gloves"), SubResource("e_sorcerer_hat"), SubResource("e_sorcerer_robe"), SubResource("e_steel_saber"), SubResource("e_stiletto"), SubResource("e_storm_wand"), SubResource("e_sun_blade"), SubResource("e_swift_boots"), SubResource("e_thorn_staff"), SubResource("e_trident"), SubResource("e_venom_fang"), SubResource("e_viper_sting"), SubResource("e_wanderer_boots"), SubResource("e_wanderer_coat"), SubResource("e_wanderer_gloves"), SubResource("e_wanderer_hood"), SubResource("e_war_axe"), SubResource("e_wooden_spear"), SubResource("e_woodsman_axe"), SubResource("e_golem_heart"), SubResource("e_jumper_talisman"), SubResource("e_lucky_coin"), SubResource("e_phoenix_feather"), SubResource("e_wolf_fang"), SubResource("e_egg_coin_bat"), SubResource("e_egg_dragonling"), SubResource("e_egg_fire_wisp"), SubResource("e_egg_frost_wisp"), SubResource("e_egg_owl")])
 extra_tables = Array[ExtResource("table")]([])
 gold_min = 20
 gold_max = 50

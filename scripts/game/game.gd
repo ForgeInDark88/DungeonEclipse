@@ -60,6 +60,7 @@ func _ready() -> void:
 	EventBus.player_died.connect(_on_player_died)
 	SaveManager.settings_changed.connect(_apply_brightness)
 	EventBus.shop_requested.connect(_open_shop)
+	EventBus.pet_changed.connect(func(_p: PetData) -> void: _sync_pet())
 	EventBus.smith_requested.connect(func(_s: Node, _p: Node) -> void:
 		if not get_tree().paused:
 			var forge := SmithBook.new()
@@ -91,12 +92,30 @@ func _load_floor() -> void:
 	player.global_position = level.start_position()
 	player.set_level(level)
 	_apply_biome(biome)
+	_sync_pet()
 	for b in get_tree().get_nodes_in_group("bosses"):
 		AudioManager.play_music((b as Boss).boss.music)
 	if GameState.is_boss_floor():
 		EventBus.message.emit("Этаж %d — логово стража!" % floor_number)
 	else:
 		EventBus.message.emit("Этаж %d — %s" % [floor_number, biome.display_name] if biome else "Этаж %d" % floor_number)
+
+
+## The pet of the run follows the hero (one at a time, re-placed every floor).
+func _sync_pet() -> void:
+	var cur := get_tree().get_first_node_in_group("pets") as Pet
+	if cur and cur.data != GameState.pet:
+		cur.queue_free()
+		cur.remove_from_group("pets")
+		cur = null
+	if GameState.pet == null:
+		return
+	if cur == null:
+		cur = (load(AssetPaths.PET_SCENE) as PackedScene).instantiate()
+		cur.setup(GameState.pet, player)
+		world.add_child(cur)
+	else:
+		cur.global_position = cur.home_position()
 
 
 ## Palette, ambient light, parallax and post effects of the biome.

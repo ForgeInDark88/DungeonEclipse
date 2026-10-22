@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="PetData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/pet_data.gd" id="e1"]
+
+[resource]
+script = ExtResource("e1")
+id = &"fire_wisp"
+display_name = "Огонёк"
+description = "Поджигает врагов."
+sheet = "res://assets/sprites/pets/wisp_sheet.png"
+tint = Color(1.0, 0.6, 0.25, 1.0)
+damage = 3
+damage_type = 1
+attack_cooldown = 1.3
+speed = 140.0
+status = &"burn"
+status_duration = 3.0
+status_power = 1.0
+gold_radius = 110.0

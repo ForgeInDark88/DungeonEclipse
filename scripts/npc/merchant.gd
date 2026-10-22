@@ -6,6 +6,8 @@ extends Area2D
 const STOCK_TABLE := &"merchant"
 const BASICS: Array[StringName] = [&"health_potion", &"antidote", &"whetstone", &"bomb", &"map_scroll"]
 const STOCK_ROLLS := 3
+## Chance that the merchant also sells a pet egg.
+const EGG_CHANCE := 0.35
 
 var floor_number: int = 1
 ## Array of ItemData (instances for gear) — removed when bought.
@@ -34,6 +36,11 @@ func _roll_stock() -> void:
 			for e: Dictionary in table.roll(floor_number):
 				if e["item"].currency_value <= 0 and stock.size() < 12:
 					stock.append(e["item"])
+	# Sometimes a pet egg.
+	if randf() < EGG_CHANCE:
+		var eggs := ItemDatabase.items.values().filter(func(it: ItemData) -> bool: return it.id.begins_with("egg_"))
+		if not eggs.is_empty():
+			stock.append(eggs.pick_random())
 
 
 func get_prompt() -> String:

@@ -471,6 +471,18 @@ SHAPES = {
 }
 
 
+def ic_egg(c, spots):
+    im, d = _img()
+    d.ellipse((4, 2, 12, 14), fill=col(c))
+    d.ellipse((5, 3, 8, 7), fill=gp.shade(col(c), 1.3))
+    for x, y in ((9, 6), (6, 10), (10, 11)):
+        d.rectangle((x, y, x + 1, y + 1), fill=col(spots))
+    return im
+
+
+SHAPES["egg"] = ic_egg
+
+
 def icon(item_id, shape, *args):
     ICONS[item_id] = SHAPES[shape](*args)
 
@@ -830,10 +842,39 @@ def pacts():
             ("effects", effects), ("min_floor", min_floor)])
 
 
+PETS = [  # id, name, description, sheet, tint, damage, dtype, cooldown, speed, status, gold_radius, egg rarity, egg level, egg colors
+    ("owl", "Совёнок", "Клюёт врагов.", "owl", (1, 1, 1), 5, PHYS, 1.1, 150.0, ("", 0, 0), 110.0, R, 2,
+     ((170, 130, 80), (90, 60, 30))),
+    ("fire_wisp", "Огонёк", "Поджигает врагов.", "wisp", (1.0, 0.6, 0.25), 3, FIRE, 1.3, 140.0, ("burn", 3.0, 1.0), 110.0, R, 3,
+     ((240, 130, 50), (255, 230, 120))),
+    ("frost_wisp", "Морозный дух", "Замедляет врагов.", "wisp", (0.55, 0.85, 1.0), 3, ICE, 1.3, 140.0, ("slow", 2.5, 0.5), 110.0, R, 3,
+     ((150, 210, 255), (240, 250, 255))),
+    ("coin_bat", "Мышь-копилка", "Слабо кусается, зато собирает золото издалека.", "bat", (1, 1, 1), 2, PHYS, 1.0, 190.0, ("", 0, 0), 240.0, R, 1,
+     ((120, 80, 140), (240, 200, 70))),
+    ("dragonling", "Дракончик", "Сильно кусается и поджигает.", "dragon", (1, 1, 1), 8, FIRE, 1.2, 160.0, ("burn", 2.0, 1.0), 120.0, E, 6,
+     ((200, 60, 45), (255, 200, 80))),
+]
+
+
+def pets():
+    for pid, name, desc, sheet, tint, dmg, dtype, cd, speed, st, gold_r, rarity, level, colors in PETS:
+        t = Tres("PetData")
+        t.write(os.path.join(DATA, "pets", pid + ".tres"), [
+            ("script", t.ext_res("Script", "res://scripts/data/pet_data.gd")), ("id", SN(pid)), ("display_name", name),
+            ("description", desc), ("sheet", "res://assets/sprites/pets/%s_sheet.png" % sheet),
+            ("tint", ("COL", tint[0], tint[1], tint[2], 1.0)), ("damage", dmg), ("damage_type", dtype),
+            ("attack_cooldown", cd), ("speed", speed), ("status", SN(st[0])), ("status_duration", float(st[1])),
+            ("status_power", float(st[2])), ("gold_radius", gold_r)])
+        usable("egg_" + pid, "Яйцо: " + name, rarity, level, "Тёплое. Внутри что-то шевелится.",
+               [("hatch_pet_effect", [("pet", SN(pid))])], stack=1, anim="use", sound="item_use")
+        icon("egg_" + pid, "egg", colors[0], colors[1])
+
+
 def main():
     build()
     recipes()
     pacts()
+    pets()
     for item_id, im in ICONS.items():
         gp.save(im, "sprites/items/%s.png" % item_id)
     print("items generated: %d" % len(ICONS))

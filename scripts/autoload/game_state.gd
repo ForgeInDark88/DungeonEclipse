@@ -24,6 +24,8 @@ var run_stats: Dictionary = {}
 var daily_date: String = ""
 ## Blessings and curses of the altars of fate taken this run (RunPactData).
 var pacts: Array[RunPactData] = []
+## Pet of this run (null = none).
+var pet: PetData
 
 
 func _ready() -> void:
@@ -41,6 +43,7 @@ func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, 
 	floor_number = 1
 	kills = 0
 	pacts.clear()
+	pet = null
 	reset_run_stats()
 	run_seed = randi() if seed_value < 0 else seed_value
 	run_active = true
@@ -50,6 +53,11 @@ func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, 
 
 func reset_run_stats() -> void:
 	run_stats = {"gold": 0, "found": [0, 0, 0, 0], "bosses": 0, "elites": 0, "start_ms": Time.get_ticks_msec()}
+
+
+func set_pet(p_pet: PetData) -> void:
+	pet = p_pet
+	EventBus.pet_changed.emit(pet)
 
 
 ## Takes a blessing / curse until the end of the run.
