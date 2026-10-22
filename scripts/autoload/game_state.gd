@@ -26,10 +26,23 @@ var daily_date: String = ""
 var pacts: Array[RunPactData] = []
 ## Pet of this run (null = none).
 var pet: PetData
+## Combo: kills in a row, each within COMBO_WINDOW of the previous one,
+## without taking damage. Every step adds COMBO_STEP to XP and gold.
+const COMBO_WINDOW := 4.0
+const COMBO_STEP := 0.05
+const COMBO_MAX_BONUS := 0.5
+var combo: int = 0
+var _combo_time := 0.0
 
 
 func _ready() -> void:
-	EventBus.enemy_killed.connect(func(_d: EnemyData, _p: Vector2) -> void: kills += 1)
+	EventBus.enemy_killed.connect(func(_d: EnemyData, _p: Vector2) -> void:
+		kills += 1
+		_add_combo())
+	EventBus.damage_dealt.connect(func(_pos: Vector2, _a: int, _c: bool, on_player: bool) -> void:
+		if on_player:
+			_set_combo(0))
+	EventBus.floor_changed.connect(func(_f: int) -> void: _set_combo(0))
 	EventBus.elite_killed.connect(func(_d: EnemyData) -> void:
 		run_stats["elites"] = int(run_stats.get("elites", 0)) + 1)
 
@@ -44,6 +57,7 @@ func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, 
 	kills = 0
 	pacts.clear()
 	pet = null
+	combo = 0
 	reset_run_stats()
 	run_seed = randi() if seed_value < 0 else seed_value
 	run_active = true
@@ -58,6 +72,37 @@ func reset_run_stats() -> void:
 func set_pet(p_pet: PetData) -> void:
 	pet = p_pet
 	EventBus.pet_changed.emit(pet)
+
+
+func _process(delta: float) -> void:
+	if combo > 0:
+		_combo_time -= delta
+		if _combo_time <= 0.0:
+			_set_combo(0)
+
+
+func _add_combo() -> void:
+	_combo_time = COMBO_WINDOW
+	_set_combo(combo + 1)
+	if combo > int(run_stats.get("best_combo", 0)):
+		run_stats["best_combo"] = combo
+
+
+func _set_combo(value: int) -> void:
+	if value == combo:
+		return
+	combo = value
+	EventBus.combo_changed.emit(combo)
+
+
+## Seconds left before the combo breaks.
+func combo_time_left() -> float:
+	return _combo_time if combo > 0 else 0.0
+
+
+## XP / gold bonus of the current combo (the first kill gives none).
+func combo_bonus() -> float:
+	return minf(COMBO_MAX_BONUS, COMBO_STEP * maxi(0, combo - 1))
 
 
 ## Takes a blessing / curse until the end of the run.

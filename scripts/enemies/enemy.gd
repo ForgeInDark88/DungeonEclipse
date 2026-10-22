@@ -1442,12 +1442,12 @@ func _die() -> void:
 	if _mark:
 		_mark.visible = false
 	EventBus.enemy_killed.emit(data, global_position)
-	var xp := roundi((data.xp_reward + floor_number - 1) * (elite.xp_mult if elite else 1.0) * maxf(0.0, 1.0 + GameState.run_effect("xp")))
+	var xp := roundi((data.xp_reward + floor_number - 1) * (elite.xp_mult if elite else 1.0) * maxf(0.0, 1.0 + GameState.run_effect("xp") + GameState.combo_bonus()))
 	if GameState.hero:
 		GameState.hero.add_xp(xp)
 	EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 12), "+%d XP" % xp, Color(1.0, 0.85, 0.3))
 	var gold_find := GameState.hero.stats.get_value(StatTypes.GOLD_FIND) if GameState.hero else 0.0
-	var gold := roundi(randi_range(data.gold_min, data.gold_max) * (1.0 + 0.25 * (floor_number - 1)) * (elite.gold_mult if elite else 1.0) * (1.0 + gold_find) * maxf(0.0, 1.0 + GameState.run_effect("gold")))
+	var gold := roundi(randi_range(data.gold_min, data.gold_max) * (1.0 + 0.25 * (floor_number - 1)) * (elite.gold_mult if elite else 1.0) * (1.0 + gold_find) * maxf(0.0, 1.0 + GameState.run_effect("gold") + GameState.combo_bonus()))
 	if gold > 0:
 		var coin := ItemDatabase.get_item(&"gold_coin")
 		if coin:

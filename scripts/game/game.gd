@@ -277,6 +277,7 @@ func _on_player_died() -> void:
 		["Этаж", str(GameState.floor_number)], ["Время", "%d:%02d" % [seconds / 60, seconds % 60]],
 		["Убито врагов", str(GameState.kills)], ["Элиты / стражи", "%d / %d" % [int(stats.get("elites", 0)), int(stats.get("bosses", 0))]],
 		["Золото собрано", str(int(stats.get("gold", 0)))], ["Находки", _found_text(found)],
+		["Лучшее комбо", "×%d" % int(stats.get("best_combo", 0))],
 	]))
 	if reward.has("daily"):
 		var d: Dictionary = reward["daily"]

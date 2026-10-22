@@ -30,6 +30,8 @@ var _boss_box: Control
 var _boss_bar: StatBar
 var _boss_name: Label
 var _panel: Control
+## Kill streak (GameState.combo): shown from 2 kills, fades as its time runs out.
+var _combo: Label
 
 
 func _ready() -> void:
@@ -213,6 +215,25 @@ func _build() -> void:
 	_message.offset_top = 52
 	_message.offset_bottom = 66
 	root.add_child(_message)
+	_combo = UIStyle.outlined_label("", 10, UIStyle.GOLD)
+	_combo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_combo.anchor_left = 0.0
+	_combo.anchor_right = 1.0
+	_combo.offset_top = 68
+	_combo.offset_bottom = 82
+	_combo.pivot_offset = Vector2(320, 7)
+	_combo.visible = false
+	root.add_child(_combo)
+	EventBus.combo_changed.connect(_on_combo)
+
+
+func _on_combo(combo: int) -> void:
+	_combo.visible = combo >= 2
+	if combo < 2:
+		return
+	_combo.text = "Комбо ×%d  +%d%% опыта и золота" % [combo, roundi(GameState.combo_bonus() * 100.0)]
+	_combo.scale = Vector2(1.3, 1.3)
+	create_tween().tween_property(_combo, "scale", Vector2.ONE, 0.2)
 
 
 func _on_boss_spawned(b: Node) -> void:
@@ -262,6 +283,8 @@ func _refresh_floor() -> void:
 
 
 func _process(_delta: float) -> void:
+	if _combo and _combo.visible:
+		_combo.modulate.a = clampf(GameState.combo_time_left() / 1.5, 0.25, 1.0)
 	if _player == null or not is_instance_valid(_player):
 		return
 	var entries := _player.get_buffs()
