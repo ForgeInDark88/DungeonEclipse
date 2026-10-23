@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/r_backstab.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/area_blast_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+radius = 28.0
+radius_per_level = 5.0
+damage_multiplier = 1.9
+damage_per_level = 0.4
+knockback = 30.0
+breaks_tiles = false
+stun_time = 0.0
+damage_type = 0
+color = Color(0.9, 0.4, 0.5, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"r_backstab"
+display_name = "Удар в спину"
+description = "Кровавый выпад в слепую зону врага."
+icon = ExtResource("icon")
+mana_cost = 10
+cooldown = 5.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_heavy"
+synergy_weapons = Array[int]([0, 3])
+synergy_power = 0.3

@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/w_cleave.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/area_blast_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+radius = 40.0
+radius_per_level = 5.0
+damage_multiplier = 1.6
+damage_per_level = 0.3
+knockback = 90.0
+breaks_tiles = false
+stun_time = 0.0
+damage_type = 0
+color = Color(0.95, 0.5, 0.45, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"w_cleave"
+display_name = "Рассечение"
+description = "Широкий взмах рассекает всё перед воином."
+icon = ExtResource("icon")
+mana_cost = 8
+cooldown = 4.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_heavy"
+synergy_weapons = Array[int]([0, 1])
+synergy_power = 0.3

@@ -81,7 +81,7 @@ skills = Array[ExtResource("3_skill")]([ExtResource("tree_holy_light"), ExtResou
 allowed_weapon_types = Array[int]([6, 0])
 unlock_shards = 20
 unlock_gold = 300
-branch_names = Array[String](["Свет", "Щит", "Кара"])
+branch_names = Array[String](["Свет", "Бастион", "Кара"])
 tree_layout = {
 "holy_light": {"branch": 0, "row": 0, "points": 0, "level": 1, "choice": ""},
 "blessing": {"branch": 0, "row": 1, "points": 1, "level": 2, "choice": ""},

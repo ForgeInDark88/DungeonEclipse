@@ -30,10 +30,10 @@
 [ext_resource type="Resource" path="res://data/skills/m_blizzard.tres" id="tree_m_blizzard"]
 [ext_resource type="Resource" path="res://data/skills/m_ice_block.tres" id="tree_m_ice_block"]
 [ext_resource type="Resource" path="res://data/skills/m_absolute_zero.tres" id="tree_m_absolute_zero"]
-[ext_resource type="Resource" path="res://data/skills/arcane_shield.tres" id="tree_arcane_shield"]
-[ext_resource type="Resource" path="res://data/skills/arcane_mind.tres" id="tree_arcane_mind"]
 [ext_resource type="Resource" path="res://data/skills/blink.tres" id="tree_blink"]
+[ext_resource type="Resource" path="res://data/skills/arcane_mind.tres" id="tree_arcane_mind"]
 [ext_resource type="Resource" path="res://data/skills/m_mana_flow.tres" id="tree_m_mana_flow"]
+[ext_resource type="Resource" path="res://data/skills/m_void_step.tres" id="tree_m_void_step"]
 [ext_resource type="Resource" path="res://data/skills/chain_lightning.tres" id="tree_chain_lightning"]
 [ext_resource type="Resource" path="res://data/skills/m_arcane_orb.tres" id="tree_m_arcane_orb"]
 [ext_resource type="Resource" path="res://data/skills/m_archmage.tres" id="tree_m_archmage"]
@@ -76,9 +76,9 @@ starting_items = {
 }
 starting_equipment = Array[StringName]([&"oak_staff", &"leather_cap"])
 starting_quick_bar = Array[StringName]([&"bomb", &"mana_crystal", &"health_potion", &"rope"])
-skills = Array[ExtResource("3_kjic0")]([ExtResource("tree_fireball"), ExtResource("tree_m_pyromania"), ExtResource("tree_m_fire_nova"), ExtResource("tree_m_flame_volley"), ExtResource("tree_meteor"), ExtResource("tree_m_inferno"), ExtResource("tree_m_combustion"), ExtResource("tree_m_supernova"), ExtResource("tree_frost_nova"), ExtResource("tree_elemental_ward"), ExtResource("tree_m_ice_lance"), ExtResource("tree_m_frost_armor"), ExtResource("tree_m_glacier"), ExtResource("tree_m_blizzard"), ExtResource("tree_m_ice_block"), ExtResource("tree_m_absolute_zero"), ExtResource("tree_arcane_shield"), ExtResource("tree_arcane_mind"), ExtResource("tree_blink"), ExtResource("tree_m_mana_flow"), ExtResource("tree_chain_lightning"), ExtResource("tree_m_arcane_orb"), ExtResource("tree_m_archmage"), ExtResource("tree_m_mind_domination")])
+skills = Array[ExtResource("3_kjic0")]([ExtResource("tree_fireball"), ExtResource("tree_m_pyromania"), ExtResource("tree_m_fire_nova"), ExtResource("tree_m_flame_volley"), ExtResource("tree_meteor"), ExtResource("tree_m_inferno"), ExtResource("tree_m_combustion"), ExtResource("tree_m_supernova"), ExtResource("tree_frost_nova"), ExtResource("tree_elemental_ward"), ExtResource("tree_m_ice_lance"), ExtResource("tree_m_frost_armor"), ExtResource("tree_m_glacier"), ExtResource("tree_m_blizzard"), ExtResource("tree_m_ice_block"), ExtResource("tree_m_absolute_zero"), ExtResource("tree_blink"), ExtResource("tree_arcane_mind"), ExtResource("tree_m_mana_flow"), ExtResource("tree_m_void_step"), ExtResource("tree_chain_lightning"), ExtResource("tree_m_arcane_orb"), ExtResource("tree_m_archmage"), ExtResource("tree_m_mind_domination")])
 allowed_weapon_types = Array[int]([5, 3, 6, 8])
-branch_names = Array[String](["Огонь", "Лёд", "Тайное"])
+branch_names = Array[String](["Пламя", "Стужа", "Бездна"])
 tree_layout = {
 "fireball": {"branch": 0, "row": 0, "points": 0, "level": 1, "choice": ""},
 "m_pyromania": {"branch": 0, "row": 1, "points": 1, "level": 2, "choice": ""},
@@ -96,10 +96,10 @@ tree_layout = {
 "m_blizzard": {"branch": 1, "row": 4, "points": 9, "level": 9, "choice": "mage_1_4"},
 "m_ice_block": {"branch": 1, "row": 4, "points": 9, "level": 9, "choice": "mage_1_4"},
 "m_absolute_zero": {"branch": 1, "row": 5, "points": 12, "level": 12, "choice": ""},
-"arcane_shield": {"branch": 2, "row": 0, "points": 0, "level": 1, "choice": ""},
+"blink": {"branch": 2, "row": 0, "points": 0, "level": 1, "choice": ""},
 "arcane_mind": {"branch": 2, "row": 1, "points": 1, "level": 2, "choice": ""},
-"blink": {"branch": 2, "row": 2, "points": 3, "level": 4, "choice": "mage_2_2"},
 "m_mana_flow": {"branch": 2, "row": 2, "points": 3, "level": 4, "choice": "mage_2_2"},
+"m_void_step": {"branch": 2, "row": 2, "points": 3, "level": 4, "choice": "mage_2_2"},
 "chain_lightning": {"branch": 2, "row": 3, "points": 6, "level": 6, "choice": ""},
 "m_arcane_orb": {"branch": 2, "row": 4, "points": 9, "level": 9, "choice": "mage_2_4"},
 "m_archmage": {"branch": 2, "row": 4, "points": 9, "level": 9, "choice": "mage_2_4"},

@@ -29,6 +29,9 @@ var chosen_branch := -1
 const RESPEC_GOLD_PER_LEVEL := 25
 
 
+## Nothing is learned at setup: the hero starts with zero skills and earns
+## everything through the tree (the run opens with one point to spend —
+## the first learned skill also commits the branch).
 func setup(list: Array[SkillData], p_layout: Dictionary = {}, p_branches: Array[String] = []) -> void:
 	all = list.duplicate()
 	layout = p_layout
@@ -37,9 +40,6 @@ func setup(list: Array[SkillData], p_layout: Dictionary = {}, p_branches: Array[
 	cooldowns.clear()
 	skills.clear()
 	skills.resize(SLOT_COUNT)
-	for s in all:
-		if is_starting(s):
-			_learn_free(s)
 	changed.emit()
 
 
@@ -104,19 +104,19 @@ func required_points(s: SkillData) -> int:
 	return int(_slot(s).get("points", 0))
 
 
-## Known from the start (free): top of a branch / old-style starting skill.
+## Tier-0 gateway of a branch (no branch points needed, hero level 1).
 func is_starting(s: SkillData) -> bool:
 	if has_branches():
 		return required_points(s) == 0 and required_level(s) <= 1 and choice_of(s) == ""
 	return s.is_starting()
 
 
-## Skill points spent in a branch (free starting ranks do not count).
+## Skill points spent in a branch.
 func spent_in(branch: int) -> int:
 	var n := 0
 	for s in all:
 		if branch_of(s) == branch and is_learned(s):
-			n += rank(s) - (1 if is_starting(s) else 0)
+			n += rank(s)
 	return n
 
 
@@ -140,24 +140,20 @@ func spent_total() -> int:
 	var n := 0
 	for s in all:
 		if is_learned(s):
-			n += rank(s) - (1 if is_starting(s) else 0)
+			n += rank(s)
 	return n
 
 
-## Forgets everything but the starting skills (rank 1); points come back.
-## A respec also frees the branch choice.
+## Forgets every skill; the points come back and the branch choice frees.
 func reset() -> int:
 	var back := spent_total()
 	for s in all:
 		if not is_learned(s):
 			continue
-		if is_starting(s):
-			ranks[s.id] = 1
-		else:
-			ranks.erase(s.id)
-			var i := skills.find(s)
-			if i >= 0:
-				skills[i] = null
+		ranks.erase(s.id)
+		var i := skills.find(s)
+		if i >= 0:
+			skills[i] = null
 	chosen_branch = -1
 	skill_points += back
 	changed.emit()
@@ -186,7 +182,7 @@ func block_reason(s: SkillData, hero_level: int) -> String:
 		return "Максимальный уровень"
 	if not is_learned(s):
 		var b := branch_of(s)
-		if chosen_branch >= 0 and b >= 0 and b != chosen_branch and not is_starting(s):
+		if chosen_branch >= 0 and b >= 0 and b != chosen_branch:
 			return "Путь выбран: «%s»" % branch_name_of(b)
 		var rival := chosen_rival(s)
 		if rival:
@@ -212,14 +208,14 @@ func branch_name_of(b: int) -> String:
 
 
 ## Learns a skill (rank 1) or raises its rank; costs one skill point.
-## The first learned non-starting skill commits the hero to its branch.
+## The first learned skill commits the hero to its branch.
 func learn(s: SkillData, hero_level: int) -> bool:
 	if s == null or not (s in all) or block_reason(s, hero_level) != "":
 		return false
 	if not is_learned(s):
 		skill_points -= 1
 		_learn_free(s)
-		if chosen_branch < 0 and branch_of(s) >= 0 and not is_starting(s):
+		if chosen_branch < 0 and branch_of(s) >= 0:
 			chosen_branch = branch_of(s)
 		changed.emit()
 		return true
