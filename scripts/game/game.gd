@@ -22,6 +22,9 @@ var _rng := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
+	# ALWAYS so Esc can close the pause overlay while the tree is paused
+	# (the same trick the books and the overlay panel itself use).
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().paused = false
 	Input.set_custom_mouse_cursor(AssetPaths.tex(AssetPaths.CROSSHAIR), Input.CURSOR_ARROW, Vector2(10, 10))
 	tree_exiting.connect(func() -> void: Input.set_custom_mouse_cursor(null))
@@ -109,6 +112,10 @@ func _load_floor() -> void:
 		EventBus.message.emit("Этаж %d — логово стража!" % floor_number)
 	else:
 		EventBus.message.emit("Этаж %d — %s" % [floor_number, biome.display_name] if biome else "Этаж %d" % floor_number)
+	# Between-floors save: the snapshot must be taken with the floor freshly
+	# built (it regenerates from the seed on continue, loot included).
+	if GameState.run_active and not player.dead:
+		SaveManager.save_run()
 
 
 ## The pet of the run follows the hero (one at a time, re-placed every floor).
@@ -187,7 +194,7 @@ func _toggle_pause() -> void:
 		_toggle_pause()
 		skill_tree.open())
 	overlay.add_button("В главное меню", func() -> void: GameState.go_to_menu())
-	overlay.add_text("(забег будет потерян)", 7)
+	overlay.add_text("(забег продолжится с начала этажа)", 7)
 	overlay.visible = true
 
 

@@ -72,8 +72,8 @@ static func keyboard_events(action: String) -> Array:
 
 
 ## Binds `ev` as the main key of `action`; other keyboard keys of the action stay.
-## The same key is removed from other actions to avoid conflicts (E/F double use is
-## a deliberate default and is only broken up when the player rebinds).
+## The same key is removed from other actions to avoid conflicts (defaults keep
+## interact and skill keys apart; rebinding can group them again if the player wants).
 static func rebind(action: String, ev: InputEvent) -> void:
 	for entry in REBINDABLE:
 		if entry[0] == action:

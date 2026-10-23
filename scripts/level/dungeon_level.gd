@@ -377,8 +377,11 @@ func ladder_center_x(p: Vector2) -> float:
 
 
 # ------------------------------------------------------------ modification
-## Breaks a brick tile. Bedrock (outer border) is indestructible.
+## Breaks a brick tile. Bedrock (outer border) is indestructible, and the town
+## keeps its street: bombs, pickaxes and blasts do no damage there.
 func break_tile(cell: Vector2i, effects := true) -> bool:
+	if layout.is_town:
+		return false
 	if layout.get_tile(cell.x, cell.y) != T.BRICK:
 		return false
 	layout.set_tile(cell.x, cell.y, T.EMPTY)
