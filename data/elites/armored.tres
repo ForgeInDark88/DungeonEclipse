@@ -24,6 +24,6 @@ spawn_status_power = 0.0
 life_steal = 0.0
 tint = Color(0.75, 0.8, 0.95, 1)
 xp_mult = 2.5
-gold_mult = 3.0
+gold_mult = 2.0
 weight = 1.0
 min_floor = 2

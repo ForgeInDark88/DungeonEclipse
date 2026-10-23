@@ -25,6 +25,14 @@ func _ready() -> void:
 
 	right_page.add_theme_constant_override("separation", 4)
 	right_page.add_child(_spacer(4))
+	var cont: Button = null
+	if SaveManager.has_run():
+		var d := SaveManager.run_data()
+		cont = BookPageScreen.button("Продолжить — %s, ур. %d, этаж %d" % [d.get("class_name", "?"), int(d.get("hero_level", 1)), int(d.get("floor", 1))],
+			func() -> void:
+				if not GameState.continue_run():
+					get_tree().change_scene_to_file(GameState.CHARACTER_CREATION))
+		right_page.add_child(cont)
 	var start := BookPageScreen.button("Новый забег", func() -> void: get_tree().change_scene_to_file(GameState.CHARACTER_CREATION))
 	right_page.add_child(start)
 	right_page.add_child(BookPageScreen.button("Ежедневный забег", func() -> void: get_tree().change_scene_to_file(GameState.DAILY)))
@@ -34,7 +42,10 @@ func _ready() -> void:
 		func() -> void: get_tree().change_scene_to_file(GameState.CODEX)))
 	right_page.add_child(BookPageScreen.button("Настройки", open_settings))
 	right_page.add_child(BookPageScreen.button("Выход", func() -> void: get_tree().quit()))
-	start.grab_focus()
+	if cont:
+		cont.grab_focus()
+	else:
+		start.grab_focus()
 
 
 func open_settings() -> SettingsBook:

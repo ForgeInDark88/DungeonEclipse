@@ -224,7 +224,13 @@ func _refresh() -> void:
 	if sk.has_branches():
 		var cols := maxi(1, sk.branch_names.size())
 		for b in sk.branch_names.size():
-			var head := UIStyle.label("%s · %d" % [sk.branch_names[b], sk.spent_in(b)], 7, UIStyle.INK)
+			var head: Label
+			if sk.chosen_branch == b:
+				head = UIStyle.label("✦ %s · %d" % [sk.branch_names[b], sk.spent_in(b)], 7, UIStyle.GOLD)
+			elif sk.chosen_branch >= 0 and b != sk.chosen_branch:
+				head = UIStyle.label("%s · закрыто" % sk.branch_names[b], 7, UIStyle.INK_SOFT)
+			else:
+				head = UIStyle.label("%s · %d" % [sk.branch_names[b], sk.spent_in(b)], 7, UIStyle.INK)
 			head.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			head.position = Vector2(_tree_area.size.x * b / cols, 0)
 			head.size = Vector2(_tree_area.size.x / cols, 12)
@@ -253,6 +259,11 @@ func _refresh() -> void:
 		_tree_area.add_child(node)
 		_nodes[s.id] = node
 	_points.text = "Очков навыков: %d · уровень героя %d" % [sk.skill_points, hero.level]
+	if sk.has_branches():
+		if sk.chosen_branch >= 0:
+			_points.text += " · путь: «%s»" % sk.branch_name_of(sk.chosen_branch)
+		elif sk.skill_points > 0:
+			_points.text += " · выбор пути: первая вложенная ветвь закрепится"
 	var cost := sk.respec_cost(hero.level)
 	_respec.text = "Сбросить навыки — %d з." % cost
 	_respec.disabled = sk.spent_total() <= 0 or hero.gold < cost
@@ -286,6 +297,9 @@ func _node(s: SkillData) -> Control:
 	if rank <= 0 and sk.chosen_rival(s) != null:
 		frame.modulate = Color(0.5, 0.45, 0.45)
 		icon.modulate = Color(0.3, 0.25, 0.25, 0.7)
+	elif rank <= 0 and sk.chosen_branch >= 0 and sk.branch_of(s) != sk.chosen_branch:
+		frame.modulate = Color(0.45, 0.45, 0.5)
+		icon.modulate = Color(0.3, 0.3, 0.34, 0.65)
 	if available:
 		var plus := UIStyle.outlined_label("+", 9, Color(0.4, 1.0, 0.4))
 		plus.position = Vector2(NODE_SIZE.x - 7, -4)
@@ -329,6 +343,10 @@ func _show(s: SkillData) -> void:
 			if o != s and sk.choice_of(o) == sk.choice_of(s):
 				rivals.append(o.display_name)
 		text += "\n[color=#%s]Выбор пути: или этот навык, или %s (до сброса)[/color]" % [UIStyle.GOLD.darkened(0.4).to_html(false), ", ".join(rivals)]
+	if sk.chosen_branch >= 0 and sk.branch_of(s) == sk.chosen_branch:
+		text += "\n[color=%s]Ветка вашего пути[/color]" % UIStyle.GOOD_HEX
+	elif sk.chosen_branch >= 0 and sk.branch_of(s) != sk.chosen_branch and rank == 0 and not sk.is_starting(s):
+		text += "\n[color=#%s]Закрыто: путь выбран — «%s» (сменить можно сбросом навыков)[/color]" % [UIStyle.BAD.darkened(0.2).to_html(false), sk.branch_name_of(sk.chosen_branch)]
 	if not sk.has_branches() and not s.requires.is_empty():
 		var names: Array[String] = []
 		for r in s.requires:

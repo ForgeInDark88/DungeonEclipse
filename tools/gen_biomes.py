@@ -25,6 +25,7 @@ import zlib
 
 from PIL import Image, ImageDraw
 
+import gen_mushrooms as gm
 import gen_placeholders as gp
 import gen_sheets as gs
 
@@ -776,17 +777,8 @@ def decor_all():
         d.point((x + 1, 15 - h), fill=(255, 200, 60, 255))
         d.point((x + 1, 14 - h), fill=(255, 240, 150, 255))
     D["candles"] = im
-    im, d = img(16, 16)  # small mushrooms (glow)
-    for x, h, r in ((4, 5, 3), (10, 8, 4)):
-        d.rectangle((x, 16 - h, x + 1, 15), fill=(210, 220, 200, 255))
-        d.pieslice((x - r + 1, 16 - h - r, x + r + 1, 16 - h + r), 180, 360, fill=(70, 230, 200, 255))
-    D["mushrooms"] = im
-    im, d = img(16, 32)  # big mushroom
-    d.rectangle((6, 14, 9, 31), fill=(200, 210, 190, 255))
-    d.pieslice((0, 4, 16, 24), 180, 360, fill=(60, 200, 210, 255))
-    for x in (3, 7, 11):
-        d.point((x, 10), fill=(220, 255, 255, 255))
-    D["big_mushroom"] = im
+    D["mushrooms"] = gm.mushrooms()
+    D["big_mushroom"] = gm.big_mushroom()
     im, d = img(16, 16)  # glowing crystals
     d.polygon([(3, 15), (5, 6), (8, 15)], fill=(110, 240, 255, 255))
     d.polygon([(7, 15), (10, 3), (13, 15)], fill=(80, 210, 240, 255))
@@ -852,11 +844,7 @@ def decor_all():
     d.line((5, 8, 9, 8), fill=(70, 68, 75, 255))
     d.line((3, 14, 12, 14), fill=(80, 140, 70, 255))
     D["tombstone"] = im
-    im, d = img(16, 16)  # puffball (glow)
-    for x, r in ((4, 3), (10, 4)):
-        d.ellipse((x - r, 15 - 2 * r, x + r, 15), fill=(200, 120, 230, 255))
-        d.point((x - 1, 15 - 2 * r + 2), fill=(255, 220, 255, 255))
-    D["puffball"] = im
+    D["puffball"] = gm.puffball()
     im, d = img(16, 16)  # fern
     for k, (x, h) in enumerate(((5, 10), (8, 13), (11, 9))):
         d.line((x, 15, x + (k - 1) * 2, 15 - h), fill=(60, 150, 90, 255))
@@ -943,12 +931,7 @@ def decor_all():
         d.ellipse((x - 2, 8, x + 2, 12), outline=(150, 150, 160, 255))
     d.rectangle((2, 0, 13, 1), fill=(90, 90, 100, 255))
     D["wall_shackles"] = im
-    im, d = img(16, 16)  # bracket fungi (glow)
-    for x, y, w in ((3, 4, 7), (7, 8, 8), (4, 12, 6)):
-        d.pieslice((x, y - 3, x + w, y + 3), 180, 360, fill=(220, 150, 80, 255))
-        d.line((x, y, x + w, y), fill=(170, 100, 50, 255))
-        d.point((x + 2, y - 2), fill=(255, 230, 150, 255))
-    D["wall_fungi"] = im
+    D["wall_fungi"] = gm.wall_fungi()
     im, d = img(16, 16)  # roots through the wall
     for x0 in (3, 9, 13):
         x = x0
@@ -1003,14 +986,7 @@ def decor_all():
     d.line((4, 10, 27, 10), fill=gp.shade(stone, 0.75))
     d.line((24, 3, 27, 7), fill=gp.shade(stone, 0.5))  # crack in the lid
     D["sarcophagus"] = im
-    im, d = img(32, 32)  # glowing mushroom cluster (glow)
-    for x, h, r, col in ((8, 18, 7, (70, 220, 200)), (20, 26, 9, (90, 200, 230)), (27, 12, 4, (200, 120, 240))):
-        d.rectangle((x - 1, 31 - h, x + 1, 31), fill=(215, 220, 205, 255))
-        d.pieslice((x - r, 31 - h - r, x + r, 31 - h + r), 180, 360, fill=c4(col))
-        d.arc((x - r, 31 - h - r, x + r, 31 - h + r), 200, 290, fill=gp.shade(c4(col), 1.4))
-        for k in range(-r + 2, r - 1, 3):
-            d.point((x + k, 31 - h - 2), fill=(240, 255, 255, 255))
-    D["mushroom_cluster"] = im
+    D["mushroom_cluster"] = gm.mushroom_cluster()
     im, d = img(32, 32)  # broken arch
     stone = (165, 152, 125, 255)
     d.rectangle((2, 10, 7, 31), fill=stone)

@@ -1,11 +1,14 @@
 extends Node
-## Saves settings and meta progress (the run itself is not saved: permadeath).
+## Saves settings and meta progress. The run itself is saved between floors
+## (the snapshot of the last floor start, user://run.cfg): the floor is
+## deterministic, so Continue rebuilds it from the run seed.
 
 ## Emitted after settings are saved (HUD refreshes key hints).
 signal settings_changed
 
 const SETTINGS_PATH := "user://settings.cfg"
 const META_PATH := "user://meta.cfg"
+const RUN_PATH := "user://run.cfg"
 
 var master_volume: float = 0.8
 var music_volume: float = 0.6
@@ -107,3 +110,36 @@ func record_run(floor_reached: int, kills: int) -> void:
 	total_kills += kills
 	best_floor = maxi(best_floor, floor_reached)
 	save_meta()
+
+
+# --------------------------------------------------------------- run save
+## A between-floors snapshot exists (main menu shows «Продолжить»).
+func has_run() -> bool:
+	return FileAccess.file_exists(RUN_PATH)
+
+
+## Writes the current GameState as the floor-start snapshot. Only call it
+## right after a floor is (re)built — the floor regenerates from the seed,
+## so a mid-floor snapshot would duplicate picked-up loot.
+func save_run() -> void:
+	if GameState.hero == null or not GameState.run_active:
+		return
+	var cfg := ConfigFile.new()
+	cfg.set_value("run", "data", RunCodec.save_run())
+	cfg.save(RUN_PATH)
+
+
+## The saved run data ({} = no save).
+func run_data() -> Dictionary:
+	if not has_run():
+		return {}
+	var cfg := ConfigFile.new()
+	if cfg.load(RUN_PATH) != OK:
+		return {}
+	return cfg.get_value("run", "data", {})
+
+
+## Death or a brand new run: the snapshot is gone (permadeath).
+func clear_run() -> void:
+	if has_run():
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(RUN_PATH))

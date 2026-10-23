@@ -213,6 +213,9 @@ func _physics_process(delta: float) -> void:
 			_run_dust_timer = 0.28
 			Fx.dust(get_parent(), global_position - Vector2(facing * 5.0, 0))
 	animator.update(delta, is_on_floor(), velocity, climbing, false)
+	# Holding the attack button (mouse or key) keeps attacking at the weapon's rate.
+	if Input.is_action_pressed("attack"):
+		attack()
 	_update_interact_hint()
 
 
@@ -737,7 +740,7 @@ func _update_interact_hint() -> void:
 	var target := _nearest_interactable()
 	var text := ""
 	if target != null:
-		text = "[E] " + target.get_prompt()
+		text = "[%s] %s" % [InputBindings.key_for("interact"), target.get_prompt()]
 	if text != _hint:
 		_hint = text
 		interact_hint_changed.emit(text)

@@ -109,11 +109,11 @@ hit_effects = Array[ExtResource("hit")]([SubResource("Curse")])
 
 [sub_resource type="Resource" id="Phase2"]
 script = ExtResource("phase")
-hp_threshold = 0.6
+hp_threshold = 0.7
 message = "Который из нас настоящий?"
 attacks = Array[ExtResource("attack")]([SubResource("Illusions3"), SubResource("ShardRain"), SubResource("Fan7")])
-attack_interval = 1.4
-speed_mult = 1.2
+attack_interval = 1.2
+speed_mult = 1.3
 tint = Color(0.9, 0.85, 1, 1)
 
 [sub_resource type="Resource" id="Illusions4"]
@@ -157,11 +157,11 @@ hit_effects = Array[ExtResource("hit")]([])
 
 [sub_resource type="Resource" id="Phase3"]
 script = ExtResource("phase")
-hp_threshold = 0.3
+hp_threshold = 0.45
 message = "Зеркала разбиваются!"
 attacks = Array[ExtResource("attack")]([SubResource("Illusions4"), SubResource("Blink5"), SubResource("Fan9"), SubResource("ShardRain")])
-attack_interval = 1.1
-speed_mult = 1.4
+attack_interval = 0.9
+speed_mult = 1.55
 tint = Color(0.85, 0.7, 1, 1)
 
 [resource]
@@ -172,7 +172,7 @@ title = "Иллюзионист — Маска Затмения"
 order = 2
 phases = Array[ExtResource("phase")]([SubResource("Phase1"), SubResource("Phase2"), SubResource("Phase3")])
 music = &"boss_illusionist"
-contact_damage_mult = 0.5
+contact_damage_mult = 0.7
 reward_items = Array[StringName]([&"guardian_seal", &"eclipse_shard", &"eclipse_shard", &"eclipse_shard"])
 id = &"illusionist"
 display_name = "Иллюзионист"
@@ -182,9 +182,9 @@ sheet = ExtResource("sheet")
 sheet_layout = ExtResource("layout")
 behavior = 1
 collision_size = Vector2(16, 32)
-max_hp = 260
-damage = 13
-armor = 1
+max_hp = 340
+damage = 17
+armor = 2
 speed = 55.0
 chase_speed = 55.0
 aggro_range = 600.0

@@ -54,6 +54,7 @@ func _ready() -> void:
 ## `seed_value` >= 0 makes the whole run reproducible (daily runs, tests).
 func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, daily := "", female := false,
 		difficulty_id: StringName = &"normal") -> void:
+	SaveManager.clear_run()  # a new run replaces any saved one
 	daily_date = daily
 	difficulty = ItemDatabase.difficulty(&"normal" if daily != "" else difficulty_id)
 	hero = Hero.new(race, class_data, ItemDatabase.equipment_layout)
@@ -192,11 +193,24 @@ func next_floor() -> void:
 	EventBus.floor_changed.emit(floor_number)
 
 
+## Resumes the saved run (the snapshot of its last floor start). Returns
+## false when there is no save or it cannot be read.
+func continue_run() -> bool:
+	var d := SaveManager.run_data()
+	if d.is_empty() or not RunCodec.load_run(d):
+		SaveManager.clear_run()
+		return false
+	get_tree().paused = false
+	get_tree().change_scene_to_file(GAME)
+	return true
+
+
 ## Records the run and pays the Sanctum rewards. Safe to call twice: the
 ## second call returns {} (death screen first, then "back to menu").
 func end_run() -> Dictionary:
 	var reward := {}
 	if run_active:
+		SaveManager.clear_run()  # permadeath: the snapshot dies with the hero
 		SaveManager.record_run(floor_number, kills)
 		reward = MetaProgress.finish_run(hero, floor_number, run_stats)
 		if is_daily():
@@ -223,7 +237,10 @@ func _submit_daily() -> Dictionary:
 
 
 func go_to_menu() -> void:
-	end_run()
+	# Leaving through the pause menu keeps the between-floors snapshot, so the
+	# run can be continued from the main menu. Death ends it (end_run there).
+	if not (run_active and hero != null and hero.stats.hp > 0):
+		end_run()
 	hero = null
 	get_tree().paused = false
 	get_tree().change_scene_to_file(MAIN_MENU)

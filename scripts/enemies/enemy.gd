@@ -880,6 +880,12 @@ func _follow_ground(lvl: DungeonLevel, speed: float, delta: float) -> Move:
 				global_position.y = tpos.y
 				velocity.y = 0.0
 				_advance()
+				# Leaving the shaft upward: the platform mask must return at
+				# once so the body stands on the ladder top instead of sinking
+				# back through the one-way tile and re-climbing forever.
+				var next_kind: int = _path[_path_i]["kind"] if _path_i < _path.size() else -1
+				if dy < 0.0 and next_kind != LevelNav.Edge.CLIMB:
+					_stop_climb_on_platform()
 		LevelNav.Edge.JUMP:
 			_stop_climb()
 			if not _jumping:
@@ -948,6 +954,17 @@ func _stop_climb() -> void:
 		return
 	_climbing = false
 	_drop_timer = 0.15  # the platform mask comes back after leaving the shaft
+
+
+## Ends climbing standing ON the one-way ladder top: unlike `_stop_climb`, the
+## platform mask returns immediately — with the usual grace period gravity
+## drops the body back into the shaft before it can walk off the hole.
+func _stop_climb_on_platform() -> void:
+	if not _climbing and get_collision_mask_value(PLATFORM_LAYER):
+		return
+	_climbing = false
+	_drop_timer = 0.0
+	set_collision_mask_value(PLATFORM_LAYER, true)
 
 
 ## Debug overlay: remaining path in world coordinates.
@@ -1475,7 +1492,7 @@ func _give_rewards() -> void:
 		GameState.hero.add_xp(xp)
 	EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 12), "+%d XP" % xp, Color(1.0, 0.85, 0.3))
 	var gold_find := GameState.hero.stats.get_value(StatTypes.GOLD_FIND) if GameState.hero else 0.0
-	var gold := roundi(randi_range(data.gold_min, data.gold_max) * (1.0 + 0.25 * (floor_number - 1)) * (elite.gold_mult if elite else 1.0) * (1.0 + gold_find) * maxf(0.0, 1.0 + GameState.run_effect("gold") + GameState.combo_bonus()))
+	var gold := roundi(randi_range(data.gold_min, data.gold_max) * (1.0 + 0.10 * (floor_number - 1)) * (elite.gold_mult if elite else 1.0) * (1.0 + gold_find) * maxf(0.0, 1.0 + GameState.run_effect("gold") + GameState.combo_bonus()))
 	if gold > 0:
 		var coin := ItemDatabase.get_item(&"gold_coin")
 		if coin:

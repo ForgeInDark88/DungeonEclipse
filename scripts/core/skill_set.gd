@@ -21,6 +21,10 @@ var skill_points: int = 0
 ## Branch tree of the class (ClassData.tree_layout / branch_names).
 var layout: Dictionary = {}
 var branch_names: Array[String] = []
+## The committed branch of the three (-1 = not chosen yet). The first point
+## spent on a non-starting skill locks the hero into that branch; the other
+## two close until a respec.
+var chosen_branch := -1
 ## Gold per hero level to forget every skill and get the points back.
 const RESPEC_GOLD_PER_LEVEL := 25
 
@@ -141,6 +145,7 @@ func spent_total() -> int:
 
 
 ## Forgets everything but the starting skills (rank 1); points come back.
+## A respec also frees the branch choice.
 func reset() -> int:
 	var back := spent_total()
 	for s in all:
@@ -153,6 +158,7 @@ func reset() -> int:
 			var i := skills.find(s)
 			if i >= 0:
 				skills[i] = null
+	chosen_branch = -1
 	skill_points += back
 	changed.emit()
 	return back
@@ -179,13 +185,15 @@ func block_reason(s: SkillData, hero_level: int) -> String:
 	if rank(s) >= s.max_level:
 		return "Максимальный уровень"
 	if not is_learned(s):
+		var b := branch_of(s)
+		if chosen_branch >= 0 and b >= 0 and b != chosen_branch and not is_starting(s):
+			return "Путь выбран: «%s»" % branch_name_of(b)
 		var rival := chosen_rival(s)
 		if rival:
 			return "Выбран другой путь: %s" % rival.display_name
-		var need := required_points(s) - spent_in(branch_of(s))
+		var need := required_points(s) - spent_in(b)
 		if need > 0:
-			var b := branch_of(s)
-			return "Вложите ещё %d очк. в ветвь «%s»" % [need, branch_names[b] if b >= 0 and b < branch_names.size() else "?"]
+			return "Вложите ещё %d очк. в ветвь «%s»" % [need, branch_name_of(b)]
 		if hero_level < required_level(s):
 			return "Нужен уровень героя %d" % required_level(s)
 		if not prerequisites_met(s):
@@ -199,13 +207,20 @@ func block_reason(s: SkillData, hero_level: int) -> String:
 	return ""
 
 
+func branch_name_of(b: int) -> String:
+	return branch_names[b] if b >= 0 and b < branch_names.size() else "?"
+
+
 ## Learns a skill (rank 1) or raises its rank; costs one skill point.
+## The first learned non-starting skill commits the hero to its branch.
 func learn(s: SkillData, hero_level: int) -> bool:
 	if s == null or not (s in all) or block_reason(s, hero_level) != "":
 		return false
 	if not is_learned(s):
 		skill_points -= 1
 		_learn_free(s)
+		if chosen_branch < 0 and branch_of(s) >= 0 and not is_starting(s):
+			chosen_branch = branch_of(s)
 		changed.emit()
 		return true
 	return _raise(s)

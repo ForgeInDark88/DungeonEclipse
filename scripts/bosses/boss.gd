@@ -15,8 +15,10 @@ var _attack: BossAttack
 var _last_attack: BossAttack
 var _target_pos := Vector2.ZERO
 var _contact_cd := 0.0
+var _hop_cd := 0.0
 var _jump_from := Vector2.ZERO
 var _jump_t := 0.0
+var _jump_arc := 80.0
 
 
 func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null) -> void:
@@ -50,6 +52,11 @@ func _physics_process(delta: float) -> void:
 	if _player == null or not is_instance_valid(_player):
 		_player = get_tree().get_first_node_in_group("player") as Player
 	_contact_cd = maxf(0.0, _contact_cd - delta)
+	_hop_cd = maxf(0.0, _hop_cd - delta)
+	# Boss._physics_process fully replaces Enemy's, so the one-shot "attack"
+	# animation timer must be decayed here as well — otherwise it stays > 0
+	# forever after the first skill and the sprite freezes on its last frame.
+	_attack_anim_left = maxf(0.0, _attack_anim_left - delta)
 	_check_phase()
 	var flyer := data.behavior == EnemyData.Behavior.FLYER
 	if not flyer:
@@ -117,7 +124,15 @@ func _move_idle(delta: float, flyer: bool) -> void:
 		velocity = velocity.move_toward((target - global_position).limit_length(spd * 2.0), 300.0 * delta)
 	else:
 		var dx := _player.global_position.x - global_position.x
-		velocity.x = signf(dx) * spd if absf(dx) > 30.0 else 0.0
+		var dy := _player.global_position.y - global_position.y
+		if dy < -48.0 and absf(dx) < 160.0 and is_on_floor() and _hop_cd <= 0.0:
+			# The hero camps on the arena boards: hop up after them, or the
+			# walker would just pace under the platform out of reach.
+			velocity.y = -370.0
+			velocity.x = signf(dx) * clampf(absf(dx) * 1.2, 60.0, 160.0)
+			_hop_cd = 1.5
+		else:
+			velocity.x = signf(dx) * spd if absf(dx) > 30.0 else 0.0
 
 
 func _choose_attack() -> void:
@@ -138,7 +153,10 @@ func _choose_attack() -> void:
 			Telegraph.line(parent, global_position + Vector2(0, -4), dir * 200.0, _attack.windup)
 			_target_pos = Vector2(dir, 0)
 		BossAttack.Kind.JUMP_SLAM:
-			_target_pos = Vector2(_player.global_position.x, global_position.y)
+			# Aim at the surface under the hero — high arena boards included,
+			# so camping on a platform still gets slammed.
+			var ground := _ground_below(_player.global_position + Vector2(0, -20.0), _level())
+			_target_pos = Vector2(_player.global_position.x, ground.y)
 			Telegraph.circle(parent, _target_pos, _attack.radius, _attack.windup + 0.5)
 		BossAttack.Kind.FIRE_RAIN:
 			_rain_spots.clear()
@@ -176,6 +194,8 @@ func _start_attack() -> void:
 		BossAttack.Kind.JUMP_SLAM:
 			_jump_from = global_position
 			_jump_t = 0.0
+			# Higher targets (boards) need a higher arc than the flat-floor hop.
+			_jump_arc = maxf(80.0, _jump_from.y - _target_pos.y + 48.0)
 			_enter(Act.ACTING, 0.6)
 		BossAttack.Kind.PROJECTILE_FAN:
 			_fan(a, dmg)
@@ -220,7 +240,7 @@ func _update_attack_act(delta: float) -> void:
 			_jump_t += delta / 0.6
 			var t := clampf(_jump_t, 0.0, 1.0)
 			var p := _jump_from.lerp(_target_pos, t)
-			p.y -= sin(t * PI) * 80.0
+			p.y -= sin(t * PI) * _jump_arc
 			velocity = (p - global_position) / maxf(delta, 0.001)
 			if t >= 1.0:
 				velocity = Vector2.ZERO

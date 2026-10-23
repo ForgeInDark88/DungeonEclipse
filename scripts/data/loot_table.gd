@@ -66,7 +66,7 @@ func roll(floor_number: int, rng: RandomNumberGenerator = null) -> Array:
 	if gold_max > 0:
 		var coin := ItemDatabase.get_item(&"gold_coin")
 		if coin:
-			result.append({"item": coin, "count": roundi(rng.randi_range(gold_min, gold_max) * (1.0 + 0.25 * (floor_number - 1)))})
+			result.append({"item": coin, "count": roundi(rng.randi_range(gold_min, gold_max) * (1.0 + 0.10 * (floor_number - 1)))})
 	# Weapons/armor become unique copies (affixes, durability) when they drop.
 	return ItemFactory.instantiate_loot(result, floor_number, rng)
 
