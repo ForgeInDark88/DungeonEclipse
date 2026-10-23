@@ -60,6 +60,7 @@ func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, 
 	hero = Hero.new(race, class_data, ItemDatabase.equipment_layout)
 	hero.female = female
 	hero.give_starting_kit()
+	hero.skills.add_points(1)  # the run opens with a choice: the first learned skill commits the branch
 	MetaProgress.apply_to(hero, daily == "")
 	floor_number = TOWN_FLOOR
 	kills = 0

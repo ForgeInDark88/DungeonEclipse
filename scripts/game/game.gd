@@ -29,6 +29,7 @@ func _ready() -> void:
 		# Started directly from the editor: use the first race and class.
 		GameState.hero = Hero.new(ItemDatabase.races[0], ItemDatabase.classes[0], ItemDatabase.equipment_layout)
 		GameState.hero.give_starting_kit()
+		GameState.hero.skills.add_points(1)
 		GameState.run_seed = randi()
 		GameState.floor_number = 1
 		GameState.run_active = true

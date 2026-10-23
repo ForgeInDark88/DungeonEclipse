@@ -26,6 +26,7 @@ const BRANCH_COLORS: Array[Color] = [
 const CREST_TEX := preload("res://assets/ui/tree_crest.png")
 const NODE_TEX := preload("res://assets/ui/tree_node.png")
 const KEYSTONE_TEX := preload("res://assets/ui/tree_keystone.png")
+const BG_TEX := preload("res://assets/ui/tree_bg.png")
 
 var hero: Hero
 var is_open := false
@@ -117,12 +118,18 @@ func _build() -> void:
 	_root.offset_bottom = 4 + BOOK_SIZE.y
 	_root.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_root)
-	_root.add_child(UIStyle.frame(AssetPaths.BOOK, 30, 0.5))
+	# Night-town backdrop instead of the parchment book.
+	var bg := TextureRect.new()
+	bg.texture = BG_TEX
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.add_child(bg)
 
 	var page_w := BOOK_SIZE.x / 2.0 - BOOK_MARGIN - 8
 	var page_h := BOOK_SIZE.y - BOOK_MARGIN * 2
-	var head := UIStyle.label("Навыки: %s" % hero.class_data.display_name, 10)
-	head.position = Vector2(BOOK_MARGIN + 4, BOOK_MARGIN)
+	var head := UIStyle.outlined_label("Навыки: %s" % hero.class_data.display_name, 10, UIStyle.PARCHMENT)
+	head.position = Vector2(BOOK_MARGIN + 4, BOOK_MARGIN - 6)
 	head.size = Vector2(page_w, 14)
 	head.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_root.add_child(head)
@@ -131,7 +138,7 @@ func _build() -> void:
 	_tree_area.size = Vector2(page_w, page_h - 40)
 	_tree_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(_tree_area)
-	_points = UIStyle.label("", 7, UIStyle.GOOD)
+	_points = UIStyle.outlined_label("", 7, UIStyle.PARCHMENT)
 	_points.position = Vector2(BOOK_MARGIN + 4, BOOK_SIZE.y - BOOK_MARGIN - 14)
 	_points.size = Vector2(page_w, 12)
 	_points.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -142,6 +149,14 @@ func _build() -> void:
 	right.size = Vector2(page_w - 4, page_h)
 	right.add_theme_constant_override("separation", 3)
 	_root.add_child(right)
+	# Translucent notice board over the night backdrop.
+	var board := ColorRect.new()
+	board.color = Color(0.07, 0.05, 0.1, 0.72)
+	board.position = right.position - Vector2(6, 4)
+	board.size = right.size + Vector2(12, 8)
+	board.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.add_child(board)
+	_root.move_child(board, _root.get_child_count() - 2)
 	var top := HBoxContainer.new()
 	top.add_theme_constant_override("separation", 6)
 	right.add_child(top)
@@ -154,17 +169,17 @@ func _build() -> void:
 	_icon.size = Vector2(24, 24)
 	frame_box.add_child(_icon)
 	top.add_child(frame_box)
-	_title = UIStyle.label("", 10)
+	_title = UIStyle.label("", 10, UIStyle.PARCHMENT)
 	_title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	top.add_child(_title)
 	_text = RichTextLabel.new()
 	_text.bbcode_enabled = true
 	_text.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_text.add_theme_color_override("default_color", UIStyle.INK)
+	_text.add_theme_color_override("default_color", UIStyle.PARCHMENT)
 	for k in ["normal_font_size", "bold_font_size", "italics_font_size"]:
 		_text.add_theme_font_size_override(k, 7)
 	right.add_child(_text)
-	_reason = UIStyle.label("", 7, UIStyle.BAD)
+	_reason = UIStyle.label("", 7, Color(1.0, 0.45, 0.4))
 	right.add_child(_reason)
 	var buttons := HBoxContainer.new()
 	buttons.add_theme_constant_override("separation", 6)
@@ -196,10 +211,11 @@ func _layout() -> Dictionary:
 	return pos
 
 
-## Trident fan: the crest at the top, three colored branches spreading
-## down-left / down / down-right, one node per tier (pairs side by side).
+## Three straight streets under the eclipse crest: a column per branch,
+## one node per tier (choice pairs side by side), capstones at the bottom.
 func _branch_layout() -> Dictionary:
 	var sk := hero.skills
+	var cols := maxi(1, sk.branch_names.size())
 	var groups := {}  # "branch:row" -> [skills]
 	for s in sk.all:
 		var key := "%d:%d" % [sk.branch_of(s), sk.row_of(s)]
@@ -207,16 +223,14 @@ func _branch_layout() -> Dictionary:
 			groups[key] = []
 		groups[key].append(s)
 	var pos := {}
-	var cx := _tree_area.size.x / 2.0
 	for key: String in groups:
 		var list: Array = groups[key]
 		var b := int(key.get_slice(":", 0))
 		var row := int(key.get_slice(":", 1))
-		var dir := float(b) - 1.0  # 0/1/2 -> -1/0/1
-		var center := Vector2(cx + dir * (16.0 + row * 16.0), 46.0 + row * BRANCH_ROW_GAP)
+		var cx := _tree_area.size.x * (b + 0.5) / cols
 		for i in list.size():
 			var dx := (i - (list.size() - 1) / 2.0) * 26.0
-			pos[list[i].id] = center + Vector2(dx, 0)
+			pos[list[i].id] = Vector2(cx + dx, 44.0 + row * BRANCH_ROW_GAP)
 	return pos
 
 
@@ -254,7 +268,7 @@ func _refresh() -> void:
 			if sk.chosen_branch == b:
 				head = UIStyle.label("✦ %s · %d" % [sk.branch_names[b], sk.spent_in(b)], 7, branch_color(b))
 			elif sk.chosen_branch >= 0 and b != sk.chosen_branch:
-				head = UIStyle.label("%s · закрыто" % sk.branch_names[b], 7, UIStyle.INK_SOFT)
+				head = UIStyle.label("%s · закрыто" % sk.branch_names[b], 7, Color(0.75, 0.72, 0.68))
 			else:
 				head = UIStyle.label("%s · %d" % [sk.branch_names[b], sk.spent_in(b)], 7, branch_color(b).darkened(0.25))
 			head.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -303,7 +317,7 @@ func _refresh() -> void:
 				continue
 			var line := Line2D.new()
 			line.width = 2.0
-			line.default_color = UIStyle.GOOD if sk.is_learned(r) else UIStyle.INK_SOFT.lightened(0.3)
+			line.default_color = "#7ddc7d" if sk.is_learned(r) else Color(0.8, 0.75, 0.7, 0.5)
 			line.add_point(pos[r.id] + Vector2(0, NODE_SIZE.y / 2.0))
 			line.add_point(pos[s.id] - Vector2(0, NODE_SIZE.y / 2.0))
 			_tree_area.add_child(line)
@@ -394,7 +408,7 @@ func _show(s: SkillData) -> void:
 	_icon.texture = s.icon
 	_title.text = "Пассивный навык" if s.is_passive() else "Активный навык"
 	var text := TooltipText.skill(s, rank, 0)
-	var soft := UIStyle.INK_SOFT.to_html(false)
+	var soft := UIStyle.PARCHMENT.darkened(0.35).to_html(false)
 	if sk.required_level(s) > 1:
 		text += "\n[color=#%s]Требуется уровень героя: %d[/color]" % [soft, sk.required_level(s)]
 	if sk.required_points(s) > 0:
@@ -407,22 +421,22 @@ func _show(s: SkillData) -> void:
 				rivals.append(o.display_name)
 		text += "\n[color=#%s]Выбор пути: или этот навык, или %s (до сброса)[/color]" % [UIStyle.GOLD.darkened(0.4).to_html(false), ", ".join(rivals)]
 	if sk.chosen_branch >= 0 and sk.branch_of(s) == sk.chosen_branch:
-		text += "\n[color=%s]Ветка вашего пути[/color]" % UIStyle.GOOD_HEX
-	elif sk.chosen_branch >= 0 and sk.branch_of(s) != sk.chosen_branch and rank == 0 and not sk.is_starting(s):
+		text += "\n[color=%s]Ветка вашего пути[/color]"  % "#7ddc7d"
+	elif sk.chosen_branch >= 0 and sk.branch_of(s) != sk.chosen_branch and rank == 0:
 		text += "\n[color=#%s]Закрыто: путь выбран — «%s» (сменить можно сбросом навыков)[/color]" % [UIStyle.BAD.darkened(0.2).to_html(false), sk.branch_name_of(sk.chosen_branch)]
 	if not sk.has_branches() and not s.requires.is_empty():
 		var names: Array[String] = []
 		for r in s.requires:
 			if r:
 				names.append(r.display_name)
-		text += "\n[color=#%s]После: %s[/color]" % [UIStyle.INK_SOFT.to_html(false), ", ".join(names)]
+		text += "\n[color=#%s]После: %s[/color]" % [UIStyle.PARCHMENT.darkened(0.35).to_html(false), ", ".join(names)]
 	var w := hero.weapon()
 	if s.has_synergy(w):
-		text += "\n[color=%s]Синергия активна: %s[/color]" % [UIStyle.GOOD_HEX, w.display_name]
+		text += "\n[color=%s]Синергия активна: %s[/color]" % ["#7ddc7d", w.display_name]
 	if not s.is_passive():
 		var slot := sk.skills.find(s)
 		if slot >= 0:
-			text += "\n[color=#%s]Слот HUD: %s[/color]" % [UIStyle.INK_SOFT.to_html(false), InputBindings.key_for("skill_%d" % (slot + 1))]
+			text += "\n[color=#%s]Слот HUD: %s[/color]" % [UIStyle.PARCHMENT.darkened(0.35).to_html(false), InputBindings.key_for("skill_%d" % (slot + 1))]
 	_text.text = text
 	var reason := sk.block_reason(s, hero.level)
 	_reason.text = reason
