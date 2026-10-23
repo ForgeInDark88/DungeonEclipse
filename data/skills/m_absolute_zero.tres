@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/m_absolute_zero.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/area_blast_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+radius = 70.0
+radius_per_level = 5.0
+damage_multiplier = 2.0
+damage_per_level = 0.4
+knockback = 140.0
+breaks_tiles = false
+stun_time = 2.0
+damage_type = 2
+color = Color(0.7, 0.95, 1.0, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"m_absolute_zero"
+display_name = "Абсолютный ноль"
+description = "Всё замирает. Совсем."
+icon = ExtResource("icon")
+mana_cost = 35
+cooldown = 20.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3

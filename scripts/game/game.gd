@@ -22,9 +22,6 @@ var _rng := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
-	# ALWAYS so Esc can close the pause overlay while the tree is paused
-	# (the same trick the books and the overlay panel itself use).
-	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().paused = false
 	Input.set_custom_mouse_cursor(AssetPaths.tex(AssetPaths.CROSSHAIR), Input.CURSOR_ARROW, Vector2(10, 10))
 	tree_exiting.connect(func() -> void: Input.set_custom_mouse_cursor(null))
@@ -195,6 +192,8 @@ func _toggle_pause() -> void:
 		skill_tree.open())
 	overlay.add_button("В главное меню", func() -> void: GameState.go_to_menu())
 	overlay.add_text("(забег продолжится с начала этажа)", 7)
+	# Esc resumes: handled by the overlay (ALWAYS), the game tree itself pauses.
+	overlay.on_pause_key = _toggle_pause
 	overlay.visible = true
 
 

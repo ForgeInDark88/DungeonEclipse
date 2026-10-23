@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/p_heavens_wrath.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/area_blast_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+radius = 66.0
+radius_per_level = 5.0
+damage_multiplier = 2.6
+damage_per_level = 0.45
+knockback = 140.0
+breaks_tiles = false
+stun_time = 1.2
+damage_type = 4
+color = Color(1.0, 0.9, 0.5, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"p_heavens_wrath"
+display_name = "Гнев небес"
+description = "Небеса падают на нечестивых."
+icon = ExtResource("icon")
+mana_cost = 35
+cooldown = 18.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_heavy"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3

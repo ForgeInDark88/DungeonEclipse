@@ -21,6 +21,7 @@
 [ext_resource type="Resource" path="res://data/skills/r_flurry.tres" id="tree_r_flurry"]
 [ext_resource type="Resource" path="res://data/skills/r_assassin.tres" id="tree_r_assassin"]
 [ext_resource type="Resource" path="res://data/skills/r_deadly_dance.tres" id="tree_r_deadly_dance"]
+[ext_resource type="Resource" path="res://data/skills/r_death_waltz.tres" id="tree_r_death_waltz"]
 [ext_resource type="Resource" path="res://data/skills/evasion.tres" id="tree_evasion"]
 [ext_resource type="Resource" path="res://data/skills/shadow_step.tres" id="tree_shadow_step"]
 [ext_resource type="Resource" path="res://data/skills/smoke_bomb.tres" id="tree_smoke_bomb"]
@@ -28,6 +29,7 @@
 [ext_resource type="Resource" path="res://data/skills/r_nimble.tres" id="tree_r_nimble"]
 [ext_resource type="Resource" path="res://data/skills/r_shadow_lord.tres" id="tree_r_shadow_lord"]
 [ext_resource type="Resource" path="res://data/skills/r_phantom.tres" id="tree_r_phantom"]
+[ext_resource type="Resource" path="res://data/skills/r_child_of_dark.tres" id="tree_r_child_of_dark"]
 [ext_resource type="Resource" path="res://data/skills/throw_knives.tres" id="tree_throw_knives"]
 [ext_resource type="Resource" path="res://data/skills/r_steady_hand.tres" id="tree_r_steady_hand"]
 [ext_resource type="Resource" path="res://data/skills/knife_fan.tres" id="tree_knife_fan"]
@@ -35,6 +37,7 @@
 [ext_resource type="Resource" path="res://data/skills/r_quiver.tres" id="tree_r_quiver"]
 [ext_resource type="Resource" path="res://data/skills/r_blade_rain.tres" id="tree_r_blade_rain"]
 [ext_resource type="Resource" path="res://data/skills/r_fire_flask.tres" id="tree_r_fire_flask"]
+[ext_resource type="Resource" path="res://data/skills/r_thousand_blades.tres" id="tree_r_thousand_blades"]
 
 [resource]
 script = ExtResource("2_1ke0y")
@@ -73,7 +76,7 @@ starting_items = {
 }
 starting_equipment = Array[StringName]([&"dagger", &"leather_boots"])
 starting_quick_bar = Array[StringName]([&"bomb", &"health_potion", &"rope", &"key"])
-skills = Array[ExtResource("3_j5d85")]([ExtResource("tree_dash"), ExtResource("tree_keen_eye"), ExtResource("tree_venom_blades"), ExtResource("tree_r_lacerate"), ExtResource("tree_r_flurry"), ExtResource("tree_r_assassin"), ExtResource("tree_r_deadly_dance"), ExtResource("tree_evasion"), ExtResource("tree_shadow_step"), ExtResource("tree_smoke_bomb"), ExtResource("tree_r_vanish"), ExtResource("tree_r_nimble"), ExtResource("tree_r_shadow_lord"), ExtResource("tree_r_phantom"), ExtResource("tree_throw_knives"), ExtResource("tree_r_steady_hand"), ExtResource("tree_knife_fan"), ExtResource("tree_r_poison_dart"), ExtResource("tree_r_quiver"), ExtResource("tree_r_blade_rain"), ExtResource("tree_r_fire_flask")])
+skills = Array[ExtResource("3_j5d85")]([ExtResource("tree_dash"), ExtResource("tree_keen_eye"), ExtResource("tree_venom_blades"), ExtResource("tree_r_lacerate"), ExtResource("tree_r_flurry"), ExtResource("tree_r_assassin"), ExtResource("tree_r_deadly_dance"), ExtResource("tree_r_death_waltz"), ExtResource("tree_evasion"), ExtResource("tree_shadow_step"), ExtResource("tree_smoke_bomb"), ExtResource("tree_r_vanish"), ExtResource("tree_r_nimble"), ExtResource("tree_r_shadow_lord"), ExtResource("tree_r_phantom"), ExtResource("tree_r_child_of_dark"), ExtResource("tree_throw_knives"), ExtResource("tree_r_steady_hand"), ExtResource("tree_knife_fan"), ExtResource("tree_r_poison_dart"), ExtResource("tree_r_quiver"), ExtResource("tree_r_blade_rain"), ExtResource("tree_r_fire_flask"), ExtResource("tree_r_thousand_blades")])
 allowed_weapon_types = Array[int]([3, 4, 0, 2, 7])
 branch_names = Array[String](["Клинки", "Тени", "Метание"])
 tree_layout = {
@@ -84,6 +87,7 @@ tree_layout = {
 "r_flurry": {"branch": 0, "row": 3, "points": 6, "level": 6, "choice": ""},
 "r_assassin": {"branch": 0, "row": 4, "points": 9, "level": 9, "choice": "rogue_0_4"},
 "r_deadly_dance": {"branch": 0, "row": 4, "points": 9, "level": 9, "choice": "rogue_0_4"},
+"r_death_waltz": {"branch": 0, "row": 5, "points": 12, "level": 12, "choice": ""},
 "evasion": {"branch": 1, "row": 0, "points": 0, "level": 1, "choice": ""},
 "shadow_step": {"branch": 1, "row": 1, "points": 1, "level": 2, "choice": ""},
 "smoke_bomb": {"branch": 1, "row": 2, "points": 3, "level": 4, "choice": "rogue_1_2"},
@@ -91,11 +95,13 @@ tree_layout = {
 "r_nimble": {"branch": 1, "row": 3, "points": 6, "level": 6, "choice": ""},
 "r_shadow_lord": {"branch": 1, "row": 4, "points": 9, "level": 9, "choice": "rogue_1_4"},
 "r_phantom": {"branch": 1, "row": 4, "points": 9, "level": 9, "choice": "rogue_1_4"},
+"r_child_of_dark": {"branch": 1, "row": 5, "points": 12, "level": 12, "choice": ""},
 "throw_knives": {"branch": 2, "row": 0, "points": 0, "level": 1, "choice": ""},
 "r_steady_hand": {"branch": 2, "row": 1, "points": 1, "level": 2, "choice": ""},
 "knife_fan": {"branch": 2, "row": 2, "points": 3, "level": 4, "choice": "rogue_2_2"},
 "r_poison_dart": {"branch": 2, "row": 2, "points": 3, "level": 4, "choice": "rogue_2_2"},
 "r_quiver": {"branch": 2, "row": 3, "points": 6, "level": 6, "choice": ""},
 "r_blade_rain": {"branch": 2, "row": 4, "points": 9, "level": 9, "choice": "rogue_2_4"},
-"r_fire_flask": {"branch": 2, "row": 4, "points": 9, "level": 9, "choice": "rogue_2_4"}
+"r_fire_flask": {"branch": 2, "row": 4, "points": 9, "level": 9, "choice": "rogue_2_4"},
+"r_thousand_blades": {"branch": 2, "row": 5, "points": 12, "level": 12, "choice": ""}
 }
