@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/r_child_of_dark.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/passive_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+bonuses = {}
+bonuses_per_level = {
+"agility": 3,
+"crit_chance": 0.05,
+"speed": 8,
+"res_fire": 0.06,
+"res_ice": 0.06,
+"res_poison": 0.06,
+"res_magic": 0.06
+}
+
+[resource]
+script = ExtResource("skill")
+id = &"r_child_of_dark"
+display_name = "Дитя тьмы"
+description = "Тьма — твой дом и твой щит."
+icon = ExtResource("icon")
+mana_cost = 0
+cooldown = 0.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3

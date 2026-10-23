@@ -4,6 +4,9 @@ extends CanvasLayer
 
 var _box: VBoxContainer
 var _panel: Control
+## Called when Esc is pressed while the panel is visible (unset = ignored,
+## e.g. the death screen must not close on Esc).
+var on_pause_key: Callable = Callable()
 
 
 func _ready() -> void:
@@ -30,6 +33,14 @@ func _ready() -> void:
 	_panel.add_child(_box)
 
 
+## Esc while the panel is up (only when a handler is set — the death screen
+## ignores it).
+func _unhandled_input(event: InputEvent) -> void:
+	if visible and on_pause_key.is_valid() and event.is_action_pressed("pause"):
+		get_viewport().set_input_as_handled()
+		on_pause_key.call()
+
+
 ## Panel size (the default fits a few buttons; the death screen needs more).
 func set_panel_size(sz: Vector2) -> void:
 	_panel.offset_left = -sz.x / 2.0
@@ -40,6 +51,7 @@ func set_panel_size(sz: Vector2) -> void:
 
 
 func clear() -> void:
+	on_pause_key = Callable()
 	Tooltip.hide_tip()
 	for c in _box.get_children():
 		c.queue_free()

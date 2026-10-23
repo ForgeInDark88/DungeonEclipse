@@ -9,11 +9,23 @@ extends CanvasLayer
 
 const BOOK_SIZE := Vector2(500, 262)
 const BOOK_MARGIN := 15
-const NODE_SIZE := Vector2(28, 28)
+const NODE_SIZE := Vector2(22, 22)
+## Tier-5 capstones get the big octagon frame.
+const KEYSTONE_SIZE := Vector2(30, 30)
 const ROW_GAP := 62.0
-## Tier step in the branch layout.
-const BRANCH_ROW_GAP := 34.0
+## Tier step of the trident fan (row 0 under the crest, capstones at the bottom).
+const BRANCH_ROW_GAP := 26.0
 const PASSIVE_TINT := Color(0.75, 0.6, 1.0)
+## Red / green / orange branches of the eclipse tree (by branch index).
+const BRANCH_COLORS: Array[Color] = [
+	Color(0.92, 0.32, 0.35),
+	Color(0.45, 0.85, 0.50),
+	Color(1.0, 0.68, 0.30),
+]
+
+const CREST_TEX := preload("res://assets/ui/tree_crest.png")
+const NODE_TEX := preload("res://assets/ui/tree_node.png")
+const KEYSTONE_TEX := preload("res://assets/ui/tree_keystone.png")
 
 var hero: Hero
 var is_open := false
@@ -184,10 +196,10 @@ func _layout() -> Dictionary:
 	return pos
 
 
-## Branch columns; two skills on one tier of a branch (a choice) side by side.
+## Trident fan: the crest at the top, three colored branches spreading
+## down-left / down / down-right, one node per tier (pairs side by side).
 func _branch_layout() -> Dictionary:
 	var sk := hero.skills
-	var cols := maxi(1, sk.branch_names.size())
 	var groups := {}  # "branch:row" -> [skills]
 	for s in sk.all:
 		var key := "%d:%d" % [sk.branch_of(s), sk.row_of(s)]
@@ -195,23 +207,37 @@ func _branch_layout() -> Dictionary:
 			groups[key] = []
 		groups[key].append(s)
 	var pos := {}
+	var cx := _tree_area.size.x / 2.0
 	for key: String in groups:
 		var list: Array = groups[key]
 		var b := int(key.get_slice(":", 0))
 		var row := int(key.get_slice(":", 1))
-		var cx := _tree_area.size.x * (b + 0.5) / cols
+		var dir := float(b) - 1.0  # 0/1/2 -> -1/0/1
+		var center := Vector2(cx + dir * (16.0 + row * 16.0), 46.0 + row * BRANCH_ROW_GAP)
 		for i in list.size():
-			var dx := (i - (list.size() - 1) / 2.0) * (NODE_SIZE.x + 6.0)
-			pos[list[i].id] = Vector2(cx + dx, 20.0 + row * BRANCH_ROW_GAP + NODE_SIZE.y / 2.0)
+			var dx := (i - (list.size() - 1) / 2.0) * 26.0
+			pos[list[i].id] = center + Vector2(dx, 0)
 	return pos
 
 
-func _line(a: Vector2, b: Vector2, lit: bool) -> void:
+func branch_color(b: int) -> Color:
+	return BRANCH_COLORS[b % BRANCH_COLORS.size()] if b >= 0 else Color.WHITE
+
+
+func _is_keystone(s: SkillData) -> bool:
+	return hero.skills.row_of(s) >= 5
+
+
+func _node_size(s: SkillData) -> Vector2:
+	return KEYSTONE_SIZE if _is_keystone(s) else NODE_SIZE
+
+
+func _line(a: Vector2, b: Vector2, lit: bool, color: Color = UIStyle.GOOD) -> void:
 	var line := Line2D.new()
 	line.width = 2.0
-	line.default_color = UIStyle.GOOD if lit else UIStyle.INK_SOFT.lightened(0.3)
-	line.add_point(a + Vector2(0, NODE_SIZE.y / 2.0))
-	line.add_point(b - Vector2(0, NODE_SIZE.y / 2.0))
+	line.default_color = color if lit else Color(color.r, color.g, color.b, 0.32)
+	line.add_point(a)
+	line.add_point(b)
 	_tree_area.add_child(line)
 
 
@@ -226,20 +252,48 @@ func _refresh() -> void:
 		for b in sk.branch_names.size():
 			var head: Label
 			if sk.chosen_branch == b:
-				head = UIStyle.label("✦ %s · %d" % [sk.branch_names[b], sk.spent_in(b)], 7, UIStyle.GOLD)
+				head = UIStyle.label("✦ %s · %d" % [sk.branch_names[b], sk.spent_in(b)], 7, branch_color(b))
 			elif sk.chosen_branch >= 0 and b != sk.chosen_branch:
 				head = UIStyle.label("%s · закрыто" % sk.branch_names[b], 7, UIStyle.INK_SOFT)
 			else:
-				head = UIStyle.label("%s · %d" % [sk.branch_names[b], sk.spent_in(b)], 7, UIStyle.INK)
+				head = UIStyle.label("%s · %d" % [sk.branch_names[b], sk.spent_in(b)], 7, branch_color(b).darkened(0.25))
 			head.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			head.position = Vector2(_tree_area.size.x * b / cols, 0)
 			head.size = Vector2(_tree_area.size.x / cols, 12)
 			_tree_area.add_child(head)
-		# Each tier is linked to the tier above in the same branch.
+		# The eclipse crest at the top, roots of the three branches.
+		var crest := TextureRect.new()
+		crest.texture = CREST_TEX
+		crest.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		crest.position = Vector2(_tree_area.size.x / 2.0 - 10.0, 16.0)
+		crest.size = Vector2(20, 20)
+		crest.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_tree_area.add_child(crest)
+		# Branch spines: crest -> tier 0 -> ... -> capstone, in the branch color.
+		var mids := {}  # Vector2i(branch, row) -> center of the tier
 		for s in sk.all:
-			for o in sk.all:
-				if sk.branch_of(o) == sk.branch_of(s) and sk.row_of(o) == sk.row_of(s) - 1:
-					_line(pos[o.id], pos[s.id], sk.is_learned(o) and sk.is_learned(s))
+			var k := Vector2i(sk.branch_of(s), sk.row_of(s))
+			if mids.has(k):
+				mids[k] = (mids[k] + pos[s.id]) / 2.0
+			else:
+				mids[k] = pos[s.id]
+		var learned_row := {}  # Vector2i(branch, row) -> any skill learned
+		for s in sk.all:
+			var k2 := Vector2i(sk.branch_of(s), sk.row_of(s))
+			learned_row[k2] = learned_row.get(k2, false) or sk.is_learned(s)
+		var crest_center := Vector2(_tree_area.size.x / 2.0, 26.0)
+		for b in sk.branch_names.size():
+			var col := branch_color(b)
+			var prev := crest_center
+			var rows := []
+			for k3: Vector2i in mids:
+				if k3.x == b:
+					rows.append(k3.y)
+			rows.sort()
+			for r in rows:
+				var to: Vector2 = mids[Vector2i(b, r)]
+				_line(prev, to, learned_row.get(Vector2i(b, r), false), col)
+				prev = to
 	# Prerequisite lines first, so the nodes are drawn over them.
 	for s in sk.all:
 		if sk.has_branches():
@@ -255,7 +309,7 @@ func _refresh() -> void:
 			_tree_area.add_child(line)
 	for s in sk.all:
 		var node := _node(s)
-		node.position = pos[s.id] - NODE_SIZE / 2.0
+		node.position = pos[s.id] - _node_size(s) / 2.0
 		_tree_area.add_child(node)
 		_nodes[s.id] = node
 	_points.text = "Очков навыков: %d · уровень героя %d" % [sk.skill_points, hero.level]
@@ -274,41 +328,50 @@ func _node(s: SkillData) -> Control:
 	var sk := hero.skills
 	var rank := sk.rank(s)
 	var available := sk.block_reason(s, hero.level) == ""
+	var col := branch_color(sk.branch_of(s))
+	var size := _node_size(s)
 	var box := Control.new()
-	box.size = NODE_SIZE
-	box.custom_minimum_size = NODE_SIZE
+	box.size = size
+	box.custom_minimum_size = size
 	box.mouse_filter = Control.MOUSE_FILTER_STOP
-	var frame := UIStyle.frame(AssetPaths.SLOT if rank > 0 else AssetPaths.SLOT_EMPTY, 5)
-	if s.is_passive():
-		frame.modulate = PASSIVE_TINT
+	var frame := TextureRect.new()
+	frame.texture = KEYSTONE_TEX if _is_keystone(s) else NODE_TEX
+	frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	frame.size = size
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if rank <= 0 and sk.chosen_rival(s) != null:
+		frame.modulate = Color(0.42, 0.4, 0.44, 0.6)  # choice lost to the rival
+	elif rank <= 0 and sk.chosen_branch >= 0 and sk.branch_of(s) != sk.chosen_branch:
+		frame.modulate = Color(0.42, 0.42, 0.48, 0.55)  # branch closed by the choice
+	elif rank > 0:
+		frame.modulate = col  # learned: full branch color
+	elif available:
+		frame.modulate = col.lightened(0.18)
+	else:
+		frame.modulate = Color(col.darkened(0.45).r, col.darkened(0.45).g, col.darkened(0.45).b, 0.62)
 	box.add_child(frame)
 	var icon := TextureRect.new()
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.texture = s.icon
-	icon.position = Vector2(5, 5)
-	icon.size = NODE_SIZE - Vector2(10, 10)
+	var inset := Vector2(3, 3) if not _is_keystone(s) else Vector2(5, 5)
+	icon.position = inset
+	icon.size = size - inset * 2.0
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if rank <= 0:
-		icon.modulate = Color(1, 1, 1, 0.75) if available else Color(0.25, 0.25, 0.3, 0.8)
+		icon.modulate = Color(1, 1, 1, 0.8) if available else Color(0.3, 0.3, 0.34, 0.7)
 	box.add_child(icon)
 	var lvl := UIStyle.outlined_label("%d/%d" % [rank, s.max_level], 6, UIStyle.GOLD if rank > 0 else UIStyle.PARCHMENT)
-	lvl.position = Vector2(NODE_SIZE.x - 14, NODE_SIZE.y - 9)
+	lvl.position = Vector2(size.x - 15, size.y - 9)
 	box.add_child(lvl)
-	if rank <= 0 and sk.chosen_rival(s) != null:
-		frame.modulate = Color(0.5, 0.45, 0.45)
-		icon.modulate = Color(0.3, 0.25, 0.25, 0.7)
-	elif rank <= 0 and sk.chosen_branch >= 0 and sk.branch_of(s) != sk.chosen_branch:
-		frame.modulate = Color(0.45, 0.45, 0.5)
-		icon.modulate = Color(0.3, 0.3, 0.34, 0.65)
 	if available:
 		var plus := UIStyle.outlined_label("+", 9, Color(0.4, 1.0, 0.4))
-		plus.position = Vector2(NODE_SIZE.x - 7, -4)
+		plus.position = Vector2(size.x - 7, -4)
 		box.add_child(plus)
 	if s == _selected:
 		var sel := ColorRect.new()
 		sel.color = Color(1, 0.9, 0.4, 0.25)
 		sel.position = Vector2(3, 3)
-		sel.size = NODE_SIZE - Vector2(6, 6)
+		sel.size = size - Vector2(6, 6)
 		sel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		box.add_child(sel)
 	box.gui_input.connect(func(e: InputEvent) -> void:

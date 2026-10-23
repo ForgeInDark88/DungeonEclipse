@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/w_iron_oath.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/passive_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+bonuses = {}
+bonuses_per_level = {
+"armor": 5,
+"max_hp": 30,
+"hp_regen": 0.6,
+"res_fire": 0.08,
+"res_ice": 0.08,
+"res_poison": 0.08,
+"res_magic": 0.08
+}
+
+[resource]
+script = ExtResource("skill")
+id = &"w_iron_oath"
+display_name = "Железный обет"
+description = "Клятва крепче любой брони."
+icon = ExtResource("icon")
+mana_cost = 0
+cooldown = 0.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3

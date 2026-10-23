@@ -25,7 +25,7 @@ CLASSES = os.path.join(ROOT, "data", "classes")
 
 PHYS, FIRE, ICE, POISON, MAGIC = range(5)
 # tier -> (points spent in the branch, hero level)
-TIERS = {0: (0, 1), 1: (1, 2), 2: (3, 4), 3: (6, 6), 4: (9, 9)}
+TIERS = {0: (0, 1), 1: (1, 2), 2: (3, 4), 3: (6, 6), 4: (9, 9), 5: (12, 12)}
 
 
 # ------------------------------------------------------------------ writing
@@ -244,28 +244,54 @@ def new_skills():
           (1.0, 0.9, 0.5), dtype=MAGIC, stun=0.5, synergy=(6,))
     passive("p_crusader", "Крестоносец", "Меч и вера бьют без промаха.", ("holy_strike", 0.75), {"damage": 2, "crit_chance": 0.04})
 
+    # ---- tier-5 capstones: one per branch, the crown of each path
+    blast("w_execution", "Казнь", "Один удар — и бой окончен.", ("earthquake", 0.85), 60, 3.2, 0.5, 35, 20.0,
+          (1.0, 0.35, 0.3), synergy=(0, 1))
+    passive("w_iron_oath", "Железный обет", "Клятва крепче любой брони.", ("iron_skin", 0.4, 0.7),
+            dict({"armor": 5, "max_hp": 30, "hp_regen": 0.6}, **ALL_RES(0.08)))
+    buff("w_frenzy", "Неистовство", "Ярость без границ: урон, скорость, точность.", ("haste", 0.0, 1.3, 1.1),
+         "frenzy", {"damage": 12, "speed": 25, "crit_chance": 0.1}, {"damage": 4}, 10, 30, 30.0, (1.0, 0.3, 0.3))
+    blast("m_supernova", "Сверхновая", "Звезда рождается и умирает в одно мгновение.", ("meteor", 0.02), 85, 2.6, 0.45, 40, 22.0,
+          (1.0, 0.6, 0.2), dtype=FIRE, stun=0.6, anim="attack_cast")
+    blast("m_absolute_zero", "Абсолютный ноль", "Всё замирает. Совсем.", ("frost_nova", 0.5, 1.2), 70, 2.0, 0.4, 35, 20.0,
+          (0.7, 0.95, 1.0), dtype=ICE, stun=2.0, anim="attack_cast")
+    passive("m_mind_domination", "Власть разума", "Мысль острым любого клинка.", ("arcane_mind", 0.55, 1.15),
+            {"intellect": 4, "damage": 3, "crit_chance": 0.05, "max_mana": 20})
+    blast("r_death_waltz", "Смертельный вальс", "Танец, после которого не аплодируют.", ("knife_fan", 0.12, 1.2), 60, 2.6, 0.4,
+          30, 14.0, (0.95, 0.5, 0.9), knockback=60.0, synergy=(0, 3))
+    passive("r_child_of_dark", "Дитя тьмы", "Тьма — твой дом и твой щит.", ("shadow_step", 0.12),
+            dict({"agility": 3, "crit_chance": 0.05, "speed": 8}, **ALL_RES(0.06)))
+    missile("r_thousand_blades", "Тысяча клинков", "Веер стали, от которого не уйти.", ("throw_knives", 0.08, 1.25),
+            "knife", 300, 1.0, 0.2, 35, 16.0, (0.95, 0.95, 1.0), count=9, spread=40.0, pierce=1, synergy=(3, 7))
+    buff("p_ascension", "Вознесение", "Свет исцеляет и облекает в броню.", ("holy_light", 0.06, 1.1),
+         "ascension", {"armor": 15}, {"armor": 5}, 8, 35, 30.0, (1.0, 1.0, 0.7), heal=0.5)
+    passive("p_unbroken_vow", "Нерушимый завет", "Обет, который не возьмёт даже смерть.", ("blessing", 0.35, 0.8),
+            {"max_hp": 40, "armor": 5, "hp_regen": 0.5})
+    blast("p_heavens_wrath", "Гнев небес", "Небеса падают на нечестивых.", ("righteous_wrath", 0.05), 66, 2.6, 0.45, 35, 18.0,
+          (1.0, 0.9, 0.5), dtype=MAGIC, stun=1.2)
+
 
 # tiers: list of 5 entries per branch, each a skill id or a (a, b) choice pair
 TREES = {
     "warrior": (["Оружие", "Стойкость", "Ярость"], [
-        ["power_strike", "blade_master", ("w_whirlwind", "bloodletting"), "earthquake", ("w_executioner", "w_berserk")],
-        ["iron_skin", "toughness", ("w_shield_wall", "w_second_wind"), "war_cry", ("w_unbreakable", "w_titan_grip")],
-        ["haste", "w_battle_lust", ("w_axe_throw", "w_charge"), "w_rage_leech", ("w_blade_storm", "w_battle_trance")],
+        ["power_strike", "blade_master", ("w_whirlwind", "bloodletting"), "earthquake", ("w_executioner", "w_berserk"), "w_execution"],
+        ["iron_skin", "toughness", ("w_shield_wall", "w_second_wind"), "war_cry", ("w_unbreakable", "w_titan_grip"), "w_iron_oath"],
+        ["haste", "w_battle_lust", ("w_axe_throw", "w_charge"), "w_rage_leech", ("w_blade_storm", "w_battle_trance"), "w_frenzy"],
     ]),
     "mage": (["Огонь", "Лёд", "Тайное"], [
-        ["fireball", "m_pyromania", ("m_fire_nova", "m_flame_volley"), "meteor", ("m_inferno", "m_combustion")],
-        ["frost_nova", "elemental_ward", ("m_ice_lance", "m_frost_armor"), "m_glacier", ("m_blizzard", "m_ice_block")],
-        ["arcane_shield", "arcane_mind", ("blink", "m_mana_flow"), "chain_lightning", ("m_arcane_orb", "m_archmage")],
+        ["fireball", "m_pyromania", ("m_fire_nova", "m_flame_volley"), "meteor", ("m_inferno", "m_combustion"), "m_supernova"],
+        ["frost_nova", "elemental_ward", ("m_ice_lance", "m_frost_armor"), "m_glacier", ("m_blizzard", "m_ice_block"), "m_absolute_zero"],
+        ["arcane_shield", "arcane_mind", ("blink", "m_mana_flow"), "chain_lightning", ("m_arcane_orb", "m_archmage"), "m_mind_domination"],
     ]),
     "rogue": (["Клинки", "Тени", "Метание"], [
-        ["dash", "keen_eye", ("venom_blades", "r_lacerate"), "r_flurry", ("r_assassin", "r_deadly_dance")],
-        ["evasion", "shadow_step", ("smoke_bomb", "r_vanish"), "r_nimble", ("r_shadow_lord", "r_phantom")],
-        ["throw_knives", "r_steady_hand", ("knife_fan", "r_poison_dart"), "r_quiver", ("r_blade_rain", "r_fire_flask")],
+        ["dash", "keen_eye", ("venom_blades", "r_lacerate"), "r_flurry", ("r_assassin", "r_deadly_dance"), "r_death_waltz"],
+        ["evasion", "shadow_step", ("smoke_bomb", "r_vanish"), "r_nimble", ("r_shadow_lord", "r_phantom"), "r_child_of_dark"],
+        ["throw_knives", "r_steady_hand", ("knife_fan", "r_poison_dart"), "r_quiver", ("r_blade_rain", "r_fire_flask"), "r_thousand_blades"],
     ]),
     "paladin": (["Свет", "Щит", "Кара"], [
-        ["holy_light", "blessing", ("light_aura", "p_healer"), "p_sanctuary", ("p_saint", "p_divine_shield")],
-        ["iron_skin", "p_bulwark", ("arcane_shield", "p_guardian"), "p_fortress", ("p_aegis", "p_martyr")],
-        ["power_strike", "p_zeal", ("holy_strike", "p_smite_bolt"), "p_judgment", ("righteous_wrath", "p_crusader")],
+        ["holy_light", "blessing", ("light_aura", "p_healer"), "p_sanctuary", ("p_saint", "p_divine_shield"), "p_ascension"],
+        ["iron_skin", "p_bulwark", ("arcane_shield", "p_guardian"), "p_fortress", ("p_aegis", "p_martyr"), "p_unbroken_vow"],
+        ["power_strike", "p_zeal", ("holy_strike", "p_smite_bolt"), "p_judgment", ("righteous_wrath", "p_crusader"), "p_heavens_wrath"],
     ]),
 }
 

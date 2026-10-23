@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/w_execution.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/area_blast_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+radius = 60.0
+radius_per_level = 5.0
+damage_multiplier = 3.2
+damage_per_level = 0.5
+knockback = 140.0
+breaks_tiles = false
+stun_time = 0.0
+damage_type = 0
+color = Color(1.0, 0.35, 0.3, 1)
+
+[resource]
+script = ExtResource("skill")
+id = &"w_execution"
+display_name = "Казнь"
+description = "Один удар — и бой окончен."
+icon = ExtResource("icon")
+mana_cost = 35
+cooldown = 20.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_heavy"
+synergy_weapons = Array[int]([0, 1])
+synergy_power = 0.3
