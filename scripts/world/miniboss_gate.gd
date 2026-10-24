@@ -65,7 +65,7 @@ func _close() -> void:
 		bars.centered = false
 		bars.z_index = 14
 		level.entities.add_child(bars)
-		var base := level.cell_bottom(cell) - Vector2(0, DungeonLevel.TILE)
+		var base := level.cell_bottom(cell) - Vector2(DungeonLevel.TILE / 2.0, DungeonLevel.TILE)
 		bars.global_position = base + Vector2(0, -26.0)
 		bars.modulate = Color(1, 1, 1, 0.0)
 		var tw := bars.create_tween()
