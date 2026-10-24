@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="TrapData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="1_hit"]
+[ext_resource type="Script" path="res://scripts/data/trap_data.gd" id="2_trap"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="3_status"]
+[ext_resource type="Texture2D" path="res://assets/sprites/traps/rock.png" id="4_sheet"]
+[sub_resource type="Resource" id="Status"]
+script = ExtResource("3_status")
+status = &"slow"
+duration = 1.5
+power = 0.4
+chance = 1.0
+
+[resource]
+script = ExtResource("2_trap")
+id = &"icefall"
+display_name = "Ледопад"
+kind = 1
+damage = 16
+damage_per_floor = 0.3
+damage_type = 2
+hit_effects = Array[ExtResource("1_hit")]([SubResource("Status")])
+cooldown = 2.6
+trigger_range = 90.0
+projectile_speed = 220.0
+disarm_difficulty = 0.35
+can_disarm = true
+xp_for_disarm = 8
+texture = ExtResource("4_sheet")
+tint = Color(0.7, 0.9, 1, 1)
+min_floor = 16
+weight = 2.2
+biomes = Array[StringName]([&"crystal_depths"])

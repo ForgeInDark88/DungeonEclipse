@@ -75,7 +75,7 @@ sway = false
 
 [resource]
 script = ExtResource("biome_script")
-music = &"mirror_halls"
+music = &"crystal_depths"
 step_sound = &"step_stone"
 id = &"crystal_depths"
 display_name = "Кристальные глубины"
