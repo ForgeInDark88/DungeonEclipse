@@ -6,7 +6,7 @@ extends Resource
 ## ILLUSIONS: the boss vanishes and reappears among `count` copies of itself
 ## (`summon`, usually a no_rewards fake) around the hero; copies fade after
 ## `lifetime` seconds.
-enum Kind { CHARGE, JUMP_SLAM, PROJECTILE_FAN, SUMMON, TELEPORT, FIRE_RAIN, ILLUSIONS }
+enum Kind { CHARGE, JUMP_SLAM, PROJECTILE_FAN, SUMMON, TELEPORT, FIRE_RAIN, ILLUSIONS, SPIKES, BEAM }
 
 @export var kind: Kind = Kind.CHARGE
 @export var windup: float = 0.8

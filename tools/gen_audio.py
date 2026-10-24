@@ -653,6 +653,26 @@ TRACKS = {
     "boss_illusionist": dict(key="B", scale="harmonic", bpm=168, beats=3, prog=[0, 3, 4, 0, 5, 1, 4, 4], pad="pad",
                              bass="waltz", drums="waltz", arp="box", arp_rate=2, stabs=True, lead="box", lead_octave=2,
                              density=0.7, full=True, bars=48, seed=21),
+    # ------------------------------------------------------------- the deep
+    # Ashen Halls: a drowned necropolis - slow phrygian drone, tolling bells,
+    # muffled heartbeat; grief with embers under it.
+    "ashen_halls": dict(key="G", scale="phrygian", bpm=58, prog=[0, 1, 6, 0], pad="choir", bright=0.55, bass="roots",
+                        toll=True, drums="heartbeat", lead="box", lead_octave=1, density=0.28, bars=32, seed=31),
+    # Crystal Depths: glassy grottoes - bells ringing under water, slow deep
+    # roots, airy pads; wonder with weight.
+    "crystal_depths": dict(key="C", scale="minor", bpm=72, prog=[0, 3, 5, 4], pad="pad", bright=0.5, bass="roots",
+                           arp="bell", arp_rate=2, drums="shaker", drums_from=2, lead="flute", lead_octave=2,
+                           density=0.35, sevenths=True, bars=32, seed=29),
+    # The Crystal Titan: tectonic - half-time weight, taiko like falling rocks,
+    # choir of the mountain, ostinato grinding.
+    "boss_crystal_titan": dict(key="C", scale="phrygian", bpm=104, prog=[0, 1, 0, 5, 0, 1, 3, 4], pad="choir",
+                               bass="ostinato", grit=0.5, bass_drive=1.6, drums="taiko", toll=True, stabs=True,
+                               lead="lead", density=0.45, full=True, bars=32, seed=33),
+    # The Ashen King: a funeral pyre in a dead crown - phrygian, tolling,
+    # drums like cracking coals.
+    "boss_ashen_king": dict(key="E", scale="phrygian", bpm=126, prog=[0, 1, 0, 6, 0, 4, 1, 3], pad="choir",
+                            bass="ostinato", grit=0.45, bass_drive=1.5, drums="taiko", toll=True, stabs=True,
+                            lead="lead", density=0.5, full=True, bars=32, seed=35),
 }
 
 

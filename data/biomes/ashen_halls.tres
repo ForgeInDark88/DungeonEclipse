@@ -86,7 +86,7 @@ sway = false
 
 [resource]
 script = ExtResource("biome_script")
-music = &"catacombs"
+music = &"ashen_halls"
 step_sound = &"step_stone"
 id = &"ashen_halls"
 display_name = "Пепельные чертоги"

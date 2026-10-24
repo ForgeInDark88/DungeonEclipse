@@ -19,6 +19,12 @@ var _hop_cd := 0.0
 var _jump_from := Vector2.ZERO
 var _jump_t := 0.0
 var _jump_arc := 80.0
+var _spike_spots: Array[Vector2] = []
+var _beam_dir := Vector2.RIGHT
+var _beam_line: Line2D = null
+var _beam_core: Line2D = null
+var _beam_time := 0.0
+var _beam_tick := 0.0
 
 
 func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null, p_champion := false) -> void:
@@ -165,6 +171,24 @@ func _choose_attack() -> void:
 				var ground := _ground_below(Vector2(x, _player.global_position.y - 20.0), lvl)
 				_rain_spots.append(ground)
 				Telegraph.circle(parent, ground, _attack.radius, _attack.windup + 0.6)
+		BossAttack.Kind.SPIKES:
+			# Waves of crystal: a line chasing the hero plus a ring around them.
+			var lvl3 := _level()
+			_spike_spots.clear()
+			if lvl3:
+				var aim := (_player.global_position - global_position).normalized()
+				for i in 5:
+					_spike_spots.append(_ground_below(global_position + aim * (26.0 + i * 32.0), lvl3))
+				for i in 6:
+					var sa := TAU * i / 6.0
+					_spike_spots.append(_ground_below(_player.global_position + Vector2.from_angle(sa) * 44.0, lvl3))
+				for spot in _spike_spots:
+					Telegraph.circle(parent, spot, _attack.radius * 0.7, _attack.windup + 0.5)
+		BossAttack.Kind.BEAM:
+			# A grinding beam through the hero's position: dots along the path.
+			_beam_dir = (_player.global_position - global_position + Vector2(0, -18)).normalized()
+			for i in 7:
+				Telegraph.circle(parent, global_position + Vector2(0, -22) + _beam_dir * (30.0 + i * 34.0), 12.0, _attack.windup)
 		BossAttack.Kind.TELEPORT, BossAttack.Kind.ILLUSIONS:
 			var tw := create_tween()
 			tw.tween_property(sprite, "modulate:a", 0.2, _attack.windup)
@@ -219,6 +243,15 @@ func _start_attack() -> void:
 			_illusions(a)
 			_fan(a, dmg)
 			_end_attack()
+		BossAttack.Kind.SPIKES:
+			_erupt_spikes(a, dmg)
+			_attack_anim_left = 0.4
+			_end_attack()
+		BossAttack.Kind.BEAM:
+			_fire_beam()
+			_beam_time = 0.55
+			_beam_tick = 0.0
+			_enter(Act.ACTING, 0.62)
 
 
 func _end_attack() -> void:
@@ -246,6 +279,27 @@ func _update_attack_act(delta: float) -> void:
 				velocity = Vector2.ZERO
 				_shockwave(a)
 				_end_attack()
+		BossAttack.Kind.BEAM:
+			_beam_time -= delta
+			_beam_tick -= delta
+			if _beam_line:
+				_beam_line.width = 14.0 + sin(_beam_time * 40.0) * 3.0
+				if _beam_core:
+					_beam_core.width = _beam_line.width * 0.35
+			if _beam_tick <= 0.0 and _player:
+				_beam_tick = 0.22
+				var from := global_position + Vector2(0, -22)
+				var to := from + _beam_dir * 260.0
+				var ap := _player.global_position + Vector2(0, -10)
+				var ab := to - from
+				var tt := clampf((ap - from).dot(ab) / ab.length_squared(), 0.0, 1.0)
+				var dist := (ap - (from + ab * tt)).length()
+				if dist <= 15.0:
+					_player.take_damage(roundi(damage * a.damage_mult * 0.45), global_position, a.damage_type)
+					_apply_attack_effects(a, _player)
+			if _beam_time <= 0.0:
+				_fade_beam()
+				_end_attack()
 
 
 func _shockwave(a: BossAttack) -> void:
@@ -256,6 +310,88 @@ func _shockwave(a: BossAttack) -> void:
 			and LineOfSight.can_hit(self, global_position + Vector2(0, -8), _player):
 		_player.take_damage(roundi(damage * a.damage_mult), global_position, a.damage_type)
 		_apply_attack_effects(a, _player)
+
+
+## Crystals burst from the telegraphed spots; standing on one hurts.
+func _erupt_spikes(a: BossAttack, dmg: int) -> void:
+	var parent := get_parent()
+	for spot in _spike_spots:
+		var spike := Node2D.new()
+		var poly := Polygon2D.new()
+		poly.polygon = PackedVector2Array([Vector2(-5, 1), Vector2(0, -16), Vector2(5, 1)])
+		poly.color = Color(0.62, 0.93, 1.0, 0.95)
+		var side := Polygon2D.new()
+		side.polygon = PackedVector2Array([Vector2(3, 1), Vector2(7, -10), Vector2(10, 1)])
+		side.color = Color(0.42, 0.72, 0.9, 0.9)
+		var light := PointLight2D.new()
+		light.texture = AssetPaths.tex(AssetPaths.LIGHT)
+		light.color = Color(0.55, 0.95, 1.0)
+		light.energy = 1.4
+		light.texture_scale = 0.35
+		light.position = Vector2(0, -8)
+		spike.add_child(poly)
+		spike.add_child(side)
+		spike.add_child(light)
+		spike.z_index = 12
+		parent.add_child(spike)
+		spike.global_position = spot
+		spike.scale = Vector2(1.0, 0.05)
+		var tw := spike.create_tween()
+		tw.tween_property(spike, "scale:y", 1.0, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		if _player and _player.global_position.distance_to(spot) <= a.radius 				and LineOfSight.can_hit(self, spot, _player):
+			_player.take_damage(dmg, spot, a.damage_type)
+			_apply_attack_effects(a, _player)
+		tw.tween_interval(0.8)
+		tw.tween_property(spike, "scale:y", 0.0, 0.2)
+		tw.tween_callback(spike.queue_free)
+	EventBus.screen_shake.emit(5.0)
+	Fx.sparks(parent, global_position + Vector2(0, -24), Color(0.6, 0.95, 1.0), 14, 120.0)
+	AudioManager.play_sfx(&"dig", global_position)
+
+
+## A grinding crystal beam along the telegraphed line.
+func _fire_beam() -> void:
+	var parent := get_parent()
+	var from := global_position + Vector2(0, -22)
+	var mat := CanvasItemMaterial.new()
+	mat.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+	_beam_line = Line2D.new()
+	_beam_line.width = 14.0
+	_beam_line.default_color = Color(0.55, 0.95, 1.0)
+	_beam_line.points = PackedVector2Array([from, from + _beam_dir * 260.0])
+	_beam_line.z_index = 25
+	_beam_line.material = mat
+	_beam_core = Line2D.new()
+	_beam_core.width = 5.0
+	_beam_core.default_color = Color.WHITE
+	_beam_core.points = _beam_line.points
+	_beam_core.z_index = 26
+	_beam_core.material = mat
+	parent.add_child(_beam_line)
+	parent.add_child(_beam_core)
+	var light := PointLight2D.new()
+	light.texture = AssetPaths.tex(AssetPaths.LIGHT)
+	light.color = Color(0.55, 0.95, 1.0)
+	light.energy = 2.2
+	light.texture_scale = 1.4
+	parent.add_child(light)
+	light.global_position = from + _beam_dir * 130.0
+	var tw := light.create_tween()
+	tw.tween_property(light, "energy", 0.0, 0.6)
+	tw.tween_callback(light.queue_free)
+	Fx.sparks(parent, from, Color(0.7, 1.0, 1.0), 10, 90.0)
+	AudioManager.play_sfx(&"enemy_shoot", global_position)
+	EventBus.screen_shake.emit(3.0)
+
+
+func _fade_beam() -> void:
+	for line: Line2D in [_beam_line, _beam_core]:
+		if line:
+			var tw := line.create_tween()
+			tw.tween_property(line, "width", 0.0, 0.22)
+			tw.tween_callback(line.queue_free)
+	_beam_line = null
+	_beam_core = null
 
 
 func _fan(a: BossAttack, dmg: int) -> void:
