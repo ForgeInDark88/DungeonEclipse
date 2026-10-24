@@ -6,72 +6,50 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/crystal_depths_far.png" id="bg_far"]
 [ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/crystal_depths_mid.png" id="bg_mid"]
 [ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/crystal_depths_near.png" id="bg_near"]
-[ext_resource type="Texture2D" path="res://assets/sprites/decor/crystals.png" id="dx_crystals"]
-[ext_resource type="Texture2D" path="res://assets/sprites/decor/rune_crystal.png" id="dx_rune_crystal"]
-[ext_resource type="Texture2D" path="res://assets/sprites/decor/mushroom_cluster.png" id="dx_mushroom_cluster"]
-[ext_resource type="Texture2D" path="res://assets/sprites/decor/wall_fungi.png" id="dx_wall_fungi"]
-[ext_resource type="Texture2D" path="res://assets/sprites/decor/puffball.png" id="dx_puffball"]
-[ext_resource type="Texture2D" path="res://assets/sprites/decor/wall_ivy.png" id="dx_wall_ivy"]
 
-[sub_resource type="Resource" id="Decor_crystals"]
+[sub_resource type="Resource" id="Decor_crystal_spire"]
 script = ExtResource("decor_script")
-texture = ExtResource("dx_crystals")
+texture = ExtResource("dx_crystal_spire")
 placement = 0
 weight = 1.8
-light_color = Color(0.6, 1.0, 1.0, 1)
-light_scale = 0.25
+light_color = Color(0.5, 1.0, 1.0, 1)
+light_scale = 0.3
 unshaded = true
 sway = false
 
-[sub_resource type="Resource" id="Decor_rune_crystal"]
+
+[sub_resource type="Resource" id="Decor_frozen_mineral"]
 script = ExtResource("decor_script")
-texture = ExtResource("dx_rune_crystal")
+texture = ExtResource("dx_frozen_mineral")
 placement = 0
 weight = 1.2
-light_color = Color(0.7, 1.0, 1.0, 1)
-light_scale = 0.25
+light_color = Color(0.4, 0.9, 1.0, 1)
+light_scale = 0.3
 unshaded = true
 sway = false
 
-[sub_resource type="Resource" id="Decor_mushroom_cluster"]
-script = ExtResource("decor_script")
-texture = ExtResource("dx_mushroom_cluster")
-placement = 0
-weight = 0.8
-light_color = Color(0.5, 1.0, 0.95, 1)
-light_scale = 0.25
-unshaded = true
-sway = false
 
-[sub_resource type="Resource" id="Decor_wall_fungi"]
+[sub_resource type="Resource" id="Decor_echo_crystal"]
 script = ExtResource("decor_script")
-texture = ExtResource("dx_wall_fungi")
-placement = 2
-weight = 1.0
-light_color = Color(0.6, 0.9, 1.0, 1)
-light_scale = 0.25
-unshaded = true
-sway = false
-
-[sub_resource type="Resource" id="Decor_puffball"]
-script = ExtResource("decor_script")
-texture = ExtResource("dx_puffball")
+texture = ExtResource("dx_echo_crystal")
 placement = 0
 weight = 1.0
-light_color = Color(0.7, 1.0, 1.0, 1)
-light_scale = 0.25
+light_color = Color(0.5, 1.0, 1.0, 1)
+light_scale = 0.3
 unshaded = true
 sway = false
 
-[sub_resource type="Resource" id="Decor_wall_ivy"]
+
+[sub_resource type="Resource" id="Decor_ice_vein"]
 script = ExtResource("decor_script")
-texture = ExtResource("dx_wall_ivy")
+texture = ExtResource("dx_ice_vein")
 placement = 2
-weight = 0.8
-light_color = Color(0, 0, 0, 0)
-light_scale = 0.25
-unshaded = false
+weight = 1.5
+light_color = Color(0.4, 0.9, 1.0, 1)
+light_scale = 0.3
+unshaded = true
 sway = false
+
 
 [resource]
 script = ExtResource("biome_script")
@@ -94,7 +72,7 @@ fog_amount = 0.1
 grade_tint = Color(0.95, 1.0, 1.02, 1)
 saturation = 1.0
 contrast = 1.06
-decorations = Array[ExtResource("decor_script")]([SubResource("Decor_crystals"), SubResource("Decor_rune_crystal"), SubResource("Decor_mushroom_cluster"), SubResource("Decor_wall_fungi"), SubResource("Decor_puffball"), SubResource("Decor_wall_ivy")])
+decorations = Array[ExtResource("decor_script")]([SubResource("Decor_crystal_spire"), SubResource("Decor_frozen_mineral"), SubResource("Decor_echo_crystal"), SubResource("Decor_ice_vein")])
 decor_per_room = 5.0
 ore_chance = 0.05
 ore_item = &"moon_crystal"

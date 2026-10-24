@@ -635,28 +635,130 @@ def s_fist(g, p):
 
 
 def s_skull(g, p):
+    """Three distinct identities:
+    - executioner: crowned skull, jaw clenched, axe behind
+    - assassin: hooded shadow, only burning eyes visible
+    - child_of_dark: horned, crystals growing from the skull
+    - default: plain skull (for any other skill that uses it)
+    """
+    ident = p.get("id", "")
+    if ident == "executioner":
+        _skull_executioner(g)
+        return
+    if ident == "assassin":
+        _skull_assassin(g)
+        return
+    if ident == "child_of_dark":
+        _skull_child_of_dark(g)
+        return
+    _skull_plain(g)
+
+
+def _skull_plain(g):
     def _m(dd):
         dd.ellipse((7, 5, 25, 21), fill=(255, 255, 255, 255))
         dd.rectangle((10, 18, 22, 27), fill=(255, 255, 255, 255))
     g.litmask(_m, BONE, 16, 12, 10, 10)
     g.disc(12, 13, 3, INK)
     g.disc(20, 13, 3, INK)
-    g.p(11, 12, g.dark)
-    g.p(21, 12, g.dark)
-    g.p(12, 15, g.mid)
-    g.p(20, 15, g.mid)
     g.p(16, 17, INK)
-    g.p(16, 18, INK)
     g.line(11, 22, 21, 22, _c(BONE, 0.75), 1)
     for x in (13, 16, 19):
         g.line(x, 21, x, 24, INK, 1)
-    if p.get("crown"):
-        for x in (10, 16, 22):
-            g.line(x, 1, x, 4, g.lite, 1)
-        g.line(9, 4, 23, 4, g.base, 1)
-        g.p(16, 2, g.hot)
     g.spark(6, 18, g.hot)
     g.spark(26, 18, g.hot)
+
+
+def _skull_executioner(g):
+    """A crowned skull with an axe blade rising behind it."""
+    # the axe behind
+    g.line(4, 28, 10, 8, _c(GOLD, 0.7), 3)
+    g.line(5, 28, 10, 9, GOLD, 1)
+    def _blade(dd):
+        dd.polygon([(10, 4), (18, 6), (19, 14), (13, 17), (9, 12)], fill=(255, 255, 255, 255))
+    g.litmask(_blade, STEEL, 14, 10, 5, 6)
+    g.line(11, 6, 17, 11, WHITE, 1)
+    # the skull — volume lit, jaw clenched (no gap)
+    def _m(dd):
+        dd.ellipse((10, 10, 26, 24), fill=(255, 255, 255, 255))
+        dd.rectangle((13, 21, 23, 28), fill=(255, 255, 255, 255))
+    g.litmask(_m, BONE, 18, 16, 9, 9)
+    # burning sockets
+    g.disc(15, 16, 2, INK)
+    g.disc(21, 16, 2, INK)
+    g.p(15, 16, g.hot)
+    g.p(21, 16, g.hot)
+    # nose + tight teeth
+    g.p(18, 19, INK)
+    g.line(15, 24, 21, 24, _c(BONE, 0.6), 1)
+    for x in (16, 18, 20):
+        g.line(x, 23, x, 27, INK, 1)
+    # the crown: iron, three heavy spikes
+    g.line(12, 7, 24, 7, _c(GOLD, 0.8), 2)
+    for x in (13, 18, 23):
+        g.line(x, 2, x, 7, GOLD, 2)
+        g.p(x, 1, g.hot)
+    # crack
+    g.line(24, 12, 26, 16, _c(BONE, 0.5), 1)
+
+
+def _skull_assassin(g):
+    """A hood of shadow: only two burning eyes in the dark."""
+    # the hood: a dark cone
+    def _m(dd):
+        dd.polygon([(8, 28), (10, 8), (16, 4), (22, 8), (24, 28)], fill=(255, 255, 255, 255))
+    g.litmask(_m, (30, 22, 38, 255), 16, 18, 10, 14, flat=0.3)
+    # the rim catches light
+    g.line(10, 8, 16, 4, g.mid, 1)
+    g.line(16, 4, 22, 8, g.dark, 1)
+    # fold lines
+    g.line(12, 12, 13, 26, g.dark, 1)
+    g.line(20, 12, 19, 26, g.dark, 1)
+    # the face: pure shadow, two burning slits
+    g.rect(12, 14, 8, 6, (14, 10, 18, 255))
+    g.line(13, 16, 16, 16, g.hot, 1)
+    g.line(18, 16, 20, 16, g.hot, 1)
+    g.p(14, 15, _c(g.hot, 0.6))
+    g.p(19, 15, _c(g.hot, 0.6))
+    # a dagger tip peeks from under the hood
+    g.line(16, 28, 16, 31, STEEL, 1)
+    g.p(16, 31, WHITE)
+    # wisps of shadow
+    g.p(7, 20, _c(g.mid, 0.5))
+    g.p(25, 18, _c(g.mid, 0.5))
+    g.p(9, 26, _c(g.mid, 0.4))
+
+
+def _skull_child_of_dark(g):
+    """A horned skull with violet crystals growing from it."""
+    # crystals growing from behind
+    for bx, by, w, h in ((6, 6, 3, 8), (24, 5, 4, 10), (10, 3, 3, 6), (20, 2, 3, 7)):
+        g.poly([(bx, by + h), (bx + w // 2, by), (bx + w, by + h)], (150, 100, 230, 220))
+        g.line(bx + w // 2, by, bx + w // 2, by + h, (220, 180, 255, 180))
+        g.glowdot(bx + w // 2, by + h // 2, 3, (150, 100, 230), 0.5)
+    # the skull — slightly tilted, one horn broken
+    def _m(dd):
+        dd.ellipse((9, 8, 25, 22), fill=(255, 255, 255, 255))
+        dd.rectangle((12, 19, 22, 27), fill=(255, 255, 255, 255))
+    g.litmask(_m, _c(BONE, 0.9), 17, 14, 9, 9)
+    # horns: left tall and curved, right broken
+    g.line(9, 8, 4, 2, BONE, 2)
+    g.line(4, 2, 3, 5, BONE, 1)
+    g.line(25, 8, 28, 4, BONE, 2)
+    g.p(28, 4, _c(BONE, 0.5))  # broken tip
+    # glowing sockets: violet, one brighter
+    g.disc(14, 14, 2, INK)
+    g.disc(20, 14, 2, INK)
+    g.p(14, 14, (180, 130, 255))
+    g.p(20, 14, (230, 180, 255))
+    g.glowdot(14, 14, 2.5, (150, 100, 230), 0.6)
+    # crystal in the forehead
+    g.poly([(16, 9), (17, 6), (18, 9)], (180, 130, 255, 200))
+    g.p(17, 7, WHITE)
+    # teeth
+    g.line(14, 22, 20, 22, _c(BONE, 0.6), 1)
+    for x in (15, 17, 19):
+        g.line(x, 21, x, 25, INK, 1)
 
 
 def s_blood(g, p):
