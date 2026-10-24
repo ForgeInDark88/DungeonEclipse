@@ -1,6 +1,6 @@
 class_name Decoration
 extends Node2D
-## Placed decoration sprite (+ optional glow and swaying).
+## Placed decoration sprite (+ optional glow, flicker and swaying).
 
 var data: DecorData
 ## Wall props are tinted like the back wall (a bit lighter) so they sit on it.
@@ -37,14 +37,24 @@ func _ready() -> void:
 		l.energy = 0.9
 		match data.placement:
 			DecorData.Placement.FLOOR:
-				l.position = Vector2(0, -size.y / 2.0)
+					l.position = Vector2(0, -size.y / 2.0)
 			DecorData.Placement.WALL:
-				l.position = Vector2.ZERO
+					l.position = Vector2.ZERO
 			_:
-				l.position = Vector2(0, size.y / 2.0)
+					l.position = Vector2(0, size.y / 2.0)
 		add_child(l)
+		_flicker(l)
 	if data.sway:
 		var tw := create_tween().set_loops()
 		var amp := randf_range(3.0, 6.0)
 		tw.tween_property(s, "rotation_degrees", amp, randf_range(1.2, 2.0)).set_trans(Tween.TRANS_SINE)
 		tw.tween_property(s, "rotation_degrees", -amp, randf_range(1.2, 2.0)).set_trans(Tween.TRANS_SINE)
+
+
+## A living flame breathes: two sines around the base energy.
+func _flicker(l: PointLight2D) -> void:
+	var base := l.energy
+	var tw := create_tween().set_loops()
+	tw.tween_method(func(phase: float) -> void:
+		l.energy = base + sin(phase) * 0.07 + sin(phase * 2.7) * 0.05,
+		0.0, TAU, randf_range(1.8, 2.6)).set_trans(Tween.TRANS_LINEAR)

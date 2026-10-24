@@ -1,0 +1,183 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=20 format=3]
+
+[ext_resource type="Resource" path="res://data/loot_tables/chest_epic.tres" id="1_loot"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_hit"]
+[ext_resource type="Script" path="res://scripts/data/boss_phase.gd" id="3_phase"]
+[ext_resource type="Script" path="res://scripts/data/boss_attack.gd" id="4_attack"]
+[ext_resource type="Resource" path="res://data/enemies/frost_imp.tres" id="5_imp"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="6_status"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/shard.png" id="7_shard"]
+[ext_resource type="Script" path="res://scripts/data/boss_data.gd" id="8_boss"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bosses/crystal_titan_sheet.png" id="9_sheet"]
+[ext_resource type="Resource" path="res://data/animations/crystal_titan_layout.tres" id="10_layout"]
+
+[sub_resource type="Resource" id="Slow"]
+script = ExtResource("6_status")
+status = &"slow"
+duration = 2.0
+power = 0.4
+chance = 0.5
+
+[sub_resource type="Resource" id="SlamP1"]
+script = ExtResource("4_attack")
+kind = 1
+windup = 0.9
+damage_mult = 1.5
+count = 5
+spread_degrees = 40.0
+projectile_texture = ExtResource("7_shard")
+projectile_speed = 160.0
+damage_type = 2
+radius = 52.0
+speed = 260.0
+max_summons = 4
+hit_effects = Array[ExtResource("2_hit")]([SubResource("Slow")])
+
+[sub_resource type="Resource" id="FanP1"]
+script = ExtResource("4_attack")
+kind = 2
+windup = 0.8
+damage_mult = 0.9
+count = 5
+spread_degrees = 45.0
+projectile_texture = ExtResource("7_shard")
+projectile_speed = 190.0
+damage_type = 2
+radius = 40.0
+speed = 260.0
+max_summons = 4
+hit_effects = Array[ExtResource("2_hit")]([SubResource("Slow")])
+
+[sub_resource type="Resource" id="Phase1"]
+script = ExtResource("3_phase")
+hp_threshold = 1.0
+message = ""
+attacks = Array[ExtResource("4_attack")]([SubResource("SlamP1"), SubResource("FanP1")])
+attack_interval = 1.5
+speed_mult = 1.0
+tint = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="ChargeP2"]
+script = ExtResource("4_attack")
+kind = 0
+windup = 0.8
+damage_mult = 1.2
+count = 5
+spread_degrees = 40.0
+projectile_texture = ExtResource("7_shard")
+projectile_speed = 170.0
+damage_type = 2
+radius = 44.0
+speed = 300.0
+max_summons = 4
+hit_effects = Array[ExtResource("2_hit")]([])
+
+[sub_resource type="Resource" id="SummonP2"]
+script = ExtResource("4_attack")
+kind = 3
+windup = 0.8
+damage_mult = 1.0
+count = 2
+spread_degrees = 40.0
+projectile_texture = ExtResource("7_shard")
+projectile_speed = 170.0
+damage_type = 2
+radius = 40.0
+speed = 260.0
+summon = ExtResource("5_imp")
+max_summons = 3
+hit_effects = Array[ExtResource("2_hit")]([])
+
+[sub_resource type="Resource" id="Phase2"]
+script = ExtResource("3_phase")
+hp_threshold = 0.65
+message = "Кристаллы поют!"
+attacks = Array[ExtResource("4_attack")]([SubResource("SlamP1"), SubResource("ChargeP2"), SubResource("SummonP2")])
+attack_interval = 1.2
+speed_mult = 1.1
+tint = Color(0.85, 0.95, 1, 1)
+
+[sub_resource type="Resource" id="SlamP3"]
+script = ExtResource("4_attack")
+kind = 1
+windup = 0.7
+damage_mult = 1.7
+count = 5
+spread_degrees = 40.0
+projectile_texture = ExtResource("7_shard")
+projectile_speed = 170.0
+damage_type = 2
+radius = 60.0
+speed = 260.0
+max_summons = 4
+hit_effects = Array[ExtResource("2_hit")]([SubResource("Slow")])
+
+[sub_resource type="Resource" id="FanP3"]
+script = ExtResource("4_attack")
+kind = 2
+windup = 0.6
+damage_mult = 0.9
+count = 8
+spread_degrees = 60.0
+projectile_texture = ExtResource("7_shard")
+projectile_speed = 200.0
+damage_type = 2
+radius = 40.0
+speed = 260.0
+max_summons = 4
+hit_effects = Array[ExtResource("2_hit")]([SubResource("Slow")])
+
+[sub_resource type="Resource" id="Phase3"]
+script = ExtResource("3_phase")
+hp_threshold = 0.35
+message = "Гора гневается!"
+attacks = Array[ExtResource("4_attack")]([SubResource("SlamP3"), SubResource("FanP3"), SubResource("ChargeP2")])
+attack_interval = 0.9
+speed_mult = 1.3
+tint = Color(0.7, 0.9, 1, 1)
+
+[resource]
+script = ExtResource("8_boss")
+glow_color = Color(0.5, 1, 1, 1)
+glow_scale = 1.2
+title = "Кристальный титан — Сердце глубин"
+order = 3
+phases = Array[ExtResource("3_phase")]([SubResource("Phase1"), SubResource("Phase2"), SubResource("Phase3")])
+music = &"boss"
+contact_damage_mult = 0.8
+reward_items = Array[StringName]([&"guardian_seal", &"eclipse_shard", &"eclipse_shard"])
+id = &"crystal_titan"
+display_name = "Кристальный титан"
+description = "Живая гора из тёмного камня и светящихся кристаллов. Его шаги — маленькие землетрясения."
+sheet = ExtResource("9_sheet")
+sheet_layout = ExtResource("10_layout")
+behavior = 0
+collision_size = Vector2(22, 44)
+max_hp = 340
+damage = 16
+armor = 6
+speed = 42.0
+chase_speed = 42.0
+aggro_range = 600.0
+attack_range = 18.0
+attack_cooldown = 1.0
+jumps = false
+projectile_speed = 140.0
+xp_reward = 180
+loot_table = ExtResource("1_loot")
+loot_chance = 1.0
+gold_min = 90
+gold_max = 150
+min_floor = 999
+spawn_weight = 0.0
+biomes = Array[StringName]([])
+tint = Color(1, 1, 1, 1)
+resistances = {
+"res_fire": 0.3,
+"res_ice": 0.75
+}
+status_immunities = Array[StringName]([&"poison", &"bleed"])
+on_hit_effects = Array[ExtResource("2_hit")]([])
+sound_hurt = &"enemy_hurt"
+sound_death = &"explosion"
+sound_attack = &""

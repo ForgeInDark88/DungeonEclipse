@@ -117,6 +117,11 @@ func _spawn_town() -> void:
 			light.texture_scale = 0.7
 			light.position = Vector2(0, -tex.get_height() + 6)
 			s.add_child(light)
+			var ft := create_tween().set_loops()
+			var fbase := light.energy
+			ft.tween_method(func(phase: float) -> void:
+				light.energy = fbase + sin(phase) * 0.06 + sin(phase * 2.3) * 0.04,
+				0.0, TAU, randf_range(1.8, 2.6)).set_trans(Tween.TRANS_LINEAR)
 	_spawn_specials()
 	var gate := DungeonGate.new()
 	add_entity(gate, cell_bottom(layout.exit_cell))
