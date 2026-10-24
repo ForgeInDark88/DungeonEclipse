@@ -7,14 +7,15 @@ const TARGET_LEVEL := 30
 
 
 func _ready() -> void:
-	collision_layer = 0
+	add_to_group("interactable")
+	collision_layer = 16  # the player's interact area scans this layer
 	collision_mask = 0
 	input_pickable = true
 	var shape := CollisionShape2D.new()
 	var rect := RectangleShape2D.new()
-	rect.size = Vector2(22, 24)
+	rect.size = Vector2(30, 34)
 	shape.shape = rect
-	shape.position = Vector2(0, -12)
+	shape.position = Vector2(0, -14)
 	add_child(shape)
 	var s := Sprite2D.new()
 	s.texture = load("res://assets/sprites/fx/rune_orb.png")
@@ -34,10 +35,27 @@ func _ready() -> void:
 	input_event.connect(_on_click)
 
 
+## Both work: walk up and press the interact key, or just click the orb.
+func get_prompt() -> String:
+	return "Тест: выдать %d уровень" % TARGET_LEVEL
+
+
+func can_interact() -> bool:
+	return true
+
+
+func interact(_player: Node) -> void:
+	_grant()
+
+
 func _on_click(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	var mb := event as InputEventMouseButton
 	if mb == null or not mb.pressed or mb.button_index != MOUSE_BUTTON_LEFT:
 		return
+	_grant()
+
+
+func _grant() -> void:
 	var hero := GameState.hero
 	if hero == null:
 		return

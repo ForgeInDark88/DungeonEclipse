@@ -6,6 +6,16 @@ func _ready() -> void:
 	build_book(Vector2(440, 260))
 	AudioManager.play_music(&"menu")
 
+	# The living title: a violet glow breathes behind it and the letters
+	# shimmer, like the eclipse itself.
+	var glow := TextureRect.new()
+	glow.texture = load("res://assets/ui/title_glow.png")
+	glow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	glow.stretch_mode = TextureRect.STRETCH_SCALE
+	glow.custom_minimum_size = Vector2(200, 72)
+	glow.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	glow.modulate = Color(1, 1, 1, 0.0)
+	left_page.add_child(glow)
 	var title := TextureRect.new()
 	title.texture = load("res://assets/ui/title.png")
 	title.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -13,6 +23,11 @@ func _ready() -> void:
 	title.custom_minimum_size = Vector2(184, 66)
 	title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	left_page.add_child(title)
+	var tw := title.create_tween().set_loops()
+	tw.tween_property(glow, "modulate:a", 0.75, 1.6).set_trans(Tween.TRANS_SINE)
+	tw.parallel().tween_property(title, "modulate", Color(1.12, 1.05, 1.25), 1.6).set_trans(Tween.TRANS_SINE)
+	tw.tween_property(glow, "modulate:a", 0.35, 1.6).set_trans(Tween.TRANS_SINE)
+	tw.parallel().tween_property(title, "modulate", Color.WHITE, 1.6).set_trans(Tween.TRANS_SINE)
 	var sub := UIStyle.label("Рогалик в тёмном подземелье", 8, UIStyle.INK_SOFT)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	left_page.add_child(sub)
