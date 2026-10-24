@@ -16,6 +16,7 @@ breaks_tiles = false
 stun_time = 0.0
 damage_type = 1
 color = Color(1, 0.4, 0.1, 1)
+vfx = &"quake"
 
 [resource]
 script = ExtResource("skill")

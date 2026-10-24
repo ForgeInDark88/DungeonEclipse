@@ -14,6 +14,9 @@ extends SkillEffect
 ## WeaponItemData.DamageType (resistances apply).
 @export var damage_type: int = 0
 @export var color: Color = Color(1.0, 0.5, 0.2)
+## Look of the blast: explosion (default), slash, blades, ring, ice, light,
+## sun, quake - each skill family gets its own silhouette.
+@export var vfx: StringName = &"explosion"
 
 
 func execute(caster: Node, level: int) -> bool:
@@ -32,7 +35,24 @@ func execute(caster: Node, level: int) -> bool:
 					enemy.stun(stun_time)
 	if breaks_tiles and caster.level:
 		caster.level.explode(center, r * 0.6)
-	Fx.explosion(caster.get_parent(), center, r, color)
+	var parent := caster.get_parent()
+	match vfx:
+		&"slash":
+			Fx.arc_slash(parent, center, r, color, caster.facing)
+		&"blades":
+			Fx.blade_fan(parent, center, r, color)
+		&"ring":
+			Fx.nova_ring(parent, center, r, color)
+		&"ice":
+			Fx.ice_burst(parent, center, r, color)
+		&"light":
+			Fx.light_pillars(parent, center, r, color)
+		&"sun":
+			Fx.sun_flash(parent, center, r, color)
+		&"quake":
+			Fx.rock_burst(parent, center, r, color)
+		_:
+			Fx.explosion(parent, center, r, color)
 	EventBus.screen_shake.emit(4.0)
 	return true
 

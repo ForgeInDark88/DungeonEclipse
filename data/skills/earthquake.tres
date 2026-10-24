@@ -14,6 +14,7 @@ knockback = 160.0
 breaks_tiles = true
 stun_time = 0.0
 color = Color(1, 0.5, 0.15, 1)
+vfx = &"quake"
 
 [resource]
 script = ExtResource("3_km0d7")
