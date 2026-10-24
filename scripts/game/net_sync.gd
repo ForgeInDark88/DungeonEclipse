@@ -285,6 +285,77 @@ func purchase_remote(merchant_seq: int, slot: int) -> void:
 			m.stock.remove_at(slot)
 
 
+# ------------------------------------------------------------- casts
+## Any player cast → everyone sees the animation, sound and the visuals.
+func broadcast_cast(caster_peer: int, skill_id: StringName, aim: Vector2) -> void:
+	cast_fx.rpc(caster_peer, skill_id, aim)
+
+
+@rpc("any_peer", "call_remote", "unreliable")
+func cast_fx(caster_peer: int, skill_id: StringName, aim: Vector2) -> void:
+	# The caster already saw their own cast.
+	if caster_peer == multiplayer.get_unique_id():
+		return
+	var scene := get_tree().current_scene
+	if scene == null or not ("net_players" in scene):
+		return
+	var puppet: Player = scene.net_players.get_node_or_null("Player_%d" % caster_peer)
+	if puppet == null or puppet.hero == null:
+		return
+	var skill := load("res://data/skills/%s.tres" % skill_id) as SkillData
+	if skill == null:
+		return
+	if skill.cast_animation != &"":
+		puppet.animator.play_action(skill.cast_animation, 0.4)
+	var snd := skill.cast_sound if skill.cast_sound != &"" else &"skill_cast"
+	AudioManager.play_sfx(snd, puppet.global_position, -4.0)
+	_net_skill_visual(puppet, skill, aim)
+
+
+## A silent copy of the skill's show: blasts replay their silhouette,
+## projectiles fly without dealing damage.
+func _net_skill_visual(puppet: Player, skill: SkillData, aim: Vector2) -> void:
+	var fx_parent := puppet.get_parent()
+	var origin := puppet.global_position + Vector2(0, -11)
+	var effect: SkillEffect = skill.effect
+	if effect == null:
+		Fx.sparks(fx_parent, origin, Color(0.8, 0.7, 1.0), 10, 60.0)
+		return
+	if effect is AreaBlastSkill:
+		var blast := effect as AreaBlastSkill
+		var radius: float = blast.radius
+		var center := origin + aim.normalized() * radius * 0.6
+		match String(blast.vfx):
+			"meteor":
+				Fx.meteor_fall(fx_parent, center, radius, blast.color)
+				Fx.meteor_impact(fx_parent, center, radius, blast.color)
+			"ice":
+				Fx.ice_burst(fx_parent, center, radius, blast.color)
+			"light":
+				Fx.light_pillars(fx_parent, center, radius, blast.color)
+			"sun":
+				Fx.sun_flash(fx_parent, center, radius, blast.color)
+			"quake", "rock":
+				Fx.rock_burst(fx_parent, center, radius, blast.color)
+			"ring", "nova":
+				Fx.nova_ring(fx_parent, center, radius, blast.color)
+			"slash":
+				Fx.arc_slash(fx_parent, center, radius, blast.color, 1.0)
+			"blades":
+				Fx.blade_fan(fx_parent, center, radius, blast.color)
+			_:
+				Fx.explosion(fx_parent, center, radius, blast.color)
+	elif effect is ProjectileSkill:
+		var ps := effect as ProjectileSkill
+		var dir := (aim - origin).normalized() if aim != origin else Vector2.RIGHT
+		var proj: Node2D = (load("res://scenes/world/projectile.tscn") as PackedScene).instantiate()
+		proj.setup(ps.texture, dir, ps.speed, 0, &"net_visual")
+		fx_parent.add_child(proj)
+		proj.global_position = origin
+	else:
+		Fx.sparks(fx_parent, origin, Color(0.8, 0.7, 1.0), 10, 60.0)
+
+
 # ------------------------------------------------- host-only world moves
 ## A client asked to descend / return to town; the host decides.
 @rpc("any_peer", "call_remote", "reliable")

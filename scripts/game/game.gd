@@ -93,6 +93,8 @@ func _ready() -> void:
 
 
 func _load_floor() -> void:
+	if net_sync:
+		net_sync.clear_floor()  # before the new level spawns and registers
 	if level:
 		world.remove_child(level)
 		level.queue_free()
@@ -123,8 +125,6 @@ func _load_floor() -> void:
 		EventBus.message.emit("Этаж %d — логово стража!" % floor_number)
 	else:
 		EventBus.message.emit("Этаж %d — %s" % [floor_number, biome.display_name] if biome else "Этаж %d" % floor_number)
-	if net_sync:
-		net_sync.clear_floor()
 	_net_on_floor_loaded()
 
 	# Between-floors save: the snapshot must be taken with the floor freshly
@@ -187,6 +187,12 @@ func _apply_brightness() -> void:
 
 
 func _process(delta: float) -> void:
+	# A fallen hero spectates the party until the next floor revives them.
+	if Net.active and player != null and player.dead and net_players:
+		for p: Player in net_players.get_children():
+			if p != player and not p.dead:
+				player.camera.global_position = p.global_position + Vector2(0, -10)
+				break
 	if _shake > 0.0:
 		_shake = maxf(0.0, _shake - delta * 20.0)
 		player.camera.offset = Vector2(_rng.randf_range(-_shake, _shake), _rng.randf_range(-_shake, _shake))
@@ -388,6 +394,11 @@ func _net_bootstrap() -> void:
 	EventBus.floor_changed.connect(func(f: int) -> void:
 		if Net.is_host:
 			Net.rpc_set_floor(f))
+	# Late roster updates must not leave puppets missing on clients.
+	Net.players_changed.connect(func() -> void:
+		if _players_spawned and not Net.is_host and net_players:
+			for peer_id in Net.players:
+				_spawn_net_puppet(peer_id))
 	# The client's own hero is built from the race/class it registered with.
 	if not Net.is_host and GameState.hero == null:
 		var info: Dictionary = Net.players.get(Net.multiplayer.get_unique_id(), Net.my_info)

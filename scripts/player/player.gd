@@ -741,6 +741,10 @@ func use_skill(index: int) -> void:
 			animator.play_action(skill.cast_animation, 0.4)
 		var snd := skill.cast_sound if skill.cast_sound != &"" else &"skill_cast"
 		AudioManager.play_sfx(snd, global_position, -4.0)
+		if Net.active:
+			var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+			if ns:
+				ns.broadcast_cast(peer_id, skill.id, aim_vector(_attack_origin()))
 
 
 func use_quick_slot(index: int) -> void:
