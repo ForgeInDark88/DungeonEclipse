@@ -114,11 +114,13 @@ def buff(sid, name, desc, icon, key, bonuses, per_level, duration, mana, cd, tin
 
 
 def blast(sid, name, desc, icon, radius, dmg, per_level, mana, cd, color, dtype=PHYS, stun=0.0, knockback=140.0,
-          anim="attack_heavy", synergy=()):
-    write_skill(sid, name, desc, "area_blast_skill", [
-        ("radius", float(radius)), ("radius_per_level", 5.0), ("damage_multiplier", dmg), ("damage_per_level", per_level),
-        ("knockback", float(knockback)), ("breaks_tiles", False), ("stun_time", float(stun)), ("damage_type", dtype),
-        ("color", ("COL",) + color)], mana=mana, cd=cd, anim=anim, synergy=synergy)
+          anim="attack_heavy", synergy=(), vfx=""):
+    fields = [("radius", float(radius)), ("radius_per_level", 5.0), ("damage_multiplier", dmg), ("damage_per_level", per_level),
+              ("knockback", float(knockback)), ("breaks_tiles", False), ("stun_time", float(stun)), ("damage_type", dtype),
+              ("color", ("COL",) + color)]
+    if vfx:
+        fields.append(("vfx", ("RAW", '&"%s"' % vfx)))
+    write_skill(sid, name, desc, "area_blast_skill", fields, mana=mana, cd=cd, anim=anim, synergy=synergy)
     recolor(sid, *icon)
 
 
@@ -252,13 +254,13 @@ def new_skills():
     buff("w_frenzy", "Неистовство", "Ярость без границ: урон, скорость, точность.", ("haste", 0.0, 1.3, 1.1),
          "frenzy", {"damage": 12, "speed": 25, "crit_chance": 0.1}, {"damage": 4}, 10, 30, 30.0, (1.0, 0.3, 0.3))
     blast("m_supernova", "Сверхновая", "Звезда рождается и умирает в одно мгновение.", ("meteor", 0.02), 85, 2.6, 0.45, 40, 22.0,
-          (1.0, 0.6, 0.2), dtype=FIRE, stun=0.6, anim="attack_cast")
+          (1.0, 0.6, 0.2), dtype=FIRE, stun=0.6, anim="attack_cast", vfx="sun")
     blast("m_absolute_zero", "Абсолютный ноль", "Всё замирает. Совсем.", ("frost_nova", 0.5, 1.2), 70, 2.0, 0.4, 35, 20.0,
-          (0.7, 0.95, 1.0), dtype=ICE, stun=2.0, anim="attack_cast")
+          (0.7, 0.95, 1.0), dtype=ICE, stun=2.0, anim="attack_cast", vfx="ice")
     passive("m_mind_domination", "Власть разума", "Мысль острым любого клинка.", ("arcane_mind", 0.55, 1.15),
             {"intellect": 4, "damage": 3, "crit_chance": 0.05, "max_mana": 20})
     blast("r_death_waltz", "Смертельный вальс", "Танец, после которого не аплодируют.", ("knife_fan", 0.12, 1.2), 60, 2.6, 0.4,
-          30, 14.0, (0.95, 0.5, 0.9), knockback=60.0, synergy=(0, 3))
+          30, 14.0, (0.95, 0.5, 0.9), knockback=60.0, synergy=(0, 3), vfx="blades")
     passive("r_child_of_dark", "Дитя тьмы", "Тьма — твой дом и твой щит.", ("shadow_step", 0.12),
             dict({"agility": 3, "crit_chance": 0.05, "speed": 8}, **ALL_RES(0.06)))
     missile("r_thousand_blades", "Тысяча клинков", "Веер стали, от которого не уйти.", ("throw_knives", 0.08, 1.25),
@@ -268,7 +270,7 @@ def new_skills():
     passive("p_unbroken_vow", "Нерушимый завет", "Обет, который не возьмёт даже смерть.", ("blessing", 0.35, 0.8),
             {"max_hp": 40, "armor": 5, "hp_regen": 0.5})
     blast("p_heavens_wrath", "Гнев небес", "Небеса падают на нечестивых.", ("righteous_wrath", 0.05), 66, 2.6, 0.45, 35, 18.0,
-          (1.0, 0.9, 0.5), dtype=MAGIC, stun=1.2)
+          (1.0, 0.9, 0.5), dtype=MAGIC, stun=1.2, vfx="light")
 
 
 # tiers: list of 5 entries per branch, each a skill id or a (a, b) choice pair

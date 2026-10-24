@@ -17,6 +17,7 @@ breaks_tiles = false
 stun_time = 1.5
 damage_type = 4
 color = Color(1, 1, 0.8, 1)
+vfx = &"light"
 
 [resource]
 script = ExtResource("skill")

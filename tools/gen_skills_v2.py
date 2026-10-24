@@ -36,14 +36,14 @@ ALL_RES = lambda v: {"res_fire": v, "res_ice": v, "res_poison": v, "res_magic": 
 
 def new_skills():
     gst.blast("w_cleave", "Рассечение", "Широкий взмах рассекает всё перед воином.", ("power_strike", 0.0), 40, 1.6, 0.3, 8, 4.0,
-              (0.95, 0.5, 0.45), knockback=90.0, synergy=(0, 1))
+              (0.95, 0.5, 0.45), knockback=90.0, synergy=(0, 1), vfx="slash")
     gst.blast("w_omnislash", "Веер клинков", "Серия молниеносных ударов по всем вокруг.", ("earthquake", 0.0), 62, 2.6, 0.4, 26, 13.0,
-              (1.0, 0.55, 0.5), stun=0.3, synergy=(0, 1))
+              (1.0, 0.55, 0.5), stun=0.3, synergy=(0, 1), vfx="blades")
     gst.blast("w_shield_bash", "Удар щитом", "Оглушающий тычок щитом.", ("iron_skin", 0.0), 26, 1.1, 0.25, 6, 5.0,
-              (0.75, 0.85, 0.95), stun=1.4, knockback=170.0)
+              (0.75, 0.85, 0.95), stun=1.4, knockback=170.0, vfx="ring")
     gst.dash("m_void_step", "Шаг бездны", "Короткий прыжок сквозь пространство.", ("dash", 0.0), 420, 0.6, 8, 4.0)
     gst.blast("r_backstab", "Удар в спину", "Кровавый выпад в слепую зону врага.", ("dash", 0.0), 28, 1.9, 0.4, 10, 5.0,
-              (0.9, 0.4, 0.5), knockback=30.0, synergy=(0, 3))
+              (0.9, 0.4, 0.5), knockback=30.0, synergy=(0, 3), vfx="slash")
     gst.passive("r_umbral", "Полумрак", "Сумерки укрывают и ускоряют.", ("evasion", 0.15),
                 dict({"agility": 2, "speed": 5}, **ALL_RES(0.05)))
 
