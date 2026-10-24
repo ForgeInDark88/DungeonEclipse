@@ -21,8 +21,8 @@ var _jump_t := 0.0
 var _jump_arc := 80.0
 
 
-func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null) -> void:
-	super(p_data, p_floor, p_elite)
+func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null, p_champion := false) -> void:
+	super(p_data, p_floor, p_elite, p_champion)
 	boss = p_data as BossData
 
 
@@ -395,6 +395,10 @@ func _die() -> void:
 		if is_instance_valid(s) and not s.is_dead():
 			s.take_damage(99999)
 	GameState.run_stats["bosses"] = int(GameState.run_stats.get("bosses", 0)) + 1
+	# Bosses pay a skill point: the risk buys progress in the tree.
+	if GameState.hero and GameState.run_active:
+		GameState.hero.skills.add_points(1)
+		EventBus.message.emit("%s повержен: +1 очко навыка" % boss.title)
 	EventBus.screen_shake.emit(10.0)
 	Fx.explosion(get_parent(), global_position + Vector2(0, -20), 60.0, Color(1.0, 0.7, 0.3))
 	var rewards: Array = []

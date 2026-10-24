@@ -480,6 +480,42 @@ func _spawn_specials() -> void:
 				add_entity((load(SMITH_SCENE) as PackedScene).instantiate(), cell_bottom(info["cell"]))
 			&"event":
 				_spawn_event(info)
+			&"miniboss":
+				_spawn_miniboss(info)
+
+
+## The floor guardian: the toughest monster of the floor as a boosted elite
+## in a room whose doors slam shut behind the hero.
+func _spawn_miniboss(info: Dictionary) -> void:
+	var pool := ItemDatabase.enemies_for_floor(floor_number, biome.id if biome else &"")
+	if pool.is_empty():
+		return
+	var champ_data: EnemyData = pool[0]
+	for e in pool:
+		if e.max_hp > champ_data.max_hp:
+			champ_data = e
+	var elite: EliteAffixData = null
+	var weights: Array[float] = []
+	for e in ItemDatabase.elites:
+		if e.min_floor <= floor_number:
+			weights.append(e.weight)
+	if not weights.is_empty():
+		var pick := LootTable._weighted_index(weights, rng)
+		var n := 0
+		for e in ItemDatabase.elites:
+			if e.min_floor <= floor_number:
+				if n == pick:
+					elite = e
+					break
+				n += 1
+	var champion := (load(ENEMY_SCENE) as PackedScene).instantiate()
+	champion.setup(champ_data, floor_number, elite, true)
+	add_entity(champion, cell_bottom(info["cell"]))
+	var gate := MinibossGate.new()
+	gate.level = self
+	gate.champion = champion
+	gate.room_cells = info["room"]
+	add_child(gate)
 
 
 func _spawn_event(info: Dictionary) -> void:

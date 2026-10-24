@@ -46,6 +46,8 @@ var floor_number: int = 1
 var max_hp: int = 10
 var hp: int = 10
 var damage: int = 1
+## Floor guardian: boosted elite guarding a sealed room.
+var champion := false
 var state: State = State.PATROL
 var dir: float = 1.0
 
@@ -123,10 +125,11 @@ var danger_time := 0.0
 @onready var status: StatusEffects = $StatusEffects
 
 
-func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null) -> void:
+func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null, p_champion := false) -> void:
 	data = p_data
 	floor_number = p_floor
 	elite = p_elite
+	champion = p_champion
 	var f := float(p_floor - 1)
 	max_hp = roundi(data.max_hp * (1.0 + HP_SCALE_PER_FLOOR * f))
 	damage = roundi(data.damage * (1.0 + DMG_SCALE_PER_FLOOR * f))
@@ -135,6 +138,10 @@ func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null) -> v
 		damage = roundi(damage * elite.damage_mult)
 		_speed_mult = elite.speed_mult
 		_cooldown_mult = elite.attack_cooldown_mult
+	if champion:
+		# The floor guardian: a monster of legends behind slammed doors.
+		max_hp = roundi(max_hp * 2.4)
+		damage = roundi(damage * 1.2)
 	# Difficulty and curses of the altars of fate.
 	max_hp = maxi(1, roundi(max_hp * (1.0 + GameState.run_effect("enemy_hp"))))
 	damage = maxi(1, roundi(damage * (1.0 + GameState.run_effect("enemy_damage"))))
@@ -142,10 +149,12 @@ func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null) -> v
 
 
 func display_name() -> String:
+	var base := data.display_name
 	if elite:
-		var base := data.display_name
-		return "%s %s" % [elite.prefix(data.gender), base.left(1).to_lower() + base.substr(1)]
-	return data.display_name
+		base = "%s %s" % [elite.prefix(data.gender), base.left(1).to_lower() + base.substr(1)]
+	if champion:
+		return "Страж этажа: %s" % base
+	return base
 
 
 func _ready() -> void:
@@ -172,6 +181,8 @@ func _ready() -> void:
 		sprite.self_modulate.a = 0.85
 	if elite:
 		_setup_elite()
+	if champion and not elite:
+		scale = Vector2(1.45, 1.45)
 	if data.ceiling_ambush:
 		_ambushing = true
 		call_deferred("_hang_from_ceiling")
@@ -191,7 +202,7 @@ func _ready() -> void:
 
 func _setup_elite() -> void:
 	add_to_group("elites")
-	scale = Vector2(1.2, 1.2)
+	scale = Vector2(1.45, 1.45) if champion else Vector2(1.2, 1.2)
 	var imm: Array[StringName] = status.immunities.duplicate()
 	imm.append_array(elite.immunities)
 	status.immunities = imm
