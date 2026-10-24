@@ -378,6 +378,9 @@ func _stats_grid(rows: Array) -> Control:
 ## from it; every player owns their hero and sends hits/pickups to the host.
 func _net_bootstrap() -> void:
 	net_sync = NetSync.new()
+	# A fixed node name: RPC targets are resolved by path, and an auto name
+	# (@Node@N) differs between machines and breaks every NetSync RPC.
+	net_sync.name = "NetSync"
 	world.add_child(net_sync)
 	net_sync.local_player = null
 	net_players = Node2D.new()
@@ -436,14 +439,14 @@ func _net_spawn_players() -> void:
 	world.remove_child(player)
 	net_players.add_child(player)
 	player.name = "Player_%d" % my_id
+	# The host addresses real damage at this node (net_sync.player_damage).
+	net_sync.local_player = player
 	for peer_id in Net.players:
 		if peer_id == my_id:
 			continue
 		_spawn_net_puppet(peer_id)
 	# Tell the host this scene is up; it spawns my puppet and shares allies.
 	# (The host must not call it on itself: call_remote forbids self-RPC.)
-	if not Net.is_host:
-		net_sync.net_hello.rpc_id(1)
 
 
 func _spawn_net_puppet(peer_id: int) -> void:
@@ -495,6 +498,10 @@ func _net_on_floor_loaded() -> void:
 	if not Net.active:
 		return
 	_net_spawn_players()
+	# Every floor: the guest asks the host for a fresh world snapshot —
+	# spawn descriptors broadcast mid-transition may have been dropped.
+	if not Net.is_host:
+		net_sync.net_hello.rpc_id(1)
 	var sp := level.start_position()
 	player.global_position = sp
 	for p: Player in net_players.get_children():
