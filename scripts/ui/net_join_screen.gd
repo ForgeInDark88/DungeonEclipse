@@ -6,6 +6,7 @@ extends BookPageScreen
 const FIND_TIME := 3.0
 
 var _servers: ItemList
+var _name_edit: LineEdit
 var _status: Label
 var _race_buttons: Array[Button] = []
 var _class_buttons: Array[Button] = []
@@ -19,6 +20,16 @@ func _ready() -> void:
 	build_book(Vector2(560, 300))
 	AudioManager.play_music(&"menu")
 	left_page.add_child(UIStyle.label("Присоединиться (LAN)", 11))
+	var name_row := HBoxContainer.new()
+	name_row.add_theme_constant_override("separation", 6)
+	name_row.add_child(UIStyle.label("Ник:", 8))
+	_name_edit = LineEdit.new()
+	_name_edit.text = SaveManager.last_name
+	_name_edit.placeholder_text = "Ваш ник"
+	_name_edit.custom_minimum_size = Vector2(140, 0)
+	_name_edit.max_length = 16
+	name_row.add_child(_name_edit)
+	left_page.add_child(name_row)
 	left_page.add_child(UIStyle.label("Игры в сети:", 9, UIStyle.INK_SOFT))
 	_servers = ItemList.new()
 	_servers.custom_minimum_size = Vector2(230, 90)
@@ -74,9 +85,7 @@ func _ready() -> void:
 		get_tree().change_scene_to_file(GameState.MAIN_MENU)))
 
 	Net.start_discovery(true)
-	multiplayer.connected_to_server.connect(func() -> void:
-		_status.text = "Подключено! Ждём, пока хост начнёт забег...")
-		AudioManager.play_ui(&"ui_book_open"))
+	multiplayer.connected_to_server.connect(_on_net_connected)
 
 
 func _process(delta: float) -> void:
@@ -103,7 +112,9 @@ func _join() -> void:
 	var picked := _servers.get_selected_items()
 	var idx := picked[0] if not picked.is_empty() else 0
 	var ip: String = Net.discovered()[idx]["ip"]
-	Net.my_info = {"name": "Игрок-%d" % (randi() % 90 + 10),
+	SaveManager.last_name = _name_edit.text.strip_edges()
+	SaveManager.save_settings()
+	Net.my_info = {"name": SaveManager.last_name if SaveManager.last_name != "" else "Гость",
 			"race": _race.id, "cls": _cls.id, "female": _female}
 	if not Net.join_game(ip):
 		_status.text = "Не удалось подключиться"
@@ -121,3 +132,8 @@ func _toggle(text: String, group: ButtonGroup) -> Button:
 
 func _exit_tree() -> void:
 	Net.start_discovery(false)
+
+
+func _on_net_connected() -> void:
+	_status.text = "Подключено! Ждём, пока хост начнёт забег..."
+	AudioManager.play_ui(&"ui_book_open")
