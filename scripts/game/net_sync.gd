@@ -259,6 +259,24 @@ func broadcast_item(pickup: ItemPickup) -> void:
 var local_player: Player  # set by game.gd on every machine
 
 
+## Host → the affected player's machine: a status landed on your hero.
+@rpc("any_peer", "call_remote", "reliable")
+func player_status(target_peer: int, id: StringName, duration: float, power: float) -> void:
+	if multiplayer.get_remote_sender_id() != 1:
+		return
+	if local_player and Net.multiplayer.get_unique_id() == target_peer:
+		local_player.status.apply(id, duration, power)
+
+
+## Host → the healed player's machine: life steal from a host-judged hit.
+@rpc("any_peer", "call_remote", "reliable")
+func player_heal(target_peer: int, amount: int) -> void:
+	if multiplayer.get_remote_sender_id() != 1:
+		return
+	if local_player and Net.multiplayer.get_unique_id() == target_peer:
+		local_player.heal_status(amount)
+
+
 ## Host → the hit player's machine: an enemy hurt you.
 @rpc("any_peer", "call_remote", "reliable")
 func player_damage(amount: int, from_pos: Vector2, damage_type: int) -> void:

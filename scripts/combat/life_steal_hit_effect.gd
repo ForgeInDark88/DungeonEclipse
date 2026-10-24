@@ -9,6 +9,12 @@ func on_hit(attacker: Node, _target: Node, damage: int) -> void:
 	if not ("hero" in attacker):
 		return
 	var amount := maxi(1, roundi(damage * percent))
+	if attacker is Player and attacker.puppet:
+		# The damage was judged on the host: forward the heal to the owner.
+		var ns: NetSync = attacker.get_tree().get_first_node_in_group("net_game")
+		if ns:
+			ns.player_heal.rpc_id(attacker.peer_id, amount)
+		return
 	attacker.hero.stats.heal(amount)
 	EventBus.floating_text.emit(attacker.global_position + Vector2(0, -26), "+%d" % amount, Color(0.9, 0.2, 0.3))
 

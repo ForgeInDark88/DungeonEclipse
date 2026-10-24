@@ -136,6 +136,8 @@ func _physics_process(delta: float) -> void:
 	if active.is_empty():
 		return
 	var host := get_parent()
+	if host is Player and host.puppet:
+		return  # the owner's copy is the live one; ours stays decorative
 	var ended: Array[StringName] = []
 	for id: StringName in active.keys():
 		if not active.has(id):
