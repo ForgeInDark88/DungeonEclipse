@@ -69,6 +69,11 @@ func _ready() -> void:
 			var forge := SmithBook.new()
 			add_child(forge)
 			forge.open(GameState.hero))
+	EventBus.quest_requested.connect(func(_g: Node, _p: Node) -> void:
+		if not get_tree().paused:
+			var book := QuestBook.new()
+			add_child(book)
+			book.open())
 	EventBus.boss_spawned.connect(func(b: Node) -> void: AudioManager.play_music((b as Boss).boss.music))
 	# Boss defeated: a victory sting, then back to the floor's music.
 	EventBus.boss_defeated.connect(func(_b: BossData, _p: Vector2) -> void:
@@ -112,7 +117,10 @@ func _load_floor() -> void:
 		EventBus.message.emit("Этаж %d — %s" % [floor_number, biome.display_name] if biome else "Этаж %d" % floor_number)
 	# Between-floors save: the snapshot must be taken with the floor freshly
 	# built (it regenerates from the seed on continue, loot included).
-	if GameState.run_active and not player.dead:
+	if GameState.run_active and not player.dead \
+			and not (GameState.floor_number == GameState.TOWN_FLOOR and GameState.town_return_floor > 0):
+		# A mid-run visit to town keeps the snapshot of the floor the hero
+		# left, so "continue" resumes the descent, not the street.
 		SaveManager.save_run()
 
 

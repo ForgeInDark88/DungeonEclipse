@@ -10,11 +10,13 @@ const TILE := 16
 const CHEST_SCENE := "res://scenes/world/chest.tscn"
 const ENEMY_SCENE := "res://scenes/enemies/enemy.tscn"
 const DOOR_SCENE := "res://scenes/world/exit_door.tscn"
+const STAIRS_SCENE := "res://scenes/world/return_stairs.tscn"
 const TORCH_SCENE := "res://scenes/world/wall_torch.tscn"
 const DRIP_SCENE := "res://scenes/world/water_drip.tscn"
 const TRAP_SCENE := "res://scenes/traps/trap.tscn"
 const MERCHANT_SCENE := "res://scenes/npc/merchant.tscn"
 const SMITH_SCENE := "res://scenes/npc/blacksmith.tscn"
+const QUEST_SCENE := "res://scenes/npc/quest_giver.tscn"
 const BOSS_SCENE := "res://scenes/bosses/boss.tscn"
 ## No traps this close (in cells) to the start.
 const SAFE_START_RADIUS := 8
@@ -89,6 +91,7 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 		_spawn_decorations()
 		return
 	_spawn_door()
+	_spawn_return_stairs()
 	_spawn_specials()
 	_spawn_chests()
 	_spawn_enemies()
@@ -475,6 +478,26 @@ func _spawn_door() -> void:
 	add_entity(door, cell_bottom(layout.exit_cell))
 
 
+## Stairs back to town near the floor entrance (every normal floor).
+func _spawn_return_stairs() -> void:
+	var cell := _free_cell_near(layout.start_cell)
+	if cell.x < 0:
+		return
+	add_entity((load(STAIRS_SCENE) as PackedScene).instantiate(), cell_bottom(cell))
+
+
+## Closest standing spot to `from`: empty cell on solid ground, a couple of
+## tiles away so the hero does not spawn inside it. (-1, -1) when none.
+func _free_cell_near(from: Vector2i) -> Vector2i:
+	for off: Vector2i in [Vector2i(2, 0), Vector2i(-2, 0), Vector2i(3, 0), Vector2i(-3, 0),
+			Vector2i(1, 0), Vector2i(-1, 0), Vector2i(2, -1), Vector2i(-2, -1)]:
+		var c := from + off
+		if layout.get_tile(c.x, c.y) == LevelLayout.Tile.EMPTY \
+				and LevelLayout.is_solid(layout.get_tile(c.x, c.y + 1)):
+			return c
+	return Vector2i(-1, -1)
+
+
 ## Merchant and random-event rooms reserved by the generator.
 func _spawn_specials() -> void:
 	for info in layout.specials:
@@ -485,6 +508,8 @@ func _spawn_specials() -> void:
 				add_entity(m, cell_bottom(info["cell"]))
 			&"smith":
 				add_entity((load(SMITH_SCENE) as PackedScene).instantiate(), cell_bottom(info["cell"]))
+			&"quest":
+				add_entity((load(QUEST_SCENE) as PackedScene).instantiate(), cell_bottom(info["cell"]))
 			&"event":
 				_spawn_event(info)
 			&"miniboss":

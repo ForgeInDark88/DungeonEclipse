@@ -29,9 +29,14 @@ func _ready() -> void:
 
 
 func get_prompt() -> String:
+	if GameState.town_return_floor > 0:
+		return "Спуститься на этаж %d" % GameState.town_return_floor
 	return "Спуститься в подземелье"
 
 
 func interact(_player: Node) -> void:
 	AudioManager.play_sfx(&"portal")
-	GameState.next_floor()
+	if GameState.town_return_floor > 0:
+		GameState.resume_from_town()
+	else:
+		GameState.next_floor()

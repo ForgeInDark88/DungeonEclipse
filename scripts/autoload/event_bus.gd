@@ -23,6 +23,8 @@ signal trap_disarmed(trap: TrapData)
 signal shop_requested(merchant: Node, player: Node)
 ## A blacksmith wants to open the forge UI.
 signal smith_requested(smith: Node, player: Node)
+## The town herald wants to open the quest book UI.
+signal quest_requested(giver: Node, player: Node)
 signal item_crafted(item: ItemData)
 signal pact_taken(pact: RunPactData)
 signal pet_changed(pet: PetData)

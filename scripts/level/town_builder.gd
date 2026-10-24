@@ -15,6 +15,7 @@ const PROPS := [
 	["chapel", 9, -2, false], ["tree", 15, -1, false], ["house_a", 20, -2, false], ["lamppost", 24, -1, true],
 	["shop", 30, -2, false], ["flowers", 35, -1, false], ["bench", 38, -1, false],
 	["tavern", 45, -2, false], ["lamppost", 50, -1, true], ["well", 54, -1, false], ["tree", 58, -1, false],
+	["quest_board", 62, -1, false],
 	["house_b", 63, -2, false], ["smithy", 71, -2, false], ["crates", 76, -1, false], ["lamppost", 79, -1, true],
 	["house_c", 85, -2, false], ["fence", 90, -1, false], ["fence", 92, -1, false], ["signpost", 96, -1, false],
 	["tree", 99, -1, false], ["dungeon_gate", 105, -2, false], ["lamppost", 7, -1, true],
@@ -36,5 +37,6 @@ static func build() -> LevelLayout:
 	for p in PROPS:
 		l.town_props.append({"tex": p[0], "cell": Vector2i(p[1], GROUND - 1), "z": p[2], "lamp": p[3]})
 	l.specials.append({"type": &"merchant", "cell": Vector2i(33, GROUND - 1)})
+	l.specials.append({"type": &"quest", "cell": Vector2i(61, GROUND - 1)})
 	l.specials.append({"type": &"smith", "cell": Vector2i(73, GROUND - 1)})
 	return l

@@ -1,0 +1,27 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/npc/quest_giver.gd" id="1_giver"]
+[ext_resource type="Texture2D" path="res://assets/sprites/town/quest_giver.png" id="2_tex"]
+
+[sub_resource type="RectangleShape2D" id="Shape_q"]
+size = Vector2(24, 28)
+
+[node name="QuestGiver" type="Area2D"]
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("1_giver")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+position = Vector2(0, -5)
+texture = ExtResource("2_tex")
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+position = Vector2(0, -18)
+color = Color(0.8, 0.6, 1, 1)
+energy = 0.9
+texture_scale = 0.7
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -14)
+shape = SubResource("Shape_q")

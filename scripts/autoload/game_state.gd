@@ -37,9 +37,15 @@ const COMBO_STEP := 0.05
 const COMBO_MAX_BONUS := 0.5
 var combo: int = 0
 var _combo_time := 0.0
+## The guild's quest chain for this run (progress from EventBus signals).
+var quests := QuestLog.new()
+## The floor the hero left mid-run to visit the town; the town gate leads
+## back to it (regenerated fresh). 0 = the hero has not left a floor.
+var town_return_floor: int = 0
 
 
 func _ready() -> void:
+	quests.attach()
 	EventBus.enemy_killed.connect(func(_d: EnemyData, _p: Vector2) -> void:
 		kills += 1
 		_add_combo())
@@ -67,6 +73,8 @@ func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, 
 	pacts.clear()
 	pet = null
 	combo = 0
+	town_return_floor = 0
+	quests.reset()
 	reset_run_stats()
 	run_seed = randi() if seed_value < 0 else seed_value
 	run_active = true
@@ -191,6 +199,23 @@ func current_biome() -> BiomeData:
 
 func next_floor() -> void:
 	floor_number += 1
+	EventBus.floor_changed.emit(floor_number)
+
+
+## Climbs out of the dungeon at the current floor: back to the town street
+## without ending the run. The town gate then leads back to this floor.
+func return_to_town() -> void:
+	if not run_active or floor_number <= TOWN_FLOOR:
+		return
+	town_return_floor = floor_number
+	floor_number = TOWN_FLOOR
+	EventBus.floor_changed.emit(floor_number)
+
+
+## The town gate mid-run: descends to the floor the hero left.
+func resume_from_town() -> void:
+	floor_number = maxi(1, town_return_floor)
+	town_return_floor = 0
 	EventBus.floor_changed.emit(floor_number)
 
 
