@@ -586,11 +586,12 @@ func _net_broadcast(delta: float) -> void:
 	if _net_timer <= 0.0:
 		_net_timer = 0.05
 		net_state.rpc(global_position, facing, hero.stats.hp if hero else 0,
-				hero.stats.max_hp() if hero else 0, dead)
+				hero.stats.max_hp() if hero else 0, dead, _net_costume())
 
 
 @rpc("any_peer", "call_remote", "unreliable")
-func net_state(pos: Vector2, p_facing: float, hp: int, max_hp: int, is_dead: bool) -> void:
+func net_state(pos: Vector2, p_facing: float, hp: int, max_hp: int, is_dead: bool,
+		costume: Dictionary = {}) -> void:
 	if not puppet or multiplayer.get_remote_sender_id() != peer_id:
 		return
 	_net_target = pos
@@ -598,6 +599,7 @@ func net_state(pos: Vector2, p_facing: float, hp: int, max_hp: int, is_dead: boo
 	facing = p_facing
 	if hero:
 		hero.stats.hp = hp
+	_net_apply_costume(costume)
 	if is_dead and not dead:
 		dead = true
 		animator.die()
@@ -670,6 +672,37 @@ func net_confirm_hit(enemy: Enemy, amount: int) -> void:
 				return
 	if is_instance_valid(enemy) and not enemy.is_dead():
 		hero.apply_passive_hits(self, enemy, amount)
+
+
+## Co-op: the hero's look — ids of everything `refresh_from` renders from.
+func _net_costume() -> Dictionary:
+	if hero == null:
+		return {}
+	var c := {"female": hero.female}
+	for slot_id in hero.equipment.items:
+		var it: EquipmentItemData = hero.equipment.items[slot_id]
+		c[String(slot_id)] = String(it.id) if it else ""
+	return c
+
+
+## Co-op (puppet side): rebuild the mirrored hero's equipment from ids so
+## `refresh_from` shows the same armor/weapon layers as the owner.
+func _net_apply_costume(c: Dictionary) -> void:
+	if hero == null or c.is_empty() or _net_costume() == c:
+		return
+	hero.female = bool(c.get("female", false))
+	for slot_id in hero.equipment.items.keys():
+		var want := String(c.get(String(slot_id), ""))
+		var cur: EquipmentItemData = hero.equipment.items[slot_id]
+		if (String(cur.id) if cur else "") == want:
+			continue
+		if want == "":
+			hero.equipment.unequip(slot_id)
+			continue
+		var item: ItemData = ItemDatabase.get_item(StringName(want))
+		if item is EquipmentItemData:
+			hero.equipment.equip(item, slot_id)
+	visual.refresh_from(hero)
 
 
 ## Co-op: the fallen hero rises at the next floor's entrance.
