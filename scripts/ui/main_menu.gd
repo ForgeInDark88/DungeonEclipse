@@ -6,8 +6,12 @@ func _ready() -> void:
 	build_book(Vector2(440, 260))
 	AudioManager.play_music(&"menu")
 
-	var title := UIStyle.label("Dungeon\nEclipse", 20)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var title := TextureRect.new()
+	title.texture = load("res://assets/ui/title.png")
+	title.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	title.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	title.custom_minimum_size = Vector2(184, 66)
+	title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	left_page.add_child(title)
 	var sub := UIStyle.label("Рогалик в тёмном подземелье", 8, UIStyle.INK_SOFT)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

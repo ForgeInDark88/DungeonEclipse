@@ -24,6 +24,7 @@ cooldown = 0.0
 max_level = 4
 effect = SubResource("Effect")
 cast_animation = &"attack_cast"
+cast_sound = &"cast_holy"
 required_level = 5
 requires = Array[ExtResource("skill")]([ExtResource("req_blessing")])
 tree_row = 2

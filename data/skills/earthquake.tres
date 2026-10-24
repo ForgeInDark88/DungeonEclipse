@@ -19,6 +19,7 @@ vfx = &"quake"
 [resource]
 script = ExtResource("3_km0d7")
 cast_animation = &"attack_heavy"
+cast_sound = &"cast_quake"
 id = &"earthquake"
 display_name = "Взрыв ярости"
 description = "Взрыв вокруг героя: урон и разрушение."

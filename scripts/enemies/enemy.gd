@@ -48,6 +48,9 @@ var hp: int = 10
 var damage: int = 1
 ## Floor guardian: boosted elite guarding a sealed room.
 var champion := false
+## Held on its post by the guardian gate: no thinking, no walking, until
+## the hero steps into the room and the doors slam.
+var held := false
 var state: State = State.PATROL
 var dir: float = 1.0
 
@@ -293,6 +296,16 @@ func _physics_process(delta: float) -> void:
 		_stuck_anchor = global_position
 	if _player == null or not is_instance_valid(_player):
 		_player = get_tree().get_first_node_in_group("player") as Player
+	if held:
+		# On guard: stands still (gravity only), waiting for the hero.
+		velocity.x = 0.0
+		if data.behavior != EnemyData.Behavior.FLYER:
+			velocity.y = minf(velocity.y + GRAVITY * delta, 420.0)
+		else:
+			velocity.y = move_toward(velocity.y, 0.0, 600.0 * delta)
+		move_and_slide()
+		_play(&"idle")
+		return
 	if _update_ambush():
 		return
 	if _sleep_far_away(delta):

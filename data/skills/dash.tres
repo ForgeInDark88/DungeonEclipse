@@ -20,6 +20,7 @@ description = "Стремительный рывок сквозь врагов."
 icon = ExtResource("2_frqcs")
 mana_cost = 8
 cooldown = 3.0
+cast_sound = &"dash"
 max_level = 4
 effect = SubResource("Resource_2s1hv")
 synergy_weapons = Array[int]([3])

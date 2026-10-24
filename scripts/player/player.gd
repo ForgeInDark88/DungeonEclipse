@@ -674,7 +674,8 @@ func use_skill(index: int) -> void:
 		skills.start_cooldown(index)
 		if skill.cast_animation != &"":
 			animator.play_action(skill.cast_animation, 0.4)
-		AudioManager.play_sfx(&"skill_cast", global_position, -4.0)
+		var snd := skill.cast_sound if skill.cast_sound != &"" else &"skill_cast"
+		AudioManager.play_sfx(snd, global_position, -4.0)
 
 
 func use_quick_slot(index: int) -> void:

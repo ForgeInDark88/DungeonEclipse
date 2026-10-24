@@ -19,6 +19,7 @@ description = "Проходит сквозь врагов, раня их."
 icon = ExtResource("icon")
 mana_cost = 14
 cooldown = 4.0
+cast_sound = &"cast_shadow"
 max_level = 4
 effect = SubResource("Effect")
 cast_animation = &""

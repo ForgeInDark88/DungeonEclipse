@@ -26,5 +26,6 @@ description = "Ноги несут быстрее ветра."
 icon = ExtResource("2_kur4q")
 mana_cost = 12
 cooldown = 10.0
+cast_sound = &"cast_shout"
 max_level = 4
 effect = SubResource("Resource_h205f")

@@ -29,6 +29,7 @@ cooldown = 14.0
 max_level = 4
 effect = SubResource("Effect")
 cast_animation = &"attack_heavy"
+cast_sound = &"cast_shout"
 required_level = 6
 requires = Array[ExtResource("skill")]([ExtResource("req_toughness")])
 tree_row = 2

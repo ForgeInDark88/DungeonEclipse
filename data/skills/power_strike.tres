@@ -13,6 +13,7 @@ reach = 26.0
 [resource]
 script = ExtResource("3_tk2sc")
 cast_animation = &"attack_heavy"
+cast_sound = &"cast_swing_heavy"
 id = &"power_strike"
 display_name = "Сокрушающий удар"
 description = "Сокрушительный удар, ломающий стены."

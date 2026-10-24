@@ -123,6 +123,8 @@ func _spawn_town() -> void:
 				light.energy = fbase + sin(phase) * 0.06 + sin(phase * 2.3) * 0.04,
 				0.0, TAU, randf_range(1.8, 2.6)).set_trans(Tween.TRANS_LINEAR)
 	_spawn_specials()
+	# TEST: the level-30 orb near the town square (click to jump levels).
+	add_entity(CheatOrb.new(), cell_bottom(Vector2i(17, 18)))
 	var gate := DungeonGate.new()
 	add_entity(gate, cell_bottom(layout.exit_cell))
 	for dx in [-28, 28]:
@@ -515,6 +517,7 @@ func _spawn_miniboss(info: Dictionary) -> void:
 				n += 1
 	var champion := (load(ENEMY_SCENE) as PackedScene).instantiate()
 	champion.setup(champ_data, floor_number, elite, true)
+	champion.held = true  # waits in its room until the gate slams
 	add_entity(champion, cell_bottom(info["cell"]))
 	var gate := MinibossGate.new()
 	gate.level = self

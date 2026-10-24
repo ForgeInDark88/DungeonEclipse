@@ -26,5 +26,6 @@ description = "Зелёный щит поглощает удары."
 icon = ExtResource("2_peydj")
 mana_cost = 18
 cooldown = 14.0
+cast_sound = &"cast_shield"
 max_level = 4
 effect = SubResource("Resource_iqw05")

@@ -30,6 +30,7 @@ cooldown = 15.0
 max_level = 4
 effect = SubResource("Effect")
 cast_animation = &"attack_heavy"
+cast_sound = &"cast_holy"
 required_level = 7
 requires = Array[ExtResource("skill")]([ExtResource("req_holy_strike"), ExtResource("req_blessing")])
 tree_row = 2

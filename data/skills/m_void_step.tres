@@ -19,6 +19,7 @@ description = "Короткий прыжок сквозь пространств
 icon = ExtResource("icon")
 mana_cost = 8
 cooldown = 4.0
+cast_sound = &"cast_void"
 max_level = 4
 effect = SubResource("Effect")
 cast_animation = &""

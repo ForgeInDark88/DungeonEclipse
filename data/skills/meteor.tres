@@ -29,6 +29,7 @@ cooldown = 16.0
 max_level = 4
 effect = SubResource("Effect")
 cast_animation = &"attack_cast"
+cast_sound = &"cast_quake"
 required_level = 7
 requires = Array[ExtResource("skill")]([ExtResource("req_chain_lightning")])
 tree_row = 2

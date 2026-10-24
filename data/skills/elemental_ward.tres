@@ -25,6 +25,7 @@ cooldown = 0.0
 max_level = 4
 effect = SubResource("Effect")
 cast_animation = &"attack_cast"
+cast_sound = &"cast_frost"
 required_level = 5
 requires = Array[ExtResource("skill")]([ExtResource("req_arcane_mind")])
 tree_row = 2

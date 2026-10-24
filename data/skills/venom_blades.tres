@@ -31,6 +31,7 @@ cooldown = 0.0
 max_level = 3
 effect = SubResource("Effect")
 cast_animation = &"attack_cast"
+cast_sound = &"cast_swing_quick"
 required_level = 4
 requires = Array[ExtResource("skill")]([ExtResource("req_throw_knives")])
 tree_row = 1
