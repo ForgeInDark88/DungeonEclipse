@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BiomeData" load_steps=21 format=3]
+[gd_resource type="Resource" script_class="BiomeData" load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor_script"]
 [ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="biome_script"]
@@ -6,6 +6,10 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/ashen_halls_far.png" id="bg_far"]
 [ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/ashen_halls_mid.png" id="bg_mid"]
 [ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/ashen_halls_near.png" id="bg_near"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/ember_mound.png" id="dx_ember_mound"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/ash_stalagmite.png" id="dx_ash_stalagmite"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/charred_column.png" id="dx_charred_column"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/ash_fall.png" id="dx_ash_fall"]
 
 [sub_resource type="Resource" id="Decor_ember_mound"]
 script = ExtResource("decor_script")
