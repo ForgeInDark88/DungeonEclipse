@@ -501,7 +501,8 @@ func _on_player_died_coop() -> void:
 	book.close()
 	skill_tree.close()
 	await get_tree().create_timer(1.0).timeout
-	net_sync.broadcast_player_hp(Net.multiplayer.get_unique_id(), 0, hero.stats.max_hp(), true)
+	net_sync.broadcast_player_hp(Net.multiplayer.get_unique_id(), 0,
+			GameState.hero.stats.max_hp() if GameState.hero else 0, true)
 	var any_alive := false
 	for p: Player in net_players.get_children():
 		if p != player and not p.dead:

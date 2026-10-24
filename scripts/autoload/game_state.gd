@@ -135,6 +135,15 @@ func run_effect(key: String) -> float:
 	return v
 
 
+## Difficulty multipliers that are not run effects (1.0 without a run).
+func elite_chance_mult() -> float:
+	return difficulty.elite_chance_mult if difficulty else 1.0
+
+
+func trap_damage_mult() -> float:
+	return difficulty.trap_damage_mult if difficulty else 1.0
+
+
 ## Seed of the current floor: each run and each floor is different.
 func floor_seed() -> int:
 	return hash([run_seed, floor_number])

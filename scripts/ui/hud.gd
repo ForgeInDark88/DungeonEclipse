@@ -66,8 +66,7 @@ func setup(p_hero: Hero, player: Player) -> void:
 	_player = player
 	_build()
 	_ally_box = VBoxContainer.new()
-	_ally_box.position = Vector2(size.x - 150, 6)
-	_ally_box.size = Vector2(146, 70)
+	_ally_box.position = Vector2(500, 6)
 	_ally_box.add_theme_constant_override("separation", 2)
 	_ally_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_ally_box)

@@ -2,6 +2,7 @@ extends BookPageScreen
 ## Host lobby: open the LAN game, see who joined, then pick a hero and start.
 
 var _list: Label
+var _name_edit: LineEdit
 var _status: Label
 
 
@@ -9,6 +10,16 @@ func _ready() -> void:
 	build_book(Vector2(560, 300))
 	AudioManager.play_music(&"menu")
 	left_page.add_child(UIStyle.label("Игра по сети — хост", 11))
+	var name_row := HBoxContainer.new()
+	name_row.add_theme_constant_override("separation", 6)
+	name_row.add_child(UIStyle.label("Ник:", 8))
+	_name_edit = LineEdit.new()
+	_name_edit.text = SaveManager.last_name
+	_name_edit.placeholder_text = "Ваш ник"
+	_name_edit.custom_minimum_size = Vector2(140, 0)
+	_name_edit.max_length = 16
+	name_row.add_child(_name_edit)
+	left_page.add_child(name_row)
 	_status = UIStyle.label("", 8)
 	left_page.add_child(_status)
 	left_page.add_child(UIStyle.label("Игроки в лобби:", 9, UIStyle.INK_SOFT))
@@ -28,6 +39,9 @@ func _ready() -> void:
 	buttons.add_theme_constant_override("separation", 8)
 	right_page.add_child(buttons)
 	var create := BookPageScreen.button("Создать игру", func() -> void:
+		SaveManager.last_name = _name_edit.text.strip_edges()
+		SaveManager.save_settings()
+		Net.my_info["name"] = SaveManager.last_name if SaveManager.last_name != "" else "Хост"
 		if Net.host_game():
 			_status.text = "Игра открыта. Ждём друзей..."
 			_refresh()
