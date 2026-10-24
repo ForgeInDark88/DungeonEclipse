@@ -15,6 +15,8 @@ extends Resource
 @export var effect: SkillEffect
 ## Hero animation played when cast ("" = none, e.g. dashes use the dash pose).
 @export var cast_animation: StringName = &"attack_cast"
+## Cast sound id; empty = the generic skill_cast click.
+@export var cast_sound: StringName = &""
 @export_group("Skill tree")
 ## Hero level needed to learn the skill (1 skill point).
 @export var required_level: int = 1

@@ -19,6 +19,7 @@ description = "Рывок, сбивающий врагов с ног."
 icon = ExtResource("icon")
 mana_cost = 12
 cooldown = 5.0
+cast_sound = &"dash"
 max_level = 4
 effect = SubResource("Effect")
 cast_animation = &""

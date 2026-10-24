@@ -31,6 +31,7 @@ cooldown = 3.0
 max_level = 4
 effect = SubResource("Effect")
 cast_animation = &"attack_cast"
+cast_sound = &"cast_bolt"
 required_level = 4
 requires = Array[ExtResource("skill")]([ExtResource("req_fireball")])
 tree_row = 1

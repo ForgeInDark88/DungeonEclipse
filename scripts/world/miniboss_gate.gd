@@ -1,7 +1,12 @@
 class_name MinibossGate
 extends Node
-## The floor guardian's room: when the hero steps deep enough inside, every
-## doorway slams shut (bedrock seals) and reopens only when the champion dies.
+## The floor guardian's room: while the hero is outside, the champion waits
+## motionless inside. When the hero steps deep enough into the room, every
+## opening slams shut - doorways AND ladders - behind falling portcullises
+## (bedrock under them for physics), and they reopen when the champion dies.
+
+const BARS := preload("res://assets/sprites/props/gate_bars.png")
+const T := LevelLayout.Tile
 
 var level: DungeonLevel
 var champion: Enemy
@@ -9,18 +14,23 @@ var champion: Enemy
 var room_cells: Rect2i
 
 var _closed := false
-var _door_cells: Array[Vector2i] = []
+## Every opening cell in the room ring: cell -> original tile (EMPTY or a
+## ladder - ladders seal shut too, and restore afterwards).
+var _seals: Dictionary = {}
+var _bars: Array[Sprite2D] = []
 
 
 func _ready() -> void:
-	# The doorway ring: one cell outside the room interior — walls everywhere
-	# except the carved openings, those are the cells to seal.
 	var ring := Rect2i(room_cells.position - Vector2i.ONE, room_cells.size + Vector2i(2, 2))
+	var t := level.layout
 	for y in range(ring.position.y, ring.end.y):
 		for x in range(ring.position.x, ring.end.x):
 			var on_ring := x == ring.position.x or x == ring.end.x - 1 or y == ring.position.y or y == ring.end.y - 1
-			if on_ring and level.layout.get_tile(x, y) == LevelLayout.Tile.EMPTY:
-				_door_cells.append(Vector2i(x, y))
+			if not on_ring:
+				continue
+			var tile: int = t.get_tile(x, y)
+			if tile == T.EMPTY or LevelLayout.is_ladder(tile):
+				_seals[Vector2i(x, y)] = tile
 	set_physics_process(true)
 
 
@@ -32,31 +42,55 @@ func _physics_process(_delta: float) -> void:
 		if not is_instance_valid(champion) or champion.is_dead():
 			_open()
 		return
-	# Trigger only when the hero is well inside, never standing in a doorway.
+	# The guardian stands guard - asleep on its post - until the doors slam.
+	if is_instance_valid(champion):
+		champion.held = true
+	# Trigger only when the hero is well inside, never standing in an opening.
 	var c := level.world_to_cell(player.global_position)
-	var inner := Rect2i(room_cells.position + Vector2i(2, 2), room_cells.size - Vector2i(4, 4))
+	var inner := Rect2i(room_cells.position + Vector2i(2, 2), room_cells.size - Vector2i(4, 2))  # bottom rows stay: the hero walks there
 	if inner.has_point(c):
 		_close()
 
 
 func _close() -> void:
 	_closed = true
-	for cell in _door_cells:
-		level.layout.set_tile(cell.x, cell.y, LevelLayout.Tile.BEDROCK)
+	if is_instance_valid(champion):
+		champion.held = false
+	for cell: Vector2i in _seals:
+		level.layout.set_tile(cell.x, cell.y, T.BEDROCK)
 		level._refresh_around(cell)
 		level._mark_nav_dirty(cell)
-	AudioManager.play_sfx(&"dig", champion.global_position if champion else Vector2.ZERO)
+		var bars := Sprite2D.new()
+		bars.texture = BARS
+		bars.centered = false
+		bars.z_index = 14
+		level.entities.add_child(bars)
+		var base := level.cell_bottom(cell) - Vector2(0, DungeonLevel.TILE)
+		bars.global_position = base + Vector2(0, -26.0)
+		bars.modulate = Color(1, 1, 1, 0.0)
+		var tw := bars.create_tween()
+		tw.tween_property(bars, "position:y", base.y, 0.13).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_IN)
+		tw.parallel().tween_property(bars, "modulate:a", 1.0, 0.1)
+		_bars.append(bars)
+	AudioManager.play_sfx(&"chest_locked", champion.global_position if champion else Vector2.ZERO)
+	AudioManager.play_sfx(&"dig", champion.global_position if champion else Vector2.ZERO, -4.0)
 	EventBus.screen_shake.emit(4.0)
 	EventBus.message.emit("Двери захлопнулись! Страж этажа преграждает путь")
 
 
 func _open() -> void:
 	_closed = false
-	for cell in _door_cells:
-		level.layout.set_tile(cell.x, cell.y, LevelLayout.Tile.EMPTY)
+	for cell: Vector2i in _seals:
+		level.layout.set_tile(cell.x, cell.y, _seals[cell])
 		level._refresh_around(cell)
 		level._mark_nav_dirty(cell)
-	AudioManager.play_sfx(&"dig", Vector2.ZERO)
+	for bars in _bars:
+		if is_instance_valid(bars):
+			var tw := bars.create_tween()
+			tw.tween_property(bars, "modulate:a", 0.0, 0.25)
+			tw.tween_callback(bars.queue_free)
+	_bars.clear()
+	AudioManager.play_sfx(&"ui_book_open", Vector2.ZERO, -4.0)
 	EventBus.message.emit("Страж пал — двери открылись")
 	set_physics_process(false)
 	queue_free()

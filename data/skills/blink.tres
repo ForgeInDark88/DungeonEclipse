@@ -20,5 +20,6 @@ description = "Мгновенное перемещение вперёд."
 icon = ExtResource("2_5si1n")
 mana_cost = 12
 cooldown = 5.0
+cast_sound = &"cast_void"
 max_level = 3
 effect = SubResource("Resource_mdv2m")

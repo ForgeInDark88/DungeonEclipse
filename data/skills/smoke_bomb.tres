@@ -18,6 +18,7 @@ color = Color(0.6, 0.6, 0.7, 1)
 [resource]
 script = ExtResource("3_t6orn")
 cast_animation = &"attack_quick"
+cast_sound = &"cast_shadow"
 id = &"smoke_bomb"
 display_name = "Дымовая завеса"
 description = "Враги вокруг теряют ориентацию."

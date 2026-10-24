@@ -515,6 +515,7 @@ func _spawn_miniboss(info: Dictionary) -> void:
 				n += 1
 	var champion := (load(ENEMY_SCENE) as PackedScene).instantiate()
 	champion.setup(champ_data, floor_number, elite, true)
+	champion.held = true  # waits in its room until the gate slams
 	add_entity(champion, cell_bottom(info["cell"]))
 	var gate := MinibossGate.new()
 	gate.level = self

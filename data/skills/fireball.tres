@@ -30,5 +30,6 @@ cooldown = 1.2
 max_level = 4
 effect = SubResource("Resource_04put")
 cast_animation = &"attack_cast"
+cast_sound = &"cast_fire"
 synergy_weapons = Array[int]([5])
 synergy_power = 0.3
