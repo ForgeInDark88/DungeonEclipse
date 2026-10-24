@@ -138,7 +138,22 @@ static func arc_slash(parent: Node, pos: Vector2, radius: float, color: Color, f
 	tw.tween_property(line, "scale", Vector2(1.5, 1.5), 0.18).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tw.tween_property(line, "width", 0.0, 0.24)
 	tw.chain().tween_callback(line.queue_free)
-	sparks(parent, pos + Vector2(facing * radius * 0.55, -4.0), color, 10, 130.0)
+	var echo := Line2D.new()
+	echo.width = 4.0
+	echo.default_color = color
+	echo.points = pts
+	echo.z_index = 19
+	echo.material = _unshaded()
+	parent.add_child(echo)
+	echo.global_position = pos
+	var tw2 := echo.create_tween()
+	tw2.tween_interval(0.06)
+	tw2.set_parallel(true)
+	tw2.tween_property(echo, "scale", Vector2(1.7, 1.7), 0.2).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw2.tween_property(echo, "width", 0.0, 0.26)
+	tw2.tween_property(echo, "modulate:a", 0.0, 0.26)
+	tw2.chain().tween_callback(echo.queue_free)
+	sparks(parent, pos + Vector2(facing * radius * 0.55, -4.0), color, 14, 150.0)
 	_flash_light(parent, pos, color, 1.6, radius / 70.0, 0.25)
 
 
@@ -162,6 +177,16 @@ static func blade_fan(parent: Node, pos: Vector2, radius: float, color: Color, c
 		tw.tween_property(knife, "rotation", a + PI / 2.0 + TAU, 0.3)
 		tw.tween_property(knife, "modulate:a", 0.0, 0.32)
 		tw.chain().tween_callback(knife.queue_free)
+		var streak := Line2D.new()
+		streak.width = 3.0
+		streak.default_color = color.lerp(Color.WHITE, 0.3)
+		streak.z_index = 19
+		streak.material = _unshaded()
+		streak.points = PackedVector2Array([pos, pos + Vector2.from_angle(a) * radius * 1.1])
+		parent.add_child(streak)
+		var tws := streak.create_tween()
+		tws.tween_property(streak, "modulate:a", 0.0, 0.34)
+		tws.tween_callback(streak.queue_free)
 	_flash_light(parent, pos, color, 1.8, radius / 60.0, 0.3)
 
 
@@ -190,13 +215,29 @@ static func nova_ring(parent: Node, pos: Vector2, radius: float, color: Color) -
 		tw.tween_property(line, "width", 0.0, 0.36).set_delay(delay)
 		tw.tween_property(line, "modulate:a", 0.0, 0.36).set_delay(delay)
 		tw.chain().tween_callback(line.queue_free)
-	sparks(parent, pos, color, 14, 110.0)
+	sparks(parent, pos, color, 16, 120.0)
 	_flash_light(parent, pos, color, 2.4, radius / 55.0)
+	scorch(parent, pos, radius * 0.55, Color(0.1, 0.07, 0.06))
 
 
 ## Frost: a cold ring plus flying ice shards (frost nova, blizzard, zero).
 static func ice_burst(parent: Node, pos: Vector2, radius: float, color: Color) -> void:
 	nova_ring(parent, pos, radius, color)
+	for i in 5:
+		var a := TAU * i / 5 + 0.3
+		var spike := Line2D.new()
+		spike.width = 3.0
+		spike.default_color = Color(0.75, 0.95, 1.0)
+		spike.z_index = 19
+		spike.material = _unshaded()
+		var base := pos + Vector2.from_angle(a) * radius * 0.7
+		spike.points = PackedVector2Array([base, base + Vector2(0, -12 - (i % 2) * 5)])
+		parent.add_child(spike)
+		var twi := spike.create_tween()
+		twi.tween_interval(0.08)
+		twi.set_parallel(true)
+		twi.tween_property(spike, "modulate:a", 0.0, 0.45)
+		twi.chain().tween_callback(spike.queue_free)
 	var tex := load("res://assets/sprites/fx/shard.png") as Texture2D
 	for i in 7:
 		var a := TAU * i / 7 + randf() * 0.4
@@ -225,6 +266,13 @@ static func light_pillars(parent: Node, pos: Vector2, radius: float, color: Colo
 		beam.width = 5.0
 		beam.default_color = color.lerp(Color.WHITE, 0.5)
 		beam.points = PackedVector2Array([Vector2(0, -110), Vector2(0, 0)])
+		var halo := Line2D.new()
+		halo.width = 11.0
+		halo.default_color = Color(color.r, color.g, color.b, 0.35)
+		halo.points = beam.points
+		halo.z_index = 19
+		halo.material = _unshaded()
+		beam.add_child(halo)
 		beam.z_index = 20
 		beam.material = _unshaded()
 		parent.add_child(beam)
@@ -244,6 +292,21 @@ static func light_pillars(parent: Node, pos: Vector2, radius: float, color: Colo
 static func sun_flash(parent: Node, pos: Vector2, radius: float, color: Color) -> void:
 	AudioManager.play_sfx(&"explosion", pos)
 	nova_ring(parent, pos, radius, color)
+	var core := Polygon2D.new()
+	var cpts := PackedVector2Array()
+	for i in 16:
+		var ca := TAU * i / 16.0
+		cpts.append(Vector2(cos(ca), sin(ca)) * radius)
+	core.polygon = cpts
+	core.color = Color(1.0, 0.98, 0.9, 0.9)
+	core.z_index = 30
+	core.material = _unshaded()
+	parent.add_child(core)
+	core.global_position = pos
+	var twc := core.create_tween()
+	twc.tween_property(core, "scale", Vector2(1.6, 1.6), 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	twc.parallel().tween_property(core, "color:a", 0.0, 0.3)
+	twc.tween_callback(core.queue_free)
 	_flash_light(parent, pos, Color(color.r * 0.6 + 0.4, color.g * 0.6 + 0.4, color.b * 0.6 + 0.4), 6.0, radius / 34.0, 0.5)
 	sparks(parent, pos, color.lerp(Color.WHITE, 0.5), 26, 190.0)
 	shards(parent, pos, color.lerp(Color.WHITE, 0.4), 8)
@@ -257,6 +320,92 @@ static func rock_burst(parent: Node, pos: Vector2, radius: float, color: Color) 
 		dust(parent, pos + Vector2(randf_range(-0.6, 0.6) * radius, -2.0), true)
 	nova_ring(parent, pos, radius * 0.8, Color(0.55, 0.45, 0.4))
 	_flash_light(parent, pos, color, 1.6, radius / 60.0, 0.3)
+	for i in 5:
+		var a := TAU * i / 5 + randf() * 0.5
+		var crack := Line2D.new()
+		crack.width = 2.0
+		crack.default_color = Color(0.16, 0.12, 0.1, 0.8)
+		var kpts := PackedVector2Array([Vector2.ZERO])
+		var cur := Vector2.ZERO
+		for k in 4:
+			cur += Vector2.from_angle(a + randf_range(-0.4, 0.4)) * radius * 0.3
+			kpts.append(cur)
+		crack.points = kpts
+		crack.z_index = -1
+		parent.add_child(crack)
+		crack.global_position = pos
+		var twk := crack.create_tween()
+		twk.tween_interval(1.8)
+		twk.tween_property(crack, "modulate:a", 0.0, 2.0)
+		twk.tween_callback(crack.queue_free)
+	scorch(parent, pos, radius * 0.6, Color(0.13, 0.1, 0.08))
+
+
+## A burning rock falls from the sky onto the target (meteor cast phase).
+static func meteor_fall(parent: Node, pos: Vector2, radius: float, color: Color) -> void:
+	AudioManager.play_sfx(&"meteor_fall", pos)
+	var warn := Telegraph.circle(parent, pos, radius * 0.8, 0.5)
+	if warn:
+		warn.color = Color(1.0, 0.45, 0.15)
+	var rock := Sprite2D.new()
+	rock.texture = AssetPaths.tex(AssetPaths.SHARD)
+	rock.scale = Vector2(2.6, 2.6)
+	rock.rotation = 0.6
+	rock.modulate = Color(1.0, 0.55, 0.3)
+	rock.z_index = 22
+	rock.material = _unshaded()
+	parent.add_child(rock)
+	var from := pos + Vector2(60, -190)
+	rock.global_position = from
+	var trail := Line2D.new()
+	trail.width = 10.0
+	trail.default_color = Color(1.0, 0.6, 0.25, 0.85)
+	trail.z_index = 21
+	trail.material = _unshaded()
+	parent.add_child(trail)
+	var tw := rock.create_tween()
+	tw.tween_method(func(t: float) -> void:
+		rock.global_position = from.lerp(pos, t)
+		rock.rotation = 0.6 + t * 2.0
+		trail.add_point(rock.global_position + Vector2(6, -8))
+		if trail.get_point_count() > 14:
+			trail.remove_point(0)
+	, 0.0, 1.0, 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tw.tween_callback(func() -> void:
+		rock.queue_free()
+		var fade := trail.create_tween()
+		fade.tween_property(trail, "modulate:a", 0.0, 0.4)
+		fade.tween_callback(trail.queue_free))
+
+
+## The meteor lands: a double explosion, shockwave rings, debris, scorch.
+static func meteor_impact(parent: Node, pos: Vector2, radius: float, color: Color) -> void:
+	AudioManager.play_sfx(&"meteor_impact", pos)
+	explosion(parent, pos, radius, color)
+	nova_ring(parent, pos, radius * 1.1, color)
+	shards(parent, pos, Color(0.55, 0.4, 0.32), 14)
+	sparks(parent, pos, color.lerp(Color.WHITE, 0.4), 26, 220.0)
+	_flash_light(parent, pos, color, 5.0, radius / 26.0, 0.5)
+	scorch(parent, pos, radius * 0.7, Color(0.12, 0.07, 0.05))
+
+
+## A fading dark mark on the ground (impacts, big slams).
+static func scorch(parent: Node, pos: Vector2, radius: float, col: Color) -> void:
+	var c := Polygon2D.new()
+	var pts := PackedVector2Array()
+	for i in 12:
+		var a := TAU * i / 12.0
+		var rr := radius * (0.8 + 0.25 * sin(i * 2.7))
+		pts.append(Vector2(cos(a), sin(a) * 0.55) * rr)
+	c.polygon = pts
+	c.color = Color(col.r, col.g, col.b, 0.4)
+	c.z_index = -2
+	parent.add_child(c)
+	c.global_position = pos + Vector2(0, 2)
+	var tw := c.create_tween()
+	tw.tween_interval(2.2)
+	tw.tween_property(c, "color:a", 0.0, 2.6)
+	tw.tween_callback(c.queue_free)
 
 
 ## Item icons that pop out above a chest and fade (loot preview).
