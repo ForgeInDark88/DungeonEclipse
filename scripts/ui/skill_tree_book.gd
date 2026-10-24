@@ -413,7 +413,7 @@ func _animate_available(box: Control) -> void:
 
 func _animate_learned(box: Control, col: Color) -> void:
 	var glint := ColorRect.new()
-	glint.color = Color(1, 1, 1, 0.0)
+	glint.color = Color(col.r, col.g, col.b, 0.0)
 	glint.set_anchors_preset(Control.PRESET_FULL_RECT)
 	glint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(glint)
@@ -421,7 +421,6 @@ func _animate_learned(box: Control, col: Color) -> void:
 	tw.tween_interval(randf_range(1.0, 4.0))
 	tw.tween_property(glint, "color:a", 0.18, 0.12)
 	tw.tween_property(glint, "color:a", 0.0, 0.5)
-	_ = col
 
 
 func _show(s: SkillData) -> void:
