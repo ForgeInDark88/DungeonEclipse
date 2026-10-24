@@ -215,7 +215,7 @@ func _refresh_preview() -> void:
 		var slot: Dictionary = _class.tree_layout.get(String(skill.id), {})
 		if not slot.is_empty() and int(slot.get("row", 0)) > 0:
 			continue
-		_skills_row.add_child(_icon_with_tip(skill.icon, TooltipText.skill(skill, 1, 0), 20))
+		_skills_row.add_child(_icon_with_tip(skill.icon, TooltipText.skill(skill, 1, 0)))
 		shown += 1
 	if not _class.branch_names.is_empty():
 		_skills_row.add_child(UIStyle.label("+%d в ветвях: %s" % [_class.skills.size() - shown, ", ".join(_class.branch_names)], 6, UIStyle.INK_SOFT))
