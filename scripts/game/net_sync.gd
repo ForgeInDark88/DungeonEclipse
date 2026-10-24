@@ -53,24 +53,41 @@ func unregister_enemy(net_id: int) -> void:
 
 
 # ----------------------------------------------------------- enemy spawn
-## Host → clients: an enemy exists at this spot.
+## Host → clients: an enemy exists at this spot (spawned only on the host).
 @rpc("authority", "call_remote", "reliable")
 func spawn_enemy(net_id: int, enemy_id: String, pos: Vector2, elite_id: StringName,
-		champion: bool, floor_number: int, hp_mult: float, dmg_mult: float) -> void:
+		champion: bool, held: bool, hp: int) -> void:
+	_spawn_shell(net_id, enemy_id, pos, elite_id, champion, held, hp)
+
+
+## Builds the client-side shell. setup() applies floor scaling, the party
+## multipliers and altar curses — no extra multiplication here.
+func _spawn_shell(net_id: int, enemy_id: String, pos: Vector2, elite_id: StringName,
+		champion: bool, held: bool, hp: int) -> void:
 	if enemies.has(net_id):
 		return
 	var data := ItemDatabase.enemy_by_id(enemy_id)
 	if data == null:
 		return
+	var elite: EliteAffixData = null
+	for aff in ItemDatabase.elites:
+		if aff.id == elite_id:
+			elite = aff
+			break
 	var e := (load("res://scenes/enemies/enemy.tscn") as PackedScene).instantiate()
-	e.setup(data, floor_number, null, champion)
+	e.setup(data, GameState.floor_number, elite, champion)
 	e.puppet = true
-	e.max_hp = roundi(e.max_hp * hp_mult)
-	e.hp = e.max_hp
-	e.damage = roundi(e.damage * dmg_mult)
+	e.held = held
+	if hp > 0 and hp < e.max_hp:
+		e.hp = hp
 	enemies[net_id] = e
 	e.net_id = net_id
-	get_parent().add_entity(e, pos)
+	var game := get_tree().current_scene
+	if game == null or not ("level" in game) or game.level == null:
+		e.free()
+		enemies.erase(net_id)
+		return
+	game.level.add_entity(e, pos)
 
 
 ## Host → clients: periodic snapshot of enemy positions and hp.
@@ -88,7 +105,7 @@ func _broadcast_enemy_state() -> void:
 	for id in enemies:
 		var e: Enemy = enemies[id]
 		if is_instance_valid(e):
-			states.append([id, e.global_position.x, e.global_position.y, e.hp, e.dead])
+			states.append([id, e.global_position.x, e.global_position.y, e.hp, e.is_dead()])
 	if not states.is_empty():
 		enemy_state.rpc(states)
 
@@ -96,16 +113,18 @@ func _broadcast_enemy_state() -> void:
 # --------------------------------------------------------------- combat
 ## Client → host: my attack hurt this enemy.
 @rpc("any_peer", "call_remote", "reliable")
-func net_hit(net_id: int, amount: int, crit: bool, from_x: float, damage_type: int) -> void:
+func net_hit(net_id: int, amount: int, crit: bool, from_x: float, from_y: float,
+		damage_type: int) -> void:
 	if not Net.is_host:
 		return
 	var sender := multiplayer.get_remote_sender_id()
 	var e: Enemy = enemies.get(net_id)
-	if e == null or not is_instance_valid(e) or e.dead:
+	if e == null or not is_instance_valid(e) or e.is_dead():
+		return
+	if amount <= 0 or not _sender_near(sender, e.global_position, 420.0):
 		return
 	_last_hitter[net_id] = sender
-	var pos := Vector2(from_x, e.global_position.y)
-	e.take_damage(amount, crit, pos, damage_type)
+	e.take_damage(amount, crit, Vector2(from_x, from_y), damage_type)
 
 
 ## Host → clients: an enemy died; shells play the death and free themselves.
@@ -130,8 +149,10 @@ func enemy_died(net_id: int, xp: int, gold: int, killer: int) -> void:
 
 
 ## Client shells call this instead of applying damage locally.
-func request_hit(e: Enemy, amount: int, crit: bool, damage_type: int) -> void:
-	net_hit.rpc_id(1, e.net_id, amount, crit, e.global_position.x, damage_type)
+func request_hit(e: Enemy, amount: int, crit: bool, damage_type: int,
+		from_pos := Vector2.INF) -> void:
+	var pos := from_pos if from_pos != Vector2.INF else e.global_position
+	net_hit.rpc_id(1, e.net_id, amount, crit, pos.x, pos.y, damage_type)
 
 
 # Host side: an enemy actually died → tell everyone, credit the killer.
@@ -256,34 +277,153 @@ func net_hello() -> void:
 		for pid in Net.players:
 			if pid != 1 and pid != sender:
 				game.spawn_ally.rpc_id(sender, pid, Net.players[pid])
+	# The floor is already built on the joiner: push everything that happened.
+	send_world_state(sender)
+
+
+## Host → late joiner: everything that already happened on this floor.
+@rpc("authority", "call_remote", "reliable")
+func world_state(tiles: Array, chests: Array, stock: Array, enemy_list: Array) -> void:
+	var game := get_tree().current_scene
+	if game == null or not ("level" in game) or game.level == null:
+		return
+	var level: DungeonLevel = game.level
+	for t in tiles:
+		level.apply_remote_tile(Vector2i(int(t[0]), int(t[1])), int(t[2]))
+	for seq: int in chests:
+		for c in get_tree().get_nodes_in_group("chests"):
+			if c.net_seq == seq and not c.opened:
+				c.opened = true
+				c.locked = false
+				c.sprite.play(&"open")
+	for entry in stock:
+		for m in get_tree().get_nodes_in_group("merchants"):
+			if m.net_seq == int(entry[0]):
+				m.apply_stock_ids(entry[1])
+	for d in enemy_list:
+		_spawn_shell(int(d[0]), String(d[1]), Vector2(d[2], d[3]), d[4],
+				bool(d[5]), bool(d[6]), int(d[7]))
+
+
+## Host: collect everything a late joiner missed and push it over.
+func send_world_state(peer_id: int) -> void:
+	if not Net.is_host:
+		return
+	var game := get_tree().current_scene
+	var level: DungeonLevel = game.level if game != null and "level" in game else null
+	var tiles := []
+	if level != null and level.layout != null:
+		for cell in level.changed_cells:
+			tiles.append([cell.x, cell.y, level.layout.get_tile(cell.x, cell.y)])
+	var chests := []
+	for c in get_tree().get_nodes_in_group("chests"):
+		if c.opened:
+			chests.append(c.net_seq)
+	var stock := []
+	for m in get_tree().get_nodes_in_group("merchants"):
+		var ids := []
+		for it: ItemData in m.stock:
+			ids.append(String(it.id))
+		stock.append([m.net_seq, ids])
+	var list := []
+	for id in enemies:
+		var e: Enemy = enemies[id]
+		if is_instance_valid(e) and not e.is_dead():
+			list.append([id, String(e.data.id), e.global_position.x, e.global_position.y,
+					e.elite.id if e.elite else StringName(), e.champion, e.held, e.hp])
+	world_state.rpc_id(peer_id, tiles, chests, stock, list)
 
 
 # ---------------------------------------------------- chests and shops
-## Anyone opened a chest → the others see it open (loot belongs to the opener).
-func broadcast_chest(seq: int) -> void:
-	chest_opened_remote.rpc(seq)
+## Client → host: request a chest open. The opener handles their own key locally.
+@rpc("any_peer", "call_remote", "reliable")
+func request_chest_open(seq: int, has_key: bool) -> void:
+	if not Net.is_host:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	var chest := _find_seq_node("chests", seq) as Chest
+	if chest == null or chest.opened or chest.sealed or not _sender_near(sender, chest.global_position, 72.0):
+		return
+	var consume_key := chest.locked
+	if consume_key and not has_key:
+		return
+	if consume_key:
+		chest.unlock()
+	chest.open(sender, consume_key)
+
+
+func broadcast_chest(seq: int, opener_peer: int = 1, consume_key: bool = false) -> void:
+	chest_opened_remote.rpc(seq, opener_peer, consume_key)
 
 
 @rpc("authority", "call_remote", "reliable")
-func chest_opened_remote(seq: int) -> void:
+func chest_opened_remote(seq: int, opener_peer: int, consume_key: bool) -> void:
 	for c in get_tree().get_nodes_in_group("chests"):
-		if c.net_seq == seq and not c.opened:
-			c.opened = true
-			c.sprite.play(&"opening")
-			c.sprite.animation_finished.connect(func() -> void: c.sprite.play(&"open"), CONNECT_ONE_SHOT)
+		if c.net_seq != seq or c.opened:
+			continue
+		c.opened = true
+		c.locked = false
+		c.sprite.play(&"opening")
+		c.sprite.animation_finished.connect(func() -> void: c.sprite.play(&"open"), CONNECT_ONE_SHOT)
+		if consume_key and opener_peer == multiplayer.get_unique_id():
+			GameState.hero.inventory.remove_by_id(&"key", 1)
 
 
-## Someone bought a unique good → it vanishes from every copy of the stock.
-func broadcast_purchase(merchant_seq: int, slot: int) -> void:
-	purchase_remote.rpc(merchant_seq, slot)
+## Client → host: buy an offer; host checks that the offer still exists.
+@rpc("any_peer", "call_remote", "reliable")
+func request_purchase(merchant_seq: int, offer_key: String) -> void:
+	if not Net.is_host:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	var merchant := _find_seq_node("merchants", merchant_seq) as Merchant
+	if merchant == null or not _sender_near(sender, merchant.global_position, 80.0):
+		return
+	var slot := merchant.find_offer(offer_key)
+	if slot < 0:
+		return
+	var item: ItemData = merchant.stock[slot]
+	var item_dict := RunCodec.item_to_dict(item)
+	var remove_offer := not item.is_stackable()
+	if remove_offer:
+		merchant.stock.remove_at(slot)
+	purchase_remote.rpc(merchant_seq, offer_key, sender, item_dict, remove_offer)
+
+
+func broadcast_purchase(merchant: Merchant, offer_key: String, item: ItemData, remove_offer: bool) -> void:
+	purchase_remote.rpc(merchant.net_seq, offer_key, 1, RunCodec.item_to_dict(item), remove_offer)
 
 
 @rpc("authority", "call_remote", "reliable")
-func purchase_remote(merchant_seq: int, slot: int) -> void:
-	for m in get_tree().get_nodes_in_group("merchants"):
-		if m.net_seq == merchant_seq and slot < m.stock.size():
-			m.stock.remove_at(slot)
+func purchase_remote(merchant_seq: int, offer_key: String, buyer_peer: int,
+		item_dict: Dictionary, remove_offer: bool) -> void:
+	var merchant := _find_seq_node("merchants", merchant_seq) as Merchant
+	if merchant == null:
+		return
+	var slot := merchant.find_offer(offer_key)
+	if slot < 0:
+		return
+	if buyer_peer == multiplayer.get_unique_id():
+		var shop := get_tree().get_first_node_in_group("active_shop_book") as ShopBook
+		if shop:
+			shop.complete_network_purchase(item_dict)
+	if remove_offer:
+		merchant.stock.remove_at(slot)
+		get_tree().call_group("active_shop_book", "refresh_network_stock")
 
+
+func _find_seq_node(group_name: StringName, seq: int) -> Node:
+	for node in get_tree().get_nodes_in_group(group_name):
+		if node.net_seq == seq:
+			return node
+	return null
+
+
+func _sender_near(peer_id: int, pos: Vector2, max_distance: float) -> bool:
+	var game := get_tree().current_scene
+	if game == null or not ("net_players" in game):
+		return false
+	var player := game.net_players.get_node_or_null("Player_%d" % peer_id) as Player
+	return player != null and is_instance_valid(player) and player.global_position.distance_to(pos) <= max_distance
 
 # ------------------------------------------------------------- casts
 ## Any player cast → everyone sees the animation, sound and the visuals.
@@ -356,8 +496,40 @@ func _net_skill_visual(puppet: Player, skill: SkillData, aim: Vector2) -> void:
 		Fx.sparks(fx_parent, origin, Color(0.8, 0.7, 1.0), 10, 60.0)
 
 
-# ------------------------------------------------- host-only world moves
-## A client asked to descend / return to town; the host decides.
+# ----------------------------------------------------- tile mutations
+@rpc("any_peer", "call_remote", "reliable")
+func request_tile_break(cell: Vector2i) -> void:
+	if not Net.is_host:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	var game := get_tree().current_scene
+	var level := game.level as DungeonLevel if game != null and "level" in game else null
+	if level == null or cell.x < 0 or cell.y < 0 or cell.x >= level.layout.width or cell.y >= level.layout.height:
+		return
+	if not _sender_near(sender, level.cell_center(cell), 220.0):
+		return
+	level.break_tile(cell)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func request_tile_explosion(center: Vector2, radius: float) -> void:
+	if not Net.is_host or radius <= 0.0 or radius > 256.0:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	var game := get_tree().current_scene
+	var level := game.level as DungeonLevel if game != null and "level" in game else null
+	if level == null or not _sender_near(sender, center, radius + 96.0):
+		return
+	level.explode(center, radius)
+
+
+@rpc("authority", "call_remote", "reliable")
+func tile_broken(cell: Vector2i) -> void:
+	var game := get_tree().current_scene
+	if game != null and "level" in game and game.level:
+		game.level.apply_remote_tile(cell, LevelLayout.Tile.EMPTY)
+
+
 @rpc("any_peer", "call_remote", "reliable")
 func request_floor(action: StringName) -> void:
 	if not Net.is_host:

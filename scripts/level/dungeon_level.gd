@@ -391,6 +391,11 @@ func ladder_center_x(p: Vector2) -> float:
 ## Breaks a brick tile. Bedrock (outer border) is indestructible, and the town
 ## keeps its street: bombs, pickaxes and blasts do no damage there.
 func break_tile(cell: Vector2i, effects := true) -> bool:
+	if Net.active and not Net.is_host:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.request_tile_break.rpc_id(1, cell)
+		return false
 	if layout.is_town:
 		return false
 	if layout.get_tile(cell.x, cell.y) != T.BRICK:
@@ -400,6 +405,10 @@ func break_tile(cell: Vector2i, effects := true) -> bool:
 	changed_cells.append(cell)
 	var was_ore := ore_cells.erase(cell)
 	_refresh_around(cell)
+	if Net.active and Net.is_host:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.tile_broken.rpc(cell)
 	if was_ore:
 		var ore := ItemDatabase.get_item(biome.ore_item if biome else &"iron_ore")
 		if ore:
@@ -417,7 +426,25 @@ func break_tile(cell: Vector2i, effects := true) -> bool:
 	return true
 
 
+func apply_remote_tile(cell: Vector2i, kind: int) -> void:
+	if layout == null or cell.x < 0 or cell.y < 0 or cell.x >= layout.width or cell.y >= layout.height:
+		return
+	if layout.get_tile(cell.x, cell.y) == kind:
+		return
+	layout.set_tile(cell.x, cell.y, kind)
+	_mark_nav_dirty(cell)
+	changed_cells.append(cell)
+	if kind != T.BRICK:
+		ore_cells.erase(cell)
+	_refresh_around(cell)
+
+
 func explode(center: Vector2, radius: float) -> void:
+	if Net.active and not Net.is_host:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.request_tile_explosion.rpc_id(1, center, radius)
+		return
 	EventBus.noise.emit(center, 260.0)
 	var c := world_to_cell(center)
 	var r := ceili(radius / TILE)
@@ -560,11 +587,14 @@ func _spawn_miniboss(info: Dictionary) -> void:
 					elite = e
 					break
 				n += 1
+	if Net.active and not Net.is_host:
+		return  # RNG already burned; the champion shell arrives via spawn_enemy
 	var champion := (load(ENEMY_SCENE) as PackedScene).instantiate()
 	champion.setup(champ_data, floor_number, elite, true)
 	_net_tag(champion)
 	champion.held = true  # waits in its room until the gate slams
 	add_entity(champion, cell_bottom(info["cell"]))
+	_net_broadcast_enemy(champion, elite, true, true)
 	var gate := MinibossGate.new()
 	gate.level = self
 	gate.champion = champion
@@ -805,13 +835,26 @@ func _spawn_enemies() -> void:
 			elite_weights.append(e.weight)
 	for cell in layout.enemy_cells:
 		var data: EnemyData = pool[LootTable._weighted_index(weights, rng)]
-		var enemy := (load(ENEMY_SCENE) as PackedScene).instantiate()
 		var elite: EliteAffixData = null
 		if not elite_pool.is_empty() and rng.randf() < elite_chance:
 			elite = elite_pool[LootTable._weighted_index(elite_weights, rng)]
+		if Net.active and not Net.is_host:
+			continue  # RNG stays in sync; shells arrive as host descriptors
+		var enemy := (load(ENEMY_SCENE) as PackedScene).instantiate()
 		enemy.setup(data, floor_number, elite)
 		_net_tag(enemy)
 		var pos := cell_bottom(cell)
 		if data.behavior == EnemyData.Behavior.FLYER:
 			pos.y -= TILE * 2
 		add_entity(enemy, pos)
+		_net_broadcast_enemy(enemy, elite, false)
+
+
+## Host → clients: a live enemy descriptor for the client shells.
+func _net_broadcast_enemy(e: Enemy, elite: EliteAffixData, champion: bool, held := false) -> void:
+	if not Net.active or not Net.is_host:
+		return
+	var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+	if ns:
+		ns.spawn_enemy.rpc(e.net_id, String(e.data.id), e.global_position,
+				elite.id if elite else StringName(), champion, held, e.hp)

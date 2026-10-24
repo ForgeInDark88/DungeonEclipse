@@ -51,6 +51,38 @@ func _roll_stock() -> void:
 			stock.append(eggs[roll_rng.randi() % eggs.size()])
 
 
+## LAN co-op: rebuild this stock from the host's remaining item ids, in order.
+func apply_stock_ids(ids: Array) -> void:
+	var kept: Array[ItemData] = []
+	var used := {}
+	for id_str: String in ids:
+		for i in stock.size():
+			var it := stock[i]
+			if it != null and String(it.id) == id_str and not used.has(i):
+				kept.append(it)
+				used[i] = true
+				break
+	stock = kept
+
+
+func find_offer(offer_key: String) -> int:
+	for i in stock.size():
+		if offer_key_at(i) == offer_key:
+			return i
+	return -1
+
+
+func offer_key_at(index: int) -> String:
+	if index < 0 or index >= stock.size():
+		return ""
+	var item_id := String(stock[index].id)
+	var occurrence := 0
+	for i in index:
+		if String(stock[i].id) == item_id:
+			occurrence += 1
+	return "%s#%d" % [item_id, occurrence]
+
+
 func get_prompt() -> String:
 	return "Торговать"
 

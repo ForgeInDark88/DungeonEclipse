@@ -26,6 +26,7 @@ func _ready() -> void:
 func open(p_merchant: Merchant, p_hero: Hero) -> void:
 	merchant = p_merchant
 	hero = p_hero
+	add_to_group("active_shop_book")
 	get_tree().paused = true
 	_build()
 	hero.gold_changed.connect(_on_gold)
@@ -34,6 +35,7 @@ func open(p_merchant: Merchant, p_hero: Hero) -> void:
 
 
 func close() -> void:
+	remove_from_group("active_shop_book")
 	if hero.gold_changed.is_connected(_on_gold):
 		hero.gold_changed.disconnect(_on_gold)
 	if hero.inventory.changed.is_connected(_refresh_inventory):
@@ -174,18 +176,44 @@ func buy(index: int) -> void:
 	if hero.inventory.free_space_for(item) <= 0:
 		EventBus.message.emit("Рюкзак полон")
 		return
-	hero.spend_gold(price)
-	hero.inventory.add_item(item if item.is_stackable() else ItemFactory.create(item, merchant.floor_number))
-	if not item.is_stackable() and item.is_instance():
-		merchant.stock.remove_at(index)  # unique item: sold out
+	if Net.active and not Net.is_host:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.request_purchase.rpc_id(1, merchant.net_seq, merchant.offer_key_at(index))
+		return
+	var offer_key := merchant.offer_key_at(index)
+	_complete_purchase(item)
+	if not item.is_stackable():
+		merchant.stock.remove_at(index)
 		_refresh_goods()
+	if Net.active:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.broadcast_purchase(merchant, offer_key, item, not item.is_stackable())
+
+
+func complete_network_purchase(item_dict: Dictionary) -> void:
+	var item := RunCodec.item_from_dict(item_dict)
+	if item == null or hero == null or merchant == null:
+		return
+	if hero.gold < item.buy_price() or hero.inventory.free_space_for(item) <= 0:
+		EventBus.message.emit("Покупка не удалась: изменились условия")
+		return
+	_complete_purchase(item)
+
+
+func _complete_purchase(item: ItemData) -> void:
+	var price := item.buy_price()
+	if not hero.spend_gold(price):
+		return
+	hero.inventory.add_item(item if item.is_stackable() else ItemFactory.create(item, merchant.floor_number))
 	AudioManager.play_ui(&"coin")
 	EventBus.item_bought.emit(item)
 	Tooltip.hide_tip()
-	if Net.active and not item.is_stackable():
-		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
-		if ns:
-			ns.broadcast_purchase(merchant.net_seq, index)
+
+
+func refresh_network_stock() -> void:
+	_refresh_goods()
 
 
 ## Sells one piece from a backpack slot (the merchant keeps unique items).
