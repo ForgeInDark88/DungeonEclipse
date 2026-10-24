@@ -460,12 +460,44 @@ func respec() -> void:
 func learn(s: SkillData) -> bool:
 	if s == null:
 		return false
+	var branch_before := hero.skills.chosen_branch
 	var ok := hero.skills.learn(s, hero.level)
 	AudioManager.play_ui(&"ui_equip" if ok else &"chest_locked")
 	if ok:
 		_selected = s
+		if branch_before < 0 and hero.skills.chosen_branch >= 0:
+			_ceremony(hero.skills.chosen_branch)
 	_refresh()
 	var node: Control = _nodes.get(s.id)
 	if ok and node:
 		Fx.sparks(_root, _tree_area.position + node.position + NODE_SIZE / 2.0, UIStyle.GOLD, 10, 40.0)
 	return ok
+
+
+## The choice of a path deserves a moment: a flash of the branch color,
+## a plaque with its name, a sound.
+func _ceremony(branch: int) -> void:
+	var col := branch_color(branch)
+	var flash := ColorRect.new()
+	flash.color = Color(col.r, col.g, col.b, 0.0)
+	flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(flash)
+	var plaque := UIStyle.outlined_label("Путь избран: «%s»" % hero.skills.branch_name_of(branch), 14, Color.WHITE)
+	plaque.set_anchors_preset(Control.PRESET_FULL_RECT)
+	plaque.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	plaque.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	plaque.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	plaque.modulate.a = 0.0
+	add_child(plaque)
+	AudioManager.play_sfx(&"level_up")
+	var tw := create_tween()
+	tw.tween_property(flash, "color:a", 0.5, 0.18)
+	tw.parallel().tween_property(plaque, "modulate:a", 1.0, 0.18)
+	tw.tween_interval(0.9)
+	tw.parallel().tween_property(flash, "color:a", 0.0, 0.6)
+	tw.parallel().tween_property(plaque, "modulate:a", 0.0, 0.6)
+	tw.tween_callback(func() -> void:
+		flash.queue_free()
+		plaque.queue_free())
+	EventBus.screen_shake.emit(3.0)

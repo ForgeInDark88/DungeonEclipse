@@ -265,6 +265,13 @@ func _place_specials(_floor_number: int) -> void:
 		if room != _path[0] and room != _path[_path.size() - 1] and _connected.has(room):
 			rooms.append(room)
 	_shuffle(rooms)
+	# The floor guardian: a champion in a room whose doors slam shut on entry.
+	if not rooms.is_empty():
+		var room: Vector2i = rooms.pop_back()
+		var cell: Variant = _take_spot(room, true)
+		if cell != null:
+			layout.specials.append({"type": &"miniboss", "cell": cell, "room": _room_rect(room)})
+			_reserved[room] = true
 	if not rooms.is_empty() and rng.randf() < MERCHANT_CHANCE:
 		var room: Vector2i = rooms.pop_back()
 		var cell: Variant = _take_spot(room, true)
