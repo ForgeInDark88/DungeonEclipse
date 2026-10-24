@@ -12,6 +12,8 @@ const BOOK := UI_DIR + "book.png"
 const BOOK_PANEL := UI_DIR + "book_panel.png"
 const SLOT := UI_DIR + "slot.png"
 const SLOT_EMPTY := UI_DIR + "slot_empty.png"
+## Slot frame with an empty window, laid over icons so they always sit inside the frame.
+const SLOT_BORDER := UI_DIR + "slot_border.png"
 const SLOT_HOVER := UI_DIR + "slot_hover.png"
 const BAR_FRAME := UI_DIR + "bar_frame.png"
 const BAR_HP := UI_DIR + "bar_hp.png"

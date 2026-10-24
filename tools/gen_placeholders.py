@@ -868,6 +868,12 @@ def main() -> None:
     save(book_panel(), "ui/book_panel.png", do_outline=False)
     save(slot_tex(), "ui/slot.png", do_outline=False)
     save(slot_dark_tex(), "ui/slot_empty.png", do_outline=False)
+    border = slot_dark_tex()  # the same frame with an empty window: drawn over icons
+    bpx = border.load()
+    for y in range(3, border.height - 3):
+        for x in range(3, border.width - 3):
+            bpx[x, y] = (0, 0, 0, 0)
+    save(border, "ui/slot_border.png", do_outline=False)
     save(slot_hover_tex(), "ui/slot_hover.png", do_outline=False)
     save(bar_frame(), "ui/bar_frame.png", do_outline=False)
     save(bar_fill((200, 40, 40, 255)), "ui/bar_hp.png", do_outline=False)

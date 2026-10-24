@@ -165,9 +165,11 @@ func _build() -> void:
 	frame_box.add_child(UIStyle.frame(AssetPaths.SLOT, 5))
 	_icon = TextureRect.new()
 	_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_icon.stretch_mode = TextureRect.STRETCH_SCALE
 	_icon.position = Vector2(7, 7)
 	_icon.size = Vector2(20, 20)
 	frame_box.add_child(_icon)
+	frame_box.add_child(UIStyle.icon_border())
 	top.add_child(frame_box)
 	_title = UIStyle.label("", 10, UIStyle.PARCHMENT)
 	_title.size_flags_vertical = Control.SIZE_SHRINK_CENTER

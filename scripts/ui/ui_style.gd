@@ -24,6 +24,13 @@ static func frame(path: String, margin: int, pixel_scale: float = 1.0) -> PixelF
 	return f
 
 
+## Frame border over an icon: the icon's edges go under the frame.
+static func icon_border() -> PixelFrame:
+	var f := frame(AssetPaths.SLOT_BORDER, 5)
+	f.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return f
+
+
 static func label(text: String, font_size: int = 8, color: Color = INK) -> Label:
 	var l := Label.new()
 	l.text = text
