@@ -86,6 +86,7 @@ func _ready() -> void:
 
 	Net.start_discovery(true)
 	multiplayer.connected_to_server.connect(_on_net_connected)
+	_servers.grab_focus()
 
 
 func _process(delta: float) -> void:

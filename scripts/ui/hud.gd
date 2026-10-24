@@ -43,6 +43,7 @@ func _ready() -> void:
 ## LAN co-op: small name + hp plates for the party (top right).
 func add_ally(name_text: String, ally_hero: Hero) -> void:
 	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_theme_constant_override("separation", 4)
 	var lbl := UIStyle.outlined_label(name_text, 6, UIStyle.PARCHMENT)
 	lbl.custom_minimum_size = Vector2(64, 10)
@@ -66,7 +67,7 @@ func setup(p_hero: Hero, player: Player) -> void:
 	_player = player
 	_build()
 	_ally_box = VBoxContainer.new()
-	_ally_box.position = Vector2(500, 6)
+	_ally_box.position = Vector2(6, 26)  # under the floor plaque, left side
 	_ally_box.add_theme_constant_override("separation", 2)
 	_ally_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_ally_box)
