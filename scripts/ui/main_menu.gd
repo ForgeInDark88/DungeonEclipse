@@ -6,23 +6,24 @@ func _ready() -> void:
 	build_book(Vector2(440, 260))
 	AudioManager.play_music(&"menu")
 
-	# The living title: a violet glow breathes behind it and the letters
-	# shimmer, like the eclipse itself.
+	# The living title: one block - the violet glow breathes BEHIND the
+	# letters (they overlap, not stack as separate rows).
+	var block := Control.new()
+	block.custom_minimum_size = Vector2(200, 76)
 	var glow := TextureRect.new()
 	glow.texture = load("res://assets/ui/title_glow.png")
 	glow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	glow.stretch_mode = TextureRect.STRETCH_SCALE
-	glow.custom_minimum_size = Vector2(200, 72)
-	glow.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	glow.set_anchors_preset(Control.PRESET_FULL_RECT)
 	glow.modulate = Color(1, 1, 1, 0.0)
-	left_page.add_child(glow)
+	block.add_child(glow)
 	var title := TextureRect.new()
 	title.texture = load("res://assets/ui/title.png")
 	title.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	title.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	title.custom_minimum_size = Vector2(184, 66)
-	title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	left_page.add_child(title)
+	title.set_anchors_preset(Control.PRESET_FULL_RECT)
+	block.add_child(title)
+	left_page.add_child(block)
 	var tw := title.create_tween().set_loops()
 	tw.tween_property(glow, "modulate:a", 0.75, 1.6).set_trans(Tween.TRANS_SINE)
 	tw.parallel().tween_property(title, "modulate", Color(1.12, 1.05, 1.25), 1.6).set_trans(Tween.TRANS_SINE)
