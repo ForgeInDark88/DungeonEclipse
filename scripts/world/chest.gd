@@ -43,6 +43,17 @@ func get_prompt() -> String:
 func interact(player: Node) -> void:
 	if opened:
 		return
+	if Net.active and not Net.is_host:
+		var has_key: bool = not locked or player.hero.inventory.count_of(&"key") > 0
+		if locked and not has_key:
+			EventBus.message.emit("Сундук заперт. Нужен ключ.")
+			AudioManager.play_sfx(&"chest_locked", global_position)
+			_shake()
+			return
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.request_chest_open.rpc_id(1, net_seq, has_key)
+		return
 	if locked:
 		var hero: Hero = player.hero
 		if hero.inventory.remove_by_id(&"key", 1) == 0:
@@ -59,7 +70,7 @@ func unlock() -> void:
 	EventBus.message.emit("Замок открыт")
 
 
-func open() -> void:
+func open(opener_peer: int = 1, consume_key := false) -> void:
 	opened = true
 	AudioManager.play_sfx(&"chest_open", global_position)
 	sprite.play(&"opening")
@@ -73,10 +84,10 @@ func open() -> void:
 		get_tree().create_timer(0.25).timeout.connect(func() -> void: EventBus.spawn_items.emit(pos, loot))
 	Fx.sparks(get_parent(), global_position + Vector2(0, -10), Color(1.0, 0.85, 0.4), 10, 70.0)
 	EventBus.chest_opened.emit(self)
-	if Net.active:
+	if Net.active and Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.broadcast_chest(net_seq)
+			ns.broadcast_chest(net_seq, opener_peer, consume_key)
 
 
 func _shake() -> void:

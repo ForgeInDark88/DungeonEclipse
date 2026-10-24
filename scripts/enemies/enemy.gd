@@ -1442,7 +1442,7 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 		# Clients never apply damage: the host is the judge.
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.request_hit(self, amount, crit, damage_type)
+			ns.request_hit(self, amount, crit, damage_type, from_pos)
 		return
 	# Physical damage is reduced by armor, elemental by resistances.
 	var armor := data.armor + (elite.armor_add if elite else 0)

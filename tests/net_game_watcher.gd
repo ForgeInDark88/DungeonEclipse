@@ -78,6 +78,87 @@ func _watch_game() -> void:
 	await get_tree().create_timer(2.5).timeout
 	var moved := absf(theirs.global_position.x - start.x)
 	check(moved > 40.0, "the other hero's puppet moved (%.0f px)" % moved)
+	# --- enemy hp replication phase: the host wounds one mob, the client's
+	# shell must show the damage through the enemy_state snapshots.
+	if is_host:
+		var wounded := false
+		if ns != null and g.level != null:
+			var origin2: Vector2 = g.level.start_position()
+			var victim: Enemy = null
+			var best := -1.0
+			for id in ns.enemies:
+				var e: Enemy = ns.enemies[id]
+				# The farthest mob: wounding a nearby one aggro's it onto the
+				# idle test heroes and can end the run mid-check.
+				if is_instance_valid(e) and not e.is_dead() and e.hp > 20:
+					var d: float = e.global_position.distance_to(origin2)
+					if d > best:
+						best = d
+						victim = e
+			if victim != null:
+				victim.take_damage(10, false, victim.global_position + Vector2(0, -20), 0)
+				wounded = true
+		check(wounded, "host: wounded a mob for the hp sync check")
+		await get_tree().create_timer(1.0).timeout
+	else:
+		await get_tree().create_timer(3.0).timeout
+		var bled := false
+		if ns != null:
+			for id in ns.enemies:
+				var e: Enemy = ns.enemies[id]
+				if is_instance_valid(e) and e.hp < e.max_hp:
+					bled = true
+					break
+		check(bled, "client: enemy hp replicated from host")
+	# --- tile break replication phase: the guest asks, the host applies,
+	# everyone converges on the same layout.
+	var level: DungeonLevel = g.level
+	if level != null:
+		var origin := level.start_position()
+		var sc := level.world_to_cell(origin)
+		var cell := Vector2i(-1, -1)
+		for r in range(1, 7):
+			if cell.x >= 0:
+				break
+			for dy in range(-r, r + 1):
+				for dx in range(-r, r + 1):
+					if maxi(absi(dx), absi(dy)) != r:
+						continue
+					var c := sc + Vector2i(dx, dy)
+					if level.layout.get_tile(c.x, c.y) == LevelLayout.Tile.BRICK:
+						cell = c
+						break
+				if cell.x >= 0:
+					break
+			if cell.x >= 0:
+				break
+		if cell.x < 0:
+			print("SKIP: no breakable brick near the start")
+		else:
+			var dist := origin.distance_to(level.cell_center(cell))
+			check(dist < 200.0, "brick cell near the start (%.0f px)" % dist)
+			if is_host:
+				# The guest's request travels over the network; give it time.
+				await get_tree().create_timer(4.0).timeout
+				if not is_instance_valid(level):
+					check(false, "host: level freed mid-test")
+					_finish(0.5)
+					return
+				check(level.layout.get_tile(cell.x, cell.y) == LevelLayout.Tile.EMPTY,
+						"host: guest's tile break applied")
+			else:
+				# Stand still near the cell: the host validates range.
+				if mine != null:
+					mine.global_position = origin
+				await get_tree().create_timer(0.7).timeout
+				if not is_instance_valid(level):
+					check(false, "client: level freed mid-test")
+					_finish(0.5)
+					return
+				level.break_tile(cell)  # a client only sends the request
+				await get_tree().create_timer(2.0).timeout
+				check(level.layout.get_tile(cell.x, cell.y) == LevelLayout.Tile.EMPTY,
+						"client: tile break replicated back")
 	_finish()
 
 

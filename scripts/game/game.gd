@@ -441,7 +441,9 @@ func _net_spawn_players() -> void:
 			continue
 		_spawn_net_puppet(peer_id)
 	# Tell the host this scene is up; it spawns my puppet and shares allies.
-	net_sync.net_hello.rpc_id(1)
+	# (The host must not call it on itself: call_remote forbids self-RPC.)
+	if not Net.is_host:
+		net_sync.net_hello.rpc_id(1)
 
 
 func _spawn_net_puppet(peer_id: int) -> void:
@@ -466,7 +468,7 @@ func _spawn_net_puppet(peer_id: int) -> void:
 	hud.add_ally(_net_player_name(peer_id), mirror)
 	# Everyone (except the puppet's owner) learns about it from the host.
 	if Net.is_host:
-		net_sync.spawn_ally.rpc(peer_id, info)
+		spawn_ally.rpc(peer_id, info)
 
 
 ## Host → clients: a new ally's puppet exists, here is who they are.
