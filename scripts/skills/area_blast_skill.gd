@@ -1,7 +1,8 @@
 class_name AreaBlastSkill
 extends SkillEffect
 ## Damages every enemy around the caster in plain view (walls shield;
-## optionally breaks bricks afterwards, stuns).
+## optionally breaks bricks afterwards, stuns). Every skill family picks its
+## own blast silhouette - and the meteor falls from the sky first.
 
 @export var radius: float = 48.0
 @export var radius_per_level: float = 6.0
@@ -15,7 +16,7 @@ extends SkillEffect
 @export var damage_type: int = 0
 @export var color: Color = Color(1.0, 0.5, 0.2)
 ## Look of the blast: explosion (default), slash, blades, ring, ice, light,
-## sun, quake - each skill family gets its own silhouette.
+## sun, quake, meteor - each skill family gets its own silhouette.
 @export var vfx: StringName = &"explosion"
 
 
@@ -23,19 +24,13 @@ func execute(caster: Node, level: int) -> bool:
 	var center: Vector2 = caster.global_position + Vector2(0, -10)
 	var r := radius + radius_per_level * (level - 1)
 	var mult := damage_multiplier + damage_per_level * (level - 1)
-	for enemy in caster.get_tree().get_nodes_in_group("enemies"):
-		# Walls shield (checked before bricks break).
-		if enemy.global_position.distance_to(center) <= r and LineOfSight.can_hit(caster, center, enemy):
-			var d: Dictionary = caster.roll_damage(mult)
-			enemy.take_damage(d["amount"], d["crit"], center, damage_type)
-			if enemy.hp > 0:
-				var dir: Vector2 = (enemy.global_position - center).normalized()
-				enemy.velocity = dir * knockback + Vector2(0, -60)
-				if stun_time > 0.0:
-					enemy.stun(stun_time)
-	if breaks_tiles and caster.level:
-		caster.level.explode(center, r * 0.6)
 	var parent := caster.get_parent()
+	if vfx == &"meteor":
+		# The rock falls first (whistle), then everything hits at once.
+		Fx.meteor_fall(parent, center, r, color)
+		_apply_blast(caster, center, r, mult, 0.5)
+		return true
+	_apply_blast(caster, center, r, mult, 0.0)
 	match vfx:
 		&"slash":
 			Fx.arc_slash(parent, center, r, color, caster.facing)
@@ -55,6 +50,36 @@ func execute(caster: Node, level: int) -> bool:
 			Fx.explosion(parent, center, r, color)
 	EventBus.screen_shake.emit(4.0)
 	return true
+
+
+## Damage + tile breaking; `delay` lets the meteor land first (the enemies
+## inside the zone when it hits are the ones caught in it).
+func _apply_blast(caster: Node, center: Vector2, r: float, mult: float, delay: float) -> void:
+	if delay <= 0.0:
+		_blast_now(caster, center, r, mult)
+		return
+	var tree := caster.get_tree()
+	tree.create_timer(delay, false).timeout.connect(func() -> void:
+		if not caster.is_inside_tree():
+			return
+		_blast_now(caster, center, r, mult)
+		Fx.meteor_impact(caster.get_parent(), center, r, color)
+		EventBus.screen_shake.emit(8.0))
+
+
+func _blast_now(caster: Node, center: Vector2, r: float, mult: float) -> void:
+	for enemy in caster.get_tree().get_nodes_in_group("enemies"):
+		# Walls shield (checked before bricks break).
+		if enemy.global_position.distance_to(center) <= r and LineOfSight.can_hit(caster, center, enemy):
+			var d: Dictionary = caster.roll_damage(mult)
+			enemy.take_damage(d["amount"], d["crit"], center, damage_type)
+			if enemy.hp > 0:
+				var dir: Vector2 = (enemy.global_position - center).normalized()
+				enemy.velocity = dir * knockback + Vector2(0, -60)
+				if stun_time > 0.0:
+					enemy.stun(stun_time)
+	if breaks_tiles and caster.level:
+		caster.level.explode(center, r * 0.6)
 
 
 func describe(level: int) -> String:
