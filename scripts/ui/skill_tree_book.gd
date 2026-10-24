@@ -381,6 +381,9 @@ func _node(s: SkillData) -> Control:
 		var plus := UIStyle.outlined_label("+", 9, Color(0.4, 1.0, 0.4))
 		plus.position = Vector2(size.x - 7, -4)
 		box.add_child(plus)
+		_animate_available(box)
+	elif rank > 0:
+		_animate_learned(box, col)
 	if s == _selected:
 		var sel := ColorRect.new()
 		sel.color = Color(1, 0.9, 0.4, 0.25)
@@ -398,6 +401,27 @@ func _node(s: SkillData) -> Control:
 				AudioManager.play_ui(&"ui_click")
 				_refresh())
 	return box
+
+
+## A gentle life in the tree: available nodes breathe, learned ones glint.
+func _animate_available(box: Control) -> void:
+	box.pivot_offset = box.size / 2.0
+	var tw := box.create_tween().set_loops()
+	tw.tween_property(box, "scale", Vector2(1.1, 1.1), 0.55).set_trans(Tween.TRANS_SINE)
+	tw.tween_property(box, "scale", Vector2.ONE, 0.55).set_trans(Tween.TRANS_SINE)
+
+
+func _animate_learned(box: Control, col: Color) -> void:
+	var glint := ColorRect.new()
+	glint.color = Color(1, 1, 1, 0.0)
+	glint.set_anchors_preset(Control.PRESET_FULL_RECT)
+	glint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(glint)
+	var tw := box.create_tween().set_loops()
+	tw.tween_interval(randf_range(1.0, 4.0))
+	tw.tween_property(glint, "color:a", 0.18, 0.12)
+	tw.tween_property(glint, "color:a", 0.0, 0.5)
+	_ = col
 
 
 func _show(s: SkillData) -> void:

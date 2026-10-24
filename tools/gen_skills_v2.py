@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import os
 
-import gen_skill_icons as gi
+import gen_skill_icons32 as gi  # 32px volume-lit icons (v4)
 import gen_skill_trees as gst
 
 PHYS, FIRE, ICE, POISON, MAGIC = range(5)
@@ -84,7 +84,7 @@ ICONS = {
     "w_cleave": ({"bg": "wash", "s": ("slash", {"double": 1})}, BLOOD_A),
     "bloodletting": ({"bg": "dark", "s": ("blood", {"splashes": 1})}, BLOOD_A),
     "earthquake": ({"bg": "storm", "s": ("hammer", {"w": 10, "glow": 1})}, RED),
-    "w_executioner": ({"bg": "dark", "s": ("skull", {"crown": 1})}, BLOOD_A),
+    "w_executioner": ({"bg": "dark", "s": ("skull", {"id": "executioner"})}, BLOOD_A),
     "w_omnislash": ({"bg": "rays", "s": ("whirl", {"arms": 4})}, RED),
     "w_execution": ({"bg": "rays", "s": ("axe", {"spike": 1})}, BLOOD_A),
     # warrior - Страж
@@ -138,7 +138,7 @@ ICONS = {
     "venom_blades": ({"bg": "wash", "s": ("blade", {"edge": "poison", "len": "short"})}, POISON_A),
     "r_lacerate": ({"bg": "wash", "s": ("slash", {})}, BLOOD_A),
     "r_flurry": ({"bg": "glowline", "s": ("whirl", {"arms": 2})}, RED),
-    "r_assassin": ({"bg": "dark", "s": ("skull", {})}, RED),
+    "r_assassin": ({"bg": "dark", "s": ("skull", {"id": "assassin"})}, RED),
     "r_deadly_dance": ({"bg": "glowline", "s": ("fan", {"count": 3})}, RED),
     "r_death_waltz": ({"bg": "rays", "s": ("impact", {"rays": 8})}, (255, 90, 120)),
     # rogue - Тень
@@ -149,7 +149,7 @@ ICONS = {
     "r_phantom": ({"bg": "glowline", "s": ("figure", {})}, SHADOW),
     "r_shadow_lord": ({"bg": "dark", "s": ("eye", {"lashes": 1})}, SHADOW),
     "r_umbral": ({"bg": "runes", "s": ("hourglass", {})}, SHADOW),
-    "r_child_of_dark": ({"bg": "dark", "s": ("skull", {"crown": 1})}, (170, 120, 255)),
+    "r_child_of_dark": ({"bg": "dark", "s": ("skull", {"id": "child_of_dark"})}, (170, 120, 255)),
     # rogue - Метатель
     "throw_knives": ({"bg": "wash", "s": ("dagger", {"twin": 1})}, ORANGE),
     "r_steady_hand": ({"bg": "wash", "s": ("star", {"twinkle": 1})}, ORANGE),

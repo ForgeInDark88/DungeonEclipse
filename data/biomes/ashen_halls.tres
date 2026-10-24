@@ -6,83 +6,50 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/ashen_halls_far.png" id="bg_far"]
 [ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/ashen_halls_mid.png" id="bg_mid"]
 [ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/ashen_halls_near.png" id="bg_near"]
-[ext_resource type="Texture2D" path="res://assets/sprites/decor/charred_bones.png" id="dx_charred_bones"]
-[ext_resource type="Texture2D" path="res://assets/sprites/decor/urn.png" id="dx_urn"]
-[ext_resource type="Texture2D" path="res://assets/sprites/decor/obsidian.png" id="dx_obsidian"]
-[ext_resource type="Texture2D" path="res://assets/sprites/decor/wall_shackles.png" id="dx_wall_shackles"]
-[ext_resource type="Texture2D" path="res://assets/sprites/decor/tombstone.png" id="dx_tombstone"]
-[ext_resource type="Texture2D" path="res://assets/sprites/decor/wall_lava_crack.png" id="dx_wall_lava_crack"]
-[ext_resource type="Texture2D" path="res://assets/sprites/decor/candles.png" id="dx_candles"]
 
-[sub_resource type="Resource" id="Decor_charred_bones"]
+[sub_resource type="Resource" id="Decor_ember_mound"]
 script = ExtResource("decor_script")
-texture = ExtResource("dx_charred_bones")
+texture = ExtResource("dx_ember_mound")
 placement = 0
-weight = 1.5
-light_color = Color(0, 0, 0, 0)
-light_scale = 0.25
-unshaded = false
+weight = 1.8
+light_color = Color(1.0, 0.45, 0.2, 1)
+light_scale = 0.3
+unshaded = true
 sway = false
 
-[sub_resource type="Resource" id="Decor_urn"]
+
+[sub_resource type="Resource" id="Decor_ash_stalagmite"]
 script = ExtResource("decor_script")
-texture = ExtResource("dx_urn")
+texture = ExtResource("dx_ash_stalagmite")
 placement = 0
 weight = 1.2
-light_color = Color(0, 0, 0, 0)
-light_scale = 0.25
-unshaded = false
-sway = false
-
-[sub_resource type="Resource" id="Decor_obsidian"]
-script = ExtResource("decor_script")
-texture = ExtResource("dx_obsidian")
-placement = 0
-weight = 1.0
-light_color = Color(1.0, 0.5, 0.25, 1)
-light_scale = 0.25
+light_color = Color(1.0, 0.4, 0.15, 1)
+light_scale = 0.3
 unshaded = true
 sway = false
 
-[sub_resource type="Resource" id="Decor_wall_shackles"]
-script = ExtResource("decor_script")
-texture = ExtResource("dx_wall_shackles")
-placement = 2
-weight = 1.0
-light_color = Color(0, 0, 0, 0)
-light_scale = 0.25
-unshaded = false
-sway = false
 
-[sub_resource type="Resource" id="Decor_tombstone"]
+[sub_resource type="Resource" id="Decor_charred_column"]
 script = ExtResource("decor_script")
-texture = ExtResource("dx_tombstone")
+texture = ExtResource("dx_charred_column")
 placement = 0
 weight = 0.8
-light_color = Color(0, 0, 0, 0)
-light_scale = 0.25
-unshaded = false
-sway = false
-
-[sub_resource type="Resource" id="Decor_wall_lava_crack"]
-script = ExtResource("decor_script")
-texture = ExtResource("dx_wall_lava_crack")
-placement = 2
-weight = 1.0
-light_color = Color(1.0, 0.45, 0.2, 1)
-light_scale = 0.25
+light_color = Color(1.0, 0.4, 0.15, 1)
+light_scale = 0.3
 unshaded = true
 sway = false
 
-[sub_resource type="Resource" id="Decor_candles"]
+
+[sub_resource type="Resource" id="Decor_ash_fall"]
 script = ExtResource("decor_script")
-texture = ExtResource("dx_candles")
-placement = 0
-weight = 0.8
-light_color = Color(1.0, 0.8, 0.4, 1)
-light_scale = 0.25
+texture = ExtResource("dx_ash_fall")
+placement = 1
+weight = 1.5
+light_color = Color(0.8, 0.5, 0.3, 1)
+light_scale = 0.3
 unshaded = true
 sway = false
+
 
 [resource]
 script = ExtResource("biome_script")
@@ -105,7 +72,7 @@ fog_amount = 0.12
 grade_tint = Color(1.0, 0.94, 0.9, 1)
 saturation = 1.0
 contrast = 1.02
-decorations = Array[ExtResource("decor_script")]([SubResource("Decor_charred_bones"), SubResource("Decor_urn"), SubResource("Decor_obsidian"), SubResource("Decor_wall_shackles"), SubResource("Decor_tombstone"), SubResource("Decor_wall_lava_crack"), SubResource("Decor_candles")])
+decorations = Array[ExtResource("decor_script")]([SubResource("Decor_ember_mound"), SubResource("Decor_ash_stalagmite"), SubResource("Decor_charred_column"), SubResource("Decor_ash_fall")])
 decor_per_room = 4.5
 ore_chance = 0.05
 ore_item = &"iron_ore"

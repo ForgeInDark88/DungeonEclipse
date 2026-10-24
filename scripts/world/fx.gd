@@ -188,6 +188,19 @@ static func blade_fan(parent: Node, pos: Vector2, radius: float, color: Color, c
 		tws.tween_property(streak, "modulate:a", 0.0, 0.34)
 		tws.tween_callback(streak.queue_free)
 	_flash_light(parent, pos, color, 1.8, radius / 60.0, 0.3)
+	# a spinning light core
+	var core := Sprite2D.new()
+	core.texture = AssetPaths.tex(AssetPaths.LIGHT)
+	core.modulate = color.lerp(Color.WHITE, 0.4)
+	core.scale = Vector2(radius / 50.0, radius / 50.0) * 0.5
+	core.material = _unshaded()
+	core.z_index = 25
+	parent.add_child(core)
+	core.global_position = pos
+	var twc := core.create_tween()
+	twc.tween_property(core, "rotation", TAU, 0.35)
+	twc.parallel().tween_property(core, "modulate:a", 0.0, 0.4)
+	twc.tween_callback(core.queue_free)
 
 
 ## Expanding double ring (novas, shockwaves, war cries).
@@ -215,9 +228,27 @@ static func nova_ring(parent: Node, pos: Vector2, radius: float, color: Color) -
 		tw.tween_property(line, "width", 0.0, 0.36).set_delay(delay)
 		tw.tween_property(line, "modulate:a", 0.0, 0.36).set_delay(delay)
 		tw.chain().tween_callback(line.queue_free)
-	sparks(parent, pos, color, 16, 120.0)
-	_flash_light(parent, pos, color, 2.4, radius / 55.0)
+	sparks(parent, pos, color, 20, 140.0)
+	sparks(parent, pos, color.lerp(Color.WHITE, 0.3), 8, 80.0)
+	_flash_light(parent, pos, color, 3.0, radius / 50.0, 0.4)
 	scorch(parent, pos, radius * 0.55, Color(0.1, 0.07, 0.06))
+	# a bright ring of light expands faster than the shockwave
+	var halo := Line2D.new()
+	halo.width = 2.0
+	halo.default_color = color.lerp(Color.WHITE, 0.6)
+	var hpts := PackedVector2Array()
+	for i in 24:
+		var a := TAU * i / 24.0
+		hpts.append(Vector2(cos(a), sin(a) * 0.8) * (radius * 0.4))
+	halo.points = hpts
+	halo.z_index = 21
+	halo.material = _unshaded()
+	parent.add_child(halo)
+	halo.global_position = pos
+	var twh := halo.create_tween()
+	twh.tween_property(halo, "scale", Vector2(2.6, 2.6), 0.25).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	twh.parallel().tween_property(halo, "modulate:a", 0.0, 0.28)
+	twh.tween_callback(halo.queue_free)
 
 
 ## Frost: a cold ring plus flying ice shards (frost nova, blizzard, zero).
@@ -284,8 +315,21 @@ static func light_pillars(parent: Node, pos: Vector2, radius: float, color: Colo
 		tw.tween_property(beam, "width", 0.0, 0.3).set_delay(0.12)
 		tw.tween_property(beam, "modulate:a", 0.0, 0.3).set_delay(0.12)
 		tw.chain().tween_callback(beam.queue_free)
-		sparks(parent, px, color, 6, 70.0)
+		sparks(parent, px, color, 8, 90.0)
+		sparks(parent, px, Color.WHITE, 3, 40.0)
 	_flash_light(parent, pos, color, 3.0, radius / 45.0, 0.4)
+	# a bright cross flash over the whole area
+	var flash := Line2D.new()
+	flash.width = 3.0
+	flash.default_color = Color(color.r + 0.3, color.g + 0.3, color.b + 0.3, 0.8)
+	flash.points = PackedVector2Array([Vector2(-radius, 0), Vector2(radius, 0)])
+	flash.z_index = 22
+	flash.material = _unshaded()
+	parent.add_child(flash)
+	flash.global_position = pos
+	var twf := flash.create_tween()
+	twf.tween_property(flash, "modulate:a", 0.0, 0.3)
+	twf.tween_callback(flash.queue_free)
 
 
 ## A blinding sun flash with rings and a shower of sparks (supernova).
@@ -315,7 +359,8 @@ static func sun_flash(parent: Node, pos: Vector2, radius: float, color: Color) -
 ## Rock and dust bursting from the ground (earthquake, slams, meteors).
 static func rock_burst(parent: Node, pos: Vector2, radius: float, color: Color) -> void:
 	AudioManager.play_sfx(&"dig", pos, -2.0, 0.3)
-	shards(parent, pos, Color(0.5, 0.4, 0.34), maxi(8, int(radius / 6.0)))
+	shards(parent, pos, Color(0.5, 0.4, 0.34), maxi(12, int(radius / 4.0)))
+	shards(parent, pos + Vector2(0, -6), Color(0.35, 0.28, 0.24), 6)
 	for i in 3:
 		dust(parent, pos + Vector2(randf_range(-0.6, 0.6) * radius, -2.0), true)
 	nova_ring(parent, pos, radius * 0.8, Color(0.55, 0.45, 0.4))
