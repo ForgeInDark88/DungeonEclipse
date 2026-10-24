@@ -226,8 +226,19 @@ func sell(index: int) -> void:
 	hero.inventory.take_at(index, 1)
 	hero.add_gold(price)
 	item.identify()  # the merchant knows what he bought
-	if not item.is_stackable() and merchant.stock.size() < 18:
-		merchant.stock.append(item)
+	var ns := get_tree().get_first_node_in_group("net_game") as NetSync if Net.active else null
+	var echoes_back := false
+	if not item.is_stackable() and merchant.stock.size() < Merchant.STOCK_CAP:
+		if not Net.active or Net.is_host:
+			merchant.stock.append(item)
+			_refresh_goods()
+			if Net.is_host and ns:
+				ns.stock_added.rpc(merchant.net_seq, RunCodec.item_to_dict(item))
+		elif ns:
+			# The host owns the shared stock and echoes the addition back.
+			ns.request_sell.rpc_id(1, merchant.net_seq, RunCodec.item_to_dict(item))
+			echoes_back = true
+	if not echoes_back:
 		_refresh_goods()
 	AudioManager.play_ui(&"coin")
 	EventBus.message.emit("Продано: %s (+%d з.)" % [item.display_name, price])

@@ -18,6 +18,9 @@ var blast_radius: float = 0.0
 var blast_color := Color(1.0, 0.5, 0.2)
 ## Optional: called as on_hit.call(target, damage) for each target hit.
 var on_hit: Callable
+## Trap arrows exist on every machine: each one hurts only its local hero.
+## Mob shots exist only on the host and reach guests through player_damage.
+var local_damage_only := false
 
 var _hit: Array[Node] = []
 var _finished := false
@@ -76,6 +79,8 @@ func _on_body_entered(body: Node) -> void:
 
 func _damage(body: Node) -> void:
 	if target_group == "player":
+		if local_damage_only and body.puppet:
+			return
 		body.take_damage(damage, global_position, damage_type)
 	else:
 		body.take_damage(damage, crit, global_position, damage_type)

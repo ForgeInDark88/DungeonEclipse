@@ -6,6 +6,8 @@ extends Area2D
 const STOCK_TABLE := &"merchant"
 const BASICS: Array[StringName] = [&"health_potion", &"antidote", &"whetstone", &"bomb", &"map_scroll", &"identify_scroll"]
 const STOCK_ROLLS := 3
+## Shared stock cap (bought goods + uniques sold by players).
+const STOCK_CAP := 18
 ## Chance that the merchant also sells a pet egg.
 const EGG_CHANCE := 0.35
 

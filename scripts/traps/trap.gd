@@ -85,7 +85,12 @@ func _play(anim: StringName) -> void:
 
 
 func _player() -> Player:
-	return get_tree().get_first_node_in_group("player") as Player
+	# Traps are local per machine: aim them at the real hero, never at puppets.
+	for n in get_tree().get_nodes_in_group("player"):
+		var p := n as Player
+		if p != null and not p.puppet:
+			return p
+	return null
 
 
 func _physics_process(delta: float) -> void:
@@ -225,6 +230,7 @@ func _fire_arrow() -> void:
 	p.setup(data.projectile_texture, Vector2(facing, 0), data.projectile_speed, data.damage_for_floor(floor_number), "player")
 	p.damage_type = data.damage_type
 	p.blast_color = data.tint
+	p.local_damage_only = true
 	p.lifetime = data.trigger_range / data.projectile_speed + 0.6
 	p.on_hit = func(target: Node, dmg: int) -> void: _apply_effects(target, dmg)
 	level.add_entity(p, global_position + Vector2(facing * 9.0, -8.0))
@@ -277,6 +283,8 @@ func _falling_rock(delta: float) -> void:
 
 # -------------------------------------------------------------------- hits
 func _hurt(victim: Node) -> void:
+	if victim.puppet:
+		return  # every machine runs this trap; the authority applies its own
 	var dmg := data.damage_for_floor(floor_number)
 	if victim.is_in_group("player"):
 		victim.take_damage(dmg, global_position, data.damage_type)
