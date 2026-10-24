@@ -40,10 +40,10 @@ func _ready() -> void:
 	box.add_child(_frame)
 	_icon = TextureRect.new()
 	_icon.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_icon.offset_left = 6
-	_icon.offset_top = 6
-	_icon.offset_right = -6
-	_icon.offset_bottom = -6
+	_icon.offset_left = 4
+	_icon.offset_top = 4
+	_icon.offset_right = -4
+	_icon.offset_bottom = -4
 	_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
