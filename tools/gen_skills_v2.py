@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import os
 
-import gen_skill_icons as gi
+import gen_skill_icons32 as gi  # 32px volume-lit icons (v4)
 import gen_skill_trees as gst
 
 PHYS, FIRE, ICE, POISON, MAGIC = range(5)
