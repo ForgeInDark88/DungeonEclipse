@@ -126,14 +126,7 @@ func net_hit(net_id: int, amount: int, crit: bool, from_x: float, from_y: float,
 		return
 	if amount <= 0 or not _sender_near(sender, e.global_position, 420.0):
 		return
-	# 60 hits/s per player: far above any real attack pace, stops spam.
-	var second := Time.get_ticks_msec() / 1000
-	if second != _hit_second:
-		_hit_second = second
-		_hit_budget.clear()
-	var sent := int(_hit_budget.get(sender, 0)) + 1
-	_hit_budget[sender] = sent
-	if sent > 60:
+	if not _hit_rate_ok(sender):
 		return
 	_last_hitter[net_id] = sender
 	e.take_damage(amount, crit, Vector2(from_x, from_y), damage_type)
@@ -275,6 +268,52 @@ func player_heal(target_peer: int, amount: int) -> void:
 		return
 	if local_player and Net.multiplayer.get_unique_id() == target_peer:
 		local_player.heal_status(amount)
+
+
+## Client → host: my melee/projectile attack reached this enemy. The claim
+## carries what the owner rolled; the host re-validates and applies.
+@rpc("any_peer", "call_remote", "reliable")
+func request_player_hit(net_id: int, amount: int, crit: bool, damage_type: int,
+		from: Vector2, knockback: float) -> void:
+	if not Net.is_host:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	var e: Enemy = enemies.get(net_id)
+	if e == null or not is_instance_valid(e) or e.is_dead():
+		return
+	if amount <= 0 or not _sender_near(sender, e.global_position, 420.0):
+		return
+	if not _hit_rate_ok(sender):
+		return
+	_last_hitter[net_id] = sender
+	var pos := Vector2(from.x, from.y)
+	e.take_damage(amount, crit, pos, damage_type)
+	# The owner still needs the real dealt amount for weapon procs and life
+	# steal; armor/resistances already reduced it on the host.
+	if is_instance_valid(e) and not e.is_dead():
+		hit_confirmed.rpc_id(sender, net_id, amount)
+		if knockback > 0.0:
+			e.apply_knockback(signf(e.global_position.x - pos.x), knockback)
+
+
+## Host → the attacker's machine: your hit landed, here is what it dealt.
+@rpc("any_peer", "call_remote", "reliable")
+func hit_confirmed(net_id: int, dealt: int) -> void:
+	if multiplayer.get_remote_sender_id() != 1:
+		return
+	var e: Enemy = enemies.get(net_id)
+	if local_player and e != null and is_instance_valid(e):
+		local_player.net_confirm_hit(e, dealt)
+
+
+func _hit_rate_ok(peer_id: int) -> bool:
+	var second := Time.get_ticks_msec() / 1000
+	if second != _hit_second:
+		_hit_second = second
+		_hit_budget.clear()
+	var sent := int(_hit_budget.get(peer_id, 0)) + 1
+	_hit_budget[peer_id] = sent
+	return sent <= 60
 
 
 ## Host → the hit player's machine: an enemy hurt you.
