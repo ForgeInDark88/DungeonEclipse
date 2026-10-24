@@ -165,8 +165,8 @@ func _build() -> void:
 	frame_box.add_child(UIStyle.frame(AssetPaths.SLOT, 5))
 	_icon = TextureRect.new()
 	_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_icon.position = Vector2(5, 5)
-	_icon.size = Vector2(24, 24)
+	_icon.position = Vector2(7, 7)
+	_icon.size = Vector2(20, 20)
 	frame_box.add_child(_icon)
 	top.add_child(frame_box)
 	_title = UIStyle.label("", 10, UIStyle.PARCHMENT)
@@ -367,7 +367,7 @@ func _node(s: SkillData) -> Control:
 	var icon := TextureRect.new()
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.texture = s.icon
-	var inset := Vector2(3, 3) if not _is_keystone(s) else Vector2(5, 5)
+	var inset := Vector2(5, 5) if not _is_keystone(s) else Vector2(6, 6)
 	icon.position = inset
 	icon.size = size - inset * 2.0
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE

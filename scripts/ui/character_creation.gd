@@ -215,7 +215,7 @@ func _refresh_preview() -> void:
 		var slot: Dictionary = _class.tree_layout.get(String(skill.id), {})
 		if not slot.is_empty() and int(slot.get("row", 0)) > 0:
 			continue
-		_skills_row.add_child(_icon_with_tip(skill.icon, TooltipText.skill(skill, 1, 0)))
+		_skills_row.add_child(_icon_with_tip(skill.icon, TooltipText.skill(skill, 1, 0), 12))
 		shown += 1
 	if not _class.branch_names.is_empty():
 		_skills_row.add_child(UIStyle.label("+%d в ветвях: %s" % [_class.skills.size() - shown, ", ".join(_class.branch_names)], 6, UIStyle.INK_SOFT))
@@ -227,15 +227,16 @@ func _refresh_preview() -> void:
 			_items_row.add_child(_icon_with_tip(item.icon, TooltipText.item(item, null)))
 
 
-func _icon_with_tip(tex: Texture2D, tip: String) -> Control:
+func _icon_with_tip(tex: Texture2D, tip: String, px := 16) -> Control:
 	var box := Control.new()
 	box.custom_minimum_size = UIStyle.SLOT_SIZE
 	box.mouse_filter = Control.MOUSE_FILTER_STOP
 	box.add_child(UIStyle.frame(AssetPaths.SLOT, 5))
 	var t := TextureRect.new()
 	t.texture = tex
-	t.position = Vector2(5, 5)
-	t.size = UIStyle.SLOT_SIZE - Vector2(10, 10)
+	var half := (UIStyle.SLOT_SIZE - Vector2(px, px)) / 2.0
+	t.position = half
+	t.size = Vector2(px, px)
 	t.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	t.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(t)
