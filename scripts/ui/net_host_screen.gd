@@ -60,6 +60,7 @@ func _ready() -> void:
 	if Net.active and Net.is_host:
 		_status.text = "Игра открыта."
 	_refresh()
+	create.grab_focus()
 
 
 func _refresh() -> void:
