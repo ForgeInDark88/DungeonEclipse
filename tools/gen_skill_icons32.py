@@ -959,12 +959,7 @@ def draw(spec, accent) -> Image.Image:
     for f in spec.get("fx", []):
         FX[f](g)
     g.im.alpha_composite(g.glow)
-    im = icon_detail.detail(g.im)
-    # The art is shrunk into a 28x28 window with a 2px transparent border,
-    # so backdrops (rays, halos) never touch the slot frames it lands in.
-    padded = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
-    padded.paste(_edge_dark(im).resize((28, 28), Image.NEAREST), (2, 2))
-    return padded
+    return _edge_dark(icon_detail.detail(g.im))
 
 
 if __name__ == "__main__":
