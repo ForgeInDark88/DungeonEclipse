@@ -283,7 +283,10 @@ func net_hello() -> void:
 
 ## Host → late joiner: everything that already happened on this floor.
 @rpc("authority", "call_remote", "reliable")
-func world_state(tiles: Array, chests: Array, stock: Array, enemy_list: Array) -> void:
+func world_state(floor_num: int, tiles: Array, chests: Array, stock: Array,
+		enemy_list: Array) -> void:
+	if floor_num != GameState.floor_number:
+		return  # a snapshot of a floor we already left
 	var game := get_tree().current_scene
 	if game == null or not ("level" in game) or game.level == null:
 		return
@@ -331,7 +334,7 @@ func send_world_state(peer_id: int) -> void:
 		if is_instance_valid(e) and not e.is_dead():
 			list.append([id, String(e.data.id), e.global_position.x, e.global_position.y,
 					e.elite.id if e.elite else StringName(), e.champion, e.held, e.hp])
-	world_state.rpc_id(peer_id, tiles, chests, stock, list)
+	world_state.rpc_id(peer_id, GameState.floor_number, tiles, chests, stock, list)
 
 
 # ---------------------------------------------------- chests and shops

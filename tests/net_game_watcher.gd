@@ -138,8 +138,12 @@ func _watch_game() -> void:
 			var dist := origin.distance_to(level.cell_center(cell))
 			check(dist < 200.0, "brick cell near the start (%.0f px)" % dist)
 			if is_host:
-				# The guest's request travels over the network; give it time.
-				await get_tree().create_timer(4.0).timeout
+				# The guest's request travels over the network; poll for it.
+				for i in 10:
+					if not is_instance_valid(level) \
+							or level.layout.get_tile(cell.x, cell.y) == LevelLayout.Tile.EMPTY:
+						break
+					await get_tree().create_timer(1.0).timeout
 				if not is_instance_valid(level):
 					check(false, "host: level freed mid-test")
 					_finish(0.5)
@@ -159,6 +163,21 @@ func _watch_game() -> void:
 				await get_tree().create_timer(2.0).timeout
 				check(level.layout.get_tile(cell.x, cell.y) == LevelLayout.Tile.EMPTY,
 						"client: tile break replicated back")
+	# --- floor transition phase: the host descends; the guest must rebuild
+	# the floor and receive the new floor's enemies via the world re-sync.
+	if is_host:
+		# Let the guest finish its floor 1 checks before pulling everyone down.
+		await get_tree().create_timer(5.0).timeout
+		GameState.next_floor()
+	for i in 20:
+		if GameState.floor_number == 2:
+			break
+		await get_tree().create_timer(1.0).timeout
+	# The floor keeps building and the world snapshot keeps arriving: let it.
+	await get_tree().create_timer(4.0).timeout
+	check(GameState.floor_number == 2, "both on floor 2 (got %d)" % GameState.floor_number)
+	var shells2: int = ns.enemies.size() if ns != null else -1
+	check(shells2 > 0, "floor 2 mobs present (%d)" % shells2)
 	_finish()
 
 
