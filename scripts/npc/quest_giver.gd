@@ -11,10 +11,11 @@ func _ready() -> void:
 	collision_layer = 16
 	collision_mask = 0
 	monitoring = false
-	# A slow bob: the herald breathes.
+	# A slow lamp flicker keeps the herald alive without moving his feet.
+	var light: PointLight2D = $PointLight2D
 	var tw := create_tween().set_loops()
-	tw.tween_property(_sprite, "position:y", -6.0, 1.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tw.tween_property(_sprite, "position:y", -5.0, 1.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_property(light, "energy", 1.05, 1.6).set_trans(Tween.TRANS_SINE)
+	tw.tween_property(light, "energy", 0.75, 1.6).set_trans(Tween.TRANS_SINE)
 
 
 func get_prompt() -> String:

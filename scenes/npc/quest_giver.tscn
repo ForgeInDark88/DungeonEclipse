@@ -13,7 +13,9 @@ monitoring = false
 script = ExtResource("1_giver")
 
 [node name="Sprite" type="Sprite2D" parent="."]
-position = Vector2(0, -5)
+z_index = 1
+centered = false
+offset = Vector2(-10, -30)
 texture = ExtResource("2_tex")
 
 [node name="PointLight2D" type="PointLight2D" parent="."]
