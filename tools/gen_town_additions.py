@@ -118,28 +118,49 @@ def quest_board():
 
 # ----------------------------------------------------------------- stairs
 def return_stairs():
-    """Stone steps up into the light, for leaving a dungeon floor."""
-    W, H = 16, 18
+    """An old wayfarer's archway: stone frame, steps inside, warm light from
+    the surface above. The engine adds the light shaft and rising motes."""
+    W, H = 22, 32
     im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
-    # three steps rising to the right-top, each with a lit tread
-    steps = [(1, 13, 8), (3, 10, 11), (5, 7, 14)]
-    for sx, sy, ex in steps:
-        d.rectangle((sx, sy + 2, ex, 16), fill=STONE_DARK + (255,))
-        d.rectangle((sx, sy, ex, sy + 2), fill=STONE + (255,))
-        d.line((sx, sy, ex, sy), fill=(168, 162, 156, 255))
-    # warm daylight at the top
-    d.ellipse((4, 1, 13, 6), fill=(255, 224, 160, 90))
-    d.ellipse((6, 2, 11, 5), fill=(255, 240, 200, 140))
-    # side stones
-    d.rectangle((0, 15, 15, 17), fill=(70, 64, 60, 255))
-    for x in (0, 5, 10, 15):
-        im.putpixel((x, 16), (56, 50, 46, 255))
-    # glow overlay for the light2d to pick up
-    glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    gd = ImageDraw.Draw(glow)
-    gd.ellipse((3, 0, 14, 7), fill=(255, 214, 140, 60))
-    im.alpha_composite(glow)
+    # base slab
+    d.rectangle((0, 29, 21, 31), fill=(56, 50, 46, 255))
+    d.rectangle((0, 29, 21, 30), fill=STONE_DARK + (255,))
+    # outer pillars of the arch
+    d.rectangle((1, 10, 4, 29), fill=STONE_DARK + (255,))
+    d.rectangle((17, 10, 20, 29), fill=STONE_DARK + (255,))
+    for y in range(10, 29, 5):
+        d.line((1, y, 4, y), fill=(70, 64, 60, 255))
+        d.line((17, y, 20, y), fill=(70, 64, 60, 255))
+    # pillar caps
+    d.rectangle((0, 8, 5, 10), fill=STONE + (255,))
+    d.rectangle((16, 8, 21, 10), fill=STONE + (255,))
+    # arch curve
+    d.arc((3, -2, 18, 16), 180, 360, fill=STONE + (255,), width=3)
+    d.arc((5, 0, 16, 14), 180, 360, fill=STONE_DARK + (255,), width=2)
+    # keystone
+    d.rectangle((9, 4, 12, 8), fill=STONE + (255,))
+    im.putpixel((10, 5), (180, 172, 164, 255))
+    # the opening: warm daylight gradient from the top
+    d.rectangle((5, 9, 16, 29), fill=(46, 36, 30, 255))
+    for y in range(9, 29):
+        t = (y - 9) / 19.0
+        c = (int(255 - 140 * t), int(226 - 150 * t), int(160 - 100 * t), int(210 - 150 * t))
+        d.line((5, y, 16, y), fill=c)
+    # steps rising into the light
+    d.rectangle((5, 24, 16, 29), fill=STONE_DARK + (255,))
+    d.rectangle((6, 24, 15, 25), fill=STONE + (255,))
+    d.rectangle((8, 20, 13, 24), fill=(72, 66, 60, 255))
+    d.rectangle((8, 20, 13, 21), fill=(150, 142, 134, 255))
+    d.rectangle((10, 16, 13, 20), fill=(60, 54, 48, 255))
+    d.rectangle((10, 16, 13, 17), fill=(170, 162, 154, 255))
+    # bright threshold at the top of the stairs
+    d.ellipse((9, 10, 14, 14), fill=(255, 240, 200, 220))
+    # carved rune on each pillar
+    im.putpixel((2, 14), (255, 214, 140, 255))
+    im.putpixel((19, 14), (255, 214, 140, 255))
+    im.putpixel((2, 16), (200, 160, 90, 255))
+    im.putpixel((19, 16), (200, 160, 90, 255))
     finish(im)
     save(im, "return_stairs")
 

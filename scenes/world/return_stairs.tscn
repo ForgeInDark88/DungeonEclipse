@@ -10,5 +10,5 @@ monitoring = false
 script = ExtResource("1_stairs")
 
 [node name="Sprite" type="Sprite2D" parent="."]
-position = Vector2(0, -8)
+position = Vector2(0, -15)
 texture = ExtResource("2_tex")

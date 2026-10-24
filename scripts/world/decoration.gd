@@ -24,6 +24,21 @@ func _ready() -> void:
 				s.modulate = wall_tint
 		_:
 			s.offset = Vector2(-size.x / 2.0, 0)
+	# Every copy sits a bit differently so repeats never look copy-pasted.
+	s.flip_h = randf() < 0.5
+	match data.placement:
+		DecorData.Placement.FLOOR:
+			# Tilt and resize pivot at the feet point, nudge along the floor.
+			s.rotation_degrees = randf_range(-8.0, 8.0)
+			var k := randf_range(0.88, 1.14)
+			s.scale = Vector2(k, k)
+			s.position.x = randf_range(-4.0, 4.0)
+		DecorData.Placement.CEILING:
+			var kc := randf_range(0.9, 1.12)
+			s.scale = Vector2(kc, kc)
+			s.position.x = randf_range(-3.0, 3.0)
+		_:
+			s.position.y = randf_range(-2.0, 2.0)
 	if data.unshaded:
 		var m := CanvasItemMaterial.new()
 		m.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
