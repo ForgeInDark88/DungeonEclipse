@@ -455,6 +455,7 @@ func _spawn_net_puppet(peer_id: int) -> void:
 	p.puppet = true
 	net_players.add_child(p)
 	p.setup(mirror, null)
+	p.camera.enabled = false  # only the local player owns the viewport
 	p.add_to_group("player")
 	p.global_position = level.start_position() + Vector2(14, 0)
 	var tag := UIStyle.outlined_label(_net_player_name(peer_id), 6, UIStyle.PARCHMENT)

@@ -299,6 +299,21 @@ func _sleep_far_away(delta: float) -> bool:
 	return true
 
 
+## Co-op: the closest standing hero gets the monster's attention.
+func _nearest_alive_player() -> Player:
+	var best: Player = null
+	var best_d := INF
+	for n in get_tree().get_nodes_in_group("player"):
+		var pl := n as Player
+		if pl == null or pl.dead:
+			continue
+		var d := global_position.distance_to(pl.global_position)
+		if d < best_d:
+			best_d = d
+			best = pl
+	return best
+
+
 func _physics_process(delta: float) -> void:
 	if puppet:
 		# Shell on a client: glide to the host's last word, no thinking.
@@ -309,8 +324,8 @@ func _physics_process(delta: float) -> void:
 		_home_set = true
 		_home = global_position
 		_stuck_anchor = global_position
-	if _player == null or not is_instance_valid(_player):
-		_player = get_tree().get_first_node_in_group("player") as Player
+	if _player == null or not is_instance_valid(_player) or _player.dead:
+		_player = _nearest_alive_player()
 	if held:
 		# On guard: stands still (gravity only), waiting for the hero.
 		velocity.x = 0.0

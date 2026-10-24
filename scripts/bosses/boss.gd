@@ -52,6 +52,21 @@ func current_phase() -> BossPhase:
 	return boss.phases[phase_index] if phase_index < boss.phases.size() else null
 
 
+## Co-op: the closest standing hero gets the boss's attention.
+func _nearest_alive_player() -> Player:
+	var best: Player = null
+	var best_d := INF
+	for n in get_tree().get_nodes_in_group("player"):
+		var pl := n as Player
+		if pl == null or pl.dead:
+			continue
+		var d := global_position.distance_to(pl.global_position)
+		if d < best_d:
+			best_d = d
+			best = pl
+	return best
+
+
 func _physics_process(delta: float) -> void:
 	if puppet:
 		# Co-op shell: glide to the host's position, no boss brain here.
@@ -59,8 +74,8 @@ func _physics_process(delta: float) -> void:
 		return
 	if _dead:
 		return
-	if _player == null or not is_instance_valid(_player):
-		_player = get_tree().get_first_node_in_group("player") as Player
+	if _player == null or not is_instance_valid(_player) or _player.dead:
+		_player = _nearest_alive_player()
 	_contact_cd = maxf(0.0, _contact_cd - delta)
 	_hop_cd = maxf(0.0, _hop_cd - delta)
 	# Boss._physics_process fully replaces Enemy's, so the one-shot "attack"
