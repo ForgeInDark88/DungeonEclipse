@@ -704,13 +704,14 @@ def _skull_executioner(g):
 
 def _skull_assassin(g):
     """A hood of shadow: only two burning eyes in the dark."""
-    # the hood: a dark cone
+    # the hood: dark violet cloth, lit enough to read as fabric
     def _m(dd):
         dd.polygon([(8, 28), (10, 8), (16, 4), (22, 8), (24, 28)], fill=(255, 255, 255, 255))
-    g.litmask(_m, (30, 22, 38, 255), 16, 18, 10, 14, flat=0.3)
+    g.litmask(_m, (56, 44, 74, 255), 16, 18, 10, 14, flat=0.5)
     # the rim catches light
     g.line(10, 8, 16, 4, g.mid, 1)
     g.line(16, 4, 22, 8, g.dark, 1)
+    g.line(9, 12, 8, 27, _c(g.mid, 0.6), 1)
     # fold lines
     g.line(12, 12, 13, 26, g.dark, 1)
     g.line(20, 12, 19, 26, g.dark, 1)
@@ -720,6 +721,9 @@ def _skull_assassin(g):
     g.line(18, 16, 20, 16, g.hot, 1)
     g.p(14, 15, _c(g.hot, 0.6))
     g.p(19, 15, _c(g.hot, 0.6))
+    # glow bleeding from the eyes onto the cloth
+    g.p(12, 15, _c(g.hot, 0.25))
+    g.p(21, 15, _c(g.hot, 0.25))
     # a dagger tip peeks from under the hood
     g.line(16, 28, 16, 31, STEEL, 1)
     g.p(16, 31, WHITE)
