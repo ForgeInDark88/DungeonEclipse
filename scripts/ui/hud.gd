@@ -28,6 +28,7 @@ var _status_row: HBoxContainer
 var _status_keys: Array[String] = []
 var _boss_box: Control
 var _boss_bar: StatBar
+var _ally_box: VBoxContainer
 var _boss_name: Label
 var _panel: Control
 ## Kill streak (GameState.combo): shown from 2 kills, fades as its time runs out.
@@ -39,10 +40,37 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
+## LAN co-op: small name + hp plates for the party (top right).
+func add_ally(name_text: String, ally_hero: Hero) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	var lbl := UIStyle.outlined_label(name_text, 6, UIStyle.PARCHMENT)
+	lbl.custom_minimum_size = Vector2(64, 10)
+	row.add_child(lbl)
+	var bar := StatBar.create(AssetPaths.BAR_HP, Vector2(60, 8))
+	bar.set_values(ally_hero.stats.hp, ally_hero.stats.max_hp())
+	ally_hero.stats.hp_changed.connect(func(hp: int, mx: int) -> void:
+		bar.set_values(hp, mx)
+		lbl.modulate.a = 0.45 if hp <= 0 else 1.0)
+	row.add_child(bar)
+	_ally_box.add_child(row)
+
+
+func remove_ally(_peer_id: int) -> void:
+	if _ally_box.get_child_count() > 0:
+		_ally_box.get_child(_ally_box.get_child_count() - 1).queue_free()
+
+
 func setup(p_hero: Hero, player: Player) -> void:
 	hero = p_hero
 	_player = player
 	_build()
+	_ally_box = VBoxContainer.new()
+	_ally_box.position = Vector2(size.x - 150, 6)
+	_ally_box.size = Vector2(146, 70)
+	_ally_box.add_theme_constant_override("separation", 2)
+	_ally_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_ally_box)
 	hero.stats.hp_changed.connect(func(hp: int, mx: int) -> void: _hp.set_values(hp, mx))
 	hero.stats.mana_changed.connect(func(m: int, mx: int) -> void: _mana.set_values(m, mx))
 	hero.xp_changed.connect(func(_x: int, _n: int) -> void: _refresh_xp())

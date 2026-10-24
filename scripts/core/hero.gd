@@ -71,6 +71,20 @@ func give_starting_kit() -> void:
 	stats.recalculate()
 
 
+## Net co-op: xp and gold from a kill credited to this hero by the host.
+func gain_kill_reward(xp_amount: int, gold_amount: int) -> void:
+	if xp_amount > 0:
+		add_xp(xp_amount)
+	if gold_amount > 0:
+		add_gold(gold_amount)
+
+
+## Co-op: back from the dead on a new floor.
+func revive() -> void:
+	stats.hp = stats.max_hp()
+	stats.restore_mana(stats.max_mana())
+
+
 func add_gold(amount: int) -> void:
 	gold = maxi(0, gold + amount)
 	if amount > 0:

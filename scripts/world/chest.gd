@@ -12,6 +12,8 @@ var table_override: StringName = &""
 var floor_number: int = 1
 var locked := false
 var opened := false
+## LAN co-op: deterministic chest identity across machines.
+var net_seq := 0
 ## Golden chests are locked unless this is set (boss rewards).
 var unlocked_by_default := false
 ## Behind a puzzle barrier: cannot be opened until the puzzle is solved.
@@ -71,6 +73,10 @@ func open() -> void:
 		get_tree().create_timer(0.25).timeout.connect(func() -> void: EventBus.spawn_items.emit(pos, loot))
 	Fx.sparks(get_parent(), global_position + Vector2(0, -10), Color(1.0, 0.85, 0.4), 10, 70.0)
 	EventBus.chest_opened.emit(self)
+	if Net.active:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.broadcast_chest(net_seq)
 
 
 func _shake() -> void:

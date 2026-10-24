@@ -182,6 +182,10 @@ func buy(index: int) -> void:
 	AudioManager.play_ui(&"coin")
 	EventBus.item_bought.emit(item)
 	Tooltip.hide_tip()
+	if Net.active and not item.is_stackable():
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.broadcast_purchase(merchant.net_seq, index)
 
 
 ## Sells one piece from a backpack slot (the merchant keeps unique items).

@@ -97,7 +97,9 @@ func _ready() -> void:
 	var go := BookPageScreen.button("В подземелье!", func() -> void:
 		SaveManager.last_difficulty = String(_difficulty.id) if _difficulty else "normal"
 		SaveManager.save_settings()
-		GameState.start_new_run(_race, _class, -1, "", _female, _difficulty.id if _difficulty else &"normal"))
+		GameState.start_new_run(_race, _class, -1, _female, _difficulty.id if _difficulty else &"normal")
+		if Net.active and Net.is_host:
+			Net.rpc_start_run(GameState.run_seed, GameState.difficulty.id if GameState.difficulty else &"normal"))
 	buttons.add_child(go)
 
 	if not _race_buttons.is_empty():

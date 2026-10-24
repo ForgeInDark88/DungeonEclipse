@@ -36,6 +36,12 @@ func get_prompt() -> String:
 
 func interact(_player: Node) -> void:
 	AudioManager.play_sfx(&"portal")
+	if Net.active and not Net.is_host:
+		# Co-op: only the host moves the party.
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.request_floor.rpc_id(1, &"resume" if GameState.town_return_floor > 0 else &"next")
+		return
 	if GameState.town_return_floor > 0:
 		GameState.resume_from_town()
 	else:

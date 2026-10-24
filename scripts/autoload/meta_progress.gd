@@ -115,8 +115,7 @@ func stat_bonuses() -> Dictionary:
 	return total
 
 
-## Applies bought upgrades to a freshly created hero. Daily runs pass
-## `use_upgrades = false`: an equal start for everybody.
+## Applies bought upgrades to a freshly created hero.
 func apply_to(hero: Hero, use_upgrades := true) -> void:
 	if not apply_upgrades or not use_upgrades:
 		return

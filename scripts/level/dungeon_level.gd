@@ -35,6 +35,8 @@ var layout: LevelLayout
 var floor_number: int = 1
 var biome: BiomeData
 var rng := RandomNumberGenerator.new()
+## LAN co-op: enemies get ids in spawn order — the same on every machine.
+var net_seq := 0
 ## Cells of glowing ore veins (break them for loot).
 var ore_cells: Dictionary = {}
 ## Minimap fog of war: 1 = explored.
@@ -156,6 +158,7 @@ func _spawn_boss() -> void:
 		return
 	var b: Boss = (load(BOSS_SCENE) as PackedScene).instantiate()
 	b.setup(data, floor_number)
+	_net_tag(b)
 	var pos := cell_bottom(layout.boss_cell)
 	if data.behavior == EnemyData.Behavior.FLYER:
 		pos.y -= TILE * 4
@@ -476,6 +479,24 @@ func _spawn_door() -> void:
 	add_entity(door, cell_bottom(layout.exit_cell))
 
 
+## Co-op: deterministic identity for shops and chests (same order everywhere).
+func _net_seq_node(node: Node) -> void:
+	if not Net.active:
+		return
+	net_seq += 1
+	node.net_seq = net_seq
+
+
+## Co-op: hand out the next net id; clients get puppets instead of AI.
+func _net_tag(e: Enemy) -> void:
+	if not Net.active:
+		return
+	net_seq += 1
+	e.net_id = net_seq
+	e.puppet = not Net.is_host
+	get_tree().call_group("net_game", "register_enemy_node", e)
+
+
 ## Stairs back to town near the floor entrance (every normal floor).
 func _spawn_return_stairs() -> void:
 	var cell := _free_cell_near(layout.start_cell)
@@ -503,6 +524,7 @@ func _spawn_specials() -> void:
 			&"merchant":
 				var m: Merchant = (load(MERCHANT_SCENE) as PackedScene).instantiate()
 				m.floor_number = maxi(1, floor_number)  # the town shop sells first-floor goods
+				_net_seq_node(m)
 				add_entity(m, cell_bottom(info["cell"]))
 			&"smith":
 				add_entity((load(SMITH_SCENE) as PackedScene).instantiate(), cell_bottom(info["cell"]))
@@ -540,6 +562,7 @@ func _spawn_miniboss(info: Dictionary) -> void:
 				n += 1
 	var champion := (load(ENEMY_SCENE) as PackedScene).instantiate()
 	champion.setup(champ_data, floor_number, elite, true)
+	_net_tag(champion)
 	champion.held = true  # waits in its room until the gate slams
 	add_entity(champion, cell_bottom(info["cell"]))
 	var gate := MinibossGate.new()
@@ -572,6 +595,7 @@ func _spawn_chests() -> void:
 		var chest := (load(CHEST_SCENE) as PackedScene).instantiate()
 		chest.tier = info["tier"]
 		chest.floor_number = floor_number
+		_net_seq_node(chest)
 		add_entity(chest, cell_bottom(info["cell"]))
 
 
@@ -786,6 +810,7 @@ func _spawn_enemies() -> void:
 		if not elite_pool.is_empty() and rng.randf() < elite_chance:
 			elite = elite_pool[LootTable._weighted_index(elite_weights, rng)]
 		enemy.setup(data, floor_number, elite)
+		_net_tag(enemy)
 		var pos := cell_bottom(cell)
 		if data.behavior == EnemyData.Behavior.FLYER:
 			pos.y -= TILE * 2

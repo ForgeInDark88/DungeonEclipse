@@ -1,6 +1,6 @@
 class_name DifficultyData
 extends Resource
-## Difficulty of a run, chosen when creating the hero (daily runs are always
+## Difficulty of a run, chosen when creating the hero.
 ## «normal»). Add a .tres to data/difficulties/.
 ## `effects` are run multipliers added to GameState.run_effect() (same keys as
 ## RunPactData.effects): enemy_hp, enemy_damage (monsters, elites and bosses),

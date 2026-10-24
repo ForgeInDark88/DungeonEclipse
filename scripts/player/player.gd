@@ -29,6 +29,12 @@ var facing: float = 1.0
 ## Turned off by keyboard / gamepad attacks (they shoot where the hero faces).
 var mouse_aim := true
 var dead := false
+## LAN co-op: true on machines that only render this player (its owner
+## simulates and broadcasts the state).
+var puppet := false
+var peer_id := 1
+var _net_target := Vector2.ZERO
+var _net_timer := 0.0
 var climbing := false
 
 var _coyote := 0.0
@@ -164,6 +170,9 @@ func set_level(p_level: DungeonLevel) -> void:
 
 # ------------------------------------------------------------------ physics
 func _physics_process(delta: float) -> void:
+	if puppet:
+		_net_puppet_step(delta)
+		return
 	if hero == null or dead:
 		return
 	_tick_timers(delta)
@@ -216,6 +225,7 @@ func _physics_process(delta: float) -> void:
 	# Holding the attack button (mouse or key) keeps attacking at the weapon's rate.
 	if Input.is_action_pressed("attack"):
 		attack()
+	_net_broadcast(delta)
 	_update_interact_hint()
 
 
@@ -550,7 +560,51 @@ func _shoot(w: WeaponItemData, dir: float) -> void:
 
 ## Called by enemies, enemy projectiles and traps. Elemental damage
 ## (damage_type > 0) is reduced by resistances, then a shield absorbs it.
+## The owner broadcasts its state ~20 times a second; puppets glide along.
+func _net_broadcast(delta: float) -> void:
+	if puppet or not Net.active:
+		return
+	_net_timer -= delta
+	if _net_timer <= 0.0:
+		_net_timer = 0.05
+		net_state.rpc(global_position, facing, hero.stats.hp if hero else 0,
+				hero.stats.max_hp() if hero else 0, dead)
+
+
+@rpc("any_peer", "call_remote", "unreliable")
+func net_state(pos: Vector2, p_facing: float, hp: int, max_hp: int, is_dead: bool) -> void:
+	if not puppet or multiplayer.get_remote_sender_id() != peer_id:
+		return
+	_net_target = pos
+	visual.facing = p_facing
+	facing = p_facing
+	if hero:
+		hero.stats.hp = hp
+	if is_dead and not dead:
+		dead = true
+		animator.die()
+
+
+## Host enemies hit a puppet → the owner applies the damage for real.
+func net_take_damage(amount: int, from_pos: Vector2, damage_type: int) -> void:
+	take_damage(amount, from_pos, damage_type)
+
+
+func _net_puppet_step(delta: float) -> void:
+	var before := global_position
+	global_position = global_position.lerp(_net_target, minf(1.0, delta * 14.0))
+	var est := (global_position - before) / maxf(delta, 0.0001)
+	velocity = Vector2(est.x, 0.0)
+	animator.update(delta, true, velocity, false, false)
+
+
 func take_damage(amount: int, from_pos: Vector2 = Vector2.INF, damage_type: int = 0) -> void:
+	# Puppets forward the hit to their owner's machine.
+	if puppet:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.player_damage.rpc_id(peer_id, amount, from_pos, damage_type)
+		return
 	if dead or _invulnerable > 0.0 or _dash_time > 0.0:
 		return
 	if damage_type > 0:
@@ -578,6 +632,17 @@ func take_damage(amount: int, from_pos: Vector2 = Vector2.INF, damage_type: int 
 		velocity = Vector2(dir * 160.0, -150.0)
 		if climbing:
 			_stop_climbing()
+
+
+## Co-op: the fallen hero rises at the next floor's entrance.
+func revive() -> void:
+	if hero == null:
+		return
+	dead = false
+	hero.revive()
+	_invulnerable = 2.0
+	visual.alpha = 1.0
+	animator.update(0.0, true, Vector2.ZERO, false, false)
 
 
 func _on_died() -> void:

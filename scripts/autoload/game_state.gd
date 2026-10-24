@@ -6,7 +6,6 @@ const CHARACTER_CREATION := "res://scenes/ui/character_creation.tscn"
 const GAME := "res://scenes/game/game.tscn"
 const SANCTUM := "res://scenes/ui/sanctum.tscn"
 const CODEX := "res://scenes/ui/codex.tscn"
-const DAILY := "res://scenes/ui/daily.tscn"
 ## A new biome every N floors (see data/biomes, BiomeData.order).
 const FLOORS_PER_BIOME := 3
 ## Floor number of the town where every run starts.
@@ -22,11 +21,9 @@ var run_active: bool = false
 ## Statistics of the current run (death screen, achievements):
 ## gold, kills, floor, found_common/rare/epic, bosses, time.
 var run_stats: Dictionary = {}
-## Non-empty during a daily run: its date "YYYY-MM-DD" (seed and leaderboard key).
-var daily_date: String = ""
 ## Blessings and curses of the altars of fate taken this run (RunPactData).
 var pacts: Array[RunPactData] = []
-## Difficulty of this run (data/difficulties; daily runs: «normal»).
+## Difficulty of this run (data/difficulties).
 var difficulty: DifficultyData
 ## Pet of this run (null = none).
 var pet: PetData
@@ -57,17 +54,16 @@ func _ready() -> void:
 		run_stats["elites"] = int(run_stats.get("elites", 0)) + 1)
 
 
-## `seed_value` >= 0 makes the whole run reproducible (daily runs, tests).
-func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, daily := "", female := false,
+## `seed_value` >= 0 makes the whole run reproducible (tests, network runs).
+func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, female := false,
 		difficulty_id: StringName = &"normal") -> void:
 	SaveManager.clear_run()  # a new run replaces any saved one
-	daily_date = daily
-	difficulty = ItemDatabase.difficulty(&"normal" if daily != "" else difficulty_id)
+	difficulty = ItemDatabase.difficulty(difficulty_id)
 	hero = Hero.new(race, class_data, ItemDatabase.equipment_layout)
 	hero.female = female
 	hero.give_starting_kit()
 	hero.skills.add_points(1)  # the run opens with a choice: the first learned skill commits the branch
-	MetaProgress.apply_to(hero, daily == "")
+	MetaProgress.apply_to(hero, true)
 	floor_number = TOWN_FLOOR
 	kills = 0
 	pacts.clear()
@@ -140,46 +136,34 @@ func run_effect(key: String) -> float:
 
 
 ## Seed of the current floor: each run and each floor is different.
-## Today's date (local time) as used by daily runs.
-static func today() -> String:
-	return Time.get_date_string_from_system()
-
-
-## Seed, race and class of the daily run of `date`: the same for every player.
-## Only races / classes available without the Sanctum take part.
-static func daily_setup(date: String) -> Dictionary:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = hash("eclipse-daily:" + date)
-	var races := ItemDatabase.races.filter(func(r: RaceData) -> bool: return r.unlock_shards <= 0 and r.unlock_gold <= 0)
-	var classes := ItemDatabase.classes.filter(func(c: ClassData) -> bool: return c.unlock_shards <= 0 and c.unlock_gold <= 0)
-	var setup := {"seed": rng.randi() & 0x7FFFFFFF, "race": races[rng.randi() % races.size()],
-		"class": classes[rng.randi() % classes.size()]}
-	setup["female"] = rng.randi() % 2 == 1  # drawn last: older days keep their seed
-	return setup
-
-
-func start_daily_run(date: String = "") -> void:
-	if date == "":
-		date = today()
-	var d := daily_setup(date)
-	start_new_run(d["race"], d["class"], d["seed"], date, d["female"])
-
-
-## Difficulty multipliers that are not run effects (1.0 without a run).
-func elite_chance_mult() -> float:
-	return difficulty.elite_chance_mult if difficulty else 1.0
-
-
-func trap_damage_mult() -> float:
-	return difficulty.trap_damage_mult if difficulty else 1.0
-
-
-func is_daily() -> bool:
-	return daily_date != ""
-
-
 func floor_seed() -> int:
 	return hash([run_seed, floor_number])
+
+
+## Network: a client entering a hosted run. The hero is built per player
+## inside the game scene from the race/class each peer registered with Net.
+func begin_network_run(seed_value: int, difficulty_id: StringName, start_floor := TOWN_FLOOR) -> void:
+	SaveManager.clear_run()
+	difficulty = ItemDatabase.difficulty(difficulty_id)
+	hero = null
+	floor_number = start_floor
+	kills = 0
+	pacts.clear()
+	pet = null
+	combo = 0
+	town_return_floor = 0
+	quests.reset()
+	reset_run_stats()
+	run_seed = seed_value
+	run_active = true
+	get_tree().paused = false
+	get_tree().change_scene_to_file(GAME)
+
+
+## Network: the host moved the whole party to another floor.
+func net_set_floor(f: int) -> void:
+	floor_number = f
+	EventBus.floor_changed.emit(f)
 
 
 func is_boss_floor(f: int = -1) -> bool:
@@ -239,27 +223,10 @@ func end_run() -> Dictionary:
 		SaveManager.clear_run()  # permadeath: the snapshot dies with the hero
 		SaveManager.record_run(floor_number, kills)
 		reward = MetaProgress.finish_run(hero, floor_number, run_stats)
-		if is_daily():
-			reward["daily"] = _submit_daily()
 		Codex.add(&"runs")
 		Codex.save_progress()
 	run_active = false
 	return reward
-
-
-## Daily leaderboard entry; returns {"place", "score"}.
-func _submit_daily() -> Dictionary:
-	var bosses := int(run_stats.get("bosses", 0))
-	var gold := int(run_stats.get("gold", 0))
-	var lvl := hero.level if hero else 1
-	var entry := {
-		"score": Leaderboard.score(floor_number, kills, gold, bosses, lvl),
-		"floor": floor_number, "kills": kills, "gold": gold, "bosses": bosses, "level": lvl,
-		"time_s": (Time.get_ticks_msec() - int(run_stats.get("start_ms", 0))) / 1000,
-		"race": hero.race.display_name if hero else "", "class": hero.class_data.display_name if hero else "",
-		"at": Time.get_datetime_string_from_system().right(8),
-	}
-	return {"place": Leaderboard.submit(daily_date, entry), "score": entry["score"]}
 
 
 func go_to_menu() -> void:

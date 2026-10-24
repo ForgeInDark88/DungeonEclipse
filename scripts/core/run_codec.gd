@@ -25,7 +25,6 @@ static func save_run() -> Dictionary:
 		"seed": GameState.run_seed,
 		"floor": GameState.floor_number,
 		"kills": GameState.kills,
-		"daily": GameState.daily_date,
 		"difficulty": String(GameState.difficulty.id) if GameState.difficulty else "normal",
 		"pet": String(GameState.pet.id) if GameState.pet else "",
 		"pacts": pact_ids,
@@ -48,7 +47,6 @@ static func load_run(d: Dictionary) -> bool:
 	GameState.floor_number = int(d.get("floor", 1))
 	GameState.run_seed = int(d.get("seed", 0))
 	GameState.kills = int(d.get("kills", 0))
-	GameState.daily_date = String(d.get("daily", ""))
 	GameState.difficulty = ItemDatabase.difficulty(StringName(d.get("difficulty", "normal")))
 	GameState.pacts.clear()
 	for pid in d.get("pacts", []):
@@ -198,6 +196,15 @@ static func _find_inventory_copy(hero: Hero, entry: Dictionary) -> ItemData:
 
 
 # ------------------------------------------------------------------ items
+## Network: a single item as a plain dictionary, and back.
+static func item_to_dict(it: ItemData) -> Dictionary:
+	var d: Variant = _item_to_dict(ItemStack.new(it, 1))
+	return d if d is Dictionary else {}
+
+
+static func item_from_dict(d: Variant) -> ItemData:
+	var st: ItemStack = _item_from_dict(d)
+	return st.item if st else null
 static func _item_to_dict(stack: ItemStack) -> Variant:
 	if stack == null or stack.item == null:
 		return null

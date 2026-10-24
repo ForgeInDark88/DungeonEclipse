@@ -51,6 +51,10 @@ var champion := false
 ## Held on its post by the guardian gate: no thinking, no walking, until
 ## the hero steps into the room and the doors slam.
 var held := false
+## LAN co-op: on clients enemies are puppets — the host simulates them.
+var puppet := false
+var net_id := 0
+var _net_target := Vector2.ZERO
 var state: State = State.PATROL
 var dir: float = 1.0
 
@@ -148,7 +152,14 @@ func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null, p_ch
 	# Difficulty and curses of the altars of fate.
 	max_hp = maxi(1, roundi(max_hp * (1.0 + GameState.run_effect("enemy_hp"))))
 	damage = maxi(1, roundi(damage * (1.0 + GameState.run_effect("enemy_damage"))))
+	# Co-op: the party makes the dungeon meaner.
+	if Net.active:
+		max_hp = maxi(1, roundi(max_hp * Net.enemy_hp_mult()))
+		damage = maxi(1, roundi(damage * Net.enemy_damage_mult()))
 	hp = max_hp
+	if puppet:
+		_net_target = global_position
+		_play(&"idle")
 
 
 func display_name() -> String:
@@ -289,6 +300,10 @@ func _sleep_far_away(delta: float) -> bool:
 
 
 func _physics_process(delta: float) -> void:
+	if puppet:
+		# Shell on a client: glide to the host's last word, no thinking.
+		global_position = global_position.lerp(_net_target, minf(1.0, delta * 12.0))
+		return
 	if not _home_set:
 		# The spawn point is known only after DungeonLevel.add_entity placed us.
 		_home_set = true
@@ -1408,6 +1423,12 @@ func status_resistance(id: StringName) -> float:
 func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.INF, damage_type: int = 0) -> void:
 	if hp <= 0:
 		return
+	if puppet:
+		# Clients never apply damage: the host is the judge.
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.request_hit(self, amount, crit, damage_type)
+		return
 	# Physical damage is reduced by armor, elemental by resistances.
 	var armor := data.armor + (elite.armor_add if elite else 0)
 	var dealt := maxi(1, amount - armor) if damage_type == 0 else roundi(amount * (1.0 - resistance(damage_type)))
@@ -1483,6 +1504,38 @@ func is_dead() -> bool:
 	return _dead
 
 
+## Client shell: host says where I am and how hurt.
+func net_apply_state(x: float, y: float, new_hp: int, dead: bool) -> void:
+	_net_target = Vector2(x, y)
+	if dead and not _dead:
+		net_die()
+		return
+	hp = new_hp
+	if hp_bar.visible or hp < max_hp:
+		hp_bar.visible = true
+		hp_bar.max_value = max_hp
+		hp_bar.value = hp
+
+
+## Client shell: the host says this enemy died — visuals only.
+func net_die() -> void:
+	if _dead:
+		return
+	_dead = true
+	AudioManager.play_sfx(data.sound_death, global_position)
+	set_physics_process(false)
+	remove_from_group("enemies")
+	shape.set_deferred("disabled", true)
+	hp_bar.visible = false
+	sprite.play(&"death")
+	var parent := get_parent()
+	var pos := global_position + Vector2(0, -6)
+	var color := data.tint.darkened(0.2)
+	sprite.animation_finished.connect(func() -> void:
+		Fx.sparks(parent, pos, color, 14, 100.0)
+		queue_free(), CONNECT_ONE_SHOT)
+
+
 func _die() -> void:
 	_dead = true
 	AudioManager.play_sfx(data.sound_death, global_position)
@@ -1509,20 +1562,29 @@ func _die() -> void:
 
 
 ## XP, gold, loot and kill events (not for illusions and other fakes).
+## Co-op: the host keeps the world (loot drops there and is replicated),
+## the killer gets the xp/gold through the net, everyone counts the kill.
 func _give_rewards() -> void:
-	EventBus.enemy_killed.emit(data, global_position)
 	var xp := roundi((data.xp_reward + floor_number - 1) * (elite.xp_mult if elite else 1.0) * maxf(0.0, 1.0 + GameState.run_effect("xp") + GameState.combo_bonus()))
-	if GameState.hero:
-		GameState.hero.add_xp(xp)
-	EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 12), "+%d XP" % xp, Color(1.0, 0.85, 0.3))
 	var gold_find := GameState.hero.stats.get_value(StatTypes.GOLD_FIND) if GameState.hero else 0.0
 	var gold := roundi(randi_range(data.gold_min, data.gold_max) * (1.0 + 0.10 * (floor_number - 1)) * (elite.gold_mult if elite else 1.0) * (1.0 + gold_find) * maxf(0.0, 1.0 + GameState.run_effect("gold") + GameState.combo_bonus()))
+	if Net.active:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.broadcast_death(self, xp, gold)
+		if elite:
+			EventBus.elite_killed.emit(data)
+	else:
+		EventBus.enemy_killed.emit(data, global_position)
+		if GameState.hero:
+			GameState.hero.add_xp(xp)
+		EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 12), "+%d XP" % xp, Color(1.0, 0.85, 0.3))
+		if elite:
+			EventBus.elite_killed.emit(data)
 	if gold > 0:
 		var coin := ItemDatabase.get_item(&"gold_coin")
 		if coin:
 			EventBus.spawn_items.emit(global_position + Vector2(0, -8), [{"item": coin, "count": gold}])
-	if elite:
-		EventBus.elite_killed.emit(data)
 	if elite and elite.shard_drop > 0:
 		var shard := ItemDatabase.get_item(MetaProgress.SHARD_ITEM)
 		if shard:

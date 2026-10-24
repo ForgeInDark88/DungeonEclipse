@@ -131,6 +131,14 @@ func get_loot_table(table_name: StringName) -> LootTable:
 
 
 ## Enemies allowed on a floor; EnemyData.biomes (if set) limits them to biomes.
+## Net: one enemy template by its id (puppet shells on clients).
+func enemy_by_id(id: StringName) -> EnemyData:
+	for e in enemies:
+		if e.id == id:
+			return e
+	return null
+
+
 func enemies_for_floor(floor_number: int, biome_id: StringName = &"") -> Array[EnemyData]:
 	var list: Array[EnemyData] = []
 	for e in enemies:

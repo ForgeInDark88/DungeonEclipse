@@ -12,6 +12,8 @@ const EGG_CHANCE := 0.35
 var floor_number: int = 1
 ## Array of ItemData (instances for gear) — removed when bought.
 var stock: Array[ItemData] = []
+## LAN co-op: deterministic shop identity across machines.
+var net_seq := 0
 
 @onready var sprite: AnimatedSprite2D = $Sprite
 
@@ -30,17 +32,23 @@ func _roll_stock() -> void:
 		var it := ItemDatabase.get_item(id)
 		if it:
 			stock.append(it)
+	# In co-op the stock must match on every machine: seeded by run+floor+shop.
+	var roll_rng := RandomNumberGenerator.new()
+	if Net.active:
+		roll_rng.seed = hash([GameState.run_seed, floor_number, net_seq])
+	else:
+		roll_rng.randomize()
 	var table := ItemDatabase.get_loot_table(STOCK_TABLE)
 	if table:
 		for i in STOCK_ROLLS:
-			for e: Dictionary in table.roll(floor_number):
+			for e: Dictionary in table.roll(floor_number, roll_rng):
 				if e["item"].currency_value <= 0 and stock.size() < 12:
 					stock.append(e["item"])
 	# Sometimes a pet egg.
-	if randf() < EGG_CHANCE:
+	if roll_rng.randf() < EGG_CHANCE:
 		var eggs := ItemDatabase.items.values().filter(func(it: ItemData) -> bool: return it.id.begins_with("egg_"))
 		if not eggs.is_empty():
-			stock.append(eggs.pick_random())
+			stock.append(eggs[roll_rng.randi() % eggs.size()])
 
 
 func get_prompt() -> String:

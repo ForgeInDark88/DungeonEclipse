@@ -10,6 +10,9 @@ var count: int = 1
 var _bob := 0.0
 var _settle_check := 0.0
 var _glow: PointLight2D
+## LAN co-op: replicas of host-dropped loot; touching one asks the host.
+var puppet := false
+var net_id := 0
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var count_label: Label = $Count
@@ -72,6 +75,12 @@ func interact(player: Node) -> void:
 
 func collect(hero: Hero) -> void:
 	if item == null or is_queued_for_deletion():
+		return
+	if puppet:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.take_item.rpc_id(1, net_id)
+			queue_free()
 		return
 	if item.currency_value > 0:
 		var amount := item.currency_value * count

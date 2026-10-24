@@ -53,6 +53,10 @@ func current_phase() -> BossPhase:
 
 
 func _physics_process(delta: float) -> void:
+	if puppet:
+		# Co-op shell: glide to the host's position, no boss brain here.
+		global_position = global_position.lerp(_net_target, minf(1.0, delta * 12.0))
+		return
 	if _dead:
 		return
 	if _player == null or not is_instance_valid(_player):

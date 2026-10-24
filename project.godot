@@ -29,6 +29,7 @@ ItemDatabase="*res://scripts/autoload/item_database.gd"
 MetaProgress="*res://scripts/autoload/meta_progress.gd"
 Codex="*res://scripts/autoload/codex.gd"
 GameState="*res://scripts/autoload/game_state.gd"
+Net="*res://scripts/autoload/net.gd"
 Tooltip="*res://scripts/autoload/tooltip_layer.gd"
 AudioManager="*res://scripts/autoload/audio_manager.gd"
 

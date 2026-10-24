@@ -17,6 +17,10 @@ var hints: HintManager
 
 var level: DungeonLevel
 var player: Player
+## LAN co-op: world replication coordinator and the shared player container.
+var net_sync: NetSync
+var net_players: Node2D
+var _players_spawned := false
 var _shake := 0.0
 var _rng := RandomNumberGenerator.new()
 
@@ -25,7 +29,7 @@ func _ready() -> void:
 	get_tree().paused = false
 	Input.set_custom_mouse_cursor(AssetPaths.tex(AssetPaths.CROSSHAIR), Input.CURSOR_ARROW, Vector2(10, 10))
 	tree_exiting.connect(func() -> void: Input.set_custom_mouse_cursor(null))
-	if GameState.hero == null:
+	if GameState.hero == null and not Net.active:
 		# Started directly from the editor: use the first race and class.
 		GameState.hero = Hero.new(ItemDatabase.races[0], ItemDatabase.classes[0], ItemDatabase.equipment_layout)
 		GameState.hero.give_starting_kit()
@@ -34,6 +38,12 @@ func _ready() -> void:
 		GameState.floor_number = 1
 		GameState.run_active = true
 		GameState.reset_run_stats()
+	if Net.active:
+		# A network client builds its own hero from what it registered with.
+		if GameState.hero == null:
+			var info: Dictionary = Net.players.get(Net.multiplayer.get_unique_id(), Net.my_info)
+			GameState.hero = _make_hero_from(info)
+		_net_bootstrap()
 	var hero := GameState.hero
 
 	player = PLAYER_SCENE.instantiate()
@@ -88,8 +98,6 @@ func _load_floor() -> void:
 		level.queue_free()
 	var floor_number := GameState.floor_number
 	var seed_value := GameState.floor_seed()
-	if GameState.is_daily():
-		seed(seed_value)  # loot and monster rolls repeat for every player of the day
 	var gen := LevelGenerator.new()
 	var layout: LevelLayout
 	if GameState.is_town():
@@ -115,13 +123,20 @@ func _load_floor() -> void:
 		EventBus.message.emit("Этаж %d — логово стража!" % floor_number)
 	else:
 		EventBus.message.emit("Этаж %d — %s" % [floor_number, biome.display_name] if biome else "Этаж %d" % floor_number)
+	if net_sync:
+		net_sync.clear_floor()
+	_net_on_floor_loaded()
+
 	# Between-floors save: the snapshot must be taken with the floor freshly
 	# built (it regenerates from the seed on continue, loot included).
 	if GameState.run_active and not player.dead \
-			and not (GameState.floor_number == GameState.TOWN_FLOOR and GameState.town_return_floor > 0):
+			and not (GameState.floor_number == GameState.TOWN_FLOOR and GameState.town_return_floor > 0) \
+			and not Net.active:
 		# A mid-run visit to town keeps the snapshot of the floor the hero
 		# left, so "continue" resumes the descent, not the street.
-		SaveManager.save_run()
+		# (In co-op the host's save is the only one; taken outside this branch.)
+		if Net.is_host:
+			SaveManager.save_run()
 
 
 ## The pet of the run follows the hero (one at a time, re-placed every floor).
@@ -213,6 +228,8 @@ func _on_spawn_items(pos: Vector2, stacks: Array) -> void:
 		var p: ItemPickup = PICKUP_SCENE.instantiate()
 		p.setup(entry["item"], entry["count"], Vector2(randf_range(-70.0, 70.0), randf_range(-170.0, -110.0)))
 		level.add_entity(p, pos)
+		if Net.active and Net.is_host and net_sync:
+			net_sync.broadcast_item(p)
 
 
 func _on_floating_text(pos: Vector2, text: String, color: Color) -> void:
@@ -284,6 +301,9 @@ func _exit_tree() -> void:
 
 
 func _on_player_died() -> void:
+	if Net.active:
+		await _on_player_died_coop()
+		return
 	AudioManager.play_sting(&"death")
 	book.close()
 	skill_tree.close()
@@ -304,9 +324,6 @@ func _on_player_died() -> void:
 		["Золото собрано", str(int(stats.get("gold", 0)))], ["Находки", _found_text(found)],
 		["Лучшее комбо", "×%d" % int(stats.get("best_combo", 0))],
 	]))
-	if reward.has("daily"):
-		var d: Dictionary = reward["daily"]
-		overlay.add_text("Ежедневный забег: %d очков%s" % [d["score"], (", место %d за сегодня" % d["place"]) if d["place"] > 0 else ""], 9)
 	if not reward.is_empty() and (reward["shards"] > 0 or reward["gold"] > 0):
 		var text := "Святилище Затмения: +%d осколков, +%d золота" % [reward["shards"], reward["gold"]]
 		if not reward["parts"].is_empty():
@@ -348,3 +365,186 @@ func _stats_grid(rows: Array) -> Control:
 	var center := CenterContainer.new()
 	center.add_child(grid)
 	return center
+
+
+# ================================================================ LAN co-op
+## One machine hosts the truth: enemies, loot and floor changes replicate
+## from it; every player owns their hero and sends hits/pickups to the host.
+func _net_bootstrap() -> void:
+	net_sync = NetSync.new()
+	world.add_child(net_sync)
+	net_sync.local_player = null
+	net_players = Node2D.new()
+	net_players.name = "NetPlayers"
+	net_players.add_to_group("net_players")
+	world.add_child(net_players)
+	Net.player_joined.connect(_on_net_peer_joined)
+	Net.player_left.connect(_on_net_peer_left)
+	Net.host_closed.connect(func() -> void:
+		if is_inside_tree():
+			get_tree().paused = false
+			get_tree().change_scene_to_file(GameState.MAIN_MENU))
+	# The host is the clock: every floor move of the party goes through it.
+	EventBus.floor_changed.connect(func(f: int) -> void:
+		if Net.is_host:
+			Net.rpc_set_floor(f))
+	# The client's own hero is built from the race/class it registered with.
+	if not Net.is_host and GameState.hero == null:
+		var info: Dictionary = Net.players.get(Net.multiplayer.get_unique_id(), Net.my_info)
+		GameState.hero = _make_hero_from(info)
+
+
+## A Hero from a registered peer description (host mirrors and client selves).
+func _make_hero_from(info: Dictionary) -> Hero:
+	var race := ItemDatabase.races[0]
+	var cls := ItemDatabase.classes[0]
+	for r in ItemDatabase.races:
+		if r.id == StringName(info.get("race", "")):
+			race = r
+	for c in ItemDatabase.classes:
+		if c.id == StringName(info.get("cls", "")):
+			cls = c
+	var h := Hero.new(race, cls, ItemDatabase.equipment_layout)
+	h.female = bool(info.get("female", false))
+	h.give_starting_kit()
+	h.skills.add_points(1)
+	return h
+
+
+func _net_player_name(peer_id: int) -> String:
+	return String(Net.players.get(peer_id, {}).get("name", "Игрок"))
+
+
+## Spawns the local player and a puppet per other peer (once per session).
+func _net_spawn_players() -> void:
+	if not Net.active or _players_spawned:
+		return
+	_players_spawned = true
+	var my_id := Net.multiplayer.get_unique_id()
+	# Local player goes into the shared container so rpc paths match.
+	world.remove_child(player)
+	net_players.add_child(player)
+	player.name = "Player_%d" % my_id
+	for peer_id in Net.players:
+		if peer_id == my_id:
+			continue
+		_spawn_net_puppet(peer_id)
+	# Tell the host this scene is up; it spawns my puppet and shares allies.
+	net_sync.net_hello.rpc_id(1)
+
+
+func _spawn_net_puppet(peer_id: int) -> void:
+	if net_players.has_node("Player_%d" % peer_id):
+		return
+	var info: Dictionary = Net.players.get(peer_id, {})
+	var mirror := _make_hero_from(info)
+	var p: Player = PLAYER_SCENE.instantiate()
+	p.name = "Player_%d" % peer_id
+	p.peer_id = peer_id
+	p.puppet = true
+	net_players.add_child(p)
+	p.setup(mirror, null)
+	p.add_to_group("player")
+	p.global_position = level.start_position() + Vector2(14, 0)
+	var tag := UIStyle.outlined_label(_net_player_name(peer_id), 6, UIStyle.PARCHMENT)
+	tag.position = Vector2(-20, -46)
+	tag.size = Vector2(40, 10)
+	tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	p.add_child(tag)
+	hud.add_ally(_net_player_name(peer_id), mirror)
+	# Everyone (except the puppet's owner) learns about it from the host.
+	if Net.is_host:
+		net_sync.spawn_ally.rpc(peer_id, info)
+
+
+## Host → clients: a new ally's puppet exists, here is who they are.
+@rpc("authority", "call_remote", "reliable")
+func spawn_ally(peer_id: int, info: Dictionary) -> void:
+	if not Net.players.has(peer_id):
+		Net.players[peer_id] = info
+	if _players_spawned:
+		_spawn_net_puppet(peer_id)
+
+
+func _on_net_peer_joined(_info: Dictionary) -> void:
+	pass  # puppets spawn through net_hello / spawn_ally, never directly
+
+
+func _on_net_peer_left(peer_id: int) -> void:
+	if net_players and net_players.has_node("Player_%d" % peer_id):
+		net_players.get_node("Player_%d" % peer_id).queue_free()
+	hud.remove_ally(peer_id)
+
+
+## Every floor load: (re)spawn players once, reposition everyone, revive.
+func _net_on_floor_loaded() -> void:
+	if not Net.active:
+		return
+	_net_spawn_players()
+	var sp := level.start_position()
+	player.global_position = sp
+	for p: Player in net_players.get_children():
+		if p == player:
+			continue
+		p.global_position = sp + Vector2(14, 0)
+	# A fallen hero rises on the next floor (co-op rule).
+	if player.dead:
+		player.revive()
+	for p: Player in net_players.get_children():
+		if p != player and p.dead:
+			p.revive()
+
+
+## The local hero fell: wait for the next floor unless everyone is down.
+func _on_player_died_coop() -> void:
+	AudioManager.play_sting(&"death")
+	book.close()
+	skill_tree.close()
+	await get_tree().create_timer(1.0).timeout
+	net_sync.broadcast_player_hp(Net.multiplayer.get_unique_id(), 0, hero.stats.max_hp(), true)
+	var any_alive := false
+	for p: Player in net_players.get_children():
+		if p != player and not p.dead:
+			any_alive = true
+	if any_alive:
+		get_tree().paused = true
+		overlay.clear()
+		overlay.set_panel_size(Vector2(340, 150))
+		overlay.add_text("Вы пали", 14)
+		overlay.add_text("Возрождение на следующем этаже...", 9)
+		overlay.add_button("Ждать (наблюдать)", func() -> void:
+			get_tree().paused = false)
+		overlay.visible = true
+	else:
+		# The whole party is down — the run is over for everyone.
+		if Net.is_host:
+			_end_run_coop()
+		else:
+			get_tree().paused = true
+
+
+@rpc("authority", "call_remote", "reliable")
+func net_run_ended() -> void:
+	var hero := GameState.hero
+	get_tree().paused = true
+	overlay.clear()
+	overlay.set_panel_size(Vector2(340, 150))
+	overlay.add_text("Отряд пал", 14)
+	overlay.add_button("В главное меню", func() -> void:
+		Net.leave()
+		GameState.go_to_menu())
+	overlay.visible = true
+
+
+func _end_run_coop() -> void:
+	GameState.end_run()
+	net_run_ended.rpc()
+	var hero := GameState.hero
+	get_tree().paused = true
+	overlay.clear()
+	overlay.set_panel_size(Vector2(340, 150))
+	overlay.add_text("Отряд пал", 14)
+	overlay.add_button("В главное меню", func() -> void:
+		Net.leave()
+		GameState.go_to_menu())
+	overlay.visible = true

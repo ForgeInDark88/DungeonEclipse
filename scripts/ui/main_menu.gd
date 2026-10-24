@@ -1,5 +1,5 @@
 extends BookPageScreen
-## Title screen: new run, daily run, Sanctum, chronicle, settings, meta statistics.
+## Title screen: new run, network co-op, Sanctum, chronicle, settings, meta statistics.
 
 func _ready() -> void:
 	get_tree().paused = false
@@ -55,7 +55,8 @@ func _ready() -> void:
 		right_page.add_child(cont)
 	var start := BookPageScreen.button("Новый забег", func() -> void: get_tree().change_scene_to_file(GameState.CHARACTER_CREATION))
 	right_page.add_child(start)
-	right_page.add_child(BookPageScreen.button("Ежедневный забег", func() -> void: get_tree().change_scene_to_file(GameState.DAILY)))
+	right_page.add_child(BookPageScreen.button("Игра по сети (хост)", func() -> void: get_tree().change_scene_to_file("res://scenes/ui/net_host.tscn")))
+	right_page.add_child(BookPageScreen.button("Присоединиться (LAN)", func() -> void: get_tree().change_scene_to_file("res://scenes/ui/net_join.tscn")))
 	right_page.add_child(BookPageScreen.button("Святилище Затмения (%d оск.)" % MetaProgress.shards,
 		func() -> void: get_tree().change_scene_to_file(GameState.SANCTUM)))
 	right_page.add_child(BookPageScreen.button("Летопись (%d/%d)" % [Codex.achieved.size(), Codex.achievements.size()],
