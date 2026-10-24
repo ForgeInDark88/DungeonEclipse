@@ -588,6 +588,14 @@ func _spawn_miniboss(info: Dictionary) -> void:
 					break
 				n += 1
 	if Net.active and not Net.is_host:
+		# No champion shell of our own; run a network-driven gate copy so the
+		# room seals and reopens together with the host.
+		var guest_gate := MinibossGate.new()
+		guest_gate.networked = true
+		guest_gate.level = self
+		guest_gate.champion = null
+		guest_gate.room_cells = info["room"]
+		add_child(guest_gate)
 		return  # RNG already burned; the champion shell arrives via spawn_enemy
 	var champion := (load(ENEMY_SCENE) as PackedScene).instantiate()
 	champion.setup(champ_data, floor_number, elite, true)
@@ -617,6 +625,8 @@ func _spawn_event(info: Dictionary) -> void:
 	var node: Node2D = (load(data.scene) as PackedScene).instantiate()
 	if node.has_method("setup_event"):
 		node.setup_event(self, info)
+	if "net_seq" in node:  # only events that participate in co-op sync
+		_net_seq_node(node)
 	add_entity(node, cell_bottom(info["cell"]))
 
 

@@ -12,6 +12,8 @@ var level: DungeonLevel
 var champion: Enemy
 ## Interior cells of the room (Rect2i in cell coords).
 var room_cells: Rect2i
+## Guest copy: no local trigger, closes/opens on the host's broadcasts.
+var networked := false
 
 var _closed := false
 ## Every opening cell in the room ring: cell -> original tile (EMPTY or a
@@ -21,6 +23,7 @@ var _bars: Array[Sprite2D] = []
 
 
 func _ready() -> void:
+	add_to_group("miniboss_gates")
 	var ring := Rect2i(room_cells.position - Vector2i.ONE, room_cells.size + Vector2i(2, 2))
 	var t := level.layout
 	for y in range(ring.position.y, ring.end.y):
@@ -31,7 +34,7 @@ func _ready() -> void:
 			var tile: int = t.get_tile(x, y)
 			if tile == T.EMPTY or LevelLayout.is_ladder(tile):
 				_seals[Vector2i(x, y)] = tile
-	set_physics_process(true)
+	set_physics_process(not networked)
 
 
 func _physics_process(_delta: float) -> void:
@@ -57,9 +60,8 @@ func _close() -> void:
 	if is_instance_valid(champion):
 		champion.held = false
 	for cell: Vector2i in _seals:
-		level.layout.set_tile(cell.x, cell.y, T.BEDROCK)
-		level._refresh_around(cell)
-		level._mark_nav_dirty(cell)
+		# apply_remote_tile records the change: late joiners get the seals.
+		level.apply_remote_tile(cell, T.BEDROCK)
 		var bars := Sprite2D.new()
 		bars.texture = BARS
 		bars.centered = false
@@ -76,14 +78,13 @@ func _close() -> void:
 	AudioManager.play_sfx(&"dig", champion.global_position if champion else Vector2.ZERO, -4.0)
 	EventBus.screen_shake.emit(4.0)
 	EventBus.message.emit("Двери захлопнулись! Страж этажа преграждает путь")
+	_net_broadcast(true)
 
 
 func _open() -> void:
 	_closed = false
 	for cell: Vector2i in _seals:
-		level.layout.set_tile(cell.x, cell.y, _seals[cell])
-		level._refresh_around(cell)
-		level._mark_nav_dirty(cell)
+		level.apply_remote_tile(cell, _seals[cell])
 	for bars in _bars:
 		if is_instance_valid(bars):
 			var tw := bars.create_tween()
@@ -93,4 +94,24 @@ func _open() -> void:
 	AudioManager.play_sfx(&"ui_book_open", Vector2.ZERO, -4.0)
 	EventBus.message.emit("Страж пал — двери открылись")
 	set_physics_process(false)
+	_net_broadcast(false)
 	queue_free()
+
+
+## The host decides; guest copies receive this through the NetSync broadcasts.
+func net_close() -> void:
+	if not _closed:
+		_close()
+
+
+func net_open() -> void:
+	if _closed:
+		_open()
+
+
+func _net_broadcast(closed: bool) -> void:
+	if not Net.active or not Net.is_host:
+		return
+	var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+	if ns:
+		ns.broadcast_gate(closed)

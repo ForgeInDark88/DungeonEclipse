@@ -298,7 +298,7 @@ func net_hello() -> void:
 ## Host → late joiner: everything that already happened on this floor.
 @rpc("authority", "call_remote", "reliable")
 func world_state(floor_num: int, tiles: Array, chests: Array, stock: Array,
-		enemy_list: Array) -> void:
+		puzzles: Array, enemy_list: Array) -> void:
 	if floor_num != GameState.floor_number:
 		return  # a snapshot of a floor we already left
 	var game := get_tree().current_scene
@@ -317,6 +317,11 @@ func world_state(floor_num: int, tiles: Array, chests: Array, stock: Array,
 		for m in get_tree().get_nodes_in_group("merchants"):
 			if m.net_seq == int(entry[0]):
 				m.apply_stock_ids(entry[1])
+	for entry in puzzles:
+		for p in get_tree().get_nodes_in_group("puzzles"):
+			if p.net_seq == int(entry[0]):
+				p.net_apply(int(entry[1]), bool(entry[2]))
+				break
 	for d in enemy_list:
 		_spawn_shell(int(d[0]), String(d[1]), Vector2(d[2], d[3]), d[4],
 				bool(d[5]), bool(d[6]), int(d[7]))
@@ -342,13 +347,16 @@ func send_world_state(peer_id: int) -> void:
 		for it: ItemData in m.stock:
 			ids.append(String(it.id))
 		stock.append([m.net_seq, ids])
+	var puzzles := []
+	for p in get_tree().get_nodes_in_group("puzzles"):
+		puzzles.append([p.net_seq, p.progress, p.solved])
 	var list := []
 	for id in enemies:
 		var e: Enemy = enemies[id]
 		if is_instance_valid(e) and not e.is_dead():
 			list.append([id, String(e.data.id), e.global_position.x, e.global_position.y,
 					e.elite.id if e.elite else StringName(), e.champion, e.held, e.hp])
-	world_state.rpc_id(peer_id, GameState.floor_number, tiles, chests, stock, list)
+	world_state.rpc_id(peer_id, GameState.floor_number, tiles, chests, stock, puzzles, list)
 
 
 # ---------------------------------------------------- chests and shops
@@ -457,6 +465,51 @@ func stock_added(merchant_seq: int, item_dict: Dictionary) -> void:
 		return
 	merchant.stock.append(item)
 	get_tree().call_group("active_shop_book", "refresh_network_stock")
+
+
+# ---------------------------------------------------- puzzles and gates
+## Client → host: I pulled a puzzle lever; the host judges the rune order.
+@rpc("any_peer", "call_remote", "reliable")
+func request_puzzle_pull(puzzle_seq: int, lever_index: int) -> void:
+	if not Net.is_host:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	var puzzle: Node = null
+	for p in get_tree().get_nodes_in_group("puzzles"):
+		if p.net_seq == puzzle_seq:
+			puzzle = p
+			break
+	if puzzle == null or puzzle.solved or lever_index < 0 or lever_index >= puzzle.levers.size():
+		return
+	var lever: Node = puzzle.levers[lever_index]
+	if lever.down or not _sender_near(sender, lever.global_position, 96.0):
+		return
+	var game := get_tree().current_scene
+	var puller: Player = null
+	if game != null and "net_players" in game:
+		puller = game.net_players.get_node_or_null("Player_%d" % sender)
+	if puller == null or puller.dead:
+		return
+	puzzle.pull(lever, puller)
+
+
+## Host → all: the puzzle's progress and solved state.
+@rpc("authority", "call_remote", "reliable")
+func puzzle_state(puzzle_seq: int, progress: int, solved: bool) -> void:
+	for p in get_tree().get_nodes_in_group("puzzles"):
+		if p.net_seq == puzzle_seq:
+			p.net_apply(progress, solved)
+			return
+
+
+## Host: the champion's room sealed or opened → replicate the barrier.
+func broadcast_gate(closed: bool) -> void:
+	gate_state.rpc(closed)
+
+
+@rpc("authority", "call_remote", "reliable")
+func gate_state(closed: bool) -> void:
+	get_tree().call_group("miniboss_gates", "net_close" if closed else "net_open")
 
 
 func _find_seq_node(group_name: StringName, seq: int) -> Node:
