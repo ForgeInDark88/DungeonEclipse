@@ -11,6 +11,8 @@ var next_net_id := 1
 var enemies := {}          # net_id -> Enemy node (real on host, shell on client)
 var items := {}            # net_id -> ItemPickup node
 var _last_hitter := {}     # net_id -> peer id (kill credit)
+var _hit_budget := {}      # peer id -> hits sent this second (anti-spam)
+var _hit_second := 0
 var _state_timer := 0.0
 
 
@@ -37,6 +39,7 @@ func clear_floor() -> void:
 	enemies.clear()
 	items.clear()
 	_last_hitter.clear()
+	_hit_budget.clear()
 
 
 func register_enemy(e: Enemy) -> int:
@@ -123,6 +126,15 @@ func net_hit(net_id: int, amount: int, crit: bool, from_x: float, from_y: float,
 		return
 	if amount <= 0 or not _sender_near(sender, e.global_position, 420.0):
 		return
+	# 60 hits/s per player: far above any real attack pace, stops spam.
+	var second := Time.get_ticks_msec() / 1000
+	if second != _hit_second:
+		_hit_second = second
+		_hit_budget.clear()
+	var sent := int(_hit_budget.get(sender, 0)) + 1
+	_hit_budget[sender] = sent
+	if sent > 60:
+		return
 	_last_hitter[net_id] = sender
 	e.take_damage(amount, crit, Vector2(from_x, from_y), damage_type)
 
@@ -194,6 +206,8 @@ func take_item(net_id: int) -> void:
 	var sender := multiplayer.get_remote_sender_id()
 	var pickup: ItemPickup = items.get(net_id)
 	if pickup == null or not is_instance_valid(pickup):
+		return
+	if not _sender_near(sender, pickup.global_position, 140.0):
 		return
 	items.erase(net_id)
 	item_granted.rpc_id(sender, RunCodec.item_to_dict(pickup.item), pickup.count)
@@ -414,6 +428,37 @@ func purchase_remote(merchant_seq: int, offer_key: String, buyer_peer: int,
 		get_tree().call_group("active_shop_book", "refresh_network_stock")
 
 
+## Client → host: I sold a unique item to the merchant; it joins the stock.
+@rpc("any_peer", "call_remote", "reliable")
+func request_sell(merchant_seq: int, item_dict: Dictionary) -> void:
+	if not Net.is_host:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	var merchant := _find_seq_node("merchants", merchant_seq) as Merchant
+	if merchant == null or merchant.stock.size() >= Merchant.STOCK_CAP:
+		return
+	if not _sender_near(sender, merchant.global_position, 80.0):
+		return
+	var item := RunCodec.item_from_dict(item_dict)
+	if item == null or item.is_stackable():
+		return
+	merchant.stock.append(item)
+	stock_added.rpc(merchant_seq, item_dict)
+
+
+## Host → all: the merchant bought a unique item, it is now in the stock.
+@rpc("authority", "call_remote", "reliable")
+func stock_added(merchant_seq: int, item_dict: Dictionary) -> void:
+	var merchant := _find_seq_node("merchants", merchant_seq) as Merchant
+	if merchant == null or merchant.stock.size() >= Merchant.STOCK_CAP:
+		return
+	var item := RunCodec.item_from_dict(item_dict)
+	if item == null or item.is_stackable():
+		return
+	merchant.stock.append(item)
+	get_tree().call_group("active_shop_book", "refresh_network_stock")
+
+
 func _find_seq_node(group_name: StringName, seq: int) -> Node:
 	for node in get_tree().get_nodes_in_group(group_name):
 		if node.net_seq == seq:
@@ -537,6 +582,12 @@ func tile_broken(cell: Vector2i) -> void:
 func request_floor(action: StringName) -> void:
 	if not Net.is_host:
 		return
+	# Only a living hero may move the party.
+	var game := get_tree().current_scene
+	if game != null and "net_players" in game:
+		var p := game.net_players.get_node_or_null("Player_%d" % multiplayer.get_remote_sender_id()) as Player
+		if p == null or p.dead:
+			return
 	match action:
 		&"next":
 			GameState.next_floor()

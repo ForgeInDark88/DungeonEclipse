@@ -11,7 +11,12 @@ func _physics_process(delta: float) -> void:
 	velocity.y = minf(velocity.y + 700.0 * delta, 500.0)
 	position += velocity * delta
 	rotation += delta * 6.0
-	var p := get_tree().get_first_node_in_group("player") as Player
+	var p: Player = null
+	for n in get_tree().get_nodes_in_group("player"):
+		var pl := n as Player
+		if pl != null and not pl.puppet:
+			p = pl
+			break
 	if p and not p.dead and p.global_position.distance_to(global_position + Vector2(0, 10)) < 12.0:
 		p.take_damage(damage, global_position)
 		_shatter()
