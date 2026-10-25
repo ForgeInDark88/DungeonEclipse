@@ -592,7 +592,44 @@ func gate_state(closed: bool) -> void:
 
 
 # ------------------------------------------------------------- world events
-## Client → host: consume a one-shot event for the requesting hero.
+## Client → host: I successfully disarmed this trap (rolled with my own
+## hero); the host marks it spent and tells everyone.
+@rpc("any_peer", "call_remote", "reliable")
+func request_trap_disarm(seq: int) -> void:
+	if not Net.is_host:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	for t in get_tree().get_nodes_in_group("traps"):
+		if t.net_seq == seq and not t.disarmed:
+			if _sender_near(sender, t.global_position, 96.0):
+				t._apply_disarmed()
+				t._net_disarm_broadcast()
+			return
+
+
+## Client → host: my failed attempt triggered the trap on my machine.
+@rpc("any_peer", "call_remote", "reliable")
+func request_trap_spring(seq: int) -> void:
+	if not Net.is_host:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	for t in get_tree().get_nodes_in_group("traps"):
+		if t.net_seq == seq and not t.disarmed:
+			if _sender_near(sender, t.global_position, 96.0):
+				t.trigger()
+			return
+
+
+## Host → all: the trap is spent everywhere.
+@rpc("authority", "call_remote", "reliable")
+func trap_disarmed_net(seq: int) -> void:
+	for t in get_tree().get_nodes_in_group("traps"):
+		if t.net_seq == seq and not t.disarmed:
+			t._apply_disarmed()
+			return
+
+
+## Client → host: I used a one-shot event.
 @rpc("any_peer", "call_remote", "reliable")
 func request_event_use(seq: int) -> void:
 	if not Net.is_host:
@@ -620,6 +657,33 @@ func event_used(seq: int) -> void:
 	for e in get_tree().get_nodes_in_group("events"):
 		if e.net_seq == seq and not e.used:
 			e.finish()
+			return
+
+
+## Client → host: my fate altar choice (offer index). Run-wide, so the host
+## applies it to GameState and broadcasts to everyone.
+@rpc("any_peer", "call_remote", "reliable")
+func request_pact(seq: int, offer_index: int) -> void:
+	if not Net.is_host:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	for e in get_tree().get_nodes_in_group("events"):
+		if e.net_seq == seq and e.has_method("_take"):
+			if e.used or offer_index < 0 or offer_index >= e._offers.size():
+				return
+			if not _sender_near(sender, e.global_position, 96.0):
+				return
+			e._take(e._offers[offer_index],
+					e.get_tree().current_scene.net_players.get_node_or_null("Player_%d" % sender))
+			return
+
+
+## Host → all: the fate altar choice was made; apply the same pact locally.
+@rpc("authority", "call_remote", "reliable")
+func pact_taken(seq: int, offer_index: int) -> void:
+	for e in get_tree().get_nodes_in_group("events"):
+		if e.net_seq == seq and e.has_method("_take") and offer_index < e._offers.size():
+			e._take_net(e._offers[offer_index])
 			return
 
 

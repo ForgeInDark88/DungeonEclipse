@@ -53,9 +53,16 @@ static func icon_of(id: StringName) -> Texture2D:
 
 
 func apply(id: StringName, duration: float, power: float = 1.0) -> void:
+	var host := get_parent()
+	if host is Player and host.puppet:
+		# A guest's hero puppet: forward every status to the owner's machine,
+		# where the hero is actually simulated (curse chests, event effects).
+		var ns = get_tree().get_first_node_in_group("net_game")
+		if ns and Net.active:
+			ns.player_status.rpc_id(host.peer_id, id, duration, power)
+		return
 	if id in immunities:
 		return
-	var host := get_parent()
 	if host and host.has_method("status_resistance"):
 		duration *= 1.0 - clampf(host.status_resistance(id), 0.0, 0.9)
 	if duration <= 0.05:

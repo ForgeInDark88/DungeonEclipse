@@ -811,6 +811,7 @@ func _place_trap(data: TrapData, used: Dictionary) -> Trap:
 			trap.facing = 1.0 if left_wall else -1.0
 			pos = cell_bottom(cell)
 	used[cell] = true
+	_net_seq_node(trap)
 	add_entity(trap, pos)
 	_mark_trap_danger(data, cell, trap.facing)
 	return trap

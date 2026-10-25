@@ -39,6 +39,8 @@ var _net_timer := 0.0
 var _net_dice := RandomNumberGenerator.new()
 ## Pending guest attacks awaiting the host's confirmed damage.
 var _pending_hit_effects: Array[Dictionary] = []
+## Pet id shown on this puppet (visual follower, no combat on copies).
+var _net_pet_id := ""
 var climbing := false
 
 var _coyote := 0.0
@@ -692,6 +694,8 @@ func _net_costume() -> Dictionary:
 	for slot_id in hero.equipment.items:
 		var it: EquipmentItemData = hero.equipment.items[slot_id]
 		c[String(slot_id)] = String(it.id) if it else ""
+	# Other players see the pet (a visual follower shell on their machines).
+	c["pet"] = String(GameState.pet.id) if GameState.pet else ""
 	return c
 
 
@@ -701,6 +705,7 @@ func _net_apply_costume(c: Dictionary) -> void:
 	if hero == null or c.is_empty() or _net_costume() == c:
 		return
 	hero.female = bool(c.get("female", false))
+	_net_apply_pet(String(c.get("pet", "")))
 	for slot_id in hero.equipment.items.keys():
 		var want := String(c.get(String(slot_id), ""))
 		var cur: EquipmentItemData = hero.equipment.items[slot_id]
@@ -713,6 +718,29 @@ func _net_apply_costume(c: Dictionary) -> void:
 		if item is EquipmentItemData:
 			hero.equipment.equip(item, slot_id)
 	visual.refresh_from(hero)
+
+
+## Co-op (puppet side): a decorative pet copy following this hero's puppet.
+func _net_apply_pet(pet_id: String) -> void:
+	if pet_id == _net_pet_id:
+		return
+	_net_pet_id = pet_id
+	var cur := get_tree().get_first_node_in_group("pets_%d" % peer_id) as Node2D
+	if cur:
+		cur.queue_free()
+	if pet_id == "":
+		return
+	var data: PetData = null
+	if ItemDatabase.pets.has(StringName(pet_id)):
+		data = ItemDatabase.pets[StringName(pet_id)]
+	if data == null:
+		return
+	var pet: Node2D = (load(AssetPaths.PET_SCENE) as PackedScene).instantiate()
+	pet.setup(data, self)
+	pet.add_to_group("pets_%d" % peer_id)
+	if get_parent():
+		get_parent().add_child(pet)
+		pet.global_position = global_position
 
 
 ## Co-op: the fallen hero rises at the next floor's entrance.

@@ -19,6 +19,8 @@ var facing: float = 1.0
 ## PRESSURE_PLATE: the arrow wall it fires (optional).
 var linked: Trap
 var disarmed := false
+## LAN co-op: deterministic trap identity (disarm requests and echo).
+var net_seq := 0
 
 var _cooldown := 0.0
 var _phase := ""
@@ -327,16 +329,43 @@ func get_prompt() -> String:
 func interact(player: Node) -> void:
 	if disarmed:
 		return
+	if Net.active and not Net.is_host:
+		# The attempt is rolled with the disarmer's own hero; the shared
+		# "disarmed" verdict comes back from the host.
+		if randf() <= disarm_chance(player.hero):
+			var ns = get_tree().get_first_node_in_group("net_game")
+			if ns:
+				ns.request_trap_disarm.rpc_id(1, net_seq)
+		else:
+			# A failed attempt springs the trap: the host's copy decides.
+			var ns2 = get_tree().get_first_node_in_group("net_game")
+			if ns2:
+				ns2.request_trap_spring.rpc_id(1, net_seq)
+			EventBus.message.emit("Не вышло! Ловушка сработала")
+		return
 	if randf() <= disarm_chance(player.hero):
-		disarmed = true
-		modulate = Color(0.5, 0.5, 0.5, 0.8)
-		remove_from_group("interactable")
-		if _rock:
-			_rock.visible = false
+		_apply_disarmed()
 		player.hero.add_xp(data.xp_for_disarm)
-		EventBus.message.emit("Ловушка обезврежена")
-		EventBus.trap_disarmed.emit(data)
-		AudioManager.play_sfx(&"ui_equip", global_position)
+		_net_disarm_broadcast()
 	else:
 		EventBus.message.emit("Не вышло! Ловушка сработала")
+		trigger()
+
+
+func _apply_disarmed() -> void:
+	disarmed = true
+	modulate = Color(0.5, 0.5, 0.5, 0.8)
+	remove_from_group("interactable")
+	if _rock:
+		_rock.visible = false
+	EventBus.message.emit("Ловушка обезврежена")
+	EventBus.trap_disarmed.emit(data)
+	AudioManager.play_sfx(&"ui_equip", global_position)
+
+
+func _net_disarm_broadcast() -> void:
+	if Net.active and Net.is_host:
+		var ns = get_tree().get_first_node_in_group("net_game")
+		if ns:
+			ns.trap_disarmed_net.rpc(net_seq)
 		trigger()
