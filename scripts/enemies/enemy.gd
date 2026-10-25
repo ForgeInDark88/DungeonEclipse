@@ -69,6 +69,8 @@ var _player: Player
 var _dead := false
 ## Remaining time of the one-shot "attack" animation after a hit/shot.
 var _attack_anim_left := 0.0
+## Periodic re-target to the nearest living hero.
+var _retarget := 0.0
 var _flash_tween: Tween
 ## Elite modifier (null for normal monsters).
 var elite: EliteAffixData
@@ -340,6 +342,16 @@ func _physics_process(delta: float) -> void:
 		_home_set = true
 		_home = global_position
 		_stuck_anchor = global_position
+	# Re-target to the closest living hero periodically: otherwise a mob
+	# stays fixated on its first target even when another hero walks up.
+	_retarget -= delta
+	if _retarget <= 0.0:
+		_retarget = 0.7
+		var best := _nearest_alive_player()
+		if best != null and best != _player and (_player == null or not is_instance_valid(_player)
+				or _player.dead or global_position.distance_to(best.global_position)
+				< global_position.distance_to(_player.global_position) * 0.75):
+			_player = best
 	if _player == null or not is_instance_valid(_player) or _player.dead:
 		_player = _nearest_alive_player()
 	if held:
@@ -1433,6 +1445,13 @@ func _shoot() -> void:
 	p.on_hit = func(target: Node, dmg: int) -> void: _apply_hit_effects(target, dmg)
 	AudioManager.play_sfx(data.sound_attack if data.sound_attack != &"" else &"enemy_shoot", global_position)
 	level.add_entity(p, from)
+	# Co-op: enemy shots exist only where they are simulated; guests get a
+	# visual copy (the damage itself reaches them through player_damage).
+	if Net.active and Net.is_host:
+		var ns = get_tree().get_first_node_in_group("net_game")
+		if ns and data.projectile_texture:
+			ns.enemy_projectile.rpc(data.projectile_texture.resource_path, from, dir_v,
+					data.projectile_speed, 2.5)
 
 
 # ------------------------------------------------------------------ damage
