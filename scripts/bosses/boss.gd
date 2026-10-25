@@ -90,6 +90,15 @@ func _physics_process(delta: float) -> void:
 		return
 	if _dead:
 		return
+	# The boss switches to the closest living hero (guests included).
+	_retarget -= delta
+	if _retarget <= 0.0:
+		_retarget = 0.7
+		var best := _nearest_alive_player()
+		if best != null and best != _player and (_player == null or not is_instance_valid(_player)
+				or _player.dead or global_position.distance_to(best.global_position)
+				< global_position.distance_to(_player.global_position) * 0.75):
+			_player = best
 	if _player == null or not is_instance_valid(_player) or _player.dead:
 		_player = _nearest_alive_player()
 	_contact_cd = maxf(0.0, _contact_cd - delta)

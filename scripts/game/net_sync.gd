@@ -774,6 +774,21 @@ func ropes_placed(cells: Array) -> void:
 		level.apply_remote_tile(Vector2i(c.x, c.y), LevelLayout.Tile.LADDER)
 
 
+## Host → clients: an enemy projectile flies (visual copy, no damage —
+## hits on guests arrive through player_damage).
+@rpc("authority", "call_remote", "unreliable")
+func enemy_projectile(texture_path: String, pos: Vector2, dir: Vector2, speed: float,
+		lifetime: float) -> void:
+	var game := get_tree().current_scene
+	var level: DungeonLevel = game.level if game != null and "level" in game else null
+	if level == null:
+		return
+	var proj: Projectile = (load("res://scenes/world/projectile.tscn") as PackedScene).instantiate()
+	proj.setup(load(texture_path) as Texture2D, dir, speed, 0, "net_visual")
+	proj.lifetime = lifetime
+	level.add_entity(proj, pos)
+
+
 ## Any peer → others: a visual projectile copy (no damage — the owner's own
 ## projectile deals damage through request_player_hit on hit).
 @rpc("any_peer", "call_remote", "unreliable")
@@ -833,13 +848,15 @@ func _sender_near(peer_id: int, pos: Vector2, max_distance: float) -> bool:
 	return player != null and is_instance_valid(player) and player.global_position.distance_to(pos) <= max_distance
 
 # ------------------------------------------------------------- casts
-## Any player attack → the others see the swing animation on the puppet.
-func broadcast_attack(caster_peer: int, anim: StringName, aim: Vector2) -> void:
-	attack_fx.rpc(caster_peer, anim, aim)
+## Any player attack → the others see the swing animation and slash trail.
+func broadcast_attack(caster_peer: int, anim: StringName, aim: Vector2, reach: float,
+		thrust: bool, color: Color) -> void:
+	attack_fx.rpc(caster_peer, anim, aim, reach, thrust, color)
 
 
 @rpc("any_peer", "call_remote", "unreliable")
-func attack_fx(caster_peer: int, anim: StringName, aim: Vector2) -> void:
+func attack_fx(caster_peer: int, anim: StringName, aim: Vector2, reach: float,
+		thrust: bool, color: Color) -> void:
 	if caster_peer == multiplayer.get_unique_id():
 		return
 	var scene := get_tree().current_scene
@@ -851,6 +868,11 @@ func attack_fx(caster_peer: int, anim: StringName, aim: Vector2) -> void:
 	if anim != &"":
 		puppet.animator.play_action(anim, 0.35)
 	puppet.face_aim_to(aim)
+	# The weapon trail the attacker saw on their machine.
+	if scene.level:
+		var origin: Vector2 = puppet.global_position + Vector2(0, -12)
+		SlashTrail.spawn(scene.level.entities, origin + aim.normalized() * 4.0,
+				aim.normalized(), maxf(reach, 12.0), thrust, color)
 
 
 ## Any player cast → everyone sees the animation, sound and the visuals.

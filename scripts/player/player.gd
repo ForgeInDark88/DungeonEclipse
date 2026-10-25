@@ -393,12 +393,19 @@ func _input(event: InputEvent) -> void:
 	elif event is InputEventKey and event.is_action_pressed("attack"):
 		mouse_aim = false
 	# HUD slot controls (MOUSE_FILTER_STOP) swallow key events before
-	# _unhandled_input, so skill/quick hotkeys are handled here, before the
-	# GUI - but only while the game is actually running (no book is open).
+	# _unhandled_input, so gameplay keys are handled here, before the GUI -
+	# but only while the game is actually running (no book is open).
 	# Puppets never take input: only the local hero owns the keyboard.
 	if puppet or not (event is InputEventKey) or hero == null or dead or status.is_stunned():
 		return
 	if get_tree().paused or get_viewport().gui_is_dragging():
+		return
+	if event.is_action_pressed("interact") and try_interact():
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("attack"):
+		attack()
+		get_viewport().set_input_as_handled()
 		return
 	for i in SkillSet.SLOT_COUNT:
 		if event.is_action_pressed("skill_%d" % (i + 1)):
@@ -476,7 +483,10 @@ func attack() -> void:
 	if Net.active:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.broadcast_attack(peer_id, anim, aim_vector(_attack_origin()))
+			var reach := w.reach if w else 16.0
+			var thrust := w != null and w.attack_pattern == WeaponItemData.Pattern.THRUST
+			ns.broadcast_attack(peer_id, anim, aim_vector(_attack_origin()), reach,
+					thrust, w.damage_color() if w else Color.WHITE)
 	# The hit lands on the "active" part of the swing.
 	var delay := clampf(interval * 0.35, 0.04, 0.22)
 	get_tree().create_timer(delay, false).timeout.connect(_perform_attack.bind(w, aim))
@@ -596,6 +606,13 @@ func _shoot(w: WeaponItemData, dir: float) -> void:
 				hero.apply_passive_hits(self, enemy, _dmg)
 		hero.wear_weapon(1)
 	level.add_entity(p, LineOfSight.safe_point(self, origin, origin + aim * 10.0))
+	# Co-op: the others see a visual copy (hits are claimed per-target).
+	if Net.active and w.projectile_texture:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns and w.projectile_texture.resource_path != "":
+			ns.projectile_fx.rpc(w.projectile_texture.resource_path, origin, aim,
+					w.projectile_speed, w.reach / maxf(1.0, w.projectile_speed) + 0.4,
+					w.damage_color())
 
 
 ## Called by enemies, enemy projectiles and traps. Elemental damage
@@ -645,6 +662,8 @@ func _net_puppet_step(delta: float) -> void:
 func take_damage(amount: int, from_pos: Vector2 = Vector2.INF, damage_type: int = 0) -> void:
 	# Puppets forward the hit to their owner's machine.
 	if puppet:
+		if dead:
+			return  # corpses are not beaten
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
 			ns.player_damage.rpc_id(peer_id, amount, from_pos, damage_type)

@@ -38,20 +38,25 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	var player := get_tree().get_first_node_in_group("player") as Player
-	if player == null:
-		return
 	if _closed:
 		if not is_instance_valid(champion) or champion.is_dead():
 			_open()
 		return
-	# The guardian stands guard - asleep on its post - until the doors slam.
-	if is_instance_valid(champion):
-		champion.held = true
-	# Trigger only when the hero is well inside, never standing in an opening.
-	var c := level.world_to_cell(player.global_position)
-	var inner := Rect2i(room_cells.position + Vector2i(2, 2), room_cells.size - Vector2i(4, 2))  # bottom rows stay: the hero walks there
-	if inner.has_point(c):
+	var intruder := false
+	for n in get_tree().get_nodes_in_group("player"):
+		var player := n as Player
+		# Any hero counts - including a guest's puppet on the host machine.
+		if player == null or player.dead:
+			continue
+		if is_instance_valid(champion):
+			champion.held = true
+		# Trigger only when the hero is well inside, never standing in an opening.
+		var c := level.world_to_cell(player.global_position)
+		var inner := Rect2i(room_cells.position + Vector2i(2, 2), room_cells.size - Vector2i(4, 2))  # bottom rows stay: the hero walks there
+		if inner.has_point(c):
+			intruder = true
+			break
+	if intruder:
 		_close()
 
 
