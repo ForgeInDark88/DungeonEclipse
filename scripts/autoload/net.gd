@@ -74,9 +74,16 @@ func _names_list() -> Array[String]:
 
 
 # ------------------------------------------------------------- host / join
+## Game port, overridable by NET_PORT (headless test runs on one machine
+## must not fight the real game for 24565).
+func game_port() -> int:
+	var env := OS.get_environment("NET_PORT")
+	return int(env) if env != "" else GAME_PORT
+
+
 func host_game() -> bool:
 	var peer := ENetMultiplayerPeer.new()
-	if peer.create_server(GAME_PORT, MAX_PLAYERS - 1) != OK:
+	if peer.create_server(game_port(), MAX_PLAYERS - 1) != OK:
 		return false
 	multiplayer.multiplayer_peer = peer
 	active = true
@@ -92,7 +99,7 @@ func host_game() -> bool:
 
 func join_game(ip: String) -> bool:
 	var peer := ENetMultiplayerPeer.new()
-	if peer.create_client(ip, GAME_PORT) != OK:
+	if peer.create_client(ip, game_port()) != OK:
 		return false
 	multiplayer.multiplayer_peer = peer
 	active = true
