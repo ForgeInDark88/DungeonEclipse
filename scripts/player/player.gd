@@ -430,6 +430,13 @@ func face_aim() -> void:
 			visual.facing = facing
 
 
+## Co-op (puppet side): turn toward the caster's aim direction.
+func face_aim_to(aim: Vector2) -> void:
+	if absf(aim.x) > 0.01:
+		facing = signf(aim.x)
+		visual.facing = facing
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if puppet or hero == null or dead or status.is_stunned():
 		return
@@ -463,8 +470,13 @@ func attack() -> void:
 	var interval := hero.attack_interval()
 	_attack_cooldown = interval
 	# Fists use the quick jab; weapons their own animation.
-	animator.play_action(w.animation() if w else &"attack_quick", interval * 0.95)
+	var anim := w.animation() if w else &"attack_quick"
+	animator.play_action(anim, interval * 0.95)
 	AudioManager.play_sfx(AssetPaths.WEAPON_SFX[w.weapon_type] if w else &"attack_dagger", global_position, -2.0)
+	if Net.active:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.broadcast_attack(peer_id, anim, aim_vector(_attack_origin()))
 	# The hit lands on the "active" part of the swing.
 	var delay := clampf(interval * 0.35, 0.04, 0.22)
 	get_tree().create_timer(delay, false).timeout.connect(_perform_attack.bind(w, aim))
