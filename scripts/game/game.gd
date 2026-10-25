@@ -381,6 +381,10 @@ func _stats_grid(rows: Array) -> Control:
 ## One machine hosts the truth: enemies, loot and floor changes replicate
 ## from it; every player owns their hero and sends hits/pickups to the host.
 func _net_bootstrap() -> void:
+	# Multiplayer: pause menus and books still set get_tree().paused (the UI
+	# treats it as "a menu is open"), but the shared run ignores it - the
+	# whole game scene keeps processing while anyone browses a menu.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	net_sync = NetSync.new()
 	# A fixed node name: RPC targets are resolved by path, and an auto name
 	# (@Node@N) differs between machines and breaks every NetSync RPC.
