@@ -93,14 +93,15 @@ func _spawn_shell(net_id: int, enemy_id: String, pos: Vector2, elite_id: StringN
 	game.level.add_entity(e, pos)
 
 
-## Host → clients: periodic snapshot of enemy positions and hp.
+## Host → clients: periodic snapshot of enemy positions, hp and AI state.
 @rpc("authority", "call_remote", "unreliable")
 func enemy_state(states: Array) -> void:
 	for st: Array in states:
 		var e: Enemy = enemies.get(int(st[0]))
 		if e == null or not is_instance_valid(e):
 			continue
-		e.net_apply_state(st[1], st[2], int(st[3]), bool(st[4]))
+		e.net_apply_state(st[1], st[2], int(st[3]), bool(st[4]), int(st[5]),
+				float(st[6]))
 
 
 func _broadcast_enemy_state() -> void:
@@ -108,7 +109,8 @@ func _broadcast_enemy_state() -> void:
 	for id in enemies:
 		var e: Enemy = enemies[id]
 		if is_instance_valid(e):
-			states.append([id, e.global_position.x, e.global_position.y, e.hp, e.is_dead()])
+			states.append([id, e.global_position.x, e.global_position.y, e.hp,
+					e.is_dead(), e.state, e._attack_anim_left])
 	if not states.is_empty():
 		enemy_state.rpc(states)
 
