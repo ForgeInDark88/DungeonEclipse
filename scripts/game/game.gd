@@ -93,6 +93,10 @@ func _ready() -> void:
 
 
 func _load_floor() -> void:
+	# A dead hero's spectator overlay belongs to the previous floor; clear it
+	# before rebuilding and always resume the tree when the party transitions.
+	get_tree().paused = false
+	overlay.visible = false
 	if net_sync:
 		net_sync.clear_floor()  # before the new level spawns and registers
 	if level:
