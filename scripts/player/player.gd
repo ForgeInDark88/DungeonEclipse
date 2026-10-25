@@ -643,7 +643,6 @@ func net_state(pos: Vector2, p_facing: float, hp: int, max_hp: int, is_dead: boo
 		hero.stats.hp = hp
 	_net_apply_costume(costume)
 	if is_dead and not dead:
-		print("DBG net_state dead=true for ", peer_id)
 		dead = true
 		animator.die()
 	elif not is_dead and dead:

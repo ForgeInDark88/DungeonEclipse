@@ -367,8 +367,6 @@ func player_damage(amount: int, from_pos: Vector2, damage_type: int) -> void:
 ## client sends this — authority mode would reject client broadcasts.
 @rpc("any_peer", "call_remote", "reliable")
 func player_hp(peer_id: int, hp: int, max_hp: int, dead: bool) -> void:
-	print("DBG player_hp recv: sender=", multiplayer.get_remote_sender_id(),
-			" peer=", peer_id, " dead=", dead)
 	# Only the hero's owner may report about it.
 	if multiplayer.get_remote_sender_id() != peer_id:
 		return
@@ -380,7 +378,6 @@ func player_hp(peer_id: int, hp: int, max_hp: int, dead: bool) -> void:
 		return
 	var was_dead := p.dead
 	p.dead = dead
-	print("DBG player_hp applied: t=", Time.get_ticks_msec(), " was=", was_dead, " now=", p.dead)
 	if p.hero:
 		p.hero.stats.hp = hp
 	if dead and not was_dead:
