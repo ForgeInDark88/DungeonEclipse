@@ -380,6 +380,7 @@ func player_hp(peer_id: int, hp: int, max_hp: int, dead: bool) -> void:
 		return
 	var was_dead := p.dead
 	p.dead = dead
+	print("DBG player_hp applied: t=", Time.get_ticks_msec(), " was=", was_dead, " now=", p.dead)
 	if p.hero:
 		p.hero.stats.hp = hp
 	if dead and not was_dead:
