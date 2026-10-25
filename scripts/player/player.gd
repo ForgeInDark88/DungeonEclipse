@@ -483,8 +483,11 @@ func attack() -> void:
 	if Net.active:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			var reach := w.reach if w else 16.0
-			var thrust := w != null and w.attack_pattern == WeaponItemData.Pattern.THRUST
+			# Ranged weapons echo the animation only: their projectile already
+			# flies to the other machines as a visual copy (no slash trail).
+			var ranged := w != null and w.is_ranged()
+			var reach := (w.reach if w else 16.0) if not ranged else 0.0
+			var thrust := w != null and not ranged and w.attack_pattern == WeaponItemData.Pattern.THRUST
 			ns.broadcast_attack(peer_id, anim, aim_vector(_attack_origin()), reach,
 					thrust, w.damage_color() if w else Color.WHITE)
 	# The hit lands on the "active" part of the swing.

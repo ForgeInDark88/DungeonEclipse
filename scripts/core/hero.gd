@@ -81,7 +81,7 @@ func gain_kill_reward(xp_amount: int, gold_amount: int) -> void:
 
 ## Co-op: back from the dead on a new floor.
 func revive() -> void:
-	stats.hp = stats.max_hp()
+	stats.heal(stats.max_hp())  # heal/restore emit the signals the HUD listens to
 	stats.restore_mana(stats.max_mana())
 
 

@@ -27,6 +27,14 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 
 
 func _throw(player: Player, stack: ItemStack) -> void:
+	if Net.active and not Net.is_host:
+		# The host owns the shared pickup state: it spawns the drop and
+		# broadcasts it, so everyone sees (and can pick up) the item.
+		var ns = get_tree().get_first_node_in_group("net_game")
+		if ns:
+			ns.request_drop.rpc_id(1, RunCodec.item_to_dict(stack.item), stack.count)
+		EventBus.message.emit("Выброшено: %s" % stack.item.display_name)
+		return
 	EventBus.spawn_items.emit(player.global_position + Vector2(player.facing * 10.0, -12.0),
 			[{"item": stack.item, "count": stack.count}])
 	EventBus.message.emit("Выброшено: %s" % stack.item.display_name)

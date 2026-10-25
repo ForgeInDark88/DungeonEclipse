@@ -1419,7 +1419,11 @@ func _raise_summons() -> void:
 	for i in mini(2, data.max_summons - _alive_summons()):
 		var e: Enemy = (load("res://scenes/enemies/enemy.tscn") as PackedScene).instantiate()
 		e.setup(data.summon, floor_number)
+		# Summons spawn mid-fight: same authoritative id/descriptor path as
+		# floor mobs and ambush monsters, or guests never see them.
+		level._net_tag(e)
 		level.add_entity(e, global_position + Vector2((i * 2 - 1) * 16.0, -4.0))
+		level._net_broadcast_enemy(e, null, false)
 		Fx.sparks(level.entities, e.global_position + Vector2(0, -8), Color(0.5, 1.0, 0.6), 12, 70.0)
 		_summons.append(e)
 	AudioManager.play_sfx(&"skill_cast", global_position)

@@ -176,6 +176,8 @@ func _add_glints(class_id: StringName) -> void:
 
 
 func _on_hp(hp: int, max_hp: int) -> void:
+	if _dead and hp > 0:
+		_dead = false  # revived: the portrait lives again
 	if _last_hp >= 0 and hp < _last_hp:
 		_hurt_t = 0.0
 		_shake_left = 0.3

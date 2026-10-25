@@ -629,6 +629,23 @@ func trap_disarmed_net(seq: int) -> void:
 			return
 
 
+## Client → host: I dropped an item; spawn the shared pickup at my puppet.
+@rpc("any_peer", "call_remote", "reliable")
+func request_drop(item_dict: Dictionary, count: int) -> void:
+	if not Net.is_host:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	var item := RunCodec.item_from_dict(item_dict)
+	if item == null or count <= 0 or count > 99:
+		return
+	var game := get_tree().current_scene
+	var p: Player = game.net_players.get_node_or_null("Player_%d" % sender) if game != null and "net_players" in game else null
+	if p == null:
+		return
+	EventBus.spawn_items.emit(p.global_position + Vector2(p.facing * 10.0, -12.0),
+			[{"item": item, "count": count}])
+
+
 ## Client → host: I used a one-shot event.
 @rpc("any_peer", "call_remote", "reliable")
 func request_event_use(seq: int) -> void:
@@ -863,16 +880,20 @@ func attack_fx(caster_peer: int, anim: StringName, aim: Vector2, reach: float,
 	if scene == null or not ("net_players" in scene):
 		return
 	var puppet: Player = scene.net_players.get_node_or_null("Player_%d" % caster_peer)
-	if puppet == null or puppet.hero == null:
+	if puppet == null or puppet.hero == null or puppet.dead:
 		return
+	# A puppet that died earlier may still have the DEATH state in its
+	# animator (an unreliable packet was lost): stand it up before swinging.
+	if puppet.animator.state == puppet.animator.State.DEATH:
+		puppet.animator.revive()
 	if anim != &"":
 		puppet.animator.play_action(anim, 0.35)
 	puppet.face_aim_to(aim)
-	# The weapon trail the attacker saw on their machine.
-	if scene.level:
+	# The weapon trail the attacker saw on their machine (melee only).
+	if reach > 0.0 and scene.level:
 		var origin: Vector2 = puppet.global_position + Vector2(0, -12)
 		SlashTrail.spawn(scene.level.entities, origin + aim.normalized() * 4.0,
-				aim.normalized(), maxf(reach, 12.0), thrust, color)
+				aim.normalized(), reach, thrust, color)
 
 
 ## Any player cast → everyone sees the animation, sound and the visuals.
