@@ -94,8 +94,9 @@ func _watch_game() -> void:
 		await get_tree().create_timer(1.5).timeout
 		check(mine.dead, "client: hero died")
 		mine.revive()
-		net_sync.broadcast_player_hp(Net.multiplayer.get_unique_id(),
-				mine.hero.stats.hp, mine.hero.stats.max_hp(), false)
+		if g != null and g.net_sync:
+			g.net_sync.broadcast_player_hp(Net.multiplayer.get_unique_id(),
+					mine.hero.stats.hp, mine.hero.stats.max_hp(), false)
 		await get_tree().create_timer(0.5).timeout
 	else:
 		await get_tree().create_timer(2.5).timeout
