@@ -611,6 +611,8 @@ func net_state(pos: Vector2, p_facing: float, hp: int, max_hp: int, is_dead: boo
 	if is_dead and not dead:
 		dead = true
 		animator.die()
+	elif not is_dead and dead:
+		revive()
 
 
 ## Host enemies hit a puppet → the owner applies the damage for real.

@@ -109,8 +109,15 @@ func _broadcast_enemy_state() -> void:
 	for id in enemies:
 		var e: Enemy = enemies[id]
 		if is_instance_valid(e):
+			var ai_state: int = e.state
+			# Boss has its own Act machine; expose its windup/acting as the
+			# common Enemy ATTACK state understood by every shell.
+			if e is Boss:
+				var b := e as Boss
+				if b.act == Boss.Act.WINDUP or b.act == Boss.Act.ACTING:
+					ai_state = Enemy.State.ATTACK
 			states.append([id, e.global_position.x, e.global_position.y, e.hp,
-					e.is_dead(), e.state, e._attack_anim_left])
+					e.is_dead(), ai_state, e._attack_anim_left])
 	if not states.is_empty():
 		enemy_state.rpc(states)
 
@@ -327,10 +334,23 @@ func player_damage(amount: int, from_pos: Vector2, damage_type: int) -> void:
 		local_player.net_take_damage(amount, from_pos, damage_type)
 
 
-## Host → all: a peer's hero state changed level (respawn, xp from host).
-@rpc("any_peer", "call_remote", "reliable")
+## Host → all: a peer's hero state changed (death/respawn), reliable.
+@rpc("authority", "call_remote", "reliable")
 func player_hp(peer_id: int, hp: int, max_hp: int, dead: bool) -> void:
-	get_tree().call_group("net_game", "on_player_hp", peer_id, hp, max_hp, dead)
+	var game := get_tree().current_scene
+	if game == null or not ("net_players" in game):
+		return
+	var p := game.net_players.get_node_or_null("Player_%d" % peer_id) as Player
+	if p == null:
+		return
+	var was_dead := p.dead
+	p.dead = dead
+	if p.hero:
+		p.hero.stats.hp = hp
+	if dead and not was_dead:
+		p.animator.die()
+	elif not dead and was_dead:
+		p.revive()
 
 
 func broadcast_player_hp(peer_id: int, hp: int, max_hp: int, dead: bool) -> void:

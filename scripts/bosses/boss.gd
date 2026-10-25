@@ -69,8 +69,24 @@ func _nearest_alive_player() -> Player:
 
 func _physics_process(delta: float) -> void:
 	if puppet:
-		# Co-op shell: glide to the host's position, no boss brain here.
+		# Boss shells have no local phase machine; mirror the host's Enemy
+		# state/timers so windup and attack animations are visible to guests.
+		var before := global_position
 		global_position = global_position.lerp(_net_target, minf(1.0, delta * 12.0))
+		_attack_anim_left = maxf(0.0, _attack_anim_left - delta)
+		var dx: float = (global_position.x - before.x) / maxf(delta, 0.0001)
+		if state == State.HURT:
+			_play(&"hurt")
+		elif state == State.ATTACK:
+			_play(&"windup")
+		elif _attack_anim_left > 0.0:
+			_play(&"attack")
+		elif data.behavior == EnemyData.Behavior.FLYER or absf(dx) > 12.0:
+			if absf(dx) > 12.0:
+				sprite.flip_h = dx < 0.0
+			_play(_move_anim())
+		else:
+			_play(&"idle")
 		return
 	if _dead:
 		return
