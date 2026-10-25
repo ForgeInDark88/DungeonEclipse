@@ -135,6 +135,15 @@ func enemy_float_text(pos: Vector2, text: String, color: Color) -> void:
 	EventBus.floating_text.emit(pos, text, color)
 
 
+## Host → clients: an enemy flinched — shells replay the hurt reaction.
+@rpc("authority", "call_remote", "unreliable")
+func enemy_hurt(net_id: int) -> void:
+	var e: Enemy = enemies.get(net_id)
+	if e == null or not is_instance_valid(e) or e.is_dead():
+		return
+	e.net_hurt()
+
+
 ## Client → host: my attack hurt this enemy.
 @rpc("any_peer", "call_remote", "reliable")
 func net_hit(net_id: int, amount: int, crit: bool, from_x: float, from_y: float,

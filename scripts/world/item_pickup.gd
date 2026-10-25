@@ -77,6 +77,11 @@ func collect(hero: Hero) -> void:
 	if item == null or is_queued_for_deletion():
 		return
 	if puppet:
+		# A full backpack must not destroy the shared item: the host erases
+		# the pickup as soon as the request lands, whatever fits.
+		if item.currency_value <= 0 and hero.inventory.free_space_for(item) <= 0:
+			EventBus.message.emit("Рюкзак полон")
+			return
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
 			ns.take_item.rpc_id(1, net_id)

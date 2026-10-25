@@ -87,6 +87,20 @@ func _watch_game() -> void:
 		await get_tree().create_timer(0.3).timeout
 		Input.action_release("skill_1")
 		await get_tree().create_timer(1.0).timeout
+	# --- death phase: the guest dies; the host's puppet must show the death
+	# state (dead flag), then the guest revives and both move on.
+	if not is_host:
+		mine.hero.stats.take_damage(99999)
+		await get_tree().create_timer(1.5).timeout
+		check(mine.dead, "client: hero died")
+		mine.revive()
+		net_sync.broadcast_player_hp(Net.multiplayer.get_unique_id(),
+				mine.hero.stats.hp, mine.hero.stats.max_hp(), false)
+		await get_tree().create_timer(0.5).timeout
+	else:
+		await get_tree().create_timer(2.5).timeout
+		var corpse := _their_puppet(1)
+		check(corpse != null and corpse.dead, "host: guest puppet marked dead")
 	# --- chest phase: the guest stands at a chest and sends the real
 	# request_chest_open; both sides must see it open.
 	var chest: Chest = null
