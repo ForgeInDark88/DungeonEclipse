@@ -87,6 +87,25 @@ func _watch_game() -> void:
 		await get_tree().create_timer(0.3).timeout
 		Input.action_release("skill_1")
 		await get_tree().create_timer(1.0).timeout
+	# --- chest phase: the guest stands at a chest and sends the real
+	# request_chest_open; both sides must see it open.
+	var chest: Chest = null
+	for c in get_tree().get_nodes_in_group("chests"):
+		if not c.opened and not c.sealed and c.tier < 2:
+			chest = c
+			break
+	if chest == null:
+		print("SKIP: no chest on this floor")
+	elif is_host:
+		await get_tree().create_timer(7.0).timeout
+		check(chest.opened, "host: guest's chest request opened the chest")
+	else:
+		# Stand right at the chest so the host's range check passes.
+		mine.global_position = chest.global_position + Vector2(-20, 0)
+		await get_tree().create_timer(0.8).timeout
+		chest.interact(mine)
+		await get_tree().create_timer(2.0).timeout
+		check(chest.opened, "client: chest opened through the host")
 	# --- costume phase: the guest equips a sword; the host's puppet copy
 	# must mirror the same gear through net_state.
 	if is_host:

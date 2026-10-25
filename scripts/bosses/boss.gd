@@ -53,6 +53,16 @@ func current_phase() -> BossPhase:
 
 
 ## Co-op: the closest standing hero gets the boss's attention.
+## Every living hero on this machine (the local one and guests' puppets).
+func _alive_heroes() -> Array[Player]:
+	var out: Array[Player] = []
+	for n in get_tree().get_nodes_in_group("player"):
+		var p := n as Player
+		if p != null and not p.dead:
+			out.append(p)
+	return out
+
+
 func _nearest_alive_player() -> Player:
 	var best: Player = null
 	var best_d := INF
@@ -330,17 +340,18 @@ func _update_attack_act(delta: float) -> void:
 				_beam_line.width = 14.0 + sin(_beam_time * 40.0) * 3.0
 				if _beam_core:
 					_beam_core.width = _beam_line.width * 0.35
-			if _beam_tick <= 0.0 and _player:
+			if _beam_tick <= 0.0:
 				_beam_tick = 0.22
 				var from := global_position + Vector2(0, -22)
 				var to := from + _beam_dir * 260.0
-				var ap := _player.global_position + Vector2(0, -10)
 				var ab := to - from
-				var tt := clampf((ap - from).dot(ab) / ab.length_squared(), 0.0, 1.0)
-				var dist := (ap - (from + ab * tt)).length()
-				if dist <= 15.0:
-					_player.take_damage(roundi(damage * a.damage_mult * 0.45), global_position, a.damage_type)
-					_apply_attack_effects(a, _player)
+				for p in _alive_heroes():
+					var ap := p.global_position + Vector2(0, -10)
+					var tt := clampf((ap - from).dot(ab) / ab.length_squared(), 0.0, 1.0)
+					var dist := (ap - (from + ab * tt)).length()
+					if dist <= 15.0:
+						p.take_damage(roundi(damage * a.damage_mult * 0.45), global_position, a.damage_type)
+						_apply_attack_effects(a, p)
 			if _beam_time <= 0.0:
 				_fade_beam()
 				_end_attack()
@@ -350,10 +361,11 @@ func _shockwave(a: BossAttack) -> void:
 	EventBus.screen_shake.emit(8.0)
 	Fx.dust(get_parent(), global_position, true)
 	Fx.explosion(get_parent(), global_position + Vector2(0, -4), a.radius, Color(0.9, 0.8, 0.6))
-	if _player and _player.global_position.distance_to(global_position) <= a.radius + 6.0 \
-			and LineOfSight.can_hit(self, global_position + Vector2(0, -8), _player):
-		_player.take_damage(roundi(damage * a.damage_mult), global_position, a.damage_type)
-		_apply_attack_effects(a, _player)
+	for p in _alive_heroes():
+		if p.global_position.distance_to(global_position) <= a.radius + 6.0 \
+				and LineOfSight.can_hit(self, global_position + Vector2(0, -8), p):
+			p.take_damage(roundi(damage * a.damage_mult), global_position, a.damage_type)
+			_apply_attack_effects(a, p)
 
 
 ## Crystals burst from the telegraphed spots; standing on one hurts.
@@ -382,9 +394,11 @@ func _erupt_spikes(a: BossAttack, dmg: int) -> void:
 		spike.scale = Vector2(1.0, 0.05)
 		var tw := spike.create_tween()
 		tw.tween_property(spike, "scale:y", 1.0, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		if _player and _player.global_position.distance_to(spot) <= a.radius 				and LineOfSight.can_hit(self, spot, _player):
-			_player.take_damage(dmg, spot, a.damage_type)
-			_apply_attack_effects(a, _player)
+		for p in _alive_heroes():
+			if p.global_position.distance_to(spot) <= a.radius \
+					and LineOfSight.can_hit(self, spot, p):
+				p.take_damage(dmg, spot, a.damage_type)
+				_apply_attack_effects(a, p)
 		tw.tween_interval(0.8)
 		tw.tween_property(spike, "scale:y", 0.0, 0.2)
 		tw.tween_callback(spike.queue_free)
@@ -529,15 +543,17 @@ func _apply_attack_effects(a: BossAttack, target: Node) -> void:
 
 
 func _contact_damage() -> void:
-	if _player == null or _player.dead or _contact_cd > 0.0:
+	if _contact_cd > 0.0:
 		return
 	var reach := data.collision_size * 0.5 + Vector2(6, 10)
-	var rel := _player.global_position - global_position
-	if absf(rel.x) < reach.x and rel.y > -data.collision_size.y - 10.0 and rel.y < 10.0 \
-			and LineOfSight.can_hit(self, global_position + Vector2(0, -data.collision_size.y * 0.5), _player):
-		var mult := boss.contact_damage_mult * (2.0 if act == Act.ACTING else 1.0)
-		_player.take_damage(roundi(damage * mult), global_position)
-		_contact_cd = 0.8
+	for p in _alive_heroes():
+		var rel := p.global_position - global_position
+		if absf(rel.x) < reach.x and rel.y > -data.collision_size.y - 10.0 and rel.y < 10.0 \
+				and LineOfSight.can_hit(self, global_position + Vector2(0, -data.collision_size.y * 0.5), p):
+			var mult := boss.contact_damage_mult * (2.0 if act == Act.ACTING else 1.0)
+			p.take_damage(roundi(damage * mult), global_position)
+			_contact_cd = 0.8
+			return
 
 
 func _update_boss_animation() -> void:

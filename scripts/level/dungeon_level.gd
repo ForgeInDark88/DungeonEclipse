@@ -523,12 +523,18 @@ func _net_seq_node(node: Node) -> void:
 	node.net_seq = net_seq
 
 
+## Co-op: hand out the next enemy net id (own counter! Enemies exist only
+## on the host, so sharing net_seq with world nodes would shift every
+## chest/merchant/trap number on the client).
+var enemy_seq := 0
+
+
 ## Co-op: hand out the next net id; clients get puppets instead of AI.
 func _net_tag(e: Enemy) -> void:
 	if not Net.active:
 		return
-	net_seq += 1
-	e.net_id = net_seq
+	enemy_seq += 1
+	e.net_id = enemy_seq
 	e.puppet = not Net.is_host
 	get_tree().call_group("net_game", "register_enemy_node", e)
 
