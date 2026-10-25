@@ -833,6 +833,26 @@ func _sender_near(peer_id: int, pos: Vector2, max_distance: float) -> bool:
 	return player != null and is_instance_valid(player) and player.global_position.distance_to(pos) <= max_distance
 
 # ------------------------------------------------------------- casts
+## Any player attack → the others see the swing animation on the puppet.
+func broadcast_attack(caster_peer: int, anim: StringName, aim: Vector2) -> void:
+	attack_fx.rpc(caster_peer, anim, aim)
+
+
+@rpc("any_peer", "call_remote", "unreliable")
+func attack_fx(caster_peer: int, anim: StringName, aim: Vector2) -> void:
+	if caster_peer == multiplayer.get_unique_id():
+		return
+	var scene := get_tree().current_scene
+	if scene == null or not ("net_players" in scene):
+		return
+	var puppet: Player = scene.net_players.get_node_or_null("Player_%d" % caster_peer)
+	if puppet == null or puppet.hero == null:
+		return
+	if anim != &"":
+		puppet.animator.play_action(anim, 0.35)
+	puppet.face_aim_to(aim)
+
+
 ## Any player cast → everyone sees the animation, sound and the visuals.
 func broadcast_cast(caster_peer: int, skill_id: StringName, aim: Vector2) -> void:
 	cast_fx.rpc(caster_peer, skill_id, aim)
