@@ -167,13 +167,13 @@ func rpc_start_run(seed_value: int, difficulty_id: StringName) -> void:
 
 ## Host moved everyone to another floor (or the town).
 @rpc("authority", "call_remote", "reliable")
-func set_floor(floor_number: int) -> void:
-	GameState.net_set_floor(floor_number)
+func set_floor(floor_number: int, town_return: int = -1) -> void:
+	GameState.net_set_floor(floor_number, town_return)
 
 
-func rpc_set_floor(floor_number: int) -> void:
+func rpc_set_floor(floor_number: int, town_return: int = -1) -> void:
 	if is_host:
-		set_floor.rpc(floor_number)
+		set_floor.rpc(floor_number, town_return)
 
 
 ## Host pushes its run state to a peer that joined mid-run.

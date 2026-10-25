@@ -169,9 +169,12 @@ func begin_network_run(seed_value: int, difficulty_id: StringName, start_floor :
 	get_tree().change_scene_to_file(GAME)
 
 
-## Network: the host moved the whole party to another floor.
-func net_set_floor(f: int) -> void:
+## Network: the host moved the whole party to another floor. town_return
+## keeps the guests' "return to floor N" state in sync with the host.
+func net_set_floor(f: int, town_return: int = -1) -> void:
 	floor_number = f
+	if town_return >= 0:
+		town_return_floor = town_return
 	EventBus.floor_changed.emit(f)
 
 

@@ -1032,7 +1032,12 @@ func request_floor(action: StringName) -> void:
 			return
 	match action:
 		&"next":
-			GameState.next_floor()
+			# A guest's town gate: while a return floor is pending, "next"
+			# means resume the descent (the guest does not know the state).
+			if GameState.town_return_floor > 0:
+				GameState.resume_from_town()
+			else:
+				GameState.next_floor()
 		&"town":
 			GameState.return_to_town()
 		&"resume":

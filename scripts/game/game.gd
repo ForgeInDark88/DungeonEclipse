@@ -402,9 +402,10 @@ func _net_bootstrap() -> void:
 			get_tree().paused = false
 			get_tree().change_scene_to_file(GameState.MAIN_MENU))
 	# The host is the clock: every floor move of the party goes through it.
+	# town_return rides along so the guests' city gate knows the resume floor.
 	EventBus.floor_changed.connect(func(f: int) -> void:
 		if Net.is_host:
-			Net.rpc_set_floor(f))
+			Net.rpc_set_floor(f, GameState.town_return_floor))
 	# Late roster updates must not leave puppets missing on clients.
 	Net.players_changed.connect(func() -> void:
 		if _players_spawned and not Net.is_host and net_players:
