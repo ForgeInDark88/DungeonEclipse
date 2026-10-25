@@ -89,7 +89,11 @@ func _ambush(count: int, elite_chance: float) -> void:
 		var elite: EliteAffixData = ItemDatabase.elites.pick_random() if randf() < elite_chance and not ItemDatabase.elites.is_empty() else null
 		var e: Enemy = (load("res://scenes/enemies/enemy.tscn") as PackedScene).instantiate()
 		e.setup(data, level.floor_number, elite)
+		# Ambush enemies are dynamically spawned after the floor build: they
+		# must use the same authoritative id/descriptor path as floor mobs.
+		level._net_tag(e)
 		var side := -1.0 if i % 2 == 0 else 1.0
 		level.add_entity(e, global_position + Vector2(side * (24.0 + i * 10.0), -4.0))
+		level._net_broadcast_enemy(e, elite, false)
 		Fx.sparks(level.entities, e.global_position + Vector2(0, -8), Color(0.7, 0.3, 1.0), 14, 80.0)
 	EventBus.screen_shake.emit(4.0)
