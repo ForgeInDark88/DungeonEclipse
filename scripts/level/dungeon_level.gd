@@ -634,7 +634,7 @@ func _spawn_event(info: Dictionary) -> void:
 	var node: Node2D = (load(data.scene) as PackedScene).instantiate()
 	if node.has_method("setup_event"):
 		node.setup_event(self, info)
-	if "net_seq" in node:  # only events that participate in co-op sync
+	if node is EventObject:
 		_net_seq_node(node)
 	add_entity(node, cell_bottom(info["cell"]))
 

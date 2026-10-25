@@ -10,6 +10,8 @@ extends Area2D
 
 var used := false
 var level: DungeonLevel
+## LAN co-op: deterministic event identity (requests and snapshots).
+var net_seq := 0
 
 @onready var sprite: AnimatedSprite2D = $Sprite
 
@@ -37,6 +39,11 @@ func get_prompt() -> String:
 func interact(player: Node) -> void:
 	if used:
 		return
+	if Net.active and not Net.is_host:
+		var ns = get_tree().get_first_node_in_group("net_game")
+		if ns:
+			ns.request_event_use.rpc_id(1, net_seq)
+		return
 	if _activate(player):
 		finish()
 
@@ -45,6 +52,10 @@ func interact(player: Node) -> void:
 func finish() -> void:
 	used = true
 	EventBus.event_completed.emit(self)
+	if Net.active and Net.is_host:
+		var ns = get_tree().get_first_node_in_group("net_game")
+		if ns:
+			ns.event_used.rpc(net_seq)
 	if sprite.sprite_frames and sprite.sprite_frames.has_animation(used_anim):
 		sprite.play(used_anim)
 	var light := get_node_or_null("PointLight2D") as PointLight2D
@@ -78,7 +89,11 @@ func _ambush(count: int, elite_chance: float) -> void:
 		var elite: EliteAffixData = ItemDatabase.elites.pick_random() if randf() < elite_chance and not ItemDatabase.elites.is_empty() else null
 		var e: Enemy = (load("res://scenes/enemies/enemy.tscn") as PackedScene).instantiate()
 		e.setup(data, level.floor_number, elite)
+		# Ambush enemies are dynamically spawned after the floor build: they
+		# must use the same authoritative id/descriptor path as floor mobs.
+		level._net_tag(e)
 		var side := -1.0 if i % 2 == 0 else 1.0
 		level.add_entity(e, global_position + Vector2(side * (24.0 + i * 10.0), -4.0))
+		level._net_broadcast_enemy(e, elite, false)
 		Fx.sparks(level.entities, e.global_position + Vector2(0, -8), Color(0.7, 0.3, 1.0), 14, 80.0)
 	EventBus.screen_shake.emit(4.0)

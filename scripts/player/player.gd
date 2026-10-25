@@ -723,7 +723,12 @@ func revive() -> void:
 	hero.revive()
 	_invulnerable = 2.0
 	visual.alpha = 1.0
-	animator.update(0.0, true, Vector2.ZERO, false, false)
+	animator.revive()
+	# The camera kept spectating while dead: put it back on this hero.
+	if camera:
+		camera.global_position = global_position
+		camera.make_current()
+
 
 
 func _on_died() -> void:

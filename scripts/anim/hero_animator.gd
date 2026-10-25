@@ -101,6 +101,13 @@ func die() -> void:
 	visual.play(&"death", 1.0, true)
 
 
+## Co-op revive / next floor: leave the death pose and stand back up.
+func revive() -> void:
+	state = State.IDLE
+	visual.set_paused(false)
+	visual.play(&"idle", 1.0, true)
+
+
 func is_busy() -> bool:
 	return state == State.ACTION
 
