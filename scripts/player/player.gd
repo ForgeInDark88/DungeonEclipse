@@ -393,7 +393,8 @@ func _input(event: InputEvent) -> void:
 	# HUD slot controls (MOUSE_FILTER_STOP) swallow key events before
 	# _unhandled_input, so skill/quick hotkeys are handled here, before the
 	# GUI - but only while the game is actually running (no book is open).
-	if not (event is InputEventKey) or hero == null or dead or status.is_stunned():
+	# Puppets never take input: only the local hero owns the keyboard.
+	if puppet or not (event is InputEventKey) or hero == null or dead or status.is_stunned():
 		return
 	if get_tree().paused or get_viewport().gui_is_dragging():
 		return
@@ -428,7 +429,7 @@ func face_aim() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if hero == null or dead or status.is_stunned():
+	if puppet or hero == null or dead or status.is_stunned():
 		return
 	if event.is_action_pressed("interact") and try_interact():
 		get_viewport().set_input_as_handled()
