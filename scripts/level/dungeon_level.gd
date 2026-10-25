@@ -460,7 +460,11 @@ func explode(center: Vector2, radius: float) -> void:
 
 ## Hangs a rope (ladder tiles) from `cell` upward. Returns number of cells.
 func place_rope(cell: Vector2i, max_length: int) -> int:
+	if Net.active and not Net.is_host:
+		# A guest never mutates shared tiles directly; the host does it.
+		return 0
 	var count := 0
+	var placed: Array[Vector2i] = []
 	var y := cell.y
 	# Also cover the cell at the feet so the rope can be grabbed from the ground.
 	if layout.get_tile(cell.x, y + 1) == T.EMPTY:
@@ -470,8 +474,13 @@ func place_rope(cell: Vector2i, max_length: int) -> int:
 		_mark_nav_dirty(Vector2i(cell.x, y))
 		changed_cells.append(Vector2i(cell.x, y))
 		_refresh_around(Vector2i(cell.x, y))
+		placed.append(Vector2i(cell.x, y))
 		count += 1
 		y -= 1
+	if count > 0 and Net.active and Net.is_host:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.ropes_placed.rpc(placed)
 	return count
 
 

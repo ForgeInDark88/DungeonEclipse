@@ -78,6 +78,15 @@ func _watch_game() -> void:
 	await get_tree().create_timer(2.5).timeout
 	var moved := absf(theirs.global_position.x - start.x)
 	check(moved > 40.0, "the other hero's puppet moved (%.0f px)" % moved)
+	# --- input phase: the guest fires a synthetic skill keypress; the host
+	# must see the cast fx (broadcast_cast works from a client).
+	if not is_host:
+		print("DBG: skill_1 pressed, hero=", mine.hero != null,
+				" skill=", mine.hero.skills.get_skill(0) if mine and mine.hero else null)
+		Input.action_press("skill_1")
+		await get_tree().create_timer(0.3).timeout
+		Input.action_release("skill_1")
+		await get_tree().create_timer(1.0).timeout
 	# --- costume phase: the guest equips a sword; the host's puppet copy
 	# must mirror the same gear through net_state.
 	if is_host:

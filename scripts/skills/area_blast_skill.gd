@@ -49,7 +49,22 @@ func execute(caster: Node, level: int) -> bool:
 		_:
 			Fx.explosion(parent, center, r, color)
 	EventBus.screen_shake.emit(4.0)
+	_net_blast_fx(caster, center, r)
 	return true
+
+
+## Co-op: echo the blast silhouette to the other machines (the damage was
+## claimed per-enemy through the puppets' take_damage path).
+func _net_blast_fx(caster: Node, center: Vector2, r: float) -> void:
+	if not Net.active:
+		return
+	# Untyped on purpose: a hard NetSync reference here would create a
+	# cyclic class dependency (net_sync knows AreaBlastSkill for cast replays).
+	var ns = caster.get_tree().get_first_node_in_group("net_game")
+	if ns == null:
+		return
+	ns.blast_fx.rpc(center, r, vfx, color)
+
 
 
 ## Damage + tile breaking; `delay` lets the meteor land first (the enemies
