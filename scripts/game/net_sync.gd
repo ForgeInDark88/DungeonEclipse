@@ -212,6 +212,14 @@ func spawn_item(net_id: int, item_dict: Dictionary, count: int, pos: Vector2) ->
 	pickup.global_position = pos
 
 
+## Host: its own player collected this pickup — remove replicas everywhere.
+func forget_item(net_id: int) -> void:
+	if not Net.is_host or net_id <= 0 or not items.has(net_id):
+		return
+	items.erase(net_id)
+	item_taken.rpc(net_id)
+
+
 ## Client → host: I touched a pickup.
 @rpc("any_peer", "call_remote", "reliable")
 func take_item(net_id: int) -> void:

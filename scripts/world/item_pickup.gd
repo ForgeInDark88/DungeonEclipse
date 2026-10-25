@@ -82,6 +82,13 @@ func collect(hero: Hero) -> void:
 			ns.take_item.rpc_id(1, net_id)
 			queue_free()
 		return
+	# The host collecting its own loot must remove the replicas on clients,
+	# or they keep a phantom copy that vanishes when touched.
+	if Net.active and Net.is_host and net_id > 0:
+		tree_exiting.connect(func() -> void:
+			var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+			if ns:
+				ns.forget_item(net_id))
 	if item.currency_value > 0:
 		var amount := item.currency_value * count
 		hero.add_gold(amount)
