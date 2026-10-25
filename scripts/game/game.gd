@@ -539,7 +539,8 @@ func _on_player_died_coop() -> void:
 		overlay.add_text("Вы пали", 14)
 		overlay.add_text("Возрождение на следующем этаже...", 9)
 		overlay.add_button("Ждать (наблюдать)", func() -> void:
-			get_tree().paused = false)
+			get_tree().paused = false
+			overlay.visible = false)
 		overlay.visible = true
 	else:
 		# The whole party is down — the run is over for everyone.
