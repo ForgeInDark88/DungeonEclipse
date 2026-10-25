@@ -317,11 +317,19 @@ func _nearest_alive_player() -> Player:
 func _physics_process(delta: float) -> void:
 	if puppet:
 		# Shell on a client: glide to the host's last word, no thinking,
-		# but still animate - walk/fly while moving, idle at rest.
+		# but still animate - windup/attack when the host is, walk when
+		# moving, idle at rest.
 		var before := global_position
 		global_position = global_position.lerp(_net_target, minf(1.0, delta * 12.0))
 		var dx: float = (global_position.x - before.x) / maxf(delta, 0.0001)
-		if absf(dx) > 12.0:
+		_attack_anim_left = maxf(0.0, _attack_anim_left - delta)
+		if state == State.ATTACK:
+			_play(&"windup")
+		elif state == State.HURT:
+			_play(&"hurt")
+		elif _attack_anim_left > 0.0:
+			_play(&"attack")
+		elif absf(dx) > 12.0:
 			sprite.flip_h = dx < 0.0
 			_play(_move_anim())
 		else:
@@ -457,8 +465,9 @@ func _update_animation() -> void:
 
 func _set_flash(amount: float, color := Color.WHITE) -> void:
 	var m := sprite.material as ShaderMaterial
-	m.set_shader_parameter("flash_color", color)
-	m.set_shader_parameter("flash", amount)
+	if m:
+		m.set_shader_parameter("flash_color", color)
+		m.set_shader_parameter("flash", amount)
 
 
 # ------------------------------------------------------------- perception
@@ -1528,7 +1537,8 @@ func is_dead() -> bool:
 
 
 ## Client shell: host says where I am and how hurt.
-func net_apply_state(x: float, y: float, new_hp: int, dead: bool) -> void:
+func net_apply_state(x: float, y: float, new_hp: int, dead: bool, ai_state: int = -1,
+		attack_left: float = 0.0) -> void:
 	_net_target = Vector2(x, y)
 	if dead and not _dead:
 		net_die()
@@ -1538,6 +1548,17 @@ func net_apply_state(x: float, y: float, new_hp: int, dead: bool) -> void:
 		hp_bar.visible = true
 		hp_bar.max_value = max_hp
 		hp_bar.value = hp
+	if ai_state >= 0:
+		# Host ATTACK (telegraphed) and the 0.25s attack strike are both shown
+		# locally through _attack_anim_left - refresh the puppet's timers.
+		if ai_state == State.ATTACK and state != State.ATTACK:
+			_set_flash(0.35, Color(1.0, 0.2, 0.1))
+		elif ai_state != State.ATTACK and state == State.ATTACK:
+			_set_flash(0.0)
+			_attack_anim_left = maxf(_attack_anim_left, 0.25)
+		elif attack_left > 0.0:
+			_attack_anim_left = maxf(_attack_anim_left, attack_left)
+		state = ai_state
 
 
 ## Client shell: the host says this enemy died — visuals only.
