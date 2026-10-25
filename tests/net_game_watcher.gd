@@ -78,6 +78,22 @@ func _watch_game() -> void:
 	await get_tree().create_timer(2.5).timeout
 	var moved := absf(theirs.global_position.x - start.x)
 	check(moved > 40.0, "the other hero's puppet moved (%.0f px)" % moved)
+	# --- costume phase: the guest equips a sword; the host's puppet copy
+	# must mirror the same gear through net_state.
+	if is_host:
+		await get_tree().create_timer(4.0).timeout
+		var w: EquipmentItemData = theirs.hero.weapon() if theirs and theirs.hero else null
+		check(w != null and String(w.id) == "bronze_sword",
+				"host: guest's gear mirrored (%s)" % (String(w.id) if w else "none"))
+	else:
+		var sword: EquipmentItemData = ItemDatabase.get_item(&"bronze_sword")
+		if sword == null:
+			print("SKIP: no bronze_sword in the item database")
+		else:
+			mine.hero.equipment.equip(sword, &"weapon")
+			await get_tree().create_timer(4.0).timeout
+			var w: EquipmentItemData = mine.hero.weapon()
+			check(w != null and String(w.id) == "bronze_sword", "guest: sword equipped")
 	# --- enemy hp replication phase: the host wounds one mob, the client's
 	# shell must show the damage through the enemy_state snapshots.
 	if is_host:

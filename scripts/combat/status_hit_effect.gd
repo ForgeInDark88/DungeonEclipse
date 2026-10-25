@@ -9,6 +9,13 @@ extends HitEffect
 
 
 func on_hit(_attacker: Node, target: Node, _damage: int) -> void:
+	# A guest's hero is a puppet on this machine: forward the status to the
+	# owner so the real hero gets stunned/poisoned where it is simulated.
+	if target is Player and target.puppet:
+		var ns: NetSync = target.get_tree().get_first_node_in_group("net_game")
+		if ns:
+			ns.player_status.rpc_id(target.peer_id, status, duration, power)
+		return
 	var st: StatusEffects = target.get_node_or_null("StatusEffects")
 	if st:
 		st.apply(status, duration, power)

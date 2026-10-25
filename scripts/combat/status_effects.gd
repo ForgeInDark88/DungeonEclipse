@@ -136,6 +136,9 @@ func _physics_process(delta: float) -> void:
 	if active.is_empty():
 		return
 	var host := get_parent()
+	if host is Player and host.puppet:
+		return  # the owner's copy is the live one; ours stays decorative
+	var net_puppet_enemy: bool = host is Enemy and host.puppet and Net.active and not Net.is_host
 	var ended: Array[StringName] = []
 	for id: StringName in active.keys():
 		if not active.has(id):
@@ -146,7 +149,15 @@ func _physics_process(delta: float) -> void:
 			st["tick"] -= delta
 			if st["tick"] <= 0.0:
 				st["tick"] += TICK
-				if host.has_method("take_status_damage"):
+				if net_puppet_enemy:
+					# Enemy DoT is judged by the host (its copy of the enemy
+					# owns the real hp); this shell only shows the icon.
+					var ns: NetSync = get_tree().get_first_node_in_group("net_game")
+					if ns and is_instance_valid(host):
+						ns.net_hit.rpc_id(1, host.net_id, roundi(st["power"]), false,
+								host.global_position.x, host.global_position.y,
+								damage_type_of(id))
+				elif host.has_method("take_status_damage"):
 					host.take_status_damage(roundi(st["power"]), id, color_of(id))
 		elif id == &"regen" and host.has_method("heal_status"):
 			st["tick"] -= delta

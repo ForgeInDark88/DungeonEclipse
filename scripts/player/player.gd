@@ -35,6 +35,10 @@ var puppet := false
 var peer_id := 1
 var _net_target := Vector2.ZERO
 var _net_timer := 0.0
+## Co-op: damage variance/crit dice for the host's authoritative recompute.
+var _net_dice := RandomNumberGenerator.new()
+## Pending guest attacks awaiting the host's confirmed damage.
+var _pending_hit_effects: Array[Dictionary] = []
 var climbing := false
 
 var _coyote := 0.0
@@ -69,6 +73,7 @@ const REVEAL_RADIUS := 7
 
 func _ready() -> void:
 	add_to_group("player")
+	_net_dice.seed = hash([Net.multiplayer.get_unique_id() if Net.active else 1, randi()])
 	animator.setup(visual)
 	var sv := StatusVisual.new()
 	add_child(sv)
@@ -429,8 +434,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # ------------------------------------------------------------------ combat
 func roll_damage(multiplier := 1.0) -> Dictionary:
-	var dmg := hero.stats.damage() * multiplier * skill_power * randf_range(0.85, 1.15)
-	var crit := randf() < hero.stats.crit_chance()
+	var dmg := hero.stats.damage() * multiplier * skill_power * _net_dice.randf_range(0.85, 1.15)
+	var crit := _net_dice.randf() < hero.stats.crit_chance()
 	if crit:
 		dmg *= 2.0
 	return {"amount": maxi(1, roundi(dmg)), "crit": crit}
@@ -519,6 +524,19 @@ func _attack_origin() -> Vector2:
 ## Applies damage, knockback and the weapon's on-hit effects.
 func hit_enemy(enemy: Node, w: WeaponItemData, multiplier: float) -> void:
 	var d := roll_damage(multiplier)
+	if Net.active and not Net.is_host and enemy is Enemy and enemy.puppet:
+		# The host is the judge: send the attack claim, not the damage.
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.request_player_hit.rpc_id(1, enemy.net_id, d["amount"], d["crit"],
+					w.damage_type if w else 0, _attack_origin(),
+					w.knockback if w else 120.0)
+			# Owner-local side effects of the hit (weapon wear, procs) run on
+			# the confirmed amount that arrives in hit_confirmed.
+			_pending_hit_effects.append({"enemy": enemy, "weapon": w, "seq": d["amount"]})
+			if w:
+				hero.wear_weapon(1)
+		return
 	enemy.take_damage(d["amount"], d["crit"], global_position, w.damage_type if w else 0)
 	if not is_instance_valid(enemy) or enemy.is_dead():
 		return
@@ -568,11 +586,12 @@ func _net_broadcast(delta: float) -> void:
 	if _net_timer <= 0.0:
 		_net_timer = 0.05
 		net_state.rpc(global_position, facing, hero.stats.hp if hero else 0,
-				hero.stats.max_hp() if hero else 0, dead)
+				hero.stats.max_hp() if hero else 0, dead, _net_costume())
 
 
 @rpc("any_peer", "call_remote", "unreliable")
-func net_state(pos: Vector2, p_facing: float, hp: int, max_hp: int, is_dead: bool) -> void:
+func net_state(pos: Vector2, p_facing: float, hp: int, max_hp: int, is_dead: bool,
+		costume: Dictionary = {}) -> void:
 	if not puppet or multiplayer.get_remote_sender_id() != peer_id:
 		return
 	_net_target = pos
@@ -580,6 +599,7 @@ func net_state(pos: Vector2, p_facing: float, hp: int, max_hp: int, is_dead: boo
 	facing = p_facing
 	if hero:
 		hero.stats.hp = hp
+	_net_apply_costume(costume)
 	if is_dead and not dead:
 		dead = true
 		animator.die()
@@ -632,6 +652,57 @@ func take_damage(amount: int, from_pos: Vector2 = Vector2.INF, damage_type: int 
 		velocity = Vector2(dir * 160.0, -150.0)
 		if climbing:
 			_stop_climbing()
+
+
+## Co-op: the host confirmed my hit's damage — apply my weapon's on-hit
+## effects against the enemy shell (statuses land through the host's copy).
+func net_confirm_hit(enemy: Enemy, amount: int) -> void:
+	for i in range(_pending_hit_effects.size() - 1, -1, -1):
+		var entry: Dictionary = _pending_hit_effects[i]
+		var e: Enemy = entry["enemy"]
+		if e == enemy or not is_instance_valid(e):
+			_pending_hit_effects.remove_at(i)
+			if e == enemy:
+				var w: WeaponItemData = entry["weapon"]
+				if w:
+					for eff in w.on_hit_effects:
+						if eff:
+							eff.try_apply(self, e, amount)
+				hero.apply_passive_hits(self, e, amount)
+				return
+	if is_instance_valid(enemy) and not enemy.is_dead():
+		hero.apply_passive_hits(self, enemy, amount)
+
+
+## Co-op: the hero's look — ids of everything `refresh_from` renders from.
+func _net_costume() -> Dictionary:
+	if hero == null:
+		return {}
+	var c := {"female": hero.female}
+	for slot_id in hero.equipment.items:
+		var it: EquipmentItemData = hero.equipment.items[slot_id]
+		c[String(slot_id)] = String(it.id) if it else ""
+	return c
+
+
+## Co-op (puppet side): rebuild the mirrored hero's equipment from ids so
+## `refresh_from` shows the same armor/weapon layers as the owner.
+func _net_apply_costume(c: Dictionary) -> void:
+	if hero == null or c.is_empty() or _net_costume() == c:
+		return
+	hero.female = bool(c.get("female", false))
+	for slot_id in hero.equipment.items.keys():
+		var want := String(c.get(String(slot_id), ""))
+		var cur: EquipmentItemData = hero.equipment.items[slot_id]
+		if (String(cur.id) if cur else "") == want:
+			continue
+		if want == "":
+			hero.equipment.unequip(slot_id)
+			continue
+		var item: ItemData = ItemDatabase.get_item(StringName(want))
+		if item is EquipmentItemData:
+			hero.equipment.equip(item, slot_id)
+	visual.refresh_from(hero)
 
 
 ## Co-op: the fallen hero rises at the next floor's entrance.
