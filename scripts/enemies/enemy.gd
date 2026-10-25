@@ -1499,6 +1499,11 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 	hp_bar.value = hp
 	var top := global_position + Vector2(0, -data.collision_size.y - 4)
 	EventBus.damage_dealt.emit(top, dealt, crit, false)
+	# Co-op: only the host rolls enemy damage — echo the number to clients.
+	if Net.active and Net.is_host:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.damage_number.rpc(top, dealt, crit)
 	EventBus.noise.emit(global_position, 150.0)
 	if from_pos != Vector2.INF and state in [State.PATROL, State.RETURN, State.SEARCH]:
 		_last_seen = from_pos
@@ -1533,7 +1538,12 @@ func take_status_damage(amount: int, p_status: StringName, color: Color) -> void
 	hp_bar.visible = true
 	hp_bar.max_value = max_hp
 	hp_bar.value = hp
-	EventBus.floating_text.emit(global_position + Vector2(randf_range(-4, 4), -data.collision_size.y - 2), str(amount), color)
+	var spot := global_position + Vector2(randf_range(-4, 4), -data.collision_size.y - 2)
+	EventBus.floating_text.emit(spot, str(amount), color)
+	if Net.active and Net.is_host:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.enemy_float_text.rpc(spot, str(amount), color)
 	if hp <= 0:
 		_die()
 
