@@ -36,14 +36,21 @@ func get_prompt() -> String:
 	return "Алтарь судьбы: выбрать дар"
 
 
-func _activate(player: Node) -> bool:
-	if _offers.is_empty():
-		EventBus.message.emit("Алтарь молчит")
-		return true
-	var book := PactBook.new()
-	get_tree().current_scene.add_child(book)
-	book.open(_offers, func(offer: Dictionary) -> void: _take(offer, player))
-	return false
+func interact(player: Node) -> void:
+	if used:
+		return
+	if Net.active and not Net.is_host:
+		# Guests pick in their own book; the choice is judged by the host
+		# (pacts change the whole run, so the host applies and broadcasts).
+		var book := PactBook.new()
+		get_tree().current_scene.add_child(book)
+		book.open(_offers, func(offer: Dictionary) -> void:
+			var idx := _offers.find(offer)
+			var ns = get_tree().get_first_node_in_group("net_game")
+			if ns:
+				ns.request_pact.rpc_id(1, net_seq, idx))
+		return
+	_activate(player)
 
 
 func _take(offer: Dictionary, player: Node) -> void:
@@ -54,5 +61,19 @@ func _take(offer: Dictionary, player: Node) -> void:
 	AudioManager.play_sfx(&"skill_cast", global_position)
 	if player and is_instance_valid(player) and player.get("visual"):
 		player.visual.flash(Color(0.6, 0.7, 1.0), 0.4)
+	EventBus.message.emit("Судьба принята: %s" % (offer["blessing"] as RunPactData).display_name)
+	if Net.active and Net.is_host:
+		var ns = get_tree().get_first_node_in_group("net_game")
+		if ns:
+			ns.pact_taken.rpc(net_seq, _offers.find(offer))
+	finish()
+
+
+## Net echo on receiving machines: same pact, quieter presentation.
+func _take_net(offer: Dictionary) -> void:
+	GameState.add_pact(offer["blessing"])
+	if offer["curse"]:
+		GameState.add_pact(offer["curse"])
+	AudioManager.play_sfx(&"skill_cast", global_position)
 	EventBus.message.emit("Судьба принята: %s" % (offer["blessing"] as RunPactData).display_name)
 	finish()
