@@ -390,6 +390,23 @@ func _input(event: InputEvent) -> void:
 		mouse_aim = false
 	elif event is InputEventKey and event.is_action_pressed("attack"):
 		mouse_aim = false
+	# HUD slot controls (MOUSE_FILTER_STOP) swallow key events before
+	# _unhandled_input, so skill/quick hotkeys are handled here, before the
+	# GUI - but only while the game is actually running (no book is open).
+	if not (event is InputEventKey) or hero == null or dead or status.is_stunned():
+		return
+	if get_tree().paused or get_viewport().gui_is_dragging():
+		return
+	for i in SkillSet.SLOT_COUNT:
+		if event.is_action_pressed("skill_%d" % (i + 1)):
+			use_skill(i)
+			get_viewport().set_input_as_handled()
+			return
+	for i in QuickBar.SIZE:
+		if event.is_action_pressed("quick_%d" % (i + 1)):
+			use_quick_slot(i)
+			get_viewport().set_input_as_handled()
+			return
 
 
 ## Direction of a shot from `origin`: to the mouse cursor, or straight ahead.
@@ -420,16 +437,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		attack()
 		get_viewport().set_input_as_handled()
 		return
-	for i in SkillSet.SLOT_COUNT:
-		if event.is_action_pressed("skill_%d" % (i + 1)):
-			use_skill(i)
-			get_viewport().set_input_as_handled()
-			return
-	for i in QuickBar.SIZE:
-		if event.is_action_pressed("quick_%d" % (i + 1)):
-			use_quick_slot(i)
-			get_viewport().set_input_as_handled()
-			return
 
 
 # ------------------------------------------------------------------ combat

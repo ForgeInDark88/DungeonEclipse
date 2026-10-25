@@ -138,7 +138,8 @@ func _physics_process(delta: float) -> void:
 	var host := get_parent()
 	if host is Player and host.puppet:
 		return  # the owner's copy is the live one; ours stays decorative
-	var net_puppet_enemy: bool = host is Enemy and host.puppet and Net.active and not Net.is_host
+	var net_puppet_enemy: bool = host != null and host.is_in_group("enemies") \
+			and bool(host.puppet) and Net.active and not Net.is_host
 	var ended: Array[StringName] = []
 	for id: StringName in active.keys():
 		if not active.has(id):
@@ -152,7 +153,7 @@ func _physics_process(delta: float) -> void:
 				if net_puppet_enemy:
 					# Enemy DoT is judged by the host (its copy of the enemy
 					# owns the real hp); this shell only shows the icon.
-					var ns: NetSync = get_tree().get_first_node_in_group("net_game")
+					var ns = get_tree().get_first_node_in_group("net_game")
 					if ns and is_instance_valid(host):
 						ns.net_hit.rpc_id(1, host.net_id, roundi(st["power"]), false,
 								host.global_position.x, host.global_position.y,
