@@ -101,8 +101,14 @@ func _watch_game() -> void:
 					mine.hero.stats.hp, mine.hero.stats.max_hp(), false)
 		await get_tree().create_timer(0.5).timeout
 	else:
-		await get_tree().create_timer(2.5).timeout
-		var corpse := _their_puppet(1)
+		# Poll: the guest's phase start is not synchronized with ours.
+		var corpse: Player = null
+		for i in 10:
+			await get_tree().create_timer(1.0).timeout
+			corpse = _their_puppet(1)
+			if corpse != null and corpse.dead:
+				break
+		print("DBG host corpse dead=", corpse.dead if corpse else "null")
 		check(corpse != null and corpse.dead, "host: guest puppet marked dead")
 	# --- chest phase: the guest stands at a chest and sends the real
 	# request_chest_open; both sides must see it open.
