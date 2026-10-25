@@ -15,6 +15,9 @@ var status_power: float = 3.0
 var sticky := false
 var breaks_tiles := true
 var color := Color(1.0, 0.6, 0.2)
+## Networked visual copy on the guest: it explodes for the effect but does
+## no damage and no tile changes — the host's real bomb did the work.
+var visual_only := false
 var _stuck := false
 var _t := 0.0
 
@@ -51,6 +54,10 @@ func _physics_process(delta: float) -> void:
 
 func explode() -> void:
 	set_physics_process(false)
+	if visual_only:
+		Fx.explosion(get_parent(), global_position, radius, color)
+		queue_free()
+		return
 	# Damage only in plain view, checked against the walls as they were:
 	# bricks in the radius still break, but they shield what is behind them.
 	var center := global_position + Vector2(0, -4)

@@ -24,9 +24,26 @@ const BOMB_SCENE := preload("res://scenes/world/bomb.tscn")
 func apply(user: Node) -> bool:
 	if user.level == null:
 		return false
+	var pos: Vector2 = user.global_position + Vector2(6 * user.facing, -10)
+	var radius: float = radius_tiles * 16.0
+	if Net.active:
+		# Untyped: a hard NetSync reference here would be a cyclic class
+		# dependency (net_sync references skill/effect classes for replays).
+		var ns = user.get_tree().get_first_node_in_group("net_game")
+		if ns == null:
+			return false
+		if Net.is_host:
+			# The host throws the real bomb and everyone gets a visual copy.
+			ns.spawn_net_bomb(pos, user.facing, damage, radius, fuse_time, damage_type,
+					status, status_duration, status_power, breaks_tiles, color)
+		else:
+			# The guest asks; the host validates, spawns and mirrors back.
+			ns.request_bomb.rpc_id(1, pos, user.facing, damage, radius, fuse_time,
+					damage_type, status, status_duration, status_power, breaks_tiles, color)
+		return true
 	var bomb: Node2D = BOMB_SCENE.instantiate()
 	bomb.damage = damage
-	bomb.radius = radius_tiles * 16.0
+	bomb.radius = radius
 	bomb.fuse_time = fuse_time
 	bomb.velocity = Vector2(throw_velocity.x * user.facing, throw_velocity.y)
 	bomb.damage_type = damage_type
@@ -36,7 +53,7 @@ func apply(user: Node) -> bool:
 	bomb.sticky = sticky
 	bomb.breaks_tiles = breaks_tiles
 	bomb.color = color
-	user.level.add_entity(bomb, user.global_position + Vector2(6 * user.facing, -10))
+	user.level.add_entity(bomb, pos)
 	return true
 
 

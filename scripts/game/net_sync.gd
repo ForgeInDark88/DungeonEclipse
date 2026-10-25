@@ -569,6 +569,138 @@ func gate_state(closed: bool) -> void:
 	get_tree().call_group("miniboss_gates", "net_close" if closed else "net_open")
 
 
+# ------------------------------------------------------- world effects
+## Host: spawn the real bomb (damage, tile breaks) and mirror a visual copy
+## to every client. Used by the host's own throws and validated requests.
+func spawn_net_bomb(pos: Vector2, dir: float, damage: int, radius: float, fuse_time: float,
+		damage_type: int, status_id: StringName, status_duration: float, status_power: float,
+		breaks_tiles: bool, color: Color) -> void:
+	var game := get_tree().current_scene
+	var level: DungeonLevel = game.level if game != null and "level" in game else null
+	if level == null:
+		return
+	var bomb: Node2D = (load("res://scenes/world/bomb.tscn") as PackedScene).instantiate()
+	bomb.damage = damage
+	bomb.radius = radius
+	bomb.fuse_time = fuse_time
+	bomb.velocity = Vector2(160.0 * dir, -170.0)
+	bomb.damage_type = damage_type
+	bomb.status = status_id
+	bomb.status_duration = status_duration
+	bomb.status_power = status_power
+	bomb.breaks_tiles = breaks_tiles
+	bomb.color = color
+	level.add_entity(bomb, pos)
+	bomb_spawned.rpc(pos, dir, fuse_time, damage_type, status_id, status_duration,
+			status_power, breaks_tiles, color)
+
+
+## Client → host: I threw a bomb; validate, spawn, mirror to everyone.
+@rpc("any_peer", "call_remote", "reliable")
+func request_bomb(pos: Vector2, dir: float, damage: int, radius: float, fuse_time: float,
+		damage_type: int, status_id: StringName, status_duration: float, status_power: float,
+		breaks_tiles: bool, color: Color) -> void:
+	if not Net.is_host:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	if not _sender_near(sender, pos, 160.0) or damage <= 0 or damage > 200 or radius > 128.0:
+		return
+	spawn_net_bomb(pos, dir, damage, radius, fuse_time, damage_type, status_id,
+			status_duration, status_power, breaks_tiles, color)
+
+
+## Host → clients: a visual-only bomb copy (no damage, no tile changes —
+## the host's real bomb does the work when it explodes).
+@rpc("authority", "call_remote", "reliable")
+func bomb_spawned(pos: Vector2, dir: float, fuse_time: float, damage_type: int,
+		status_id: StringName, status_duration: float, status_power: float,
+		breaks_tiles: bool, color: Color) -> void:
+	var game := get_tree().current_scene
+	var level: DungeonLevel = game.level if game != null and "level" in game else null
+	if level == null:
+		return
+	var bomb: Node2D = (load("res://scenes/world/bomb.tscn") as PackedScene).instantiate()
+	bomb.visual_only = true
+	bomb.fuse_time = fuse_time
+	bomb.radius = 36.0
+	bomb.velocity = Vector2(160.0 * dir, -170.0)
+	bomb.damage_type = damage_type
+	bomb.status = status_id
+	bomb.status_duration = status_duration
+	bomb.status_power = status_power
+	bomb.breaks_tiles = false
+	bomb.color = color
+	level.add_entity(bomb, pos)
+
+
+## Client → host: I threw a rope; the host places the real ladder tiles.
+@rpc("any_peer", "call_remote", "reliable")
+func request_rope(cell: Vector2i, max_length: int) -> void:
+	if not Net.is_host or max_length <= 0 or max_length > 64:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	var game := get_tree().current_scene
+	var level: DungeonLevel = game.level if game != null and "level" in game else null
+	if level == null or not _sender_near(sender, level.cell_center(cell), 120.0):
+		return
+	level.place_rope(cell, max_length)
+
+
+## Host → all: ladder tiles of a rope placed on the host.
+@rpc("authority", "call_remote", "reliable")
+func ropes_placed(cells: Array) -> void:
+	var game := get_tree().current_scene
+	var level: DungeonLevel = game.level if game != null and "level" in game else null
+	if level == null:
+		return
+	for c in cells:
+		level.apply_remote_tile(Vector2i(c.x, c.y), LevelLayout.Tile.LADDER)
+
+
+## Any peer → others: a visual projectile copy (no damage — the owner's own
+## projectile deals damage through request_player_hit on hit).
+@rpc("any_peer", "call_remote", "unreliable")
+func projectile_fx(texture_path: String, pos: Vector2, dir: Vector2, speed: float,
+		lifetime: float, color: Color) -> void:
+	if multiplayer.get_remote_sender_id() == multiplayer.get_unique_id():
+		return
+	var game := get_tree().current_scene
+	var level: DungeonLevel = game.level if game != null and "level" in game else null
+	if level == null:
+		return
+	var proj: Projectile = (load("res://scenes/world/projectile.tscn") as PackedScene).instantiate()
+	proj.setup(load(texture_path) as Texture2D, dir, speed, 0, "net_visual")
+	proj.lifetime = lifetime
+	proj.blast_color = color
+	level.add_entity(proj, pos)
+
+
+## Any peer → others: an area blast's visual (damage travels per-enemy).
+@rpc("any_peer", "call_remote", "reliable")
+func blast_fx(center: Vector2, radius: float, vfx: StringName, color: Color) -> void:
+	var game := get_tree().current_scene
+	if game == null or not ("level" in game) or game.level == null:
+		return
+	var parent: Node = game.level.entities
+	match vfx:
+		&"slash":
+			Fx.arc_slash(parent, center, radius, color, 1.0)
+		&"blades":
+			Fx.blade_fan(parent, center, radius, color)
+		&"ring":
+			Fx.nova_ring(parent, center, radius, color)
+		&"ice":
+			Fx.ice_burst(parent, center, radius, color)
+		&"light":
+			Fx.light_pillars(parent, center, radius, color)
+		&"sun":
+			Fx.sun_flash(parent, center, radius, color)
+		&"quake":
+			Fx.rock_burst(parent, center, radius, color)
+		_:
+			Fx.explosion(parent, center, radius, color)
+
+
 func _find_seq_node(group_name: StringName, seq: int) -> Node:
 	for node in get_tree().get_nodes_in_group(group_name):
 		if node.net_seq == seq:
@@ -620,7 +752,7 @@ func _net_skill_visual(puppet: Player, skill: SkillData, aim: Vector2) -> void:
 		Fx.sparks(fx_parent, origin, Color(0.8, 0.7, 1.0), 10, 60.0)
 		return
 	if effect is AreaBlastSkill:
-		var blast := effect as AreaBlastSkill
+		var blast: AreaBlastSkill = effect as AreaBlastSkill
 		var radius: float = blast.radius
 		var center := origin + aim.normalized() * radius * 0.6
 		match String(blast.vfx):

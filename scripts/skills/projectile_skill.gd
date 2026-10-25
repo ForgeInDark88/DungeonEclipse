@@ -43,6 +43,14 @@ func execute(caster: Node, level: int) -> bool:
 		p.blast_radius = blast_radius
 		p.blast_color = color
 		level_node.add_entity(p, LineOfSight.safe_point(caster, origin, origin + dir * 8.0))
+		# Co-op: the others see a visual copy; hits are claimed by the owner's
+		# projectile through request_player_hit.
+		if Net.active and texture:
+			# Untyped: a hard NetSync reference would be a cyclic class
+			# dependency (net_sync references skill classes for cast replays).
+			var ns = caster.get_tree().get_first_node_in_group("net_game")
+			if ns and texture.resource_path != "":
+				ns.projectile_fx.rpc(texture.resource_path, origin, dir, speed, 1.2, color)
 	return true
 
 
