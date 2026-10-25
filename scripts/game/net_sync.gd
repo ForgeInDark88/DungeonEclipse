@@ -591,7 +591,38 @@ func gate_state(closed: bool) -> void:
 	get_tree().call_group("miniboss_gates", "net_close" if closed else "net_open")
 
 
-# ------------------------------------------------------- world effects
+# ------------------------------------------------------------- world events
+## Client → host: consume a one-shot event for the requesting hero.
+@rpc("any_peer", "call_remote", "reliable")
+func request_event_use(seq: int) -> void:
+	if not Net.is_host:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	var event: EventObject = null
+	for e in get_tree().get_nodes_in_group("events"):
+		if e.net_seq == seq:
+			event = e
+			break
+	if event == null or event.used or not _sender_near(sender, event.global_position, 96.0):
+		return
+	var game := get_tree().current_scene
+	var p: Player = game.net_players.get_node_or_null("Player_%d" % sender) if game != null and "net_players" in game else null
+	if p == null or p.dead:
+		return
+	# Execute on the host's mirror of the sender; rewards (gold/xp/status)
+	# are then forwarded by the regular hero/player sync channels.
+	event._activate(p)
+	event.finish()
+
+
+@rpc("authority", "call_remote", "reliable")
+func event_used(seq: int) -> void:
+	for e in get_tree().get_nodes_in_group("events"):
+		if e.net_seq == seq and not e.used:
+			e.finish()
+			return
+
+
 ## Host: spawn the real bomb (damage, tile breaks) and mirror a visual copy
 ## to every client. Used by the host's own throws and validated requests.
 func spawn_net_bomb(pos: Vector2, dir: float, damage: int, radius: float, fuse_time: float,

@@ -10,6 +10,8 @@ extends Area2D
 
 var used := false
 var level: DungeonLevel
+## LAN co-op: deterministic event identity (requests and snapshots).
+var net_seq := 0
 
 @onready var sprite: AnimatedSprite2D = $Sprite
 
@@ -37,6 +39,11 @@ func get_prompt() -> String:
 func interact(player: Node) -> void:
 	if used:
 		return
+	if Net.active and not Net.is_host:
+		var ns = get_tree().get_first_node_in_group("net_game")
+		if ns:
+			ns.request_event_use.rpc_id(1, net_seq)
+		return
 	if _activate(player):
 		finish()
 
@@ -45,6 +52,10 @@ func interact(player: Node) -> void:
 func finish() -> void:
 	used = true
 	EventBus.event_completed.emit(self)
+	if Net.active and Net.is_host:
+		var ns = get_tree().get_first_node_in_group("net_game")
+		if ns:
+			ns.event_used.rpc(net_seq)
 	if sprite.sprite_frames and sprite.sprite_frames.has_animation(used_anim):
 		sprite.play(used_anim)
 	var light := get_node_or_null("PointLight2D") as PointLight2D
