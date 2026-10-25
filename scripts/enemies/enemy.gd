@@ -316,8 +316,16 @@ func _nearest_alive_player() -> Player:
 
 func _physics_process(delta: float) -> void:
 	if puppet:
-		# Shell on a client: glide to the host's last word, no thinking.
+		# Shell on a client: glide to the host's last word, no thinking,
+		# but still animate - walk/fly while moving, idle at rest.
+		var before := global_position
 		global_position = global_position.lerp(_net_target, minf(1.0, delta * 12.0))
+		var dx: float = (global_position.x - before.x) / maxf(delta, 0.0001)
+		if absf(dx) > 12.0:
+			sprite.flip_h = dx < 0.0
+			_play(_move_anim())
+		else:
+			_play(&"idle")
 		return
 	if not _home_set:
 		# The spawn point is known only after DungeonLevel.add_entity placed us.

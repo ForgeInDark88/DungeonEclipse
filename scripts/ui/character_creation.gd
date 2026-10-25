@@ -97,6 +97,14 @@ func _ready() -> void:
 	var go := BookPageScreen.button("В подземелье!", func() -> void:
 		SaveManager.last_difficulty = String(_difficulty.id) if _difficulty else "normal"
 		SaveManager.save_settings()
+		# Co-op: puppets build this hero from Net.my_info.
+		if Net.active:
+			Net.my_info["race"] = _race.id
+			Net.my_info["cls"] = _class.id
+			Net.my_info["female"] = _female
+			if Net.is_host:
+				Net.players[1] = Net.my_info.duplicate(true)
+				Net.broadcast_players()
 		GameState.start_new_run(_race, _class, -1, _female, _difficulty.id if _difficulty else &"normal")
 		if Net.active and Net.is_host:
 			Net.rpc_start_run(GameState.run_seed, GameState.difficulty.id if GameState.difficulty else &"normal"))
