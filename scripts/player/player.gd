@@ -643,6 +643,7 @@ func net_state(pos: Vector2, p_facing: float, hp: int, max_hp: int, is_dead: boo
 		hero.stats.hp = hp
 	_net_apply_costume(costume)
 	if is_dead and not dead:
+		print("DBG net_state dead=true for ", peer_id)
 		dead = true
 		animator.die()
 	elif not is_dead and dead:
@@ -786,6 +787,9 @@ func revive() -> void:
 	_invulnerable = 2.0
 	visual.alpha = 1.0
 	animator.revive()
+	if Net.active and net_sync:
+		net_sync.broadcast_player_hp(Net.multiplayer.get_unique_id(),
+				hero.stats.hp, hero.stats.max_hp(), false)
 	# The camera kept spectating while dead: put it back on this hero.
 	if camera:
 		camera.global_position = global_position
@@ -805,6 +809,11 @@ func _on_died() -> void:
 	velocity = Vector2.ZERO
 	visual.alpha = 1.0
 	animator.die()
+	# Co-op: the death must reach the other machines instantly — the 1s
+	# ceremony in _on_player_died_coop is too late for mobs and puppets.
+	if Net.active and net_sync:
+		net_sync.broadcast_player_hp(Net.multiplayer.get_unique_id(), 0,
+				hero.stats.max_hp() if hero else 0, true)
 	AudioManager.play_sfx(&"player_death", global_position)
 	Fx.sparks(get_parent(), global_position + Vector2(0, -10), Color(0.7, 0.1, 0.1), 16, 80.0)
 	EventBus.player_died.emit()
