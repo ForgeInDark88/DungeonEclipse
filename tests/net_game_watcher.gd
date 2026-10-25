@@ -93,6 +93,8 @@ func _watch_game() -> void:
 		mine.hero.stats.take_damage(99999)
 		await get_tree().create_timer(1.5).timeout
 		check(mine.dead, "client: hero died")
+		# The host checks the corpse at ~2.5s: revive only after that.
+		await get_tree().create_timer(2.0).timeout
 		mine.revive()
 		if g != null and g.net_sync:
 			g.net_sync.broadcast_player_hp(Net.multiplayer.get_unique_id(),

@@ -363,9 +363,15 @@ func player_damage(amount: int, from_pos: Vector2, damage_type: int) -> void:
 		local_player.net_take_damage(amount, from_pos, damage_type)
 
 
-## Host → all: a peer's hero state changed (death/respawn), reliable.
-@rpc("authority", "call_remote", "reliable")
+## A peer reports its hero state (death/respawn). any_peer: the DYING
+## client sends this — authority mode would reject client broadcasts.
+@rpc("any_peer", "call_remote", "reliable")
 func player_hp(peer_id: int, hp: int, max_hp: int, dead: bool) -> void:
+	print("DBG player_hp recv: sender=", multiplayer.get_remote_sender_id(),
+			" peer=", peer_id, " dead=", dead)
+	# Only the hero's owner may report about it.
+	if multiplayer.get_remote_sender_id() != peer_id:
+		return
 	var game := get_tree().current_scene
 	if game == null or not ("net_players" in game):
 		return
