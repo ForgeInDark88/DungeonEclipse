@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=9 format=3]
+
+[ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="1_lt"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="6_he"]
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="2_ed"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/drowned_priest_sheet.png" id="3_sh"]
+[ext_resource type="Resource" path="res://data/animations/cultist_layout.tres" id="4_la"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/drowned_priest.png" id="5_ic"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/dark_bolt.png" id="6_pr"]
+[ext_resource type="Resource" path="res://data/enemies/drowned.tres" id="7_sm"]
+
+[resource]
+script = ExtResource("2_ed")
+id = &"drowned_priest"
+display_name = "Жрец Утопленных"
+description = "Хранитель обрядов затопленных залов. Призывает утопленников и швыряет чёрную воду."
+texture = ExtResource("5_ic")
+sheet = ExtResource("3_sh")
+sheet_layout = ExtResource("4_la")
+behavior = 2
+collision_size = Vector2(12, 16)
+max_hp = 70
+damage = 11
+armor = 0
+speed = 30.0
+chase_speed = 50.0
+aggro_range = 190.0
+attack_range = 150.0
+attack_cooldown = 1.8
+jumps = false
+projectile_texture = ExtResource("6_pr")
+projectile_speed = 150.0
+xp_reward = 30
+loot_table = ExtResource("1_lt")
+loot_chance = 0.45
+gold_min = 4
+gold_max = 10
+min_floor = 22
+spawn_weight = 0.7
+biomes = Array[StringName]([&"drowned_vaults"])
+tint = Color(1, 1, 1, 1)
+gender = "m"
+phases_through_walls = false
+ceiling_ambush = false
+aoe_radius = 0.0
+summon = ExtResource("7_sm")
+max_summons = 2
+resistances = {
+"res_magic": 0.4,
+"res_poison": 1.0
+}
+status_immunities = Array[StringName]([&"curse", &"poison"])
+on_hit_effects = Array[ExtResource("6_he")]([])
+sound_hurt = &"enemy_hurt"
+sound_death = &"enemy_death"
+sound_attack = &"enemy_shoot"

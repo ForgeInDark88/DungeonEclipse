@@ -730,6 +730,160 @@ def summoner():
     return lay, fn, None
 
 
+# ================================================================ drowned
+def drowned():
+    """A bloated drowned corpse: rot-green flesh, seaweed skirt, driftwood club."""
+    fw, fh = 24, 28
+    lay = gs.monster_layout("drowned_layout", fw, fh, (12, 28))  # skeleton frame size
+    skin = (118, 148, 118)
+    weed = (56, 108, 76)
+    race = dict(leg=7, torso=8)
+
+    def body(p, alpha=255, eye=(150, 255, 190), pile=0):
+        im = blank(fw, fh)
+        d = ImageDraw.Draw(im)
+        c = rgba(skin, alpha)
+        dark = sh(skin, 0.62, alpha)
+        if pile:
+            d.ellipse((7, 22, 18, 27), fill=c)
+            d.point((11, 24), fill=(18, 40, 30, alpha))
+            d.point((14, 25), fill=sh(skin, 1.2, alpha))
+            return im
+        s = gs.skel(p, race, cx=12, ground=27)
+        for side in ("l", "r"):
+            col = c if side == "r" else dark
+            d.line([s["hip"], s[side + "knee"]], fill=col)
+            d.line([s[side + "knee"], s[side + "foot"]], fill=col)
+            fx, fy = s[side + "foot"]
+            d.line((fx, fy, fx + 2, fy), fill=col)
+        hx, hy = s["hip"]
+        nx, ny = s["neck"]
+        d.line((hx - 2, hy, hx + 2, hy), fill=c)
+        # bloated belly with a navel gash
+        d.ellipse((hx - 4, ny + 3, hx + 4, hy + 4), fill=c)
+        d.line((hx - 1, ny + 5, hx - 1, hy + 2), fill=dark)
+        # seaweed skirt
+        for k, x in enumerate((hx - 3, hx, hx + 3)):
+            d.polygon([(x - 1, hy + 1), (x + 1, hy + 1), (x, hy + 5 + (k % 2))], fill=rgba(weed, alpha))
+        # ribs showing through the skin
+        for k in range(2):
+            y = ny + 4 + k * 2
+            d.arc((nx - 3, y, nx + 5, y + 2), 200, 320, fill=dark)
+        d.line([s["shoulder"], s["lhand"]], fill=dark)
+        # sunken head: algae crown, hollow sockets with glow, trailing drip
+        sx, sy = s["head"]
+        d.ellipse((sx - 3, sy - 3, sx + 3, sy + 2), fill=c)
+        d.point((sx - 2, sy - 3), fill=rgba(weed, alpha))
+        d.point((sx + 1, sy - 4), fill=rgba(weed, alpha))
+        d.point((sx + 3, sy - 2), fill=rgba(weed, alpha))
+        d.rectangle((sx, sy - 1, sx + 1, sy), fill=(16, 34, 26, alpha))
+        d.rectangle((sx + 2, sy - 1, sx + 3, sy), fill=(16, 34, 26, alpha))
+        d.point((sx + 1, sy - 1), fill=rgba(eye, alpha))
+        d.point((sx + 3, sy - 1), fill=rgba(eye, alpha))
+        d.line((sx - 1, sy + 2, sx + 3, sy + 2), fill=dark)
+        d.point((sx - 1, sy + 3), fill=(120, 200, 170, alpha))  # water drip
+        d.line([s["shoulder"], s["rhand"]], fill=c)
+        # driftwood club
+        rx, ry = s["rhand"]
+        d.ellipse((rx - 2, ry - 6, rx + 4, ry + 1), fill=(96, 74, 54, alpha))
+        d.line((rx, ry, rx + 1, ry + 3), fill=(78, 58, 44, alpha))
+        d.point((rx - 1, ry - 4), fill=(130, 104, 78, alpha))
+        return im
+
+    P = gs.P
+
+    def fn(name, i, n):
+        if name == "idle":
+            return body(P(by=[0, 0, 1, 1][i], ra=(2, 6)))
+        if name == "walk":
+            lx = [-3, -1, 1, 3, 1, -1][i]
+            return body(P(lean=1, lf=(lx, 0), rf=(-lx, 0), by=[0, 1, 0, 0, 1, 0][i], ra=(2 + lx // 2, 6)))
+        if name == "windup":
+            return body(P(lean=-1 - i, ra=(-2, -6 - i)), eye=(255, 200, 120))
+        if name == "attack":
+            return body(P(lean=2, lf=(-3, 0), rf=(4, 0), ra=[(4, -3), (7, 1), (6, 4)][i]), eye=(220, 255, 200))
+        if name == "hurt":
+            return body(P(lean=-3, by=1, ra=(3, 3)), eye=(255, 255, 255))
+        return body(P(), pile=1, alpha=255 - i * 30)
+
+    return lay, fn, None
+
+
+# ============================================================ leech swarm
+def leech():
+    """A blood leech: a fast flat worm with sucker maw and segment rings."""
+    fw, fh = 20, 16
+    lay = gs.monster_layout("leech_layout", fw, fh, (10, 16))  # slime frame size
+    base = (146, 58, 50)
+
+    def body(w, h, dx=0, dy=0, alpha=255, eyes=True, mouth=False):
+        im = blank(fw, fh)
+        x0 = 10 - w / 2 + dx
+        m = mask(fw, fh, lambda d: d.ellipse((x0, 10 + dy, x0 + w - 1, 15 + dy), fill=FULL))
+        lit(im, m, base, 10 + dx, 12 + dy, w * 0.5, h * 0.7, alpha)
+        d = ImageDraw.Draw(im)
+        # segment rings
+        for k in range(3):
+            sx = x0 + w * (0.3 + k * 0.18)
+            d.arc((sx - 1, 10 + dy + 1, sx + 2, 15 + dy), 250, 290, fill=rgba(sh(base, 0.55), alpha))
+        # sucker maw on the leading edge
+        mx = 10 + dx + w // 2 - 1
+        d.ellipse((mx - 1, 12 + dy - 1, mx + 2, 12 + dy + 2), fill=(70, 22, 20, alpha))
+        if mouth:
+            d.ellipse((mx, 12 + dy, mx + 2, 12 + dy + 2), fill=(180, 40, 40, alpha))
+            for fy in (11 + dy, 12 + dy, 13 + dy):
+                d.point((mx + 2, fy), fill=(255, 220, 210, alpha))
+        ey = 12 + dy - 1
+        dark = (30, 8, 8, alpha)
+        if eyes:
+            d.point((mx - 3, ey), fill=(255, 190, 180, alpha))
+            d.point((mx - 1, ey), fill=(255, 190, 180, alpha))
+            d.point((mx - 3, ey + 1), fill=dark)
+            d.point((mx - 1, ey + 1), fill=dark)
+        d.line((x0 + 1, 15 + dy, x0 + w - 2, 15 + dy), fill=sh(base, 0.55, alpha))
+        return im
+
+    def fn(name, i, n):
+        if name == "idle":
+            k = [0, 1, 0, -1][i]
+            return body(13 - k, 4 + k, dy=k // 2)
+        if name == "walk":
+            sq = [0, 2, 3, 2, 0, -2][i]
+            return body(14 - sq, 5 + sq // 2, dx=[0, 1, 2, 1, 0, -1][i], dy=[0, -1, -1, 0, 0, 1][i])
+        if name == "windup":
+            return body(12, 6, dx=1, dy=-1)
+        if name == "attack":
+            return body(15, 5, dx=2, mouth=True)
+        if name == "hurt":
+            return body(13, 5, eyes=False)
+        return body(14 - i, 4, dy=i, alpha=255 - i * 35)
+
+    return lay, fn, None
+
+
+# ========================================================== drowned priest
+def drowned_priest():
+    fw, fh = 24, 28
+    lay = gs.monster_layout("cultist_layout", fw, fh, (12, 28), counts={"windup": 4})
+    body = robed(fw, fh, (26, 96, 88), hood_in=(8, 36, 32), eye=(150, 255, 230),
+                 trim=(96, 180, 160), sigil=True)
+
+    def fn(name, i, n):
+        if name == "idle":
+            return body(sway=[0, 1, 0, -1][i], orb_col=(90, 230, 200))
+        if name == "walk":
+            return body(sway=[1, 2, 1, -1, -2, -1][i], hands=(14, 15 + (i % 2)), orb_col=(90, 230, 200))
+        if name == "windup":
+            return body(hands=(14, 13), orb=1 + i, lean=-1, orb_col=(120, 255, 220))
+        if name == "attack":
+            return body(hands=(16, 13), orb=[3, 1, 0][i], flash=i == 0, lean=1, orb_col=(120, 255, 220))
+        if name == "hurt":
+            return body(lean=-2, flash=True)
+        return body(dis=2 + i * 2 if i < 4 else 9, alpha=255 - i * 30, orb_col=(90, 230, 200))
+
+    return lay, fn, None
+
+
 MONSTERS = {
     # name: (builder, sheet file, write the layout .tres, outline)
     "slime": (slime, "slime", True, True),
@@ -742,6 +896,9 @@ MONSTERS = {
     "summoner": (summoner, "summoner", True, True),
     "frost_imp": (frost_imp, "frost_imp", False, True),  # uses cultist_layout
     "bog_spitter": (bog_spitter, "bog_spitter", False, True),  # uses slime_layout
+    "drowned": (drowned, "drowned", False, True),  # uses skeleton_layout
+    "leech": (leech, "leech", False, True),  # uses slime_layout
+    "drowned_priest": (drowned_priest, "drowned_priest", False, True),  # uses cultist_layout
 }
 
 

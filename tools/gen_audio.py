@@ -673,6 +673,16 @@ TRACKS = {
     "boss_ashen_king": dict(key="E", scale="phrygian", bpm=126, prog=[0, 1, 0, 6, 0, 4, 1, 3], pad="choir",
                             bass="ostinato", grit=0.45, bass_drive=1.5, drums="taiko", toll=True, stabs=True,
                             lead="lead", density=0.5, full=True, bars=32, seed=35),
+    # Drowned Vaults: flooded halls - a slow watery drone, bell echoes as if
+    # through deep water, sparse heartbeat.
+    "drowned_vaults": dict(key="E", scale="phrygian", bpm=60, prog=[0, 1, 0, 6], pad="choir", bright=0.5,
+                           bass="roots", arp="bell", arp_rate=2, drums="heartbeat", lead="box", lead_octave=1,
+                           density=0.3, bars=32, seed=41),
+    # The Drowned Bell: a funeral toll under water - tolling bronze, choir,
+    # grinding ostinato like a shifting hull.
+    "boss_drowned_bell": dict(key="D", scale="phrygian", bpm=124, prog=[0, 1, 0, 6, 0, 3, 1, 4], pad="choir",
+                              bass="ostinato", grit=0.4, bass_drive=1.4, drums="taiko", toll=True, stabs=True,
+                              lead="lead", density=0.5, full=True, bars=32, seed=43),
 }
 
 

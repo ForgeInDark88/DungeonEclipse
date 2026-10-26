@@ -1,0 +1,111 @@
+[gd_resource type="Resource" script_class="BiomeData" load_steps=21 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor_script"]
+[ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="biome_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/tiles_drowned_vaults.png" id="tiles"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/drowned_vaults_far.png" id="bg_far"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/drowned_vaults_mid.png" id="bg_mid"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/drowned_vaults_near.png" id="bg_near"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/bones.png" id="dx_bones"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/chains.png" id="dx_chains"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/tombstone.png" id="dx_tombstone"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/mushroom_cluster.png" id="dx_mushroom_cluster"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/cobweb.png" id="dx_cobweb"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/urn.png" id="dx_urn"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/banner.png" id="dx_banner"]
+
+[sub_resource type="Resource" id="Decor_bones"]
+script = ExtResource("decor_script")
+texture = ExtResource("dx_bones")
+placement = 0
+weight = 1.5
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Decor_chains"]
+script = ExtResource("decor_script")
+texture = ExtResource("dx_chains")
+placement = 2
+weight = 1.3
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Decor_tombstone"]
+script = ExtResource("decor_script")
+texture = ExtResource("dx_tombstone")
+placement = 0
+weight = 1.0
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Decor_mushroom_cluster"]
+script = ExtResource("decor_script")
+texture = ExtResource("dx_mushroom_cluster")
+placement = 0
+weight = 0.8
+light_color = Color(0.5, 1.0, 0.9, 1)
+light_scale = 0.25
+unshaded = true
+sway = false
+
+[sub_resource type="Resource" id="Decor_cobweb"]
+script = ExtResource("decor_script")
+texture = ExtResource("dx_cobweb")
+placement = 2
+weight = 0.8
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Decor_urn"]
+script = ExtResource("decor_script")
+texture = ExtResource("dx_urn")
+placement = 0
+weight = 0.9
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Decor_banner"]
+script = ExtResource("decor_script")
+texture = ExtResource("dx_banner")
+placement = 2
+weight = 0.6
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[resource]
+script = ExtResource("biome_script")
+music = &"drowned_vaults"
+step_sound = &"step_stone"
+id = &"drowned_vaults"
+display_name = "Затопленные своды"
+order = 7
+tileset_texture = ExtResource("tiles")
+parallax_far = ExtResource("bg_far")
+parallax_mid = ExtResource("bg_mid")
+parallax_near = ExtResource("bg_near")
+ambient = Color(0.88, 0.96, 0.94, 1)
+back_wall_modulate = Color(0.72, 0.84, 0.82, 1)
+torch_color = Color(0.6, 0.95, 0.85, 1)
+ambient_particles = Color(0.7, 0.95, 0.9, 1)
+particle_style = &"dust"
+fog_color = Color(0.28, 0.46, 0.44, 1)
+fog_amount = 0.12
+grade_tint = Color(0.95, 1.0, 0.99, 1)
+saturation = 1.0
+contrast = 1.03
+decorations = Array[ExtResource("decor_script")]([SubResource("Decor_bones"), SubResource("Decor_chains"), SubResource("Decor_tombstone"), SubResource("Decor_mushroom_cluster"), SubResource("Decor_cobweb"), SubResource("Decor_urn"), SubResource("Decor_banner")])
+decor_per_room = 4.0
+ore_chance = 0.05
+ore_item = &"iron_ore"

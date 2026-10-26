@@ -490,10 +490,128 @@ def illusionist():
     mage(0.0).save(os.path.join(A, "sprites/bosses/illusionist.png"))
 
 
+def drowned_bell():
+    """The Drowned Bell: a bloated drowned titan hauling a huge bronze bell."""
+    fw, fh = 48, 48
+    lay = gs.monster_layout("drowned_bell_layout", fw, fh, (24, 48),
+                            counts={"windup": 3, "attack": 3, "death": 6})
+    skin = (108, 140, 116)
+    belly = (94, 128, 104)
+    weed = (56, 108, 76)
+    bronze = (176, 138, 70)
+    bronze_hi = (224, 190, 110)
+    eye = (150, 255, 220)
+
+    def glow_dot(g, x, y, r, col, a):
+        d = ImageDraw.Draw(g)
+        d.ellipse((x - r, y - r, x + r, y + r), fill=rgba(col, int(255 * a)))
+
+    def bell(d, g, im, hx, hy, alpha=255, ring=0):
+        # rope to the bell crown; the bell hangs at the hero's right side
+        bx = hx + 13
+        d.line((hx, hy - 2, bx, hy - 12), fill=(96, 74, 54, alpha), width=1)
+        # crown loop, shoulders, waist, rim, clapper
+        d.rectangle((bx - 2, hy - 12, bx + 2, hy - 11), fill=rgba(sh(bronze, 0.8), alpha))
+        m = mask(fw, fh, lambda dd: dd.polygon(
+            [(bx - 3, hy - 11), (bx + 3, hy - 11), (bx + 6, hy - 2), (bx + 6, hy + 2),
+             (bx - 6, hy + 2), (bx - 6, hy - 2)], fill=FULL))
+        lit(im, m, bronze, bx, hy - 7, 5, 6, alpha)
+        d = ImageDraw.Draw(im)
+        d.line((bx - 6, hy + 1, bx + 6, hy + 1), fill=rgba(sh(bronze, 0.55), alpha))
+        d.line((bx - 6, hy + 2, bx + 6, hy + 2), fill=rgba(sh(bronze_hi, 1.0), alpha))
+        for k in range(3):  # verdigris
+            d.point((bx - 4 + k * 4, hy - 7 + k), fill=(110, 190, 160, alpha))
+        d.rectangle((bx - 6, hy + 2, bx + 6, hy + 3), fill=rgba(sh(bronze, 0.75), alpha))
+        d.point((bx, hy), fill=rgba(sh(bronze, 0.5), alpha))  # clapper
+        if ring:
+            for rr, a in ((10, 170), (14, 120), (18, 80)):
+                d.ellipse((bx - rr, hy - 6 - rr // 2, bx + rr, hy - 6 + rr), outline=(210, 255, 240, a))
+        return d
+
+    def body(p, alpha=255, eye=eye, ring=False, pile=0, lean=0):
+        im = blank(fw, fh)
+        g = blank(fw, fh)
+        d = ImageDraw.Draw(im)
+        L = lean
+        if pile:
+            # collapsed: the bell rests on the body
+            d.ellipse((8, 38, 34, 47), fill=rgba(skin, alpha))
+            d.ellipse((14, 40, 28, 46), fill=rgba(belly, alpha))
+            bell(d, g, im, 22, 40, alpha)
+            return im
+        s = gs.skel(p, dict(leg=12, torso=14), cx=24, ground=47)
+        # legs
+        for side in ("l", "r"):
+            col = rgba(skin, alpha) if side == "r" else rgba(sh(skin, 0.7), alpha)
+            d.line([s["hip"], s[side + "knee"]], fill=col, width=3)
+            d.line([s[side + "knee"], s[side + "foot"]], fill=col, width=3)
+            fx, fy = s[side + "foot"]
+            d.line((fx, fy, fx + 3, fy), fill=col, width=2)
+        hx, hy = s["hip"]
+        nx, ny = s["neck"]
+        # bloated torso, barnacle spots, seaweed belt
+        mt = mask(fw, fh, lambda dd: dd.ellipse((hx - 11, ny + 2, hx + 11, hy + 8), fill=FULL))
+        lit(im, mt, belly, hx - 2, ny + 6, 10, 8, alpha)
+        d = ImageDraw.Draw(im)
+        for bx, by in ((hx - 6, ny + 6), (hx + 3, ny + 4), (hx + 7, ny + 8), (hx - 3, hy + 4)):
+            d.point((bx, by), fill=(150, 210, 180, alpha))
+            d.point((bx + 1, by + 1), fill=(120, 180, 150, alpha))
+        d.line((hx - 9, hy + 1, hx + 9, hy + 1), fill=rgba(weed, alpha), width=2)
+        for k, x in enumerate((hx - 7, hx - 2, hx + 4, hx + 8)):
+            d.polygon([(x - 1, hy + 2), (x + 1, hy + 2), (x, hy + 6 + (k % 2))], fill=rgba(weed, alpha))
+        # arms: left hangs, right holds the rope of the bell
+        d.line([s["shoulder"], s["lhand"]], fill=rgba(sh(skin, 0.75), alpha), width=2)
+        d.line((nx, ny, hx, hy), fill=rgba(sh(skin, 0.8), alpha), width=2)
+        # head: sunken, barnacle crown, glow eyes
+        sx, sy = s["head"]
+        mh = mask(fw, fh, lambda dd: dd.ellipse((sx - 5, sy - 5, sx + 5, sy + 3), fill=FULL))
+        lit(im, mh, skin, sx - 1, sy - 3, 5, 4, alpha)
+        d = ImageDraw.Draw(im)
+        for bx, by in ((sx - 3, sy - 4), (sx, sy - 5), (sx + 3, sy - 4)):
+            d.ellipse((bx - 1, by - 1, bx + 1, by), fill=(150, 210, 180, alpha))
+        d.rectangle((sx - 1, sy - 1, sx + 1, sy + 1), fill=(14, 30, 24, alpha))
+        d.rectangle((sx + 2, sy - 1, sx + 4, sy + 1), fill=(14, 30, 24, alpha))
+        d.point((sx, sy), fill=rgba(eye, alpha))
+        d.point((sx + 3, sy), fill=rgba(eye, alpha))
+        d.line((sx - 2, sy + 2, sx + 4, sy + 2), fill=rgba(sh(skin, 0.55), alpha))
+        for tx in (sx - 1, sx + 1, sx + 3):
+            d.point((tx, sy + 2), fill=rgba(sh(skin, 1.2), alpha))
+        glow_dot(g, sx, sy, 2.4, eye, 0.8 * alpha / 255)
+        glow_dot(g, sx + 3, sy, 2.4, eye, 0.8 * alpha / 255)
+        # right arm up holding the rope, big bell in front
+        d.line([s["shoulder"], s["rhand"]], fill=rgba(skin, alpha), width=3)
+        rx, ry = s["rhand"]
+        bell(d, g, im, rx, ry, alpha=alpha, ring=ring)
+        return im
+
+    P = gs.P
+
+    def fn(name, i, n):
+        if name == "idle":
+            return body(P(by=[0, 0, 1, 1][i], ra=(6, 6 + [0, 1, 0, -1][i])))
+        if name == "walk":
+            lx = [-4, -2, 2, 4, 2, -2][i]
+            return body(P(lean=1, lf=(lx, 0), rf=(-lx, 0), by=[0, 1, 0, 0, 1, 0][i], ra=(6, 8)))
+        if name == "windup":
+            return body(P(lean=-2 - i, crouch=i, ra=(8, -8 - i * 2)), eye=(255, 230, 160))
+        if name == "attack":
+            return body(P(lean=4, lf=(-5, 0), rf=(7, 0), crouch=3, ra=[(10, -2), (14, 6), (12, 12)][i]),
+                        ring=i == 1, eye=(200, 255, 240))
+        if name == "hurt":
+            return body(P(lean=-4, by=2, ra=(6, 8)), eye=(255, 255, 255))
+        if i < 2:
+            return body(P(crouch=3 + i * 3, by=2 + i, ra=(8, 10)), eye=(90, 160, 130))
+        return body(P(), pile=1, alpha=255 - (i - 2) * 30)
+
+    lay.write_tres()
+    render(lay, fn, "sprites/bosses/drowned_bell_sheet.png")
+
+
 def main():
     bone_king()
     flame_witch()
     illusionist()
+    drowned_bell()
     print("bosses generated")
 
 

@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=6 format=3]
+
+[ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="1_lt"]
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="2_ed"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/leech_sheet.png" id="3_sh"]
+[ext_resource type="Resource" path="res://data/animations/slime_layout.tres" id="4_la"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/leech.png" id="5_ic"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="6_he"]
+
+[resource]
+script = ExtResource("2_ed")
+id = &"leech_swarm"
+display_name = "Пиявка"
+description = "Проворная кровопийца затопленных залов. Прыгает и впивается."
+texture = ExtResource("5_ic")
+sheet = ExtResource("3_sh")
+sheet_layout = ExtResource("4_la")
+behavior = 0
+collision_size = Vector2(12, 8)
+max_hp = 34
+damage = 9
+armor = 0
+speed = 55.0
+chase_speed = 95.0
+aggro_range = 180.0
+attack_range = 12.0
+attack_cooldown = 0.8
+jumps = true
+projectile_speed = 140.0
+xp_reward = 18
+loot_table = ExtResource("1_lt")
+loot_chance = 0.25
+gold_min = 1
+gold_max = 5
+min_floor = 22
+spawn_weight = 1.0
+biomes = Array[StringName]([&"drowned_vaults"])
+tint = Color(1, 1, 1, 1)
+gender = "f"
+phases_through_walls = false
+ceiling_ambush = false
+aoe_radius = 0.0
+max_summons = 3
+resistances = {
+"res_bleed": 1.0
+}
+status_immunities = Array[StringName]([&"bleed"])
+on_hit_effects = Array[ExtResource("6_he")]([])
+sound_hurt = &"enemy_hurt"
+sound_death = &"enemy_death"
+sound_attack = &""

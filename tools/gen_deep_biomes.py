@@ -46,6 +46,24 @@ BIOME_META = {
                             contrast="1.06", per_room="5.0", ore_chance="0.05")),
 }
 
+# Drowned Vaults: a flooded sepulchre, teal stone under black water.
+DROWNED = dict(stone=(76, 98, 90), bedrock=(24, 38, 38), mortar=(30, 48, 46), back=(42, 66, 62),
+               top=(120, 205, 180), top_kind="dust", ore=(110, 230, 200), ore_glow=(180, 250, 230),
+               wood=(70, 90, 76), sky=(13, 26, 28), far=(24, 46, 46), mid=(36, 62, 60), near=(50, 82, 78),
+               accent=(120, 220, 200))
+
+DROWNED_DECOR = [("bones", 0, 1.5, None, False, False), ("chains", 2, 1.3, None, False, False),
+                 ("tombstone", 0, 1.0, None, False, False), ("mushroom_cluster", 0, 0.8, (0.5, 1.0, 0.9), True, False),
+                 ("cobweb", 2, 0.8, None, False, False), ("urn", 0, 0.9, None, False, False),
+                 ("banner", 2, 0.6, None, False, False)]
+
+BIOME_META["drowned_vaults"] = ("Затопленные своды", 7, None, DROWNED, DROWNED_DECOR,
+                                 dict(music="drowned_vaults", particle="dust", ore="iron_ore",
+                                      ambient="Color(0.88, 0.96, 0.94, 1)", back_mod="Color(0.72, 0.84, 0.82, 1)",
+                                      torch="Color(0.6, 0.95, 0.85, 1)", particles="Color(0.7, 0.95, 0.9, 1)",
+                                      fog="Color(0.28, 0.46, 0.44, 1)", fog_amount="0.12", tint="Color(0.95, 1.0, 0.99, 1)",
+                                      contrast="1.03", per_room="4.0", ore_chance="0.05"))
+
 
 def write_tres(bid: str, title: str, order: int, decor, m: dict) -> None:
     ext = ['[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor_script"]',
@@ -94,7 +112,7 @@ ore_item = &"%(ore)s"
 
 
 def main() -> None:
-    palettes = {"ashen_halls": ASHEN, "crystal_depths": CRYSTAL}
+    palettes = {"ashen_halls": ASHEN, "crystal_depths": CRYSTAL, "drowned_vaults": DROWNED}
     os.makedirs(os.path.join(gb.A, "sprites/backgrounds"), exist_ok=True)
     for bid, pal in palettes.items():
         gb.tileset(bid, pal)

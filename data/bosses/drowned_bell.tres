@@ -1,0 +1,141 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=16 format=3]
+
+[ext_resource type="Resource" path="res://data/loot_tables/chest_epic.tres" id="1_chest"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_he"]
+[ext_resource type="Script" path="res://scripts/data/boss_phase.gd" id="3_phase"]
+[ext_resource type="Script" path="res://scripts/data/boss_attack.gd" id="4_atk"]
+[ext_resource type="Resource" path="res://data/enemies/drowned.tres" id="5_add"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="6_st"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/dark_bolt.png" id="7_bolt"]
+[ext_resource type="Script" path="res://scripts/data/boss_data.gd" id="8_bd"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bosses/drowned_bell_sheet.png" id="9_sheet"]
+[ext_resource type="Resource" path="res://data/animations/drowned_bell_layout.tres" id="10_layout"]
+
+[sub_resource type="Resource" id="Resource_stun"]
+script = ExtResource("6_st")
+status = &"stun"
+duration = 1.1
+power = 1.0
+chance = 1.0
+
+[sub_resource type="Resource" id="Resource_a1"]
+script = ExtResource("4_atk")
+kind = 1
+windup = 1.1
+damage_mult = 1.5
+count = 5
+spread_degrees = 50.0
+projectile_speed = 160.0
+damage_type = 0
+radius = 56.0
+speed = 260.0
+max_summons = 4
+hit_effects = Array[ExtResource("2_he")]([SubResource("Resource_stun")])
+
+[sub_resource type="Resource" id="Resource_a2"]
+script = ExtResource("4_atk")
+kind = 3
+windup = 1.0
+damage_mult = 1.0
+count = 2
+spread_degrees = 50.0
+projectile_speed = 160.0
+damage_type = 0
+radius = 40.0
+speed = 260.0
+summon = ExtResource("5_add")
+max_summons = 3
+hit_effects = Array[ExtResource("2_he")]([])
+
+[sub_resource type="Resource" id="Resource_p1"]
+script = ExtResource("3_phase")
+hp_threshold = 1.0
+message = ""
+attacks = Array[ExtResource("4_atk")]([SubResource("Resource_a1"), SubResource("Resource_a2")])
+attack_interval = 1.9
+speed_mult = 1.0
+tint = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Resource_a3"]
+script = ExtResource("4_atk")
+kind = 1
+windup = 0.9
+damage_mult = 1.7
+count = 5
+spread_degrees = 50.0
+projectile_speed = 160.0
+damage_type = 0
+radius = 64.0
+speed = 300.0
+max_summons = 4
+hit_effects = Array[ExtResource("2_he")]([SubResource("Resource_stun")])
+
+[sub_resource type="Resource" id="Resource_a4"]
+script = ExtResource("4_atk")
+kind = 2
+windup = 0.8
+damage_mult = 0.6
+count = 7
+spread_degrees = 60.0
+projectile_texture = ExtResource("7_bolt")
+projectile_speed = 170.0
+damage_type = 3
+radius = 40.0
+speed = 260.0
+max_summons = 4
+hit_effects = Array[ExtResource("2_he")]([SubResource("Resource_stun")])
+
+[sub_resource type="Resource" id="Resource_p2"]
+script = ExtResource("3_phase")
+hp_threshold = 0.5
+message = "Колокол треснул — вода кипит!"
+attacks = Array[ExtResource("4_atk")]([SubResource("Resource_a3"), SubResource("Resource_a4")])
+attack_interval = 1.2
+speed_mult = 1.3
+tint = Color(0.8, 1, 0.95, 1)
+
+[resource]
+script = ExtResource("8_bd")
+glow_color = Color(0.6, 1, 0.85, 1)
+glow_scale = 1.2
+title = "Утопленный колокол — Глас глубин"
+order = 4
+phases = Array[ExtResource("3_phase")]([SubResource("Resource_p1"), SubResource("Resource_p2")])
+music = &"boss_drowned_bell"
+contact_damage_mult = 0.6
+reward_items = Array[StringName]([&"guardian_seal", &"eclipse_shard", &"eclipse_shard", &"eclipse_shard"])
+id = &"drowned_bell"
+display_name = "Утопленный колокол"
+description = "Титан затопленных сводов. Его звон глушит героев, а вода кипит от ярости."
+sheet = ExtResource("9_sheet")
+sheet_layout = ExtResource("10_layout")
+behavior = 0
+collision_size = Vector2(20, 40)
+max_hp = 380
+damage = 19
+armor = 5
+speed = 40.0
+chase_speed = 42.0
+aggro_range = 600.0
+attack_range = 18.0
+attack_cooldown = 1.0
+jumps = false
+projectile_speed = 150.0
+xp_reward = 150
+loot_table = ExtResource("1_chest")
+loot_chance = 1.0
+gold_min = 80
+gold_max = 120
+min_floor = 999
+spawn_weight = 0.0
+biomes = Array[StringName]([&"drowned_vaults"])
+tint = Color(1, 1, 1, 1)
+resistances = {
+"res_ice": 0.4,
+"res_poison": 1.0
+}
+status_immunities = Array[StringName]([&"stun", &"poison"])
+on_hit_effects = Array[ExtResource("2_he")]([])
+sound_hurt = &"enemy_hurt"
+sound_death = &"enemy_death"
+sound_attack = &"enemy_shoot"
