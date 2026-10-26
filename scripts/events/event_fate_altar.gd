@@ -50,7 +50,11 @@ func interact(player: Node) -> void:
 			if ns:
 				ns.request_pact.rpc_id(1, net_seq, idx))
 		return
-	_activate(player)
+	# Host: pick in the local book; the choice applies run-wide and
+	# broadcasts to the guests through _take's pact_taken echo.
+	var book := PactBook.new()
+	get_tree().current_scene.add_child(book)
+	book.open(_offers, func(offer: Dictionary) -> void: _take(offer, player))
 
 
 func _take(offer: Dictionary, player: Node) -> void:

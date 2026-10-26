@@ -35,6 +35,9 @@ var puppet := false
 var peer_id := 1
 var _net_target := Vector2.ZERO
 var _net_timer := 0.0
+## Shell extrapolation: speed and age of the last snapshot.
+var _net_vel := Vector2.ZERO
+var _net_last := 0.0
 ## Co-op: damage variance/crit dice for the host's authoritative recompute.
 var _net_dice := RandomNumberGenerator.new()
 ## Pending guest attacks awaiting the host's confirmed damage.
@@ -176,12 +179,62 @@ func set_level(p_level: DungeonLevel) -> void:
 
 
 # ------------------------------------------------------------------ physics
+## Class synergy: standing near an ally grants a small bonus based on the
+## ally's class. Applied only to the local hero (the claimed damage is
+## authoritative on its owner's machine anyway).
+const AURA_RADIUS := 150.0
+var _aura_timer := 0.0
+## Modifier keys currently applied by nearby allies.
+var _aura_keys: Array[String] = []
+
+
+func _update_synergy_auras() -> void:
+	if hero == null:
+		return
+	var seen := {}
+	for n in get_tree().get_nodes_in_group("player"):
+		var ally := n as Player
+		if ally == null or ally == self or ally.dead or not is_instance_valid(ally):
+			continue
+		if ally.hero == null or ally.hero.class_data == null:
+			continue
+		if global_position.distance_to(ally.global_position) > AURA_RADIUS:
+			continue
+		var key := "ally_%d" % ally.peer_id
+		seen[key] = true
+		if hero.stats.has_modifier(key):
+			continue
+		match ally.hero.class_data.id:
+			&"warrior", &"paladin":
+				hero.stats.set_modifier(key, {StatTypes.DAMAGE: 2})
+			&"mage":
+				hero.stats.set_modifier(key, {StatTypes.CRIT_CHANCE: 0.05})
+			&"rogue":
+				hero.stats.set_modifier(key, {StatTypes.SPEED: 15.0})
+			_:
+				seen.erase(key)  # unknown class: no aura
+	var stale: Array[String] = []
+	for key in _aura_keys:
+		if not seen.has(key):
+			stale.append(key)
+	for key in stale:
+		hero.stats.remove_modifier(key)
+		_aura_keys.erase(key)
+	for key in seen:
+		if not _aura_keys.has(key):
+			_aura_keys.append(key)
+
+
 func _physics_process(delta: float) -> void:
 	if puppet:
 		_net_puppet_step(delta)
 		return
 	if hero == null or dead:
 		return
+	_aura_timer -= delta
+	if _aura_timer <= 0.0:
+		_aura_timer = 0.4
+		_update_synergy_auras()
 	_tick_timers(delta)
 	var input_x := Input.get_axis("move_left", "move_right")
 	if input_x != 0.0 and not animator.is_busy():
@@ -636,6 +689,12 @@ func net_state(pos: Vector2, p_facing: float, hp: int, max_hp: int, is_dead: boo
 		costume: Dictionary = {}) -> void:
 	if not puppet or multiplayer.get_remote_sender_id() != peer_id:
 		return
+	var now := Time.get_ticks_msec() / 1000.0
+	var dt := maxf(0.03, now - _net_last)
+	_net_vel = (pos - _net_target) / dt
+	if _net_vel.length() > 500.0:
+		_net_vel = _net_vel.normalized() * 500.0
+	_net_last = now
 	_net_target = pos
 	visual.facing = p_facing
 	facing = p_facing
@@ -658,7 +717,13 @@ func net_take_damage(amount: int, from_pos: Vector2, damage_type: int) -> void:
 
 func _net_puppet_step(delta: float) -> void:
 	var before := global_position
-	global_position = global_position.lerp(_net_target, minf(1.0, delta * 14.0))
+	# Extrapolate through lost snapshots: keep gliding along the last known
+	# velocity instead of freezing on a stale target.
+	var since := Time.get_ticks_msec() / 1000.0 - _net_last
+	var target := _net_target
+	if since > 0.15 and _net_vel.length() > 1.0:
+		target += _net_vel * minf(since, 0.4)
+	global_position = global_position.lerp(target, minf(1.0, delta * 14.0))
 	var est := (global_position - before) / maxf(delta, 0.0001)
 	velocity = Vector2(est.x, 0.0)
 	animator.update(delta, true, velocity, false, false)

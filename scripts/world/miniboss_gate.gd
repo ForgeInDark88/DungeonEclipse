@@ -16,6 +16,9 @@ var room_cells: Rect2i
 var networked := false
 
 var _closed := false
+## Seconds after the floor build before the seal may trigger: everyone is
+## still transitioning floors and may report stale positions.
+var _arm_time := 4.0
 ## Every opening cell in the room ring: cell -> original tile (EMPTY or a
 ## ladder - ladders seal shut too, and restore afterwards).
 var _seals: Dictionary = {}
@@ -37,10 +40,18 @@ func _ready() -> void:
 	set_physics_process(not networked)
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if _closed:
 		if not is_instance_valid(champion) or champion.is_dead():
 			_open()
+		return
+	# Grace period after the floor build: guests may still report positions
+	# from the previous floor, and a stale point can land inside the room -
+	# never slam the bars on a ghost.
+	_arm_time -= delta
+	if _arm_time > 0.0:
+		if is_instance_valid(champion):
+			champion.held = true
 		return
 	var intruder := false
 	for n in get_tree().get_nodes_in_group("player"):
@@ -48,8 +59,6 @@ func _physics_process(_delta: float) -> void:
 		# Any hero counts - including a guest's puppet on the host machine.
 		if player == null or player.dead:
 			continue
-		if is_instance_valid(champion):
-			champion.held = true
 		# Trigger only when the hero is well inside, never standing in an opening.
 		var c := level.world_to_cell(player.global_position)
 		var inner := Rect2i(room_cells.position + Vector2i(2, 2), room_cells.size - Vector2i(4, 2))  # bottom rows stay: the hero walks there
