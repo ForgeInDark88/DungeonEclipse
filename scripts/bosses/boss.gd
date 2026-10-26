@@ -16,6 +16,9 @@ var _last_attack: BossAttack
 var _target_pos := Vector2.ZERO
 var _contact_cd := 0.0
 var _hop_cd := 0.0
+## Enrage: below ENRAGE_THRESHOLD the boss attacks faster, moves and
+## hits harder - "finish it or die" in both directions.
+var _enraged := false
 var _jump_from := Vector2.ZERO
 var _jump_t := 0.0
 var _jump_arc := 80.0
@@ -27,9 +30,14 @@ var _beam_time := 0.0
 var _beam_tick := 0.0
 
 
+## Enrage below this HP fraction: faster, hits harder, contact hurts.
+const ENRAGE_THRESHOLD := 0.25
+
 func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null, p_champion := false) -> void:
 	super(p_data, p_floor, p_elite, p_champion)
 	boss = p_data as BossData
+	# Bosses hit 1.5x harder than the floor curve: they must be feared.
+	damage = roundi(damage * 1.5)
 
 
 func _ready() -> void:
@@ -182,6 +190,13 @@ func _check_phase() -> void:
 		EventBus.screen_shake.emit(6.0)
 		Fx.sparks(get_parent(), global_position + Vector2(0, -24), ph.tint, 30, 160.0)
 		phase_changed.emit(phase_index)
+	# Enrage: the last stand - faster cadence, heavier contact, red haze.
+	if not _enraged and ratio <= ENRAGE_THRESHOLD and ratio > 0.0:
+		_enraged = true
+		EventBus.message.emit("%s в ярости!" % display_name())
+		EventBus.screen_shake.emit(8.0)
+		Fx.sparks(get_parent(), global_position + Vector2(0, -24), Color(1.0, 0.25, 0.15), 40, 180.0)
+		data_tint_override(Color(1.0, 0.55, 0.5))
 
 
 func data_tint_override(tint: Color) -> void:
@@ -191,7 +206,7 @@ func data_tint_override(tint: Color) -> void:
 func _move_idle(delta: float, flyer: bool) -> void:
 	if _player == null:
 		return
-	var spd := data.speed * current_phase().speed_mult
+	var spd := data.speed * current_phase().speed_mult * (1.5 if _enraged else 1.0)
 	if flyer:
 		var target := _player.global_position + Vector2(signf(global_position.x - _player.global_position.x) * 70.0, -70.0)
 		velocity = velocity.move_toward((target - global_position).limit_length(spd * 2.0), 300.0 * delta)
@@ -322,7 +337,7 @@ func _start_attack() -> void:
 
 
 func _end_attack() -> void:
-	_enter(Act.RECOVER, current_phase().attack_interval)
+	_enter(Act.RECOVER, current_phase().attack_interval * (0.6 if _enraged else 1.0))
 
 
 func _update_attack_act(delta: float) -> void:
@@ -567,6 +582,7 @@ func _contact_damage() -> void:
 		if absf(rel.x) < reach.x and rel.y > -data.collision_size.y - 10.0 and rel.y < 10.0 \
 				and LineOfSight.can_hit(self, global_position + Vector2(0, -data.collision_size.y * 0.5), p):
 			var mult := boss.contact_damage_mult * (2.0 if act == Act.ACTING else 1.0)
+			mult = maxf(mult, 1.0 if _enraged else mult)  # enraged contact hits at full power
 			p.take_damage(roundi(damage * mult), global_position)
 			_contact_cd = 0.8
 			return

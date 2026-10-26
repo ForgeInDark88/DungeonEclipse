@@ -18,6 +18,21 @@ from PIL import Image, ImageDraw
 
 import gen_placeholders as gp
 import gen_sheets as gs
+def glow_dot(g, x, y, r, col, a):
+	"""Local bloom (gen_structures imports this module - keep it standalone)."""
+	px = g.load()
+	w, h = g.size
+	for yy in range(max(0, int(y - r - 1)), min(h, int(y + r + 2))):
+		for xx in range(max(0, int(x - r - 1)), min(w, int(x + r + 2))):
+			dx, dy = xx - x, yy - y
+			d2 = dx * dx + dy * dy
+			if d2 > r * r:
+				continue
+			t = 1.0 - (d2 / (r * r)) * 0.7
+			src = px[xx, yy]
+			px[xx, yy] = (min(255, int(src[0] + col[0] * t * a)),
+					min(255, int(src[1] + col[1] * t * a)),
+					min(255, int(src[2] + col[2] * t * a)), src[3])
 
 A = gp.A
 LIGHT = (-0.55, -0.62, 0.56)
@@ -884,6 +899,315 @@ def drowned_priest():
     return lay, fn, None
 
 
+# ============================================================== sporeling
+def sporeling():
+    """Fungal puffball that bursts into a cough of spores (poison on hit)."""
+    fw, fh = 20, 16
+    lay = gs.monster_layout("sporeling_layout", fw, fh, (10, 16))
+    base = (120, 90, 160)
+    cap = (86, 150, 96)
+
+    def body(w, h, dx=0, dy=0, alpha=255, eyes="o", burst=0):
+        im = blank(fw, fh)
+        x0 = 10 - w / 2 + dx
+        m = mask(fw, fh, lambda d: (d.pieslice((x0, 15 + dy - int(h * 1.3), x0 + w - 1, 15 + dy), 180, 360, fill=FULL),
+                                    d.rectangle((x0, 14 + dy, x0 + w - 1, 15 + dy), fill=FULL)))
+        lit(im, m, base, 10 + dx, 15 + dy - h * 0.7, w * 0.5, h * 0.8, alpha)
+        d = ImageDraw.Draw(im)
+        # fungal cap: spots
+        for sx, sy in ((x0 + w * 0.3, 15 + dy - h * 0.9), (x0 + w * 0.6, 15 + dy - h * 1.05), (x0 + w * 0.8, 15 + dy - h * 0.7)):
+            d.ellipse((sx - 1, sy - 1, sx + 1, sy), fill=rgba(cap, alpha))
+            d.point((sx, sy - 1), fill=(210, 255, 200, alpha))
+        if burst:
+            for k in range(6):
+                a = k * math.tau / 6
+                d.point((10 + dx + math.cos(a) * (4 + burst), 11 + dy + math.sin(a) * (3 + burst * 0.5)),
+                        fill=(180, 230, 160, alpha))
+        ey = int(15 - h * 0.55 + dy)
+        ex = int(10 + dx)
+        dark = (24, 12, 30, alpha)
+        if eyes == "o":
+            for e in (ex - 2, ex + 1):
+                d.rectangle((e - 1, ey - 1, e, ey), fill=(230, 255, 220, alpha))
+                d.point((e, ey), fill=dark)
+        else:
+            d.point((ex - 2, ey), fill=dark)
+            d.point((ex + 1, ey), fill=dark)
+        return im
+
+    def fn(name, i, n):
+        if name == "idle":
+            k = [0, 1, 0, -1][i]
+            return body(15 - k, 5 + k, dy=k // 2)
+        if name == "walk":
+            hop = [0, -2, -3, -2, 0, 0][i]
+            return body(15, 5, dy=hop)
+        if name == "windup":
+            return body(14, 6, dy=-1, eyes="x")
+        if name == "attack":
+            return body(15, 5, burst=2 + i, eyes="x")
+        if name == "hurt":
+            return body(14, 5, eyes="x")
+        return body(15 - i, 4, dy=i, alpha=255 - i * 35)
+
+    return lay, fn, None
+
+
+# ============================================================ ember hound
+def ember_hound():
+    """Lava beast: a low ember-furred hound, spine of live coals (burns)."""
+    fw, fh = 24, 28
+    lay = gs.monster_layout("ember_hound_layout", fw, fh, (12, 28))
+    fur = (110, 52, 36)
+    coal = (240, 120, 40)
+
+    def body(p=None, run_k=0, alpha=255, eyes=True, mouth=False, pile=False):
+        im = blank(fw, fh)
+        g = blank(fw, fh)
+        d = ImageDraw.Draw(im)
+        y0 = 24
+        if pile:
+            d.ellipse((6, 22, 19, 27), fill=rgba(fur, alpha))
+            d.point((9, 24), fill=(255, 140, 60, alpha))
+            return im
+        # body: low quadruped torso
+        m = mask(fw, fh, lambda dd: dd.ellipse((5, y0 - 9 + run_k, 20, y0 - 1), fill=FULL))
+        lit(im, m, fur, 12, y0 - 5, 8, 4.5, alpha)
+        d = ImageDraw.Draw(im)
+        # coal spine: glowing embers along the back
+        for k in range(4):
+            ex = 8 + k * 3.4
+            d.ellipse((ex - 1, y0 - 10 + run_k, ex + 1, y0 - 8 + run_k), fill=rgba(coal, alpha))
+            glow_dot(g, ex, y0 - 9 + run_k, 2.2, (255, 130, 40), 0.7 * alpha / 255)
+        # legs (simple two-segment, animated by run_k)
+        for lx in (7, 11, 15, 18):
+            off = [0, 1, 0, -1][(i if False else 0)] if False else 0
+            d.line((lx, y0 - 3 + run_k, lx + (1 if lx % 2 else -1), y0 + 1), fill=rgba(sh(fur, 0.7), alpha), width=2)
+        # head: muzzle, ears, glow eyes
+        hx = 19 + (1 if run_k else 0)
+        hy = y0 - 8 + run_k
+        d.ellipse((hx - 1, hy - 2, hx + 4, hy + 2), fill=rgba(sh(fur, 1.15), alpha))
+        d.polygon([(hx + 3, hy - 2), (hx + 5, hy + 1), (hx + 2, hy + 1)], fill=rgba(sh(fur, 0.85), alpha))
+        d.polygon([(hx - 1, hy - 3), (hx, hy - 6), (hx + 1, hy - 3)], fill=rgba(fur, alpha))
+        if eyes:
+            d.point((hx + 1, hy - 1), fill=(255, 200, 90, alpha))
+            d.point((hx + 3, hy - 1), fill=(255, 200, 90, alpha))
+            glow_dot(g, hx + 2, hy - 1, 2.0, (255, 170, 60), 0.8)
+        if mouth:
+            d.line((hx + 3, hy + 1, hx + 5, hy + 1), fill=(60, 20, 10, alpha))
+        d.line((5, y0 - 1, 20, y0 - 1), fill=rgba(sh(fur, 0.5), alpha))
+        return im
+
+    P = gs.P
+
+    def fn(name, i, n):
+        if name == "idle":
+            return body(run_k=[0, 1, 0, 0][i])
+        if name == "walk":
+            return body(run_k=[0, 1, 0, -1, 0, 1][i])
+        if name == "windup":
+            return body(run_k=1, mouth=False)
+        if name == "attack":
+            return body(run_k=0, mouth=True)
+        if name == "hurt":
+            return body(eyes=False)
+        return body(pile=True, alpha=255 - i * 30)
+
+    return lay, fn, None
+
+
+# ========================================================== runite sentinel
+def runite_sentinel():
+    """Ruins guardian: a heavy rune-carved sentinel that slams the ground."""
+    fw, fh = 28, 32
+    lay = gs.monster_layout("runite_layout", fw, fh, (14, 32))
+    stone = (104, 110, 134)
+    rune = (120, 190, 255)
+
+    def body(p=None, bob=0, alpha=255, eyes=True, slam=False, pile=False):
+        im = blank(fw, fh)
+        g = blank(fw, fh)
+        d = ImageDraw.Draw(im)
+        y0 = 31
+        if pile:
+            d.rectangle((5, 26, 23, 31), fill=rgba(stone, alpha))
+            d.point((9, 28), fill=rgba(rune, alpha))
+            d.point((18, 29), fill=rgba(rune, alpha))
+            return im
+        # torso block
+        mt = mask(fw, fh, lambda dd: dd.polygon([(5 + bob, y0 - 20), (23 + bob, y0 - 20),
+                                                 (21 + bob, y0 - 2), (7 + bob, y0 - 2)], fill=FULL))
+        lit(im, mt, stone, 13 + bob, y0 - 12, 9, 10, alpha, flat=0.35)
+        d = ImageDraw.Draw(im)
+        # head block with visor
+        d.rectangle((9 + bob, y0 - 27 + bob, 19 + bob, y0 - 20 + bob), fill=rgba(stone, alpha))
+        d.rectangle((11 + bob, y0 - 25 + bob, 17 + bob, y0 - 22 + bob), fill=(10, 18, 30, alpha))
+        if eyes:
+            d.rectangle((12 + bob, y0 - 24 + bob, 16 + bob, y0 - 23 + bob), fill=rgba(rune, alpha))
+            glow_dot(g, 14 + bob, y0 - 23.5 + bob, 3.0, rune, 0.8)
+        # chest runes
+        for rx, ry in ((11, y0 - 16), (14, y0 - 12), (17, y0 - 8)):
+            d.rectangle((rx - 1 + bob, ry - 1, rx + 1 + bob, ry + 1), fill=rgba(rune, alpha))
+            glow_dot(g, rx + bob, ry, 2.0, rune, 0.5)
+        # shoulders and heavy arms
+        d.rectangle((2 + bob, y0 - 19, 7 + bob, y0 - 6), fill=rgba(sh(stone, 0.8), alpha))
+        d.rectangle((21 + bob, y0 - 19, 26 + bob, y0 - 6), fill=rgba(sh(stone, 0.95), alpha))
+        d.rectangle((3 + bob, y0 - 7, 6 + bob, y0 - 2), fill=rgba(sh(stone, 0.7), alpha))
+        d.rectangle((22 + bob, y0 - 7, 25 + bob, y0 - 2), fill=rgba(sh(stone, 0.8), alpha))
+        if slam:
+            d.rectangle((21 + bob, y0 - 4, 28 + bob, y0 - 1), fill=rgba(sh(stone, 1.1), alpha))
+        # legs
+        d.rectangle((8 + bob, y0 - 2, 12 + bob, y0), fill=rgba(sh(stone, 0.65), alpha))
+        d.rectangle((16 + bob, y0 - 2, 20 + bob, y0), fill=rgba(sh(stone, 0.75), alpha))
+        return im
+
+    P = gs.P
+
+    def fn(name, i, n):
+        if name == "idle":
+            return body(bob=[0, 1, 1, 0][i])
+        if name == "walk":
+            return body(bob=[0, 1, 0, -1, 0, 1][i], slam=False)
+        if name == "windup":
+            return body(bob=-1, eyes=False)
+        if name == "attack":
+            return body(bob=1, slam=True, eyes=False)
+        if name == "hurt":
+            return body(eyes=False)
+        return body(pile=True, alpha=255 - i * 30)
+
+    return lay, fn, None
+
+
+# =============================================================== ash husk
+def ash_husk():
+    """Ashen halls husk: an ember-veiled cultist that lobs cinders."""
+    fw, fh = 24, 28
+    lay = gs.monster_layout("cultist_layout", fw, fh, (12, 28), counts={"windup": 4})
+    body = robed(fw, fh, (78, 70, 82), hood_in=(28, 20, 24), eye=(255, 150, 80),
+                 trim=(200, 120, 70), sigil=True)
+
+    def fn(name, i, n):
+        if name == "idle":
+            return body(sway=[0, 1, 0, -1][i], orb_col=(255, 140, 60))
+        if name == "walk":
+            return body(sway=[1, 2, 1, -1, -2, -1][i], hands=(14, 15 + (i % 2)), orb_col=(255, 140, 60))
+        if name == "windup":
+            return body(hands=(14, 13), orb=1 + i, lean=-1, orb_col=(255, 170, 70))
+        if name == "attack":
+            return body(hands=(16, 13), orb=[3, 1, 0][i], flash=i == 0, lean=1, orb_col=(255, 170, 70))
+        if name == "hurt":
+            return body(lean=-2, flash=True)
+        return body(dis=2 + i * 2 if i < 4 else 9, alpha=255 - i * 30, orb_col=(255, 140, 60))
+
+    return lay, fn, None
+
+
+# ========================================================== glass stalker
+def glass_stalker():
+    """Mirror halls: a razor-glass stalker that phases through reflections."""
+    fw, fh = 20, 16
+    lay = gs.monster_layout("glass_layout", fw, fh, (10, 12), "fly", {"idle": 4, "fly": 4, "windup": 2, "attack": 3, "death": 5})
+    glass = (188, 214, 226)
+    edge = (140, 180, 200)
+
+    def body(wing, dy=0, rot=0, eyes=True, alpha=255, tilt=0, mouth=False):
+        im = blank(fw, fh)
+        d = ImageDraw.Draw(im)
+        cy = 8 + dy
+        wy = cy - wing
+        for side in (-1, 1):
+            sx = 10 + side
+            tipx = 10 + side * 9
+            pts = [(sx, cy - 1), (10 + side * 5, wy - 1), (tipx, wy), (10 + side * 8, cy + 2), (10 + side * 6, cy + 1),
+                   (10 + side * 4, cy + 3), (sx, cy + 1)]
+            d.polygon(pts, fill=rgba(sh(glass, 0.7 if side < 0 else 0.95, int(alpha * 0.85)), alpha))
+            d.line((sx, cy - 1, 10 + side * 5, wy - 1, tipx, wy), fill=rgba(edge, alpha))
+        m = mask(fw, fh, lambda dd: dd.polygon([(9, cy - 4 + tilt), (12, cy - 2 + tilt), (11, cy + 3 + tilt), (8, cy + 2 + tilt)], fill=FULL))
+        lit(im, m, glass, 10, cy, 2.5, 3.5, alpha)
+        d = ImageDraw.Draw(im)
+        for fx, fy in ((9, cy - 3 + tilt), (11, cy + 2 + tilt)):
+            d.point((fx, fy), fill=(255, 255, 255, alpha))
+        if eyes:
+            d.point((9, cy + tilt), fill=(120, 230, 255, alpha))
+            d.point((11, cy + tilt), fill=(120, 230, 255, alpha))
+        if mouth:
+            d.line((9, cy + 2 + tilt, 11, cy + 2 + tilt), fill=(90, 140, 160, alpha))
+        if rot:
+            im = im.rotate(rot, resample=Image.NEAREST, center=(10, 8))
+        return im
+
+    def fn(name, i, n):
+        if name in ("idle", "fly"):
+            return body([4, 1, -3, 1][i], dy=[0, 0, 1, 1][i] if name == "idle" else 0)
+        if name == "windup":
+            return body(5 + i, dy=-1 - i)
+        if name == "attack":
+            return body(-2, dy=1, rot=[-20, -35, -25][i], tilt=1, mouth=True)
+        if name == "hurt":
+            return body(2, eyes=False)
+        return body(-3, dy=i, rot=i * 60, eyes=False, alpha=255 - i * 40)
+
+    return lay, fn, None
+
+
+# ========================================================= crystal crawler
+def crystal_crawler():
+    """Crystal depths ambusher: a shard-backed crawler that drops on heroes."""
+    fw, fh = 24, 28
+    lay = gs.monster_layout("crawler_layout", fw, fh, (12, 28))
+    shell = (96, 130, 168)
+    shard = (170, 220, 250)
+
+    def body(p=None, crawl_k=0, alpha=255, eyes=True, pile=False):
+        im = blank(fw, fh)
+        g = blank(fw, fh)
+        d = ImageDraw.Draw(im)
+        y0 = 26
+        if pile:
+            for k in range(4):
+                d.polygon([(8 + k * 4, 27), (10 + k * 4, 21 + (k % 2) * 2), (12 + k * 4, 27)], fill=rgba(shard, alpha))
+            d.ellipse((8, 24, 20, 28), fill=rgba(shell, alpha))
+            return im
+        m = mask(fw, fh, lambda dd: dd.ellipse((4, y0 - 7 + crawl_k, 20, y0 - 1), fill=FULL))
+        lit(im, m, shell, 12, y0 - 4, 8, 3.5, alpha)
+        d = ImageDraw.Draw(im)
+        for k in range(4):
+            bx = 6 + k * 4
+            h = 6 + (k % 2) * 3
+            d.polygon([(bx - 2, y0 - 7 + crawl_k), (bx, y0 - 7 - h + crawl_k), (bx + 2, y0 - 7 + crawl_k)],
+                      fill=rgba(shard, alpha))
+            d.point((bx, y0 - 8 - h + crawl_k), fill=(240, 250, 255, alpha))
+            glow_dot(g, bx, y0 - 9 - h + crawl_k, 1.8, (140, 220, 255), 0.5)
+        for lx in (5, 9, 13, 17):
+            d.line((lx, y0 - 2 + crawl_k, lx + (2 if lx % 4 else -2), y0 + 1), fill=rgba(sh(shell, 0.6), alpha), width=2)
+        hx = 19
+        d.ellipse((hx - 2, y0 - 6 + crawl_k, hx + 3, y0 - 1 + crawl_k), fill=rgba(sh(shell, 1.1), alpha))
+        if eyes:
+            d.point((hx + 1, y0 - 4 + crawl_k), fill=(140, 220, 255, alpha))
+            d.point((hx + 2, y0 - 3 + crawl_k), fill=(140, 220, 255, alpha))
+        d.line((hx + 2, y0 - 2 + crawl_k, hx + 5, y0 - 3 + crawl_k), fill=rgba(sh(shell, 0.7), alpha))
+        d.line((hx + 2, y0 - 1 + crawl_k, hx + 5, y0 - 1 + crawl_k), fill=rgba(sh(shell, 0.7), alpha))
+        return im
+
+    def fn(name, i, n):
+        if name == "idle":
+            return body(crawl_k=[0, 1, 0, 0][i])
+        if name == "walk":
+            return body(crawl_k=[0, 1, 0, -1, 0, 1][i])
+        if name == "windup":
+            return body(crawl_k=1, eyes=False)
+        if name == "attack":
+            return body(crawl_k=0, eyes=True)
+        if name == "hurt":
+            return body(eyes=False)
+        return body(pile=True, alpha=255 - i * 30)
+
+    return lay, fn, None
+
+
+
+
 MONSTERS = {
     # name: (builder, sheet file, write the layout .tres, outline)
     "slime": (slime, "slime", True, True),
@@ -899,6 +1223,12 @@ MONSTERS = {
     "drowned": (drowned, "drowned", False, True),  # uses skeleton_layout
     "leech": (leech, "leech", False, True),  # uses slime_layout
     "drowned_priest": (drowned_priest, "drowned_priest", False, True),  # uses cultist_layout
+    "sporeling": (sporeling, "sporeling", False, True),  # uses slime_layout
+    "ember_hound": (ember_hound, "ember_hound", True, True),
+    "runite_sentinel": (runite_sentinel, "runite_sentinel", True, True),
+    "ash_husk": (ash_husk, "ash_husk", False, True),  # uses cultist_layout
+    "glass_stalker": (glass_stalker, "glass_stalker", True, True),
+    "crystal_crawler": (crystal_crawler, "crystal_crawler", True, True),
 }
 
 
@@ -908,7 +1238,6 @@ def main():
         gs.render_sheet(lay, fn, "sprites/enemies/%s_sheet.png" % file, do_outline=outline)
         if write_layout:
             lay.write_tres()
-        # static icon (bestiary, fallback): the first idle frame
         sheet = Image.open(os.path.join(A, "sprites/enemies/%s_sheet.png" % file))
         sheet.crop((0, 0, lay.fw, lay.fh)).save(os.path.join(A, "sprites/enemies/%s.png" % file))
     print("monsters generated")

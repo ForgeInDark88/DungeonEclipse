@@ -11,8 +11,8 @@ const PROBE := "eclipse-probe"
 const ANNOUNCE := "eclipse-host"
 const MAX_PLAYERS := 4
 ## Difficulty grows with the party: enemy HP/damage multiplier.
-const HP_PER_EXTRA := 0.4
-const DAMAGE_PER_EXTRA := 0.25
+const HP_PER_EXTRA := 0.8
+const DAMAGE_PER_EXTRA := 0.5
 
 signal player_joined(info: Dictionary)
 signal player_left(peer_id: int)

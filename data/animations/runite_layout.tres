@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="SpriteSheetLayout" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/sprite_sheet_layout.gd" id="1_layout"]
+
+[resource]
+script = ExtResource("1_layout")
+frame_size = Vector2i(28, 32)
+origin = Vector2(14, 32)
+animations = {
+"idle": {"fps": 6.0, "frames": 4, "loop": true, "row": 0},
+"walk": {"fps": 10.0, "frames": 6, "loop": true, "row": 1},
+"windup": {"fps": 8.0, "frames": 3, "loop": false, "row": 2},
+"attack": {"fps": 12.0, "frames": 3, "loop": false, "row": 3},
+"hurt": {"fps": 10.0, "frames": 2, "loop": false, "row": 4},
+"death": {"fps": 10.0, "frames": 6, "loop": false, "row": 5}
+}

@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=7 format=3]
+
+[ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="1_lt"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_he"]
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="3_ed"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/runite_sentinel_sheet.png" id="4_sh"]
+[ext_resource type="Resource" path="res://data/animations/runite_layout.tres" id="5_la"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/runite_sentinel.png" id="6_ic"]
+
+[resource]
+script = ExtResource("3_ed")
+id = &"runite_sentinel"
+display_name = "Рунный страж"
+description = "Оживший страж руин. Броня как скала, удар — как обвал."
+texture = ExtResource("6_ic")
+sheet = ExtResource("4_sh")
+sheet_layout = ExtResource("5_la")
+behavior = 0
+collision_size = Vector2(16, 20)
+max_hp = 130
+damage = 18
+armor = 6
+speed = 18.0
+chase_speed = 38.0
+aggro_range = 140.0
+attack_range = 22.0
+attack_cooldown = 1.8
+jumps = false
+projectile_speed = 140.0
+xp_reward = 34
+loot_table = ExtResource("1_lt")
+loot_chance = 0.5
+gold_min = 5
+gold_max = 12
+min_floor = 7
+spawn_weight = 0.7
+biomes = Array[StringName]([&"ruins"])
+tint = Color(1, 1, 1, 1)
+gender = "m"
+phases_through_walls = false
+ceiling_ambush = false
+aoe_radius = 30.0
+max_summons = 3
+resistances = {
+"res_magic": 0.5,
+"res_fire": 0.3
+}
+status_immunities = Array[StringName]([&"stun"])
+on_hit_effects = Array[ExtResource("2_he")]([])
+sound_hurt = &"enemy_hurt"
+sound_death = &"enemy_death"
+sound_attack = &""

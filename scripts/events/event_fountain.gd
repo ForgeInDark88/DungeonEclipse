@@ -8,7 +8,7 @@ func get_prompt() -> String:
 
 func _activate(player: Node) -> bool:
 	var hero: Hero = player.hero
-	hero.stats.heal(hero.stats.max_hp())
+	hero.stats.heal(roundi(hero.stats.max_hp() * (1.0 if not Net.active else 0.7)))
 	hero.stats.restore_mana(hero.stats.max_mana())
 	player.status.cure([&"poison", &"burn", &"bleed", &"slow", &"curse"])
 	player.status.apply(&"regen", 8.0, 2.0)
