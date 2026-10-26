@@ -63,6 +63,15 @@ func _alive_heroes() -> Array[Player]:
 	return out
 
 
+## Co-op: boss ability visuals exist only on the host - echo them to guests.
+func _net_boss_fx(kind: StringName, from: Vector2, dir: Vector2, color: Color, extra: Array) -> void:
+	if not Net.active or not Net.is_host:
+		return
+	var ns = get_tree().get_first_node_in_group("net_game")
+	if ns:
+		ns.boss_fx.rpc(kind, from, dir, color, extra)
+
+
 func _nearest_alive_player() -> Player:
 	var best: Player = null
 	var best_d := INF
@@ -361,6 +370,7 @@ func _shockwave(a: BossAttack) -> void:
 	EventBus.screen_shake.emit(8.0)
 	Fx.dust(get_parent(), global_position, true)
 	Fx.explosion(get_parent(), global_position + Vector2(0, -4), a.radius, Color(0.9, 0.8, 0.6))
+	_net_boss_fx(&"shockwave", global_position, Vector2.ZERO, Color.WHITE, [a.radius])
 	for p in _alive_heroes():
 		if p.global_position.distance_to(global_position) <= a.radius + 6.0 \
 				and LineOfSight.can_hit(self, global_position + Vector2(0, -8), p):
@@ -405,6 +415,7 @@ func _erupt_spikes(a: BossAttack, dmg: int) -> void:
 	EventBus.screen_shake.emit(5.0)
 	Fx.sparks(parent, global_position + Vector2(0, -24), Color(0.6, 0.95, 1.0), 14, 120.0)
 	AudioManager.play_sfx(&"dig", global_position)
+	_net_boss_fx(&"spikes", global_position, Vector2.ZERO, Color.WHITE, _spike_spots.duplicate())
 
 
 ## A grinding crystal beam along the telegraphed line.
@@ -440,6 +451,7 @@ func _fire_beam() -> void:
 	Fx.sparks(parent, from, Color(0.7, 1.0, 1.0), 10, 90.0)
 	AudioManager.play_sfx(&"enemy_shoot", global_position)
 	EventBus.screen_shake.emit(3.0)
+	_net_boss_fx(&"beam", from, _beam_dir, Color(0.55, 0.95, 1.0), [])
 
 
 func _fade_beam() -> void:

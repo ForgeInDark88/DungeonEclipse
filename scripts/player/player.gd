@@ -639,8 +639,10 @@ func net_state(pos: Vector2, p_facing: float, hp: int, max_hp: int, is_dead: boo
 	_net_target = pos
 	visual.facing = p_facing
 	facing = p_facing
-	if hero:
-		hero.stats.hp = hp
+	if hero and hero.stats.hp != hp:
+		# net_set_hp emits hp_changed: the ally HUD bars on this machine
+		# follow the owner's real health.
+		hero.stats.net_set_hp(hp)
 	_net_apply_costume(costume)
 	if is_dead and not dead:
 		dead = true

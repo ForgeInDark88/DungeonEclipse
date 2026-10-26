@@ -68,6 +68,7 @@ func _ready() -> void:
 	EventBus.spawn_items.connect(_on_spawn_items)
 	EventBus.floating_text.connect(_on_floating_text)
 	EventBus.damage_dealt.connect(_on_damage_dealt)
+	EventBus.damage_dealt_others.connect(_on_damage_dealt_others)
 	EventBus.screen_shake.connect(func(s: float) -> void: _shake = maxf(_shake, s))
 	EventBus.floor_changed.connect(func(_f: int) -> void: _load_floor.call_deferred())
 	EventBus.player_died.connect(_on_player_died)
@@ -263,6 +264,8 @@ func _on_damage_dealt(pos: Vector2, amount: int, crit: bool, on_player: bool) ->
 	if SaveManager.show_damage_numbers:
 		n = DAMAGE_NUMBER_SCENE.instantiate()
 		world.add_child(n)
+	# Co-op: combat game feel (shake, hit-stop) is shared - whoever fights,
+	# everyone feels it. Remote events already arrived through net RPCs.
 	if on_player:
 		if n:
 			n.show_text(str(amount), Color(1.0, 0.3, 0.3), pos, 1.2)
@@ -279,6 +282,18 @@ func _on_damage_dealt(pos: Vector2, amount: int, crit: bool, on_player: bool) ->
 			n.show_text(str(amount), Color.WHITE, pos)
 		_shake = maxf(_shake, 1.2)
 		hit_stop(0.03)
+
+
+## Co-op: a teammate's hit - show the number, keep the game feel personal.
+func _on_damage_dealt_others(pos: Vector2, amount: int, crit: bool) -> void:
+	if not SaveManager.show_damage_numbers:
+		return
+	var n: DamageNumber = DAMAGE_NUMBER_SCENE.instantiate()
+	world.add_child(n)
+	if crit:
+		n.show_text("%d!" % amount, Color(1.0, 0.85, 0.2), pos, 1.6)
+	else:
+		n.show_text(str(amount), Color(0.9, 0.9, 0.9), pos)
 
 
 ## Freezes the action for a few real-time milliseconds.

@@ -1500,12 +1500,19 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 	hp_bar.max_value = max_hp
 	hp_bar.value = hp
 	var top := global_position + Vector2(0, -data.collision_size.y - 4)
-	EventBus.damage_dealt.emit(top, dealt, crit, false)
-	# Co-op: only the host rolls enemy damage — echo the number to clients.
-	if Net.active and Net.is_host:
+	# Co-op: only the host rolls enemy damage; reactions (snarl, crit shake)
+	# stay on the attacker's machine - everyone else sees just the number.
+	var attacker := 1
+	if Net.active:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.damage_number.rpc(top, dealt, crit)
+			attacker = int(ns._last_hitter.get(net_id, 1))
+			if Net.is_host:
+				ns.damage_number.rpc(top, dealt, crit, attacker)
+	if attacker == 1:
+		EventBus.damage_dealt.emit(top, dealt, crit, false)
+	else:
+		EventBus.damage_dealt_others.emit(top, dealt, crit)
 	EventBus.noise.emit(global_position, 150.0)
 	if from_pos != Vector2.INF and state in [State.PATROL, State.RETURN, State.SEARCH]:
 		_last_seen = from_pos

@@ -212,6 +212,13 @@ func heal(amount: int) -> void:
 	hp_changed.emit(hp, max_hp())
 
 
+## Co-op mirrors: set the authoritative hp from the network and notify
+## the HUD bars (no game logic, unlike heal/lose_hp).
+func net_set_hp(value: int) -> void:
+	hp = clampi(value, 0, max_hp())
+	hp_changed.emit(hp, max_hp())
+
+
 func spend_mana(amount: int) -> bool:
 	if mana < amount:
 		return false

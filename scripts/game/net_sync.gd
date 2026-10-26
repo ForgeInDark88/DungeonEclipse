@@ -123,10 +123,105 @@ func _broadcast_enemy_state() -> void:
 
 
 # --------------------------------------------------------------- combat
+## Host → clients: a boss ability visual (no damage - the host judged it).
+@rpc("authority", "call_remote", "reliable")
+func boss_fx(kind: StringName, from: Vector2, dir_or_radius: Vector2,
+		color: Color, extra: Array) -> void:
+	var game := get_tree().current_scene
+	if game == null or not ("level" in game) or game.level == null:
+		return
+	var parent: Node = game.level.entities
+	match kind:
+		&"shockwave":
+			var r: float = extra[0] if extra.size() > 0 else 60.0
+			EventBus.screen_shake.emit(8.0)
+			Fx.dust(parent, from, true)
+			Fx.explosion(parent, from + Vector2(0, -4), r, Color(0.9, 0.8, 0.6))
+		&"beam":
+			var to := from + dir_or_radius * 260.0
+			var mat := CanvasItemMaterial.new()
+			mat.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+			var line := Line2D.new()
+			line.width = 14.0
+			line.default_color = color
+			line.points = PackedVector2Array([from, to])
+			line.z_index = 25
+			line.material = mat
+			var core := Line2D.new()
+			core.width = 5.0
+			core.default_color = Color.WHITE
+			core.points = line.points
+			core.z_index = 26
+			core.material = mat
+			parent.add_child(line)
+			parent.add_child(core)
+			var light := PointLight2D.new()
+			light.texture = AssetPaths.tex(AssetPaths.LIGHT)
+			light.color = color
+			light.energy = 2.2
+			light.texture_scale = 1.4
+			parent.add_child(light)
+			light.global_position = from + dir_or_radius * 130.0
+			var tw := light.create_tween()
+			tw.tween_property(light, "energy", 0.0, 0.6)
+			tw.tween_callback(light.queue_free)
+			Fx.sparks(parent, from, Color(0.7, 1.0, 1.0), 10, 90.0)
+			EventBus.screen_shake.emit(3.0)
+			var tw2 := line.create_tween()
+			tw2.tween_interval(0.8)
+			tw2.tween_property(line, "width", 0.0, 0.22)
+			tw2.tween_callback(line.queue_free)
+			var tw3 := core.create_tween()
+			tw3.tween_interval(0.8)
+			tw3.tween_property(core, "width", 0.0, 0.22)
+			tw3.tween_callback(core.queue_free)
+		&"spikes":
+			for spot_v in extra:
+				var spot: Vector2 = spot_v
+				var spike := Node2D.new()
+				var poly := Polygon2D.new()
+				poly.polygon = PackedVector2Array([Vector2(-5, 1), Vector2(0, -16), Vector2(5, 1)])
+				poly.color = Color(0.62, 0.93, 1.0, 0.95)
+				var side := Polygon2D.new()
+				side.polygon = PackedVector2Array([Vector2(3, 1), Vector2(7, -10), Vector2(10, 1)])
+				side.color = Color(0.42, 0.72, 0.9, 0.9)
+				var light := PointLight2D.new()
+				light.texture = AssetPaths.tex(AssetPaths.LIGHT)
+				light.color = Color(0.55, 0.95, 1.0)
+				light.energy = 1.4
+				light.texture_scale = 0.35
+				light.position = Vector2(0, -8)
+				spike.add_child(poly)
+				spike.add_child(side)
+				spike.add_child(light)
+				spike.z_index = 12
+				parent.add_child(spike)
+				spike.global_position = spot
+				spike.scale = Vector2(1.0, 0.05)
+				var tw := spike.create_tween()
+				tw.tween_property(spike, "scale:y", 1.0, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+				tw.tween_interval(0.8)
+				tw.tween_property(spike, "scale:y", 0.0, 0.2)
+				tw.tween_callback(spike.queue_free)
+			EventBus.screen_shake.emit(5.0)
+			Fx.sparks(parent, from + Vector2(0, -24), Color(0.6, 0.95, 1.0), 14, 120.0)
+
+
+## Any peer → all: shared combat game feel (screen shake from hits).
+@rpc("any_peer", "call_remote", "unreliable")
+func net_shake(strength: float) -> void:
+	EventBus.screen_shake.emit(strength)
+
+
 ## Host → clients: a damage number over an enemy (the host rolls damage).
+## attacker_peer lets each machine react (portrait snarl) only to ITS hero.
 @rpc("authority", "call_remote", "unreliable")
-func damage_number(pos: Vector2, amount: int, crit: bool) -> void:
-	EventBus.damage_dealt.emit(pos, amount, crit, false)
+func damage_number(pos: Vector2, amount: int, crit: bool, attacker_peer: int) -> void:
+	if attacker_peer == multiplayer.get_unique_id():
+		EventBus.damage_dealt.emit(pos, amount, crit, false)
+	else:
+		# Others' hits: the number without the personal reactions.
+		EventBus.damage_dealt_others.emit(pos, amount, crit)
 
 
 ## Host → clients: an enemy's floating text (immunity, DoT ticks, heals).
@@ -1033,16 +1128,35 @@ func tile_broken(cell: Vector2i) -> void:
 		game.level.apply_remote_tile(cell, LevelLayout.Tile.EMPTY)
 
 
+## True when every LIVING hero stands near `pos` — the party may move on.
+## The fallen don't count: they revive on the next floor anyway.
+func party_at(pos: Vector2, radius: float) -> bool:
+	var game := get_tree().current_scene
+	if game == null or not ("net_players" in game):
+		return true
+	for p: Player in game.net_players.get_children():
+		if p.dead:
+			continue
+		if p.global_position.distance_to(pos) > radius:
+			return false
+	return true
+
+
 @rpc("any_peer", "call_remote", "reliable")
 func request_floor(action: StringName) -> void:
 	if not Net.is_host:
 		return
-	# Only a living hero may move the party.
+	# Only a living hero may move the party, and the whole living party
+	# must be gathered at the exit for the descent to happen.
 	var game := get_tree().current_scene
+	var sender_p: Player = null
 	if game != null and "net_players" in game:
-		var p := game.net_players.get_node_or_null("Player_%d" % multiplayer.get_remote_sender_id()) as Player
-		if p == null or p.dead:
+		sender_p = game.net_players.get_node_or_null("Player_%d" % multiplayer.get_remote_sender_id()) as Player
+		if sender_p == null or sender_p.dead:
 			return
+	if not party_at(sender_p.global_position, 220.0):
+		EventBus.message.emit("Все живые герои должны подойти к выходу!")
+		return
 	match action:
 		&"next":
 			# A guest's town gate: while a return floor is pending, "next"

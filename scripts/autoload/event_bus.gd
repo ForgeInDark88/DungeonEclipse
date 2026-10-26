@@ -16,6 +16,9 @@ signal screen_shake(strength: float)
 ## A hit landed: shows the damage number and drives game feel
 ## (hit-stop, shake, red screen flash when `on_player`).
 signal damage_dealt(world_pos: Vector2, amount: int, crit: bool, on_player: bool)
+## Co-op: another player landed a hit - number only, no personal reactions
+## (portrait snarl, crit shake stay with the attacker's own machine).
+signal damage_dealt_others(world_pos: Vector2, amount: int, crit: bool)
 ## An item went from the world into the backpack (HUD flies its icon).
 signal item_collected(item: ItemData, world_pos: Vector2)
 signal trap_disarmed(trap: TrapData)
