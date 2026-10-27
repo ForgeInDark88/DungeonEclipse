@@ -100,6 +100,7 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	_spawn_return_stairs()
 	_spawn_specials()
 	_spawn_chests()
+	_spawn_secret_walls()
 	_spawn_enemies()
 	_setup_seal()
 	_spawn_ambience()
@@ -702,9 +703,53 @@ func _spawn_chests() -> void:
 	for info in layout.chests:
 		var chest := (load(CHEST_SCENE) as PackedScene).instantiate()
 		chest.tier = info["tier"]
+		chest.mimic = info.get("mimic", false)
 		chest.floor_number = floor_number
 		_net_seq_node(chest)
 		add_entity(chest, cell_bottom(info["cell"]))
+
+
+# ------------------------------------------------------------ secrets
+## cell -> wall index into layout.secret_walls.
+var _secret_cells := {}
+
+
+func _spawn_secret_walls() -> void:
+	_secret_cells.clear()
+	for i in layout.secret_walls.size():
+		for cell: Vector2i in layout.secret_walls[i]:
+			_secret_cells[cell] = i
+			var crack := SecretCrack.new()
+			crack.level = self
+			crack.cell = cell
+			crack.first = cell == layout.secret_walls[i][0]
+			add_entity(crack, cell_center(cell))
+
+
+func is_secret_wall(cell: Vector2i) -> bool:
+	return _secret_cells.has(cell) and layout.get_tile(cell.x, cell.y) == T.BRICK
+
+
+## A hit on a cracked wall brings the whole passage down.
+func break_secret(cell: Vector2i) -> void:
+	if not _secret_cells.has(cell):
+		return
+	for c: Vector2i in layout.secret_walls[_secret_cells[cell]]:
+		break_tile(c, true)
+
+
+## A mimic jumps out of a chest (host / single player; guests get it as an
+## enemy descriptor like any other monster).
+func spawn_mimic(pos: Vector2) -> void:
+	var data := ItemDatabase.enemy_by_id(&"mimic")
+	if data == null:
+		return
+	var e: Enemy = (load(ENEMY_SCENE) as PackedScene).instantiate()
+	e.setup(data, floor_number)
+	_net_tag(e)
+	add_entity(e, pos)
+	_net_broadcast_enemy(e, null, false)
+	e.hear(pos)
 
 
 ## Decoration only: wall torches (one per room at most) and ceiling drips.
@@ -984,3 +1029,42 @@ func _net_broadcast_enemy(e: Enemy, elite: EliteAffixData, champion: bool, held 
 	if ns:
 		ns.spawn_enemy.rpc(e.net_id, String(e.data.id), e.global_position,
 				elite.id if elite else StringName(), champion, held, e.hp, e.role.id if e.role else StringName())
+
+
+## Cracks over a secret wall cell: a jagged dark crack, a faint draft of light
+## and dust trickling out now and then. Gone when the brick is.
+class SecretCrack extends Node2D:
+	var level: DungeonLevel
+	var cell: Vector2i
+	var first := false
+	var _t := 0.0
+	var _dust := 0.0
+
+	func _ready() -> void:
+		z_index = 1
+		_dust = randf_range(1.0, 4.0)
+
+	func _process(delta: float) -> void:
+		_t += delta
+		if level == null or level.layout.get_tile(cell.x, cell.y) != LevelLayout.Tile.BRICK:
+			if first and level != null:
+				EventBus.message.emit("Открыт тайный проход!")
+				AudioManager.play_sfx(&"chest_open", global_position)
+			queue_free()
+			return
+		_dust -= delta
+		if _dust <= 0.0:
+			_dust = randf_range(2.5, 5.0)
+			Fx.sparks(get_parent(), global_position + Vector2(randf_range(-4, 4), 6), Color(0.7, 0.62, 0.5), 3, 25.0)
+		queue_redraw()
+
+	func _draw() -> void:
+		var c := Color(0.08, 0.05, 0.05, 0.9)
+		var pts := PackedVector2Array([Vector2(-1, -8), Vector2(1, -4), Vector2(-2, -1), Vector2(2, 2), Vector2(0, 5), Vector2(1, 8)])
+		draw_polyline(pts, c, 1.0)
+		draw_line(Vector2(-2, -1), Vector2(-6, 1), c, 1.0)
+		draw_line(Vector2(2, 2), Vector2(6, 0), c, 1.0)
+		draw_line(Vector2(1, -4), Vector2(4, -7), c, 1.0)
+		# a draft of light seeping through the crack
+		var a := 0.25 + 0.15 * sin(_t * 2.0)
+		draw_line(Vector2(0, -3), Vector2(1, 3), Color(1.0, 0.9, 0.6, a), 1.0)

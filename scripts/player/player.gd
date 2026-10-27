@@ -576,6 +576,11 @@ func _perform_attack(w: WeaponItemData, aim: Vector2) -> void:
 	# The weapon stops at the wall: shorter swing, sparks where it hits the brick.
 	var free := LineOfSight.free_length(self, origin, aim, reach + 4.0)
 	if free < reach:
+		# A cracked wall gives way to the blade: a secret passage.
+		if level and not GameState.is_town():
+			var wall_cell := level.world_to_cell(origin + aim * (free + 3.0))
+			if level.is_secret_wall(wall_cell):
+				level.break_secret(wall_cell)
 		reach = maxf(free, 4.0)
 		Fx.sparks(get_parent(), origin + aim * free, Color(1.0, 0.9, 0.6), 4, 50.0)
 		AudioManager.play_sfx(&"dig", global_position, -10.0)

@@ -618,12 +618,15 @@ func chest_opened_remote(seq: int, opener_peer: int, consume_key: bool) -> void:
 	for c in get_tree().get_nodes_in_group("chests"):
 		if c.net_seq != seq or c.opened:
 			continue
+		if consume_key and opener_peer == multiplayer.get_unique_id():
+			GameState.hero.inventory.remove_by_id(&"key", 1)
+		if c.mimic:
+			c.queue_free()  # the monster arrives as an enemy descriptor
+			continue
 		c.opened = true
 		c.locked = false
 		c.sprite.play(&"opening")
 		c.sprite.animation_finished.connect(func() -> void: c.sprite.play(&"open"), CONNECT_ONE_SHOT)
-		if consume_key and opener_peer == multiplayer.get_unique_id():
-			GameState.hero.inventory.remove_by_id(&"key", 1)
 
 
 ## Client → host: buy an offer; host checks that the offer still exists.
