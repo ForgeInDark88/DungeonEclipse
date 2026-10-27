@@ -616,9 +616,18 @@ def ashen_king():
         sx, sy = int(s["head"][0]), int(s["head"][1]) - 2
         km = mask(fw, fh, lambda dd: (dd.ellipse((sx - 6, sy - 6, sx + 6, sy + 4), fill=FULL),
                                       dd.rectangle((sx - 3, sy + 2, sx + 5, sy + 6), fill=FULL)))
-        lit(im, km, bone, sx - 2, sy - 3, 7, 6, alpha)
+        lit(im, km, (58, 48, 46), sx - 2, sy - 3, 7, 6, alpha)  # charred, blackened skull
         d = ImageDraw.Draw(im)
-        soot = (30, 20, 22, alpha)
+        soot = (16, 10, 12, alpha)
+        # ash-grey flakes where the light catches the burned bone
+        for fx, fy in ((sx - 4, sy - 4), (sx - 2, sy - 5), (sx - 5, sy - 1), (sx + 1, sy - 4)):
+            d.point((fx, fy), fill=rgba(ash, alpha))
+        # a web of smouldering cracks over the face
+        for (x0, y0, x1, y1) in ((sx - 5, sy - 3, sx - 2, sy - 5), (sx + 2, sy - 6, sx + 3, sy - 3), (sx + 5, sy + 1, sx + 6, sy - 2),
+                                 (sx - 3, sy + 1, sx - 4, sy + 3)):
+            d.line((x0, y0, x1, y1), fill=rgba(sh(ember, 0.8), alpha))
+        d.point((sx - 2, sy - 5), fill=rgba(hot, alpha))
+        glow_dot(g, sx - 3, sy - 4, 2.0, ember, 0.5 * alpha / 255)
         d.rectangle((sx - 1, sy - 2, sx + 1, sy), fill=soot)
         d.rectangle((sx + 3, sy - 2, sx + 5, sy), fill=soot)
         eye = hot if flare else ember
@@ -629,9 +638,8 @@ def ashen_king():
         d.point((sx + 2, sy + 1), fill=soot)
         d.line((sx - 2, sy + 4, sx + 5, sy + 4), fill=soot)
         for tx in range(sx - 1, sx + 5, 2):
-            d.point((tx, sy + 3), fill=rgba(sh(bone, 1.1), alpha))
-        d.line((sx - 5, sy - 3, sx - 2, sy - 5), fill=rgba(ember, alpha))  # glowing crack in the skull
-        d.line((sx - 4, sy + 1, sx - 2, sy + 3), fill=rgba(sh(bone, 0.4), alpha))  # soot
+            d.point((tx, sy + 3), fill=rgba((120, 100, 90), alpha))  # scorched teeth
+        d.point((sx + 1, sy + 4), fill=rgba(ember, alpha))  # ember glow inside the jaw
         crown(d, g, sx, sy - 10, alpha, flare)
         # smoke curling from the crown
         for k in range(3):
