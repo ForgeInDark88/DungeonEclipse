@@ -12,6 +12,7 @@ var enemies := {}          # net_id -> Enemy node (real on host, shell on client
 var items := {}            # net_id -> ItemPickup node
 var _last_hitter := {}     # net_id -> peer id (kill credit)
 var _hit_budget := {}      # peer id -> hits sent this second (anti-spam)
+var minions := {}         # uid -> Minion: other players' servants (visual copies)
 var _hit_second := 0
 var _state_timer := 0.0
 
@@ -40,6 +41,7 @@ func clear_floor() -> void:
 	items.clear()
 	_last_hitter.clear()
 	_hit_budget.clear()
+	minions.clear()  # the copies lived among the old level's entities
 
 
 func register_enemy(e: Enemy) -> int:
@@ -235,11 +237,11 @@ func enemy_float_text(pos: Vector2, text: String, color: Color) -> void:
 
 ## Host → clients: an enemy flinched — shells replay the hurt reaction.
 @rpc("authority", "call_remote", "unreliable")
-func enemy_hurt(net_id: int) -> void:
+func enemy_hurt(net_id: int, crit: bool = false) -> void:
 	var e: Enemy = enemies.get(net_id)
 	if e == null or not is_instance_valid(e) or e.is_dead():
 		return
-	e.net_hurt()
+	e.net_hurt(crit)
 
 
 ## Client → host: my attack hurt this enemy.
@@ -1218,3 +1220,51 @@ func on_peer_left(peer_id: int) -> void:
 	for child in p.get_children():
 		if child.name == "Player_%d" % peer_id:
 			child.queue_free()
+
+
+# ------------------------------------------------------------- servants
+## The necromancer's machine runs its servants; everyone else gets a copy.
+@rpc("any_peer", "call_remote", "reliable")
+func minion_spawn(uid: int, kind: int, pos: Vector2) -> void:
+	var sender := multiplayer.get_remote_sender_id()
+	if minions.has(uid) or uid / 100000 != sender:
+		return
+	var scene := get_tree().current_scene
+	if scene == null or not ("net_players" in scene):
+		return
+	var owner_p := scene.net_players.get_node_or_null("Player_%d" % sender) as Player
+	if owner_p == null or scene.level == null:
+		return
+	minions[uid] = Minion.spawn_remote(owner_p, uid, kind as Minion.Kind, pos, scene.level.entities)
+
+
+@rpc("any_peer", "call_remote", "unreliable")
+func minion_state(uid: int, pos: Vector2, flip: bool) -> void:
+	var m: Minion = _minion(uid)
+	if m:
+		m.net_state(pos, flip)
+
+
+@rpc("any_peer", "call_remote", "unreliable")
+func minion_attack(uid: int, at: Vector2) -> void:
+	var m: Minion = _minion(uid)
+	if m:
+		m.net_attack(at)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func minion_gone(uid: int) -> void:
+	var m: Minion = _minion(uid)
+	minions.erase(uid)
+	if m:
+		m._crumble()
+
+
+func _minion(uid: int) -> Minion:
+	if uid / 100000 != multiplayer.get_remote_sender_id():
+		return null
+	var m: Minion = minions.get(uid)
+	if m == null or not is_instance_valid(m) or m.is_queued_for_deletion():
+		minions.erase(uid)
+		return null
+	return m

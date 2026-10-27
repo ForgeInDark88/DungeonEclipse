@@ -238,6 +238,10 @@ func _physics_process(delta: float) -> void:
 		_net_puppet_step(delta)
 		return
 	if hero == null or dead:
+		# A corpse keeps reporting (where it lies, that it is dead): puppets
+		# must not drift on the last running speed into the floor.
+		if dead and hero:
+			_net_broadcast(delta)
 		return
 	_aura_timer -= delta
 	if _aura_timer <= 0.0:
@@ -710,7 +714,13 @@ func net_state(pos: Vector2, p_facing: float, hp: int, max_hp: int, is_dead: boo
 		return
 	var now := Time.get_ticks_msec() / 1000.0
 	var dt := maxf(0.03, now - _net_last)
-	_net_vel = (pos - _net_target) / dt
+	if pos.distance_to(_net_target) > 160.0:
+		# A jump this far is a teleport (floor change, portal, respawn):
+		# snap instead of gliding through the walls on a huge speed.
+		global_position = pos
+		_net_vel = Vector2.ZERO
+	else:
+		_net_vel = (pos - _net_target) / dt
 	if _net_vel.length() > 500.0:
 		_net_vel = _net_vel.normalized() * 500.0
 	_net_last = now
@@ -722,6 +732,8 @@ func net_state(pos: Vector2, p_facing: float, hp: int, max_hp: int, is_dead: boo
 		# follow the owner's real health.
 		hero.stats.net_set_hp(hp)
 	_net_apply_costume(costume)
+	if is_dead:
+		_net_vel = Vector2.ZERO  # corpses do not glide on
 	if is_dead and not dead:
 		dead = true
 		animator.die()
@@ -734,13 +746,22 @@ func net_take_damage(amount: int, from_pos: Vector2, damage_type: int) -> void:
 	take_damage(amount, from_pos, damage_type)
 
 
+## A puppet put somewhere new (floor change): forget the old snapshot so it
+## does not glide back to where its owner stood on the previous floor.
+func net_place(pos: Vector2) -> void:
+	global_position = pos
+	_net_target = pos
+	_net_vel = Vector2.ZERO
+	_net_last = Time.get_ticks_msec() / 1000.0
+
+
 func _net_puppet_step(delta: float) -> void:
 	var before := global_position
 	# Extrapolate through lost snapshots: keep gliding along the last known
 	# velocity instead of freezing on a stale target.
 	var since := Time.get_ticks_msec() / 1000.0 - _net_last
 	var target := _net_target
-	if since > 0.15 and _net_vel.length() > 1.0:
+	if since > 0.15 and _net_vel.length() > 1.0 and not dead:
 		target += _net_vel * minf(since, 0.4)
 	global_position = global_position.lerp(target, minf(1.0, delta * 14.0))
 	var est := (global_position - before) / maxf(delta, 0.0001)
@@ -875,6 +896,11 @@ func revive() -> void:
 	_invulnerable = 2.0
 	visual.alpha = 1.0
 	animator.revive()
+	if puppet:
+		# Someone else's hero: only the picture rises here. The owner reports
+		# its own state (and its camera is not ours).
+		_net_vel = Vector2.ZERO
+		return
 	if Net.active:
 		var hpns = get_tree().get_first_node_in_group("net_game")
 		if hpns:
