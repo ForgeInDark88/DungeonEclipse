@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/n_army_of_dead.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/summon_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+kind = 0
+count = 4
+extra_every_levels = 1
+max_alive = 6
+max_alive_per_level = 1
+damage_multiplier = 0.7
+damage_per_level = 0.1
+lifetime = 16.0
+lifetime_per_level = 2.0
+
+[resource]
+script = ExtResource("skill")
+id = &"n_army_of_dead"
+display_name = "Армия мёртвых"
+description = "Мёртвые встают отрядом и идут за вами."
+icon = ExtResource("icon")
+mana_cost = 60
+cooldown = 40.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3

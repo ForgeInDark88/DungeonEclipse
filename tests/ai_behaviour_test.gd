@@ -43,6 +43,7 @@ func _ready() -> void:
 	await _scenario("faster on deeper floors", _hunt_speed)
 	await _scenario("squads: healer, shieldbearer, bannerman", _squads)
 	await _scenario("parry and roll", _defence)
+	await _scenario("necromancer minions fight", _minions)
 	print("FAILURES: ", failures.size())
 	for f in failures:
 		print("  - ", f)
@@ -489,3 +490,20 @@ func _class(id: StringName) -> ClassData:
 		if c.id == id:
 			return c
 	return null
+
+
+func _minions() -> void:
+	var l := _room()
+	await _build(l, Vector2i(6, 9))
+	player.hero.class_data = _class(&"necromancer")
+	var e := _enemy(&"skeleton", Vector2i(14, 9))
+	e.held = true  # stands still: we test the minions, not the chase
+	var hp := e.hp
+	var w := Minion.spawn(player, Minion.Kind.WARRIOR, 0.8, 20.0, 0, player.global_position + Vector2(10, 0))
+	var a := Minion.spawn(player, Minion.Kind.ARCHER, 0.7, 20.0, 1, player.global_position + Vector2(-10, 0))
+	await _run(5.0, func() -> bool: return e.hp < hp)
+	check(e.hp < hp, "minions hurt the monster (%d → %d)" % [hp, e.hp])
+	check(is_instance_valid(w) and is_instance_valid(a), "minions stay while their time lasts")
+	w.life = 0.05
+	await _run(0.3)
+	check(not is_instance_valid(w), "a minion crumbles when its time is up")

@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/n_pestilence.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/area_blast_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+radius = 84.0
+radius_per_level = 5.0
+damage_multiplier = 1.8
+damage_per_level = 0.35
+knockback = 40.0
+breaks_tiles = false
+stun_time = 0.0
+damage_type = 3
+color = Color(0.6, 1.0, 0.3, 1)
+vfx = &"ring"
+
+[resource]
+script = ExtResource("skill")
+id = &"n_pestilence"
+display_name = "Мор"
+description = "Широкая волна чумы."
+icon = ExtResource("icon")
+mana_cost = 32
+cooldown = 12.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_heavy"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3

@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/n_bone_prison.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/area_blast_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+radius = 56.0
+radius_per_level = 5.0
+damage_multiplier = 1.0
+damage_per_level = 0.25
+knockback = 0.0
+breaks_tiles = false
+stun_time = 1.8
+damage_type = 0
+color = Color(0.95, 0.9, 0.8, 1)
+vfx = &"quake"
+
+[resource]
+script = ExtResource("skill")
+id = &"n_bone_prison"
+display_name = "Костяная тюрьма"
+description = "Кости вырываются из пола и сковывают врагов."
+icon = ExtResource("icon")
+mana_cost = 22
+cooldown = 11.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_heavy"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3

@@ -375,6 +375,8 @@ OUTFITS = {
                  kind="mage"),
     "paladin": dict(torso=(220, 220, 230), trim=(220, 180, 60), boots=(120, 120, 135), sleeve=(200, 200, 215),
                     robe=False, kind="paladin"),
+    "necromancer": dict(torso=(46, 50, 48), trim=(214, 204, 176), boots=(38, 34, 42), sleeve=(54, 58, 56), robe=True,
+                        kind="necro"),
 }
 
 
@@ -435,6 +437,12 @@ def draw_outfit(p, o, race=RACES["human"]):
             d.line((nx - 2, ny, nx + 2, ny), fill=trim)  # gold mantle collar
             d.point((nx, ny + 3), fill=(120, 220, 255, 255))  # amulet
             d.point((nx - 2, ny + 4), fill=shade(torso, 1.3))
+        elif kind == "necro":
+            for k in range(3):  # bone ribs sewn over the robe
+                d.line((nx - 1, ny + 2 + k * 2, nx + 2, ny + 2 + k * 2), fill=trim if k % 2 == 0 else shade(trim, 0.75))
+            d.point((nx + 1, ny), fill=(210, 204, 186, 255))  # skull clasp
+            d.point((nx + 1, ny + 1), fill=(100, 255, 140, 255))  # soul gem
+            d.line((hx - 3, hy - 1, hx - 3, hy + 3), fill=shade(trim, 0.85))  # bone charm on the belt
         elif kind == "paladin":
             d.rectangle((nx - 1, ny + 2, nx + 2, hy - 2), fill=rgba((240, 236, 225)))  # tabard
             d.line((nx + 1, ny + 2, nx + 1, hy - 2), fill=trim)
@@ -466,6 +474,7 @@ HEADGEAR = {
     "rogue": ("hood", (50, 75, 50)),
     "mage": ("wizard", (70, 50, 150)),
     "paladin": ("helm", (225, 215, 170)),
+    "necromancer": ("necro_hood", (40, 44, 42)),
     "leather_cap": ("cap", (140, 95, 55)),
     "iron_helm": ("helm", (165, 170, 180)),
     "crown_of_shadows": ("crown", (200, 170, 40)),
@@ -510,6 +519,22 @@ def draw_head(p, kind, color):
             d.line((hx - 2, hy - 3, hx + 1, hy - 3), fill=hi)
         else:
             d.point((hx + 1, hy - 1), fill=(20, 25, 20, 200))  # shadow over the eye
+    elif kind == "necro_hood":
+        # deep cowl with a pale bone half-mask and green eyes
+        d.polygon([(hx - 4, hy + 3), (hx - 4, hy - 3), (hx - 1, hy - 6), (hx + 3, hy - 5), (hx + 4, hy - 1), (hx + 4, hy + 3)], fill=c)
+        d.line((hx - 3, hy - 3, hx - 1, hy - 5), fill=hi)
+        d.line((hx - 4, hy, hx - 4, hy + 3), fill=lo)
+        if p["back"]:
+            d.ellipse((hx - 4, hy - 5, hx + 4, hy + 3), fill=c)
+            d.line((hx - 2, hy - 4, hx + 1, hy - 4), fill=hi)
+        else:
+            d.rectangle((hx, hy - 2, hx + 3, hy + 1), fill=(226, 218, 196, 255))  # mask
+            d.point((hx + 3, hy - 2), fill=(250, 246, 230, 255))
+            d.point((hx + 1, hy - 1), fill=(90, 255, 140, 255))  # eyes
+            d.point((hx + 3, hy - 1), fill=(90, 255, 140, 255))
+            d.line((hx, hy + 1, hx + 3, hy + 1), fill=(150, 140, 120, 255))  # teeth line
+            d.point((hx - 1, hy - 4), fill=(226, 218, 196, 255))  # bone circlet
+            d.point((hx + 2, hy - 5), fill=(226, 218, 196, 255))
     elif kind == "wizard":
         d.polygon([(hx - 5, hy - 2), (hx + 5, hy - 2), (hx + 1, hy - 7), (hx - 3, hy - 10)], fill=c)
         d.line((hx - 2, hy - 8, hx - 3, hy - 3), fill=hi)
