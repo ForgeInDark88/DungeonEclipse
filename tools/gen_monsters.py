@@ -92,10 +92,12 @@ def dissolve(im, amount, seed=7, color=None):
         for x in range(w):
             if px[x, y][3] == 0:
                 continue
-            v = (x * 7 + y * 13 + seed) % 10
+            # hashed noise (no diagonal stripes); the top crumbles first
+            v = ((x * 73856093) ^ (y * 19349663) ^ (seed * 83492791)) % 1000 / 100.0
+            v += (y / h - 0.5) * 2.0
             if v < amount:
                 px[x, y] = (0, 0, 0, 0)
-            elif color and v == amount and amount > 2:
+            elif color and amount > 2 and v < amount + 0.7:
                 px[x, y] = color
     return im
 
@@ -746,393 +748,615 @@ def summoner():
 
 
 # ================================================================ drowned
+def _limb(d, a, b, col, alpha, hi=None):
+    """Two-pixel limb with a lit upper edge (like the skeleton / imp limbs)."""
+    d.line((a[0], a[1], b[0], b[1]), fill=rgba(col, alpha), width=2)
+    if hi:
+        d.line((a[0], a[1] - 1, b[0], b[1] - 1), fill=rgba(hi, alpha))
+
+
 def drowned():
-    """A bloated drowned corpse: rot-green flesh, seaweed skirt, driftwood club."""
+    """A bloated drowned corpse: swollen grey-green flesh with lit volume,
+    torn sailor's shirt, kelp in the hair and on the hips, barnacles,
+    a dripping anchor-chain club."""
     fw, fh = 24, 28
     lay = gs.monster_layout("drowned_layout", fw, fh, (12, 28))  # skeleton frame size
-    skin = (118, 148, 118)
-    weed = (56, 108, 76)
+    skin = (122, 150, 124)
+    shirt = (84, 96, 112)
+    weed = (52, 104, 70)
     race = dict(leg=7, torso=8)
 
-    def body(p, alpha=255, eye=(150, 255, 190), pile=0):
+    def body(p, alpha=255, eye=(150, 255, 190), pile=0, jaw=0):
         im = blank(fw, fh)
         d = ImageDraw.Draw(im)
-        c = rgba(skin, alpha)
-        dark = sh(skin, 0.62, alpha)
         if pile:
-            d.ellipse((7, 22, 18, 27), fill=c)
-            d.point((11, 24), fill=(18, 40, 30, alpha))
-            d.point((14, 25), fill=sh(skin, 1.2, alpha))
+            # a puddle with kelp and the shirt left behind
+            m = mask(fw, fh, lambda dd: dd.ellipse((5, 24, 20, 28), fill=FULL))
+            lit(im, m, (70, 110, 120), 9, 25, 7, 2, alpha, flat=0.4)
+            d = ImageDraw.Draw(im)
+            d.rectangle((8, 23 - pile // 2, 15, 26), fill=rgba(shirt, alpha))
+            d.line((8, 23 - pile // 2, 15, 23 - pile // 2), fill=sh(shirt, 1.3, alpha))
+            for x in (7, 17):
+                d.line((x, 26, x + 1, 22), fill=rgba(weed, alpha))
+            d.point((12, 25), fill=(170, 230, 210, alpha))
             return im
         s = gs.skel(p, race, cx=12, ground=27)
-        for side in ("l", "r"):
-            col = c if side == "r" else dark
-            d.line([s["hip"], s[side + "knee"]], fill=col)
-            d.line([s[side + "knee"], s[side + "foot"]], fill=col)
-            fx, fy = s[side + "foot"]
-            d.line((fx, fy, fx + 2, fy), fill=col)
         hx, hy = s["hip"]
         nx, ny = s["neck"]
-        d.line((hx - 2, hy, hx + 2, hy), fill=c)
-        # bloated belly with a navel gash
-        d.ellipse((hx - 4, ny + 3, hx + 4, hy + 4), fill=c)
-        d.line((hx - 1, ny + 5, hx - 1, hy + 2), fill=dark)
-        # seaweed skirt
-        for k, x in enumerate((hx - 3, hx, hx + 3)):
-            d.polygon([(x - 1, hy + 1), (x + 1, hy + 1), (x, hy + 5 + (k % 2))], fill=rgba(weed, alpha))
-        # ribs showing through the skin
-        for k in range(2):
-            y = ny + 4 + k * 2
-            d.arc((nx - 3, y, nx + 5, y + 2), 200, 320, fill=dark)
-        d.line([s["shoulder"], s["lhand"]], fill=dark)
-        # sunken head: algae crown, hollow sockets with glow, trailing drip
+        # legs: swollen shins, bare feet
+        for side in ("l", "r"):
+            col = sh(skin, 0.7 if side == "l" else 0.95)[:3]
+            _limb(d, (hx + (-1 if side == "l" else 1), hy + 1), s[side + "knee"], col, alpha, sh(skin, 1.15)[:3] if side == "r" else None)
+            _limb(d, s[side + "knee"], s[side + "foot"], col, alpha)
+            fx, fy = s[side + "foot"]
+            d.line((fx, fy, fx + 2, fy), fill=rgba(sh(col, 0.85), alpha))
+        # back arm
+        _limb(d, s["shoulder"], s["lhand"], sh(skin, 0.65)[:3], alpha)
+        # bloated torso: lit belly bulging out of the torn shirt
+        tm = mask(fw, fh, lambda dd: dd.ellipse((hx - 5, ny, hx + 5, hy + 3), fill=FULL))
+        lit(im, tm, skin, hx - 2, ny + 3, 5, 6, alpha)
+        d = ImageDraw.Draw(im)
+        sm = mask(fw, fh, lambda dd: dd.polygon([(nx - 4, ny), (nx + 4, ny), (nx + 3, ny + 5), (nx - 1, ny + 3), (nx - 4, ny + 6)], fill=FULL))
+        lit(im, sm, shirt, nx - 2, ny + 1, 4, 3, alpha, flat=0.3)
+        d = ImageDraw.Draw(im)
+        d.line((nx - 4, ny + 6, nx - 2, ny + 4), fill=sh(shirt, 0.6, alpha))  # torn edge
+        d.line((hx, ny + 5, hx + 1, hy), fill=sh(skin, 0.6, alpha))  # stretched seam of the belly
+        d.point((hx + 2, hy - 3), fill=sh(skin, 1.3, alpha))
+        # barnacles
+        for bx, by in ((hx - 3, hy - 1), (hx + 3, ny + 7)):
+            d.point((bx, by), fill=(220, 214, 196, alpha))
+            d.point((bx + 1, by), fill=(150, 140, 126, alpha))
+        # kelp belt
+        for k, x in enumerate((hx - 4, hx - 1, hx + 2, hx + 4)):
+            d.line((x, hy + 1, x + (k % 2), hy + 5 + (k % 2)), fill=rgba(sh(weed, 0.8 + 0.2 * (k % 2)), alpha))
+        d.line((hx - 4, hy + 1, hx + 4, hy + 1), fill=rgba(weed, alpha))
+        # sunken head: lit skull-like face, hollow glowing eyes, slack jaw, kelp hair
         sx, sy = s["head"]
-        d.ellipse((sx - 3, sy - 3, sx + 3, sy + 2), fill=c)
-        d.point((sx - 2, sy - 3), fill=rgba(weed, alpha))
-        d.point((sx + 1, sy - 4), fill=rgba(weed, alpha))
-        d.point((sx + 3, sy - 2), fill=rgba(weed, alpha))
+        hm = mask(fw, fh, lambda dd: dd.ellipse((sx - 3, sy - 4, sx + 3, sy + 2), fill=FULL))
+        lit(im, hm, sh(skin, 1.05)[:3], sx - 1, sy - 2, 3, 3, alpha)
+        d = ImageDraw.Draw(im)
         d.rectangle((sx, sy - 1, sx + 1, sy), fill=(16, 34, 26, alpha))
         d.rectangle((sx + 2, sy - 1, sx + 3, sy), fill=(16, 34, 26, alpha))
         d.point((sx + 1, sy - 1), fill=rgba(eye, alpha))
         d.point((sx + 3, sy - 1), fill=rgba(eye, alpha))
-        d.line((sx - 1, sy + 2, sx + 3, sy + 2), fill=dark)
-        d.point((sx - 1, sy + 3), fill=(120, 200, 170, alpha))  # water drip
-        d.line([s["shoulder"], s["rhand"]], fill=c)
-        # driftwood club
+        d.rectangle((sx, sy + 2, sx + 3, sy + 2 + jaw), fill=(30, 46, 38, alpha))  # open mouth
+        d.line((sx - 1, sy + 3 + jaw, sx + 3, sy + 3 + jaw), fill=sh(skin, 0.7, alpha))  # jaw
+        for k, (kx, ln) in enumerate(((sx - 3, 6), (sx - 2, 4))):  # kelp hair at the back of the head
+            d.line((kx, sy - 4, kx - 1, sy - 4 + ln), fill=rgba(sh(weed, 1.1 if k % 2 else 0.85), alpha))
+        d.point((sx, sy - 4), fill=rgba(weed, alpha))
+        d.point((sx + 4, sy + 1), fill=(150, 220, 200, alpha))  # water drip
+        # front arm and the club: driftwood with a rusty chain
         rx, ry = s["rhand"]
-        d.ellipse((rx - 2, ry - 6, rx + 4, ry + 1), fill=(96, 74, 54, alpha))
-        d.line((rx, ry, rx + 1, ry + 3), fill=(78, 58, 44, alpha))
-        d.point((rx - 1, ry - 4), fill=(130, 104, 78, alpha))
+        _limb(d, s["shoulder"], (rx, ry), skin, alpha, sh(skin, 1.2)[:3])
+        cm = mask(fw, fh, lambda dd: dd.ellipse((rx - 2, ry - 7, rx + 3, ry + 1), fill=FULL))
+        lit(im, cm, (104, 80, 58), rx - 1, ry - 5, 3, 4, alpha)
+        d = ImageDraw.Draw(im)
+        d.line((rx, ry - 6, rx + 1, ry - 1), fill=(78, 58, 44, alpha))  # grain
+        for k in range(3):
+            d.point((rx + 2, ry - 5 + k * 2), fill=(150, 90, 60, alpha))  # chain links
+        d.point((rx - 1, ry - 6), fill=(220, 214, 196, alpha))  # barnacle
         return im
 
     P = gs.P
 
     def fn(name, i, n):
         if name == "idle":
-            return body(P(by=[0, 0, 1, 1][i], ra=(2, 6)))
+            return body(P(by=[0, 0, 1, 1][i], ra=(2, 6)), jaw=[0, 0, 1, 1][i])
         if name == "walk":
             lx = [-3, -1, 1, 3, 1, -1][i]
             return body(P(lean=1, lf=(lx, 0), rf=(-lx, 0), by=[0, 1, 0, 0, 1, 0][i], ra=(2 + lx // 2, 6)))
         if name == "windup":
-            return body(P(lean=-1 - i, ra=(-2, -6 - i)), eye=(255, 200, 120))
+            return body(P(lean=-1 - i, ra=(-2, -6 - i)), eye=(220, 255, 200), jaw=1)
         if name == "attack":
-            return body(P(lean=2, lf=(-3, 0), rf=(4, 0), ra=[(4, -3), (7, 1), (6, 4)][i]), eye=(220, 255, 200))
+            return body(P(lean=2, lf=(-3, 0), rf=(4, 0), ra=[(4, -3), (7, 1), (6, 4)][i]), eye=(255, 255, 220), jaw=1)
         if name == "hurt":
-            return body(P(lean=-3, by=1, ra=(3, 3)), eye=(255, 255, 255))
-        return body(P(), pile=1, alpha=255 - i * 30)
+            return body(P(lean=-3, by=1, ra=(3, 3)), eye=(255, 255, 255), jaw=1)
+        if i < 2:
+            return body(P(crouch=2 + i * 2, by=1 + i, ra=(5, 5)), eye=(60, 110, 90))
+        return body(P(), pile=i, alpha=255 - (i - 2) * 30)
 
     return lay, fn, None
 
 
 # ============================================================ leech swarm
 def leech():
-    """A blood leech: a fast flat worm with sucker maw and segment rings."""
+    """A blood leech (slime frame layout): a glossy segmented worm that
+    rears up, dorsal stripes, a round sucker with a ring of teeth."""
     fw, fh = 20, 16
-    lay = gs.monster_layout("leech_layout", fw, fh, (10, 16))  # slime frame size
-    base = (146, 58, 50)
+    lay = gs.monster_layout("leech_layout", fw, fh, (10, 16))
+    base = (138, 50, 52)
+    belly = (196, 120, 96)
 
-    def body(w, h, dx=0, dy=0, alpha=255, eyes=True, mouth=False):
+    def body(w=14, rear=0, wave=0.0, dx=0, alpha=255, eyes=True, mouth=False, dis=0):
         im = blank(fw, fh)
         x0 = 10 - w / 2 + dx
-        m = mask(fw, fh, lambda d: d.ellipse((x0, 10 + dy, x0 + w - 1, 15 + dy), fill=FULL))
-        lit(im, m, base, 10 + dx, 12 + dy, w * 0.5, h * 0.7, alpha)
+        # segments along a wave: each one a small lit ellipse, tail to head
+        segs = 6
+        pts = []
+        for k in range(segs):
+            t = k / (segs - 1)
+            x = x0 + 1 + t * (w - 3)
+            y = 13 - math.sin(t * math.pi + wave) * 1.2 - (rear * t * t)
+            r = 2.0 + 0.6 * math.sin(t * math.pi)
+            pts.append((x, y, r))
+        for k, (x, y, r) in enumerate(pts):
+            m = mask(fw, fh, lambda dd, x=x, y=y, r=r: dd.ellipse((x - r, y - r * 0.8, x + r, y + r * 0.9), fill=FULL))
+            lit(im, m, sh(base, 0.9 + 0.04 * k)[:3], x - 1, y - 1, r, r * 0.9, alpha)
         d = ImageDraw.Draw(im)
-        # segment rings
-        for k in range(3):
-            sx = x0 + w * (0.3 + k * 0.18)
-            d.arc((sx - 1, 10 + dy + 1, sx + 2, 15 + dy), 250, 290, fill=rgba(sh(base, 0.55), alpha))
-        # sucker maw on the leading edge
-        mx = 10 + dx + w // 2 - 1
-        d.ellipse((mx - 1, 12 + dy - 1, mx + 2, 12 + dy + 2), fill=(70, 22, 20, alpha))
+        for k, (x, y, r) in enumerate(pts[:-1]):
+            d.point((x + r * 0.6, y + r * 0.5), fill=sh(base, 0.55, alpha))  # ring groove
+            d.point((x, y - r * 0.6), fill=rgba((230, 150, 70), alpha) if k % 2 else sh(base, 1.35, alpha))  # dorsal stripe
+            d.point((x, y + r * 0.7), fill=rgba(belly, alpha))  # pale belly
+        hx, hy, hr = pts[-1]
+        # sucker: dark disc, pale lip, teeth when attacking
+        d.ellipse((hx + hr - 2, hy - 2, hx + hr + 1, hy + 1), fill=(60, 16, 20, alpha))
+        d.arc((hx + hr - 2, hy - 2, hx + hr + 1, hy + 1), 270, 90, fill=rgba(belly, alpha))
         if mouth:
-            d.ellipse((mx, 12 + dy, mx + 2, 12 + dy + 2), fill=(180, 40, 40, alpha))
-            for fy in (11 + dy, 12 + dy, 13 + dy):
-                d.point((mx + 2, fy), fill=(255, 220, 210, alpha))
-        ey = 12 + dy - 1
-        dark = (30, 8, 8, alpha)
+            for ty in (hy - 1, hy, hy + 1):
+                d.point((hx + hr, ty), fill=(255, 236, 220, alpha))
         if eyes:
-            d.point((mx - 3, ey), fill=(255, 190, 180, alpha))
-            d.point((mx - 1, ey), fill=(255, 190, 180, alpha))
-            d.point((mx - 3, ey + 1), fill=dark)
-            d.point((mx - 1, ey + 1), fill=dark)
-        d.line((x0 + 1, 15 + dy, x0 + w - 2, 15 + dy), fill=sh(base, 0.55, alpha))
+            d.point((hx - 1, hy - hr * 0.7), fill=(255, 210, 120, alpha))
+            d.point((hx + 1, hy - hr * 0.7), fill=(255, 210, 120, alpha))
+        d.point((x0 + w * 0.4, 13 - hr), fill=(255, 220, 220, alpha))  # gloss
+        if dis:
+            dissolve(im, dis, color=(200, 40, 40, alpha))
         return im
 
     def fn(name, i, n):
         if name == "idle":
-            k = [0, 1, 0, -1][i]
-            return body(13 - k, 4 + k, dy=k // 2)
+            return body(14, wave=i * math.pi / 2)
         if name == "walk":
-            sq = [0, 2, 3, 2, 0, -2][i]
-            return body(14 - sq, 5 + sq // 2, dx=[0, 1, 2, 1, 0, -1][i], dy=[0, -1, -1, 0, 0, 1][i])
+            sq = [0, 2, 3, 2, 0, -1][i]
+            return body(15 - sq, wave=i * math.pi / 3, dx=[0, 1, 2, 1, 0, -1][i])
         if name == "windup":
-            return body(12, 6, dx=1, dy=-1)
+            return body(12, rear=3, dx=-1)
         if name == "attack":
-            return body(15, 5, dx=2, mouth=True)
+            return body(16, rear=1, dx=2, mouth=True)
         if name == "hurt":
-            return body(13, 5, eyes=False)
-        return body(14 - i, 4, dy=i, alpha=255 - i * 35)
+            return body(13, rear=1, eyes=False)
+        return body(14 - i, wave=i, alpha=255 - i * 30, dis=2 + i * 2 if i < 4 else 9)
 
     return lay, fn, None
 
 
 # ========================================================== drowned priest
 def drowned_priest():
+    """Priest of the sunken temple (cultist frame layout): a sodden robe
+    hung with kelp, a coral mitre, a drowned lantern-orb; water drips."""
     fw, fh = 24, 28
     lay = gs.monster_layout("cultist_layout", fw, fh, (12, 28), counts={"windup": 4})
-    body = robed(fw, fh, (26, 96, 88), hood_in=(8, 36, 32), eye=(150, 255, 230),
-                 trim=(96, 180, 160), sigil=True)
+    robe = (34, 92, 92)
+    base = robed(fw, fh, robe, hood_in=(6, 28, 30), eye=(150, 255, 230), trim=(186, 160, 96), sigil=False)
+    coral = (232, 118, 104)
+
+    def body(sway=0, hands=(14, 15), orb=0, flash=False, dis=0, alpha=255, lean=0, drip=0):
+        im = base(sway=sway, hands=hands, orb=orb, flash=flash, dis=0, alpha=alpha, lean=lean, orb_col=(110, 240, 210))
+        d = ImageDraw.Draw(im)
+        L = lean
+        # coral mitre with branching tips
+        mm = mask(fw, fh, lambda dd: dd.polygon([(10 + L, 4), (12 + L, -1), (14 + L, 4)], fill=FULL))
+        lit(im, mm, coral, 11 + L, 1, 2, 3, alpha)
+        d = ImageDraw.Draw(im)
+        for tx, ty in ((9 + L, 1), (15 + L, 0), (12 + L, -1)):
+            d.line((12 + L, 3, tx, ty), fill=rgba(coral, alpha))
+            d.point((tx, ty), fill=(255, 190, 170, alpha))
+        # kelp hanging from the shoulders and the sash
+        for k, (kx, ln) in enumerate(((7 + L, 9), (9 + L, 6), (16 + L, 8))):
+            d.line((kx, 11, kx + (1 if k % 2 else -1) + sway // 2, 11 + ln), fill=rgba((52, 110, 70) if k % 2 else (70, 130, 80), alpha))
+        # shells on the sash and a fish-bone sigil
+        d.point((10 + L, 17), fill=(240, 226, 200, alpha))
+        d.point((14 + L, 17), fill=(240, 226, 200, alpha))
+        d.line((11 + L, 20, 14 + L, 20), fill=rgba((214, 210, 190), alpha))
+        for x in (12, 13):
+            d.point((x + L, 19), fill=rgba((214, 210, 190), alpha))
+            d.point((x + L, 21), fill=rgba((214, 210, 190), alpha))
+        # dripping water from the hem
+        for k, x in enumerate((7, 12, 16)):
+            y = 27 - ((drip + k * 2) % 4)
+            if y < 27:
+                d.point((x + sway, y + 1), fill=(140, 220, 230, alpha))
+        if dis:
+            dissolve(im, dis, color=(140, 240, 220, alpha))
+        return im
 
     def fn(name, i, n):
         if name == "idle":
-            return body(sway=[0, 1, 0, -1][i], orb_col=(90, 230, 200))
+            return body(sway=[0, 1, 0, -1][i], drip=i)
         if name == "walk":
-            return body(sway=[1, 2, 1, -1, -2, -1][i], hands=(14, 15 + (i % 2)), orb_col=(90, 230, 200))
+            return body(sway=[1, 2, 1, -1, -2, -1][i], hands=(14, 15 + (i % 2)), drip=i)
         if name == "windup":
-            return body(hands=(14, 13), orb=1 + i, lean=-1, orb_col=(120, 255, 220))
+            return body(hands=(14, 13), orb=1 + i, lean=-1, drip=i)
         if name == "attack":
-            return body(hands=(16, 13), orb=[3, 1, 0][i], flash=i == 0, lean=1, orb_col=(120, 255, 220))
+            return body(hands=(16, 13), orb=[3, 1, 0][i], flash=i == 0, lean=1)
         if name == "hurt":
             return body(lean=-2, flash=True)
-        return body(dis=2 + i * 2 if i < 4 else 9, alpha=255 - i * 30, orb_col=(90, 230, 200))
+        return body(dis=2 + i * 2 if i < 4 else 9, alpha=255 - i * 30)
 
     return lay, fn, None
 
 
 # ============================================================== sporeling
 def sporeling():
-    """Fungal puffball that bursts into a cough of spores (poison on hit)."""
+    """Fungal puffball creature (slime frame layout): a lit spotted cap with
+    gills under the rim, a pale stem body with stubby feet and eyes,
+    spores drifting off; bursts into a cloud when it attacks."""
     fw, fh = 20, 16
     lay = gs.monster_layout("sporeling_layout", fw, fh, (10, 16))
-    base = (120, 90, 160)
-    cap = (86, 150, 96)
+    cap = (150, 78, 160)
+    stem = (226, 210, 180)
+    spot = (240, 220, 250)
 
-    def body(w, h, dx=0, dy=0, alpha=255, eyes="o", burst=0):
+    def body(squash=0, dx=0, dy=0, alpha=255, eyes="o", burst=0, puff=0, step=0, dis=0):
         im = blank(fw, fh)
-        x0 = 10 - w / 2 + dx
-        m = mask(fw, fh, lambda d: (d.pieslice((x0, 15 + dy - int(h * 1.3), x0 + w - 1, 15 + dy), 180, 360, fill=FULL),
-                                    d.rectangle((x0, 14 + dy, x0 + w - 1, 15 + dy), fill=FULL)))
-        lit(im, m, base, 10 + dx, 15 + dy - h * 0.7, w * 0.5, h * 0.8, alpha)
+        cx = 10 + dx
+        top = 2 + dy + squash
+        # stem body with feet
+        sm = mask(fw, fh, lambda d: d.rounded_rectangle((cx - 4, top + 6, cx + 3, 14 + dy // 2), 2, fill=FULL))
+        lit(im, sm, stem, cx - 2, top + 8, 4, 4, alpha, flat=0.2)
         d = ImageDraw.Draw(im)
-        # fungal cap: spots
-        for sx, sy in ((x0 + w * 0.3, 15 + dy - h * 0.9), (x0 + w * 0.6, 15 + dy - h * 1.05), (x0 + w * 0.8, 15 + dy - h * 0.7)):
-            d.ellipse((sx - 1, sy - 1, sx + 1, sy), fill=rgba(cap, alpha))
-            d.point((sx, sy - 1), fill=(210, 255, 200, alpha))
-        if burst:
-            for k in range(6):
-                a = k * math.tau / 6
-                d.point((10 + dx + math.cos(a) * (4 + burst), 11 + dy + math.sin(a) * (3 + burst * 0.5)),
-                        fill=(180, 230, 160, alpha))
-        ey = int(15 - h * 0.55 + dy)
-        ex = int(10 + dx)
-        dark = (24, 12, 30, alpha)
+        for fx in (cx - 3 + step, cx + 1 - step):
+            d.rectangle((fx, 14, fx + 1, 15), fill=sh(stem, 0.75, alpha))
+        # cap: wide dome with a rim
+        cm = mask(fw, fh, lambda d: d.chord((cx - 8, top, cx + 7, top + 12 - squash), 180, 360, fill=FULL))
+        lit(im, cm, cap, cx - 3, top + 1, 8, 5, alpha)
+        d = ImageDraw.Draw(im)
+        rim = top + 6 - squash // 2
+        d.line((cx - 8, rim, cx + 7, rim), fill=sh(cap, 0.55, alpha))
+        for gx in range(cx - 6, cx + 6, 2):
+            d.point((gx, rim + 1), fill=sh(stem, 0.7, alpha))  # gills
+        for sx, sy, r in ((cx - 4, top + 3, 1), (cx + 2, top + 2, 1), (cx + 5, top + 4, 0), (cx - 1, top + 1, 0)):
+            d.ellipse((sx - r, sy - r, sx + r, sy + r), fill=rgba(spot, alpha))
+        d.point((cx - 5, top + 2), fill=(255, 255, 255, alpha))  # gloss
+        # face on the stem
+        ey = rim + 3
+        dark = (40, 20, 30, alpha)
         if eyes == "o":
-            for e in (ex - 2, ex + 1):
-                d.rectangle((e - 1, ey - 1, e, ey), fill=(230, 255, 220, alpha))
-                d.point((e, ey), fill=dark)
+            for e in (cx - 3, cx + 1):
+                d.rectangle((e, ey - 1, e + 1, ey), fill=(255, 255, 240, alpha))
+                d.point((e + 1, ey), fill=dark)
         else:
-            d.point((ex - 2, ey), fill=dark)
-            d.point((ex + 1, ey), fill=dark)
+            for e in (cx - 3, cx + 1):
+                d.line((e, ey, e + 1, ey - 1), fill=dark)
+        d.point((cx - 1, ey + 2), fill=dark)
+        # spores
+        rnd = random.Random(puff + burst * 7)
+        count = 3 + burst * 5
+        for k in range(count):
+            if burst:
+                a = k * math.tau / count
+                r = 3 + burst * 1.6
+                px_, py_ = cx + math.cos(a) * r * 1.2, top + 5 + math.sin(a) * r * 0.8
+            else:
+                px_, py_ = cx + rnd.randint(-7, 7), top - (puff + k * 2) % 5
+            d.point((px_, py_), fill=(200, 240, 170, alpha) if k % 2 else (170, 210, 140, int(alpha * 0.8)))
+        if dis:
+            dissolve(im, dis, color=(190, 240, 160, alpha))
         return im
 
     def fn(name, i, n):
         if name == "idle":
-            k = [0, 1, 0, -1][i]
-            return body(15 - k, 5 + k, dy=k // 2)
+            return body(squash=[0, 1, 0, 0][i], puff=i)
         if name == "walk":
-            hop = [0, -2, -3, -2, 0, 0][i]
-            return body(15, 5, dy=hop)
+            return body(dy=[0, -2, -3, -2, 0, 0][i], squash=[1, 0, 0, 0, 1, 2][i], step=i % 2, puff=i)
         if name == "windup":
-            return body(14, 6, dy=-1, eyes="x")
+            return body(squash=2, eyes="x", puff=i)
         if name == "attack":
-            return body(15, 5, burst=2 + i, eyes="x")
+            return body(burst=1 + i, eyes="x")
         if name == "hurt":
-            return body(14, 5, eyes="x")
-        return body(15 - i, 4, dy=i, alpha=255 - i * 35)
+            return body(squash=1, eyes="x")
+        return body(squash=min(3, i), alpha=255 - i * 30, dis=2 + i * 2 if i < 4 else 9, burst=1)
 
     return lay, fn, None
 
 
 # ============================================================ ember hound
 def ember_hound():
-    """Lava beast: a low ember-furred hound, spine of live coals (burns)."""
+    """Lava hound: lean basalt-skinned quadruped with glowing cracks, a mane of
+    live coals, a burning tail and molten jaws (sets heroes on fire)."""
     fw, fh = 24, 28
     lay = gs.monster_layout("ember_hound_layout", fw, fh, (12, 28))
-    fur = (110, 52, 36)
-    coal = (240, 120, 40)
+    hide = (70, 46, 44)
+    lava = (255, 140, 40)
+    hot = (255, 220, 120)
 
-    def body(p=None, run_k=0, alpha=255, eyes=True, mouth=False, pile=False):
+    def body(gait=0, crouch=0, alpha=255, eyes=True, jaw=0, pile=0, lunge=0):
         im = blank(fw, fh)
-        g = blank(fw, fh)
         d = ImageDraw.Draw(im)
-        y0 = 24
+        g0 = 27
         if pile:
-            d.ellipse((6, 22, 19, 27), fill=rgba(fur, alpha))
-            d.point((9, 24), fill=(255, 140, 60, alpha))
+            m = mask(fw, fh, lambda dd: dd.ellipse((4, 22, 20, 28), fill=FULL))
+            lit(im, m, (60, 50, 50), 9, 23, 8, 3, alpha)
+            d = ImageDraw.Draw(im)
+            for k in range(4 - min(3, pile // 2)):
+                d.point((7 + k * 3, 24 + k % 2), fill=rgba(lava, alpha))
             return im
-        # body: low quadruped torso
-        m = mask(fw, fh, lambda dd: dd.ellipse((5, y0 - 9 + run_k, 20, y0 - 1), fill=FULL))
-        lit(im, m, fur, 12, y0 - 5, 8, 4.5, alpha)
+        L = lunge
+        by = 18 + crouch  # back line
+        # tail: burning tip
+        d.line((5 + L, by + 1, 2 + L, by + 1 + gait // 2, 1 + L, by - 2 + gait // 2), fill=rgba(hide, alpha), width=2)
+        d.point((0 + L, by - 3 + gait // 2), fill=rgba(lava, alpha))
+        d.point((1 + L, by - 4 + gait // 2), fill=rgba(hot, alpha))
+        d.point((0 + L, by - 5 + gait // 2), fill=rgba(lava, alpha))
+        # far legs (darker), then body, then near legs
+        legs = [(7, -gait), (16, gait)]
+        for lx, ph in legs:
+            _limb(d, (lx + L, by + 3), (lx + L - 1 + ph, by + 6), sh(hide, 0.6)[:3], alpha)
+            _limb(d, (lx + L - 1 + ph, by + 6), (lx + L + ph, g0), sh(hide, 0.6)[:3], alpha)
+        tm = mask(fw, fh, lambda dd: dd.ellipse((4 + L, by - 1, 19 + L, by + 6), fill=FULL))
+        lit(im, tm, hide, 8 + L, by, 8, 4, alpha)
         d = ImageDraw.Draw(im)
-        # coal spine: glowing embers along the back
-        for k in range(4):
-            ex = 8 + k * 3.4
-            d.ellipse((ex - 1, y0 - 10 + run_k, ex + 1, y0 - 8 + run_k), fill=rgba(coal, alpha))
-            glow_dot(g, ex, y0 - 9 + run_k, 2.2, (255, 130, 40), 0.7 * alpha / 255)
-        # legs (simple two-segment, animated by run_k)
-        for lx in (7, 11, 15, 18):
-            off = [0, 1, 0, -1][(i if False else 0)] if False else 0
-            d.line((lx, y0 - 3 + run_k, lx + (1 if lx % 2 else -1), y0 + 1), fill=rgba(sh(fur, 0.7), alpha), width=2)
-        # head: muzzle, ears, glow eyes
-        hx = 19 + (1 if run_k else 0)
-        hy = y0 - 8 + run_k
-        d.ellipse((hx - 1, hy - 2, hx + 4, hy + 2), fill=rgba(sh(fur, 1.15), alpha))
-        d.polygon([(hx + 3, hy - 2), (hx + 5, hy + 1), (hx + 2, hy + 1)], fill=rgba(sh(fur, 0.85), alpha))
-        d.polygon([(hx - 1, hy - 3), (hx, hy - 6), (hx + 1, hy - 3)], fill=rgba(fur, alpha))
+        # glowing cracks in the hide
+        for (x0, y0, x1, y1) in ((7, by + 2, 10, by + 4), (12, by + 1, 14, by + 4), (15, by + 3, 17, by + 2)):
+            d.line((x0 + L, y0, x1 + L, y1), fill=rgba(lava, alpha))
+        d.point((10 + L, by + 4), fill=rgba(hot, alpha))
+        d.line((5 + L, by + 5, 18 + L, by + 5), fill=sh(hide, 0.5, alpha))  # belly shadow
+        # mane of coals along the neck and back
+        for k in range(5):
+            x = 9 + k * 2 + L
+            h = 2 + (k % 2) + (1 if k == 3 else 0)
+            d.polygon([(x - 1, by), (x, by - h - (gait % 2)), (x + 1, by)], fill=rgba(lava, alpha))
+            d.point((x, by - h - (gait % 2)), fill=rgba(hot, alpha))
+        for lx, ph in legs:
+            _limb(d, (lx + L + 2, by + 3), (lx + L + 1 - ph, by + 6), hide, alpha, sh(hide, 1.25)[:3])
+            _limb(d, (lx + L + 1 - ph, by + 6), (lx + L + 2 - ph, g0), hide, alpha)
+            d.point((lx + L + 3 - ph, g0), fill=rgba(lava, alpha))  # hot claw
+        # head: long muzzle, swept ears, molten jaws
+        hx, hy = 19 + L, by - 2 + crouch // 2
+        hm = mask(fw, fh, lambda dd: dd.ellipse((hx - 3, hy - 3, hx + 3, hy + 2), fill=FULL))
+        lit(im, hm, hide, hx - 2, hy - 2, 3, 3, alpha)
+        d = ImageDraw.Draw(im)
+        d.polygon([(hx + 1, hy - 1), (hx + 5, hy), (hx + 5, hy + 1), (hx + 1, hy + 2)], fill=rgba(sh(hide, 1.1), alpha))  # muzzle
+        d.point((hx + 5, hy), fill=(30, 20, 20, alpha))  # nose
+        d.polygon([(hx - 3, hy - 2), (hx - 5, hy - 6), (hx - 1, hy - 3)], fill=rgba(sh(hide, 0.85), alpha))  # ear
+        d.point((hx - 4, hy - 5), fill=rgba(lava, alpha))
+        if jaw:
+            d.polygon([(hx + 1, hy + 2), (hx + 5, hy + 2 + jaw), (hx + 1, hy + 3)], fill=rgba(sh(hide, 0.8), alpha))
+            d.line((hx + 2, hy + 2, hx + 4, hy + 2 + jaw // 2), fill=rgba(lava, alpha))
+            d.point((hx + 4, hy + 2), fill=(255, 250, 230, alpha))  # fang
         if eyes:
-            d.point((hx + 1, hy - 1), fill=(255, 200, 90, alpha))
-            d.point((hx + 3, hy - 1), fill=(255, 200, 90, alpha))
-            glow_dot(g, hx + 2, hy - 1, 2.0, (255, 170, 60), 0.8)
-        if mouth:
-            d.line((hx + 3, hy + 1, hx + 5, hy + 1), fill=(60, 20, 10, alpha))
-        d.line((5, y0 - 1, 20, y0 - 1), fill=rgba(sh(fur, 0.5), alpha))
+            d.point((hx + 1, hy - 1), fill=rgba(hot, alpha))
+            d.point((hx + 2, hy - 1), fill=rgba(lava, alpha))
         return im
-
-    P = gs.P
 
     def fn(name, i, n):
         if name == "idle":
-            return body(run_k=[0, 1, 0, 0][i])
+            return body(gait=0, crouch=[0, 0, 1, 1][i])
         if name == "walk":
-            return body(run_k=[0, 1, 0, -1, 0, 1][i])
+            return body(gait=[-2, -1, 1, 2, 1, -1][i], crouch=[0, 1, 0, 0, 1, 0][i])
         if name == "windup":
-            return body(run_k=1, mouth=False)
+            return body(crouch=2, jaw=1, lunge=-1)
         if name == "attack":
-            return body(run_k=0, mouth=True)
+            return body(gait=2, jaw=[3, 2, 1][i], lunge=[2, 3, 1][i])
         if name == "hurt":
-            return body(eyes=False)
-        return body(pile=True, alpha=255 - i * 30)
+            return body(crouch=1, eyes=False, lunge=-1)
+        if i < 2:
+            return body(crouch=2 + i * 2, eyes=False)
+        return body(pile=i, alpha=255 - (i - 2) * 30)
 
     return lay, fn, None
 
 
 # ========================================================== runite sentinel
 def runite_sentinel():
-    """Ruins guardian: a heavy rune-carved sentinel that slams the ground."""
+    """Ruins guardian: an ancient carved sentinel of bevelled stone blocks,
+    a crested helm with a visor slit, rune channels that glow, moss and
+    cracks, boulder fists that slam the ground."""
     fw, fh = 28, 32
     lay = gs.monster_layout("runite_layout", fw, fh, (14, 32))
-    stone = (104, 110, 134)
-    rune = (120, 190, 255)
+    stone = (118, 120, 140)
+    rune = (110, 200, 255)
 
-    def body(p=None, bob=0, alpha=255, eyes=True, slam=False, pile=False):
+    def block(im, box, base, alpha):
+        x0, y0, x1, y1 = box
+        m = mask(fw, fh, lambda d: d.rectangle(box, fill=FULL))
+        lit(im, m, base, x0, y0, (x1 - x0 + 2), (y1 - y0 + 2), alpha, flat=0.5)
+        d = ImageDraw.Draw(im)
+        d.line((x0, y0, x1, y0), fill=sh(base, 1.35, alpha))
+        d.line((x1, y0, x1, y1), fill=sh(base, 0.62, alpha))
+        d.line((x0, y1, x1, y1), fill=sh(base, 0.55, alpha))
+
+    def body(step=0, bob=0, arms=0, alpha=255, eye=rune, crumble=0):
         im = blank(fw, fh)
-        g = blank(fw, fh)
         d = ImageDraw.Draw(im)
-        y0 = 31
-        if pile:
-            d.rectangle((5, 26, 23, 31), fill=rgba(stone, alpha))
-            d.point((9, 28), fill=rgba(rune, alpha))
-            d.point((18, 29), fill=rgba(rune, alpha))
+        if crumble:
+            rnd = random.Random(crumble + 3)
+            for k in range(crumble + 5):
+                x = 3 + (k * 6) % 21
+                y = 31 - (k % 3) * 2
+                d.rectangle((x, y - 3, x + 4, y), fill=sh(stone, 0.75 + rnd.random() * 0.35, alpha))
+                d.line((x, y - 3, x + 4, y - 3), fill=sh(stone, 1.3, alpha))
+            if crumble < 4:
+                d.point((13, 29), fill=rgba(rune, alpha))
             return im
-        # torso block
-        mt = mask(fw, fh, lambda dd: dd.polygon([(5 + bob, y0 - 20), (23 + bob, y0 - 20),
-                                                 (21 + bob, y0 - 2), (7 + bob, y0 - 2)], fill=FULL))
-        lit(im, mt, stone, 13 + bob, y0 - 12, 9, 10, alpha, flat=0.35)
+        y = bob
+        # legs: thick pillars with a band
+        block(im, (8 + step, 24 + y, 12 + step, 31), sh(stone, 0.8)[:3], alpha)
+        block(im, (16 - step, 24 + y, 20 - step, 31), sh(stone, 0.95)[:3], alpha)
         d = ImageDraw.Draw(im)
-        # head block with visor
-        d.rectangle((9 + bob, y0 - 27 + bob, 19 + bob, y0 - 20 + bob), fill=rgba(stone, alpha))
-        d.rectangle((11 + bob, y0 - 25 + bob, 17 + bob, y0 - 22 + bob), fill=(10, 18, 30, alpha))
-        if eyes:
-            d.rectangle((12 + bob, y0 - 24 + bob, 16 + bob, y0 - 23 + bob), fill=rgba(rune, alpha))
-            glow_dot(g, 14 + bob, y0 - 23.5 + bob, 3.0, rune, 0.8)
-        # chest runes
-        for rx, ry in ((11, y0 - 16), (14, y0 - 12), (17, y0 - 8)):
-            d.rectangle((rx - 1 + bob, ry - 1, rx + 1 + bob, ry + 1), fill=rgba(rune, alpha))
-            glow_dot(g, rx + bob, ry, 2.0, rune, 0.5)
-        # shoulders and heavy arms
-        d.rectangle((2 + bob, y0 - 19, 7 + bob, y0 - 6), fill=rgba(sh(stone, 0.8), alpha))
-        d.rectangle((21 + bob, y0 - 19, 26 + bob, y0 - 6), fill=rgba(sh(stone, 0.95), alpha))
-        d.rectangle((3 + bob, y0 - 7, 6 + bob, y0 - 2), fill=rgba(sh(stone, 0.7), alpha))
-        d.rectangle((22 + bob, y0 - 7, 25 + bob, y0 - 2), fill=rgba(sh(stone, 0.8), alpha))
-        if slam:
-            d.rectangle((21 + bob, y0 - 4, 28 + bob, y0 - 1), fill=rgba(sh(stone, 1.1), alpha))
-        # legs
-        d.rectangle((8 + bob, y0 - 2, 12 + bob, y0), fill=rgba(sh(stone, 0.65), alpha))
-        d.rectangle((16 + bob, y0 - 2, 20 + bob, y0), fill=rgba(sh(stone, 0.75), alpha))
+        for lx in (8 + step, 16 - step):
+            d.line((lx, 28, lx + 4, 28), fill=sh(stone, 0.6, alpha))
+        # torso: broad chest block and a waist block
+        block(im, (9, 19 + y, 19, 24 + y), sh(stone, 0.9)[:3], alpha)
+        block(im, (5, 9 + y, 23, 19 + y), stone, alpha)
+        d = ImageDraw.Draw(im)
+        # rune channels on the chest and the waist
+        rc = rgba(eye, alpha)
+        d.line((9, 12 + y, 12, 12 + y, 12, 16 + y, 16, 16 + y), fill=rc)
+        d.line((19, 11 + y, 19, 14 + y), fill=rc)
+        d.ellipse((13, 11 + y, 16, 14 + y), outline=rc)
+        d.point((14, 12 + y), fill=(240, 250, 255, alpha))
+        d.line((11, 21 + y, 17, 21 + y), fill=sh(eye, 0.7, alpha))
+        # cracks and moss
+        d.line((21, 10 + y, 19, 13 + y, 21, 17 + y), fill=sh(stone, 0.45, alpha))
+        d.line((7, 15 + y, 9, 18 + y), fill=sh(stone, 0.45, alpha))
+        for mx, my in ((5, 9 + y), (6, 9 + y), (7, 10 + y), (22, 9 + y), (12, 24 + y)):
+            d.point((mx, my), fill=(86, 140, 70, alpha))
+        # head: crested helm with a visor slit
+        block(im, (10, 2 + y, 18, 9 + y), sh(stone, 1.05)[:3], alpha)
+        d = ImageDraw.Draw(im)
+        d.polygon([(13, 2 + y), (14, -1 + y), (15, 2 + y)], fill=sh(stone, 1.2, alpha))  # crest
+        d.rectangle((11, 5 + y, 17, 6 + y), fill=(16, 20, 34, alpha))
+        d.line((12, 5 + y, 16, 5 + y), fill=rc)
+        d.point((14, 4 + y), fill=rc)  # brow rune
+        # shoulders and arms with boulder fists
+        ay = 10 + y - arms * 7
+        for x0, f in ((1, 0.82), (22, 0.95)):
+            block(im, (x0, ay, x0 + 5, ay + 8), sh(stone, f)[:3], alpha)
+            fm = mask(fw, fh, lambda dd, x0=x0: dd.ellipse((x0 - 1, ay + 7, x0 + 6, ay + 13), fill=FULL))
+            lit(im, fm, sh(stone, f - 0.05)[:3], x0 + 1, ay + 8, 4, 3, alpha)
+            d = ImageDraw.Draw(im)
+            d.point((x0 + 2, ay + 3), fill=rc)  # rune on the shoulder
         return im
-
-    P = gs.P
 
     def fn(name, i, n):
         if name == "idle":
-            return body(bob=[0, 1, 1, 0][i])
+            return body(bob=[0, 0, 1, 1][i])
         if name == "walk":
-            return body(bob=[0, 1, 0, -1, 0, 1][i], slam=False)
+            return body(step=[-1, 0, 1, 1, 0, -1][i], bob=i % 2)
         if name == "windup":
-            return body(bob=-1, eyes=False)
+            return body(arms=1, bob=-i, eye=(180, 240, 255))
         if name == "attack":
-            return body(bob=1, slam=True, eyes=False)
+            return body(arms=0, bob=[2, 3, 1][i], eye=(255, 255, 255) if i == 0 else (180, 240, 255))
         if name == "hurt":
-            return body(eyes=False)
-        return body(pile=True, alpha=255 - i * 30)
+            return body(bob=1, eye=(255, 255, 255))
+        return body(crumble=i) if i > 1 else body(bob=2 + i * 2, eye=(50, 70, 90))
 
     return lay, fn, None
 
 
 # =============================================================== ash husk
 def ash_husk():
-    """Ashen halls husk: an ember-veiled cultist that lobs cinders."""
+    """Ashen halls husk (cultist frame layout): a hunched charred body with
+    cracked skin over a glowing core, ash flaking from the shoulders, a
+    tattered veil, a cinder held in the claw."""
     fw, fh = 24, 28
     lay = gs.monster_layout("cultist_layout", fw, fh, (12, 28), counts={"windup": 4})
-    body = robed(fw, fh, (78, 70, 82), hood_in=(28, 20, 24), eye=(255, 150, 80),
-                 trim=(200, 120, 70), sigil=True)
+    char = (66, 58, 60)
+    ember = (255, 130, 50)
+    hot = (255, 214, 130)
+    veil = (110, 100, 98)
+
+    def body(sway=0, hand=(17, 17), cinder=1, flash=False, dis=0, alpha=255, lean=0, step=0, flake=0):
+        im = blank(fw, fh)
+        L = lean
+        d = ImageDraw.Draw(im)
+        # legs: thin, burned
+        for k, x in enumerate((10 + step, 13 - step)):
+            col = sh(char, 0.7 if k == 0 else 0.95)[:3]
+            _limb(d, (x + L, 20), (x - 1 + L, 24), col, alpha)
+            _limb(d, (x - 1 + L, 24), (x + L, 27), col, alpha)
+            d.point((x + 1 + L, 27), fill=rgba(sh(char, 0.6), alpha))
+        # back arm
+        _limb(d, (9 + L, 12), (7 + L + sway, 19), sh(char, 0.6)[:3], alpha)
+        # hunched torso with cracks over the core
+        tm = mask(fw, fh, lambda dd: dd.ellipse((7 + L, 9, 17 + L, 22), fill=FULL))
+        lit(im, tm, char, 9 + L, 11, 5, 7, alpha)
+        d = ImageDraw.Draw(im)
+        core = rgba(hot, alpha) if flash else rgba(ember, alpha)
+        d.ellipse((11 + L, 14, 14 + L, 17), fill=core)
+        d.point((12 + L, 15), fill=rgba(hot, alpha))
+        for (x0, y0, x1, y1) in ((12, 13, 10, 11), (14, 16, 16, 19), (11, 17, 9, 20), (13, 13, 15, 11)):
+            d.line((x0 + L, y0, x1 + L, y1), fill=rgba(sh(ember, 0.85), alpha))
+        # tattered ash veil over the head and back
+        vm = mask(fw, fh, lambda dd: dd.polygon([(7 + L, 13), (9 + L, 3), (14 + L, 2), (17 + L, 6), (16 + L, 10), (12 + L, 9),
+                                                 (10 + L, 15)], fill=FULL))
+        lit(im, vm, veil, 10 + L, 4, 5, 6, alpha, flat=0.2)
+        d = ImageDraw.Draw(im)
+        for k in range(3):
+            d.point((7 + L + k, 14 + k % 2), fill=sh(veil, 0.6, alpha))  # torn hem
+        # burned face under the veil: hollow mouth, ember eyes
+        d.polygon([(12 + L, 5), (16 + L, 6), (15 + L, 10), (12 + L, 10)], fill=(26, 18, 18, alpha))
+        e = (255, 255, 255, alpha) if flash else rgba(hot, alpha)
+        d.point((13 + L, 7), fill=e)
+        d.point((15 + L, 7), fill=e)
+        d.line((13 + L, 9, 14 + L, 9), fill=rgba(ember, alpha))
+        # ash flakes rising off the shoulders
+        for k in range(3):
+            fy = 9 - ((flake + k * 2) % 6)
+            d.point((8 + k * 3 + L, fy), fill=(170, 160, 156, alpha) if k % 2 else (120, 112, 110, alpha))
+        # front arm with claw and the cinder
+        hx, hy = hand
+        _limb(d, (14 + L, 12), (hx + L, hy), char, alpha, sh(char, 1.3)[:3])
+        d.point((hx + 1 + L, hy + 1), fill=rgba(sh(char, 0.5), alpha))
+        if cinder:
+            r = cinder
+            cm = mask(fw, fh, lambda dd: dd.ellipse((hx + 1 + L - r, hy - 1 - r, hx + 1 + L + r, hy - 1 + r), fill=FULL))
+            lit(im, cm, ember, hx + L, hy - 2, r, r, alpha)
+            d = ImageDraw.Draw(im)
+            d.point((hx + 1 + L, hy - 1), fill=rgba(hot, alpha))
+            d.point((hx + 2 + L, hy - 3 - r), fill=rgba(ember, alpha))  # flame lick
+        if dis:
+            dissolve(im, dis, color=(150, 140, 136, alpha))
+        return im
 
     def fn(name, i, n):
         if name == "idle":
-            return body(sway=[0, 1, 0, -1][i], orb_col=(255, 140, 60))
+            return body(sway=[0, 1, 0, -1][i], flake=i)
         if name == "walk":
-            return body(sway=[1, 2, 1, -1, -2, -1][i], hands=(14, 15 + (i % 2)), orb_col=(255, 140, 60))
+            return body(sway=[1, 2, 1, -1, -2, -1][i], step=[-1, 0, 1, 1, 0, -1][i], flake=i)
         if name == "windup":
-            return body(hands=(14, 13), orb=1 + i, lean=-1, orb_col=(255, 170, 70))
+            return body(hand=(15, 11 - i), cinder=1 + i // 2, lean=-1, flake=i)
         if name == "attack":
-            return body(hands=(16, 13), orb=[3, 1, 0][i], flash=i == 0, lean=1, orb_col=(255, 170, 70))
+            return body(hand=[(17, 10), (19, 13), (18, 16)][i], cinder=[2, 0, 0][i], flash=i == 0, lean=1)
         if name == "hurt":
             return body(lean=-2, flash=True)
-        return body(dis=2 + i * 2 if i < 4 else 9, alpha=255 - i * 30, orb_col=(255, 140, 60))
+        return body(dis=2 + i * 2 if i < 4 else 9, alpha=255 - i * 30, cinder=0)
 
     return lay, fn, None
 
 
 # ========================================================== glass stalker
 def glass_stalker():
-    """Mirror halls: a razor-glass stalker that phases through reflections."""
+    """Mirror halls: a razor-glass moth, faceted wings in light and shadow
+    panes with a reflection streak, a shard body with a cutting tail,
+    a cold blue eye."""
     fw, fh = 20, 16
     lay = gs.monster_layout("glass_layout", fw, fh, (10, 12), "fly", {"idle": 4, "fly": 4, "windup": 2, "attack": 3, "death": 5})
-    glass = (188, 214, 226)
-    edge = (140, 180, 200)
+    glass = (176, 206, 224)
+    deep = (92, 120, 150)
 
-    def body(wing, dy=0, rot=0, eyes=True, alpha=255, tilt=0, mouth=False):
+    def body(wing, dy=0, rot=0, eyes=True, alpha=255, tilt=0, shatter=0, flash=False):
         im = blank(fw, fh)
         d = ImageDraw.Draw(im)
         cy = 8 + dy
         wy = cy - wing
         for side in (-1, 1):
-            sx = 10 + side
-            tipx = 10 + side * 9
-            pts = [(sx, cy - 1), (10 + side * 5, wy - 1), (tipx, wy), (10 + side * 8, cy + 2), (10 + side * 6, cy + 1),
-                   (10 + side * 4, cy + 3), (sx, cy + 1)]
-            d.polygon(pts, fill=rgba(sh(glass, 0.7 if side < 0 else 0.95, int(alpha * 0.85)), alpha))
-            d.line((sx, cy - 1, 10 + side * 5, wy - 1, tipx, wy), fill=rgba(edge, alpha))
-        m = mask(fw, fh, lambda dd: dd.polygon([(9, cy - 4 + tilt), (12, cy - 2 + tilt), (11, cy + 3 + tilt), (8, cy + 2 + tilt)], fill=FULL))
-        lit(im, m, glass, 10, cy, 2.5, 3.5, alpha)
+            back = side < 0
+            root = (10 + side, cy - 1)
+            tip = (10 + side * 9, wy)
+            mid = (10 + side * 6, wy - 1)
+            low = (10 + side * 7, cy + 3)
+            # two facets per wing: upper lit, lower shaded
+            d.polygon([root, mid, tip, (10 + side * 5, cy)], fill=rgba(sh(glass, 0.82 if back else 1.12), alpha))
+            d.polygon([root, (10 + side * 5, cy), tip, low, (10 + side * 2, cy + 2)], fill=rgba(sh(deep, 0.85 if back else 1.0), alpha))
+            d.line((root[0], root[1], tip[0], tip[1]), fill=rgba(sh(glass, 1.3), alpha))  # leading edge
+            d.line((10 + side * 3, cy - 2, 10 + side * 5, wy), fill=(255, 255, 255, int(alpha * 0.9)))  # reflection
+            d.point(tip, fill=(255, 255, 255, alpha))
+        # shard body: diamond with a long cutting tail
+        bm = mask(fw, fh, lambda dd: dd.polygon([(10, cy - 4 + tilt), (12, cy + tilt), (10, cy + 5 + tilt), (8, cy + tilt)], fill=FULL))
+        lit(im, bm, glass, 9, cy - 1, 2.5, 4, alpha)
         d = ImageDraw.Draw(im)
-        for fx, fy in ((9, cy - 3 + tilt), (11, cy + 2 + tilt)):
-            d.point((fx, fy), fill=(255, 255, 255, alpha))
+        d.line((10, cy + 5 + tilt, 10, cy + 7 + tilt), fill=rgba(deep, alpha))
+        d.point((10, cy + 7 + tilt), fill=(255, 255, 255, alpha))
+        d.point((9, cy - 3 + tilt), fill=(255, 255, 255, alpha))
         if eyes:
-            d.point((9, cy + tilt), fill=(120, 230, 255, alpha))
-            d.point((11, cy + tilt), fill=(120, 230, 255, alpha))
-        if mouth:
-            d.line((9, cy + 2 + tilt, 11, cy + 2 + tilt), fill=(90, 140, 160, alpha))
+            e = (255, 255, 255, alpha) if flash else (90, 210, 255, alpha)
+            d.point((10, cy + tilt), fill=e)
+            d.point((10, cy + 1 + tilt), fill=(30, 60, 90, alpha))
+        if shatter:
+            rnd = random.Random(shatter)
+            px = im.load()
+            out = blank(fw, fh)
+            op = out.load()
+            for y in range(fh):
+                for x in range(fw):
+                    if px[x, y][3]:
+                        dx = int((x - 10) * shatter * 0.12) + rnd.randint(-1, 1) * (shatter > 2)
+                        dy2 = int((y - 8) * shatter * 0.12) + shatter
+                        nx, ny = x + dx, y + dy2
+                        if 0 <= nx < fw and 0 <= ny < fh and (x + y + shatter) % (shatter + 1):
+                            op[nx, ny] = px[x, y]
+            im = out
         if rot:
             im = im.rotate(rot, resample=Image.NEAREST, center=(10, 8))
         return im
@@ -1141,71 +1365,91 @@ def glass_stalker():
         if name in ("idle", "fly"):
             return body([4, 1, -3, 1][i], dy=[0, 0, 1, 1][i] if name == "idle" else 0)
         if name == "windup":
-            return body(5 + i, dy=-1 - i)
+            return body(5 + i, dy=-1 - i, flash=i == 1)
         if name == "attack":
-            return body(-2, dy=1, rot=[-20, -35, -25][i], tilt=1, mouth=True)
+            return body(-2, dy=1, rot=[-20, -35, -25][i], tilt=1)
         if name == "hurt":
-            return body(2, eyes=False)
-        return body(-3, dy=i, rot=i * 60, eyes=False, alpha=255 - i * 40)
+            return body(2, eyes=False, flash=True)
+        return body(-2, shatter=i + 1, eyes=False, alpha=255 - i * 40)
 
     return lay, fn, None
 
 
 # ========================================================= crystal crawler
 def crystal_crawler():
-    """Crystal depths ambusher: a shard-backed crawler that drops on heroes."""
+    """Crystal depths ambusher: a low beetle with a lit chitin shell grown
+    over with faceted crystals (two-tone faces), six jointed legs, mandibles
+    and a pale glowing eye cluster."""
     fw, fh = 24, 28
     lay = gs.monster_layout("crawler_layout", fw, fh, (12, 28))
-    shell = (96, 130, 168)
-    shard = (170, 220, 250)
+    shell = (70, 84, 120)
+    shard = (150, 210, 245)
 
-    def body(p=None, crawl_k=0, alpha=255, eyes=True, pile=False):
+    def crystal(d, x, base_y, h, w, alpha, lean=0):
+        top = (x + lean, base_y - h)
+        d.polygon([(x - w, base_y), top, (x, base_y)], fill=rgba(sh(shard, 1.15), alpha))  # lit face
+        d.polygon([(x, base_y), top, (x + w, base_y)], fill=rgba(sh(shard, 0.7), alpha))  # shaded face
+        d.point(top, fill=(255, 255, 255, alpha))
+
+    def body(gait=0, crouch=0, alpha=255, eyes=True, jaw=0, pile=0, lunge=0):
         im = blank(fw, fh)
-        g = blank(fw, fh)
         d = ImageDraw.Draw(im)
-        y0 = 26
+        g0 = 27
         if pile:
             for k in range(4):
-                d.polygon([(8 + k * 4, 27), (10 + k * 4, 21 + (k % 2) * 2), (12 + k * 4, 27)], fill=rgba(shard, alpha))
-            d.ellipse((8, 24, 20, 28), fill=rgba(shell, alpha))
+                crystal(d, 7 + k * 4, 27, 3 + (k % 2) * 2 - min(2, pile // 3), 2, alpha, lean=(k % 2) * 2 - 1)
+            m = mask(fw, fh, lambda dd: dd.ellipse((6, 24, 19, 28), fill=FULL))
+            lit(im, m, shell, 9, 25, 6, 2, alpha)
             return im
-        m = mask(fw, fh, lambda dd: dd.ellipse((4, y0 - 7 + crawl_k, 20, y0 - 1), fill=FULL))
-        lit(im, m, shell, 12, y0 - 4, 8, 3.5, alpha)
+        L = lunge
+        by = 21 + crouch
+        # far legs
+        for k, lx in enumerate((6, 11, 16)):
+            ph = gait if k % 2 else -gait
+            d.line((lx + L, by + 2, lx + L - 2 + ph, by + 3, lx + L - 3 + ph, g0), fill=rgba(sh(shell, 0.5), alpha))
+        # shell
+        sm = mask(fw, fh, lambda dd: dd.chord((3 + L, by - 5, 19 + L, by + 6), 180, 360, fill=FULL))
+        lit(im, sm, shell, 7 + L, by - 3, 8, 4, alpha)
         d = ImageDraw.Draw(im)
-        for k in range(4):
-            bx = 6 + k * 4
-            h = 6 + (k % 2) * 3
-            d.polygon([(bx - 2, y0 - 7 + crawl_k), (bx, y0 - 7 - h + crawl_k), (bx + 2, y0 - 7 + crawl_k)],
-                      fill=rgba(shard, alpha))
-            d.point((bx, y0 - 8 - h + crawl_k), fill=(240, 250, 255, alpha))
-            glow_dot(g, bx, y0 - 9 - h + crawl_k, 1.8, (140, 220, 255), 0.5)
-        for lx in (5, 9, 13, 17):
-            d.line((lx, y0 - 2 + crawl_k, lx + (2 if lx % 4 else -2), y0 + 1), fill=rgba(sh(shell, 0.6), alpha), width=2)
-        hx = 19
-        d.ellipse((hx - 2, y0 - 6 + crawl_k, hx + 3, y0 - 1 + crawl_k), fill=rgba(sh(shell, 1.1), alpha))
+        d.line((3 + L, by + 1, 19 + L, by + 1), fill=sh(shell, 0.5, alpha))
+        d.line((11 + L, by - 5, 11 + L, by), fill=sh(shell, 0.6, alpha))  # wing-case seam
+        # crystal growths
+        for x, h, lean in ((6, 5, -1), (9, 9, 0), (12, 7, 1), (15, 10, 1), (17, 4, 2)):
+            crystal(d, x + L, by - 3 if x in (6, 17) else by - 4, h, 2, alpha, lean)
+        # near legs, jointed, with crystal tips
+        for k, lx in enumerate((7, 12, 17)):
+            ph = -gait if k % 2 else gait
+            d.line((lx + L, by + 2, lx + L + 2 + ph, by + 3, lx + L + 2 + ph, g0), fill=rgba(sh(shell, 0.85), alpha))
+            d.point((lx + L + 2 + ph, by + 3), fill=rgba(sh(shell, 1.3), alpha))
+            d.point((lx + L + 2 + ph, g0), fill=rgba(shard, alpha))
+        # head with mandibles and an eye cluster
+        hx, hy = 20 + L, by
+        hm = mask(fw, fh, lambda dd: dd.ellipse((hx - 3, hy - 3, hx + 2, hy + 2), fill=FULL))
+        lit(im, hm, sh(shell, 1.1)[:3], hx - 2, hy - 2, 3, 3, alpha)
+        d = ImageDraw.Draw(im)
+        for jy, s_ in ((hy - 1, -1), (hy + 1, 1)):
+            d.line((hx + 2, jy, hx + 4, jy + s_ * jaw, hx + 3, jy + s_ * (jaw + 1)), fill=rgba(sh(shard, 0.9), alpha))
         if eyes:
-            d.point((hx + 1, y0 - 4 + crawl_k), fill=(140, 220, 255, alpha))
-            d.point((hx + 2, y0 - 3 + crawl_k), fill=(140, 220, 255, alpha))
-        d.line((hx + 2, y0 - 2 + crawl_k, hx + 5, y0 - 3 + crawl_k), fill=rgba(sh(shell, 0.7), alpha))
-        d.line((hx + 2, y0 - 1 + crawl_k, hx + 5, y0 - 1 + crawl_k), fill=rgba(sh(shell, 0.7), alpha))
+            for ex, ey in ((hx, hy - 2), (hx + 1, hy - 1), (hx - 1, hy - 1)):
+                d.point((ex, ey), fill=(170, 240, 255, alpha))
         return im
 
     def fn(name, i, n):
         if name == "idle":
-            return body(crawl_k=[0, 1, 0, 0][i])
+            return body(gait=0, crouch=[0, 0, 1, 1][i], jaw=[0, 1, 1, 0][i])
         if name == "walk":
-            return body(crawl_k=[0, 1, 0, -1, 0, 1][i])
+            return body(gait=[-1, 0, 1, 1, 0, -1][i], crouch=i % 2)
         if name == "windup":
-            return body(crawl_k=1, eyes=False)
+            return body(crouch=2, jaw=2, lunge=-1)
         if name == "attack":
-            return body(crawl_k=0, eyes=True)
+            return body(jaw=[0, 1, 2][i], lunge=[2, 3, 1][i])
         if name == "hurt":
-            return body(eyes=False)
-        return body(pile=True, alpha=255 - i * 30)
+            return body(crouch=1, eyes=False, lunge=-1)
+        if i < 2:
+            return body(crouch=2 + i, eyes=False)
+        return body(pile=i, alpha=255 - (i - 2) * 30)
 
     return lay, fn, None
-
-
 
 
 MONSTERS = {
