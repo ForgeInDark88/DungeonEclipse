@@ -490,120 +490,349 @@ def illusionist():
     mage(0.0).save(os.path.join(A, "sprites/bosses/illusionist.png"))
 
 
-def drowned_bell():
-    """The Drowned Bell: a bloated drowned titan hauling a huge bronze bell."""
+# ============================================================== ashen king
+def ashen_king():
+    """The Ashen King: a burned monarch in blackened plate split by magma
+    veins, a molten heart behind the ribs of the cuirass, a skull crowned
+    with iron spikes and live embers, a cape smouldering at the hem and a
+    greatsword with a molten edge. Dies into a heap of ash, crown and sword."""
     fw, fh = 48, 48
-    lay = gs.monster_layout("drowned_bell_layout", fw, fh, (24, 48),
-                            counts={"windup": 3, "attack": 3, "death": 6})
-    skin = (108, 140, 116)
-    belly = (94, 128, 104)
-    weed = (56, 108, 76)
-    bronze = (176, 138, 70)
-    bronze_hi = (224, 190, 110)
-    eye = (150, 255, 220)
+    lay = gs.monster_layout("ashen_king_layout", fw, fh, (24, 48), counts={"windup": 3, "attack": 3, "death": 6})
+    char = (62, 54, 58)  # blackened iron
+    ash = (150, 140, 136)
+    bone = (196, 184, 170)
+    ember = (255, 130, 50)
+    hot = (255, 214, 120)
+    cloth = (50, 42, 48)
+    race = dict(leg=13, torso=15)
 
-    def glow_dot(g, x, y, r, col, a):
-        d = ImageDraw.Draw(g)
-        d.ellipse((x - r, y - r, x + r, y + r), fill=rgba(col, int(255 * a)))
+    def crown(d, g, cx, top, alpha, flare):
+        d.rectangle((cx - 6, top + 4, cx + 6, top + 6), fill=rgba(char, alpha))
+        d.line((cx - 6, top + 4, cx + 6, top + 4), fill=rgba(sh(char, 1.6), alpha))
+        d.line((cx - 6, top + 6, cx + 6, top + 6), fill=rgba(sh(char, 0.6), alpha))
+        for k, x in enumerate((cx - 6, cx - 3, cx, cx + 3, cx + 6)):
+            h = 5 if k % 2 == 0 else 3
+            d.polygon([(x - 1, top + 4), (x, top + 4 - h), (x + 1, top + 4)], fill=rgba(char, alpha))
+            d.point((x - 1, top + 4 - h // 2), fill=rgba(sh(char, 1.5), alpha))
+            tip = (x, top + 3 - h)
+            d.point(tip, fill=rgba(hot if flare else ember, alpha))
+            glow_dot(g, tip[0], tip[1], 2.2, ember, (0.8 if flare else 0.5) * alpha / 255)
+        for x in (cx - 3, cx + 3):
+            d.point((x, top + 5), fill=rgba(ember, alpha))  # ember gems
 
-    def bell(d, g, im, hx, hy, alpha=255, ring=0):
-        # rope to the bell crown; the bell hangs at the hero's right side
-        bx = hx + 13
-        d.line((hx, hy - 2, bx, hy - 12), fill=(96, 74, 54, alpha), width=1)
-        # crown loop, shoulders, waist, rim, clapper
-        d.rectangle((bx - 2, hy - 12, bx + 2, hy - 11), fill=rgba(sh(bronze, 0.8), alpha))
-        m = mask(fw, fh, lambda dd: dd.polygon(
-            [(bx - 3, hy - 11), (bx + 3, hy - 11), (bx + 6, hy - 2), (bx + 6, hy + 2),
-             (bx - 6, hy + 2), (bx - 6, hy - 2)], fill=FULL))
-        lit(im, m, bronze, bx, hy - 7, 5, 6, alpha)
-        d = ImageDraw.Draw(im)
-        d.line((bx - 6, hy + 1, bx + 6, hy + 1), fill=rgba(sh(bronze, 0.55), alpha))
-        d.line((bx - 6, hy + 2, bx + 6, hy + 2), fill=rgba(sh(bronze_hi, 1.0), alpha))
-        for k in range(3):  # verdigris
-            d.point((bx - 4 + k * 4, hy - 7 + k), fill=(110, 190, 160, alpha))
-        d.rectangle((bx - 6, hy + 2, bx + 6, hy + 3), fill=rgba(sh(bronze, 0.75), alpha))
-        d.point((bx, hy), fill=rgba(sh(bronze, 0.5), alpha))  # clapper
-        if ring:
-            for rr, a in ((10, 170), (14, 120), (18, 80)):
-                d.ellipse((bx - rr, hy - 6 - rr // 2, bx + rr, hy - 6 + rr), outline=(210, 255, 240, a))
-        return d
+    def sword(d, g, rx, ry, ang, alpha, flare):
+        a = math.radians(ang)
+        ca, sa = math.cos(a), math.sin(a)
+        nx, ny = -sa, ca
+        L = 23
+        tip = (rx + L * ca, ry + L * sa)
+        base = (rx + 3 * ca, ry + 3 * sa)
+        steel = (84, 76, 80)
+        d.polygon([(base[0] + nx * 1.8, base[1] + ny * 1.8), (tip[0] + nx * 0.6, tip[1] + ny * 0.6), (tip[0] + ca, tip[1] + sa),
+                   (tip[0] - nx * 0.6, tip[1] - ny * 0.6), (base[0] - nx * 1.8, base[1] - ny * 1.8)], fill=rgba(steel, alpha))
+        d.line((base[0] + ca * 2, base[1] + sa * 2, rx + (L - 5) * ca, ry + (L - 5) * sa), fill=rgba(sh(steel, 0.6), alpha))
+        # the molten cutting edge
+        edge = hot if flare else ember
+        d.line((base[0] - nx * 1.5, base[1] - ny * 1.5, tip[0] - nx * 0.5, tip[1] - ny * 0.5), fill=rgba(edge, alpha))
+        for t in (7, 12, 17, 21):
+            p = (rx + t * ca - nx * 1.2, ry + t * sa - ny * 1.2)
+            glow_dot(g, p[0], p[1], 2.4 if flare else 1.8, ember, (0.8 if flare else 0.5) * alpha / 255)
+        for t in (10, 15):  # cracks across the blade
+            d.point((rx + t * ca + nx * 0.6, ry + t * sa + ny * 0.6), fill=rgba(ember, alpha))
+        gx, gy = nx * 4, ny * 4
+        d.line((rx + ca * 2 + gx, ry + sa * 2 + gy, rx + ca * 2 - gx, ry + sa * 2 - gy), fill=rgba(char, alpha), width=2)
+        d.point((rx + ca * 2 + gx, ry + sa * 2 + gy), fill=rgba(sh(char, 1.7), alpha))
+        d.point((rx + ca * 2, ry + sa * 2), fill=rgba(ember, alpha))
+        d.line((rx, ry, rx - 3 * ca, ry - 3 * sa), fill=(50, 34, 30, alpha), width=2)
+        d.point((rx - 4 * ca, ry - 4 * sa), fill=rgba(ember, alpha))
 
-    def body(p, alpha=255, eye=eye, ring=False, pile=0, lean=0):
+    def king(p, sword_ang=60, alpha=255, pile=0, flare=False, cape=0, diss=0, smoke=0):
         im = blank(fw, fh)
         g = blank(fw, fh)
         d = ImageDraw.Draw(im)
-        L = lean
         if pile:
-            # collapsed: the bell rests on the body
-            d.ellipse((8, 38, 34, 47), fill=rgba(skin, alpha))
-            d.ellipse((14, 40, 28, 46), fill=rgba(belly, alpha))
-            bell(d, g, im, 22, 40, alpha)
-            return im
-        s = gs.skel(p, dict(leg=12, torso=14), cx=24, ground=47)
-        # legs
-        for side in ("l", "r"):
-            col = rgba(skin, alpha) if side == "r" else rgba(sh(skin, 0.7), alpha)
-            d.line([s["hip"], s[side + "knee"]], fill=col, width=3)
-            d.line([s[side + "knee"], s[side + "foot"]], fill=col, width=3)
-            fx, fy = s[side + "foot"]
-            d.line((fx, fy, fx + 3, fy), fill=col, width=2)
+            # a heap of ash with the plates, the crown and the sword on top
+            pm = mask(fw, fh, lambda dd: dd.chord((8, 36, 38, 54), 180, 360, fill=FULL))
+            lit(im, pm, ash, 16, 39, 13, 7, alpha)
+            d = ImageDraw.Draw(im)
+            for k in range(5):
+                x = 10 + k * 6
+                d.point((x, 45 - (k % 2)), fill=rgba(sh(ash, 0.7), alpha))
+            cm = mask(fw, fh, lambda dd: dd.chord((14, 38, 26, 48), 180, 360, fill=FULL))
+            lit(im, cm, char, 17, 40, 5, 4, alpha)
+            d = ImageDraw.Draw(im)
+            sword(d, g, 4, 45, -6, alpha, False)
+            crown(d, g, 31, 34 + min(pile, 4), alpha, False)
+            fade_embers = max(0, 6 - pile)
+            for k in range(fade_embers):
+                x, y = 12 + (k * 7) % 24, 42 + (k % 2)
+                d.point((x, y), fill=rgba(ember, alpha))
+                glow_dot(g, x, y, 1.8, ember, 0.5 * alpha / 255)
+            return post(im, g, alpha)
+        s = gs.skel(p, race, cx=24, ground=47)
         hx, hy = s["hip"]
         nx, ny = s["neck"]
-        # bloated torso, barnacle spots, seaweed belt
-        mt = mask(fw, fh, lambda dd: dd.ellipse((hx - 11, ny + 2, hx + 11, hy + 8), fill=FULL))
-        lit(im, mt, belly, hx - 2, ny + 6, 10, 8, alpha)
+        # cape of ash cloth, the hem burning
+        cm = mask(fw, fh, lambda dd: dd.polygon([(nx - 7, ny + 1), (nx + 3, ny + 1), (hx - 1 + cape, 44), (hx - 6 + cape, 42),
+                                                 (hx - 9 + cape, 45), (hx - 13 + cape, 41)], fill=FULL))
+        lit(im, cm, cloth, nx - 6, ny + 6, 8, 14, alpha, flat=0.15)
         d = ImageDraw.Draw(im)
-        for bx, by in ((hx - 6, ny + 6), (hx + 3, ny + 4), (hx + 7, ny + 8), (hx - 3, hy + 4)):
-            d.point((bx, by), fill=(150, 210, 180, alpha))
-            d.point((bx + 1, by + 1), fill=(120, 180, 150, alpha))
-        d.line((hx - 9, hy + 1, hx + 9, hy + 1), fill=rgba(weed, alpha), width=2)
-        for k, x in enumerate((hx - 7, hx - 2, hx + 4, hx + 8)):
-            d.polygon([(x - 1, hy + 2), (x + 1, hy + 2), (x, hy + 6 + (k % 2))], fill=rgba(weed, alpha))
-        # arms: left hangs, right holds the rope of the bell
-        d.line([s["shoulder"], s["lhand"]], fill=rgba(sh(skin, 0.75), alpha), width=2)
-        d.line((nx, ny, hx, hy), fill=rgba(sh(skin, 0.8), alpha), width=2)
-        # head: sunken, barnacle crown, glow eyes
-        sx, sy = s["head"]
-        mh = mask(fw, fh, lambda dd: dd.ellipse((sx - 5, sy - 5, sx + 5, sy + 3), fill=FULL))
-        lit(im, mh, skin, sx - 1, sy - 3, 5, 4, alpha)
+        d.line((nx - 5, ny + 3, hx - 10 + cape, 41), fill=rgba(sh(cloth, 0.62), alpha))
+        for k, (x, y) in enumerate(((hx - 1 + cape, 44), (hx - 6 + cape, 42), (hx - 9 + cape, 45), (hx - 12 + cape, 42))):
+            d.point((x, y), fill=rgba(ember if k % 2 else hot, alpha))
+            glow_dot(g, x, y - 1, 2.2, ember, 0.6 * alpha / 255)
+        # legs: charred greaves
+        for side in ("l", "r"):
+            back = side == "l"
+            k_, f_ = s[side + "knee"], s[side + "foot"]
+            base = sh(char, 1.0 if back else 1.35)[:3]  # lighter than the cape so the legs read
+            thick_line(d, (hx + (-1 if back else 1), hy), k_, rgba(base, alpha), 3, rgba(sh(base, 1.5), alpha))
+            thick_line(d, k_, (f_[0], f_[1] - 2), rgba(base, alpha), 3, rgba(sh(base, 1.5), alpha))
+            d.ellipse((k_[0] - 2, k_[1] - 1, k_[0] + 1, k_[1] + 2), fill=rgba(sh(base, 1.2), alpha))
+            d.point((k_[0] - 1, k_[1] + 1), fill=rgba(ember, alpha))  # vein at the knee
+            d.polygon([(f_[0] - 2, f_[1] - 2), (f_[0] + 4, f_[1] - 1), (f_[0] + 4, f_[1]), (f_[0] - 2, f_[1])], fill=rgba(sh(base, 0.9), alpha))
+        # tasset skirt of iron strips
+        for k in range(4):
+            x = hx - 5 + k * 3
+            d.rectangle((x, hy, x + 2, hy + 5 + (k % 2)), fill=rgba(sh(char, 0.85 + 0.1 * (k % 2)), alpha))
+            d.point((x, hy), fill=rgba(sh(char, 1.6), alpha))
+        # back arm
+        thick_line(d, s["shoulder"], s["lhand"], rgba(sh(bone, 0.6), alpha), 2)
+        # cuirass: blackened plate split by glowing veins, the molten heart
+        bm = mask(fw, fh, lambda dd: dd.polygon([(hx - 6, hy), (hx + 6, hy), (nx + 8, ny + 1), (nx + 6, ny - 1), (nx - 6, ny - 1), (nx - 8, ny + 1)], fill=FULL))
+        lit(im, bm, char, nx - 2, ny + 3, 8, 9, alpha)
         d = ImageDraw.Draw(im)
-        for bx, by in ((sx - 3, sy - 4), (sx, sy - 5), (sx + 3, sy - 4)):
-            d.ellipse((bx - 1, by - 1, bx + 1, by), fill=(150, 210, 180, alpha))
-        d.rectangle((sx - 1, sy - 1, sx + 1, sy + 1), fill=(14, 30, 24, alpha))
-        d.rectangle((sx + 2, sy - 1, sx + 4, sy + 1), fill=(14, 30, 24, alpha))
-        d.point((sx, sy), fill=rgba(eye, alpha))
-        d.point((sx + 3, sy), fill=rgba(eye, alpha))
-        d.line((sx - 2, sy + 2, sx + 4, sy + 2), fill=rgba(sh(skin, 0.55), alpha))
-        for tx in (sx - 1, sx + 1, sx + 3):
-            d.point((tx, sy + 2), fill=rgba(sh(skin, 1.2), alpha))
-        glow_dot(g, sx, sy, 2.4, eye, 0.8 * alpha / 255)
-        glow_dot(g, sx + 3, sy, 2.4, eye, 0.8 * alpha / 255)
-        # right arm up holding the rope, big bell in front
-        d.line([s["shoulder"], s["rhand"]], fill=rgba(skin, alpha), width=3)
+        heart = hot if flare else ember
+        d.ellipse((nx - 2, ny + 4, nx + 2, ny + 8), fill=rgba(sh(ember, 0.6), alpha))
+        d.ellipse((nx - 1, ny + 5, nx + 1, ny + 7), fill=rgba(heart, alpha))
+        glow_dot(g, nx, ny + 6, 5 if flare else 4, ember, (0.9 if flare else 0.6) * alpha / 255)
+        for (x0, y0, x1, y1) in ((nx - 2, ny + 6, nx - 6, ny + 3), (nx + 2, ny + 6, nx + 5, ny + 10), (nx, ny + 8, nx - 1, hy - 1),
+                                 (nx + 1, ny + 4, nx + 4, ny + 1)):
+            d.line((x0, y0, x1, y1), fill=rgba(sh(ember, 0.85), alpha))
+        for k in range(3):  # plate ridges
+            y = ny + 10 + k * 2
+            d.line((nx - 5 + k, y, nx - 3 + k, y), fill=rgba(sh(char, 1.5), alpha))
+        # skull under the crown: ash bone, cracked, burning sockets, smoke
+        sx, sy = int(s["head"][0]), int(s["head"][1]) - 2
+        km = mask(fw, fh, lambda dd: (dd.ellipse((sx - 6, sy - 6, sx + 6, sy + 4), fill=FULL),
+                                      dd.rectangle((sx - 3, sy + 2, sx + 5, sy + 6), fill=FULL)))
+        lit(im, km, (58, 48, 46), sx - 2, sy - 3, 7, 6, alpha)  # charred, blackened skull
+        d = ImageDraw.Draw(im)
+        soot = (16, 10, 12, alpha)
+        # ash-grey flakes where the light catches the burned bone
+        for fx, fy in ((sx - 4, sy - 4), (sx - 2, sy - 5), (sx - 5, sy - 1), (sx + 1, sy - 4)):
+            d.point((fx, fy), fill=rgba(ash, alpha))
+        # a web of smouldering cracks over the face
+        for (x0, y0, x1, y1) in ((sx - 5, sy - 3, sx - 2, sy - 5), (sx + 2, sy - 6, sx + 3, sy - 3), (sx + 5, sy + 1, sx + 6, sy - 2),
+                                 (sx - 3, sy + 1, sx - 4, sy + 3)):
+            d.line((x0, y0, x1, y1), fill=rgba(sh(ember, 0.8), alpha))
+        d.point((sx - 2, sy - 5), fill=rgba(hot, alpha))
+        glow_dot(g, sx - 3, sy - 4, 2.0, ember, 0.5 * alpha / 255)
+        d.rectangle((sx - 1, sy - 2, sx + 1, sy), fill=soot)
+        d.rectangle((sx + 3, sy - 2, sx + 5, sy), fill=soot)
+        eye = hot if flare else ember
+        d.point((sx, sy - 1), fill=rgba(eye, alpha))
+        d.point((sx + 4, sy - 1), fill=rgba(eye, alpha))
+        glow_dot(g, sx, sy - 1, 2.8, ember, 0.9 * alpha / 255)
+        glow_dot(g, sx + 4, sy - 1, 2.8, ember, 0.9 * alpha / 255)
+        d.point((sx + 2, sy + 1), fill=soot)
+        d.line((sx - 2, sy + 4, sx + 5, sy + 4), fill=soot)
+        for tx in range(sx - 1, sx + 5, 2):
+            d.point((tx, sy + 3), fill=rgba((120, 100, 90), alpha))  # scorched teeth
+        d.point((sx + 1, sy + 4), fill=rgba(ember, alpha))  # ember glow inside the jaw
+        crown(d, g, sx, sy - 10, alpha, flare)
+        # smoke curling from the crown
+        for k in range(3):
+            yy = sy - 15 - ((smoke + k * 3) % 8)
+            xx = sx - 3 + k * 3 + (1 if (smoke + k) % 2 else 0)
+            if yy >= 0:
+                d.point((xx, yy), fill=(110, 104, 104, int(alpha * 0.7)))
+        # pauldrons: blackened domes with spikes
+        for side, f in ((-1, 0.8), (1, 1.0)):
+            px_, py_ = nx + side * 6, ny + 1
+            pm = mask(fw, fh, lambda dd: dd.chord((px_ - 4, py_ - 3, px_ + 4, py_ + 5), 180, 360, fill=FULL))
+            lit(im, pm, sh(char, f)[:3], px_ - 1, py_ - 1, 4, 3, alpha)
+            d = ImageDraw.Draw(im)
+            d.line((px_ - 3, py_ + 1, px_ + 3, py_ + 1), fill=rgba(sh(ember, 0.7), alpha))
+            d.polygon([(px_ - 1, py_ - 2), (px_ + side, py_ - 6), (px_ + 1, py_ - 2)], fill=rgba(sh(char, 1.2), alpha))
+            d.point((px_ + side, py_ - 6), fill=rgba(ember, alpha))
+        # sword arm in a charred gauntlet
         rx, ry = s["rhand"]
-        bell(d, g, im, rx, ry, alpha=alpha, ring=ring)
-        return im
-
-    P = gs.P
+        thick_line(d, s["shoulder"], (rx, ry), rgba(sh(char, 1.1), alpha), 3, rgba(sh(char, 1.6), alpha))
+        sword(d, g, rx, ry, sword_ang, alpha, flare)
+        d.ellipse((rx - 2, ry - 2, rx + 1, ry + 1), fill=rgba(char, alpha))
+        d.point((rx - 1, ry - 2), fill=rgba(sh(char, 1.8), alpha))
+        # drifting embers
+        for k in range(3 + (2 if flare else 0)):
+            ex = 12 + (k * 11 + smoke * 3) % 26
+            ey = 40 - (k * 9 + smoke * 4) % 34
+            if im.getpixel((ex, ey))[3] == 0:
+                d.point((ex, ey), fill=rgba(ember if k % 2 else hot, alpha))
+        return post(im, g, alpha, diss, 11, (180, 170, 166, 255))
 
     def fn(name, i, n):
         if name == "idle":
-            return body(P(by=[0, 0, 1, 1][i], ra=(6, 6 + [0, 1, 0, -1][i])))
+            return king(P(by=[0, 0, 1, 1][i], ra=(4, 10)), 70, cape=[0, 1, 1, 0][i], smoke=i, flare=i == 2)
+        if name == "walk":
+            lx = [-5, -2, 2, 5, 2, -2][i]
+            return king(P(lean=1, lf=(lx, 0), rf=(-lx, 0), by=[0, 1, 0, 0, 1, 0][i], ra=(4, 10)), 60,
+                        cape=[1, 2, 2, 1, 0, 0][i], smoke=i)
+        if name == "windup":
+            return king(P(lean=-2 - i, crouch=i, ra=(-3, -10 - i * 2)), -120 - i * 12, flare=True, cape=2, smoke=i)
+        if name == "attack":
+            return king(P(lean=4, lf=(-5, 0), rf=(7, 0), crouch=2, ra=[(8, -4), (12, 2), (10, 8)][i]), [-30, 25, 70][i],
+                        flare=True, cape=-2, smoke=i)
+        if name == "hurt":
+            return king(P(lean=-4, by=2, ra=(4, 6)), 80, cape=2)
+        if i < 2:
+            return king(P(crouch=3 + i * 3, by=2 + i, ra=(7, 8)), 90, cape=1, diss=2 + i * 2)
+        return king(P(), pile=i, alpha=255 - (i - 2) * 25)
+
+    render(lay, fn, "sprites/bosses/ashen_king_sheet.png")
+
+
+# ============================================================ drowned bell
+def drowned_bell():
+    """The Drowned Bell: a bloated drowned titan swinging a huge bronze bell
+    on an anchor chain. Swollen lit flesh with folds and barnacles, a fishing
+    net over the shoulder, kelp hair and belt, lantern eyes; the bell has
+    verdigris streaks, an inscribed band and a clapper; its toll sends out
+    rings of sound. Collapses with the bell on top of the body."""
+    fw, fh = 48, 48
+    lay = gs.monster_layout("drowned_bell_layout", fw, fh, (24, 48), counts={"windup": 3, "attack": 3, "death": 6})
+    skin = (112, 142, 120)
+    weed = (52, 104, 70)
+    bronze = (176, 132, 66)
+    verd = (96, 184, 156)
+    eye_c = (150, 255, 220)
+    chain = (98, 92, 96)
+    race = dict(leg=12, torso=14)
+
+    def bell(im, g, bx, top, alpha, ring=0):
+        """Bell with its crown at (bx, top): 13 px wide, 12 px tall."""
+        d = ImageDraw.Draw(im)
+        d.rectangle((bx - 2, top, bx + 2, top + 1), fill=rgba(sh(bronze, 0.75), alpha))  # crown loop
+        bm = mask(fw, fh, lambda dd: dd.polygon([(bx - 3, top + 1), (bx + 3, top + 1), (bx + 5, top + 5), (bx + 6, top + 10),
+                                                 (bx + 7, top + 12), (bx - 7, top + 12), (bx - 6, top + 10), (bx - 5, top + 5)], fill=FULL))
+        lit(im, bm, bronze, bx - 2, top + 4, 6, 7, alpha)
+        d = ImageDraw.Draw(im)
+        d.line((bx - 6, top + 8, bx + 6, top + 8), fill=rgba(sh(bronze, 0.6), alpha))  # inscribed band
+        for x in range(bx - 5, bx + 6, 2):
+            d.point((x, top + 7), fill=rgba(sh(bronze, 1.35), alpha))
+        d.line((bx - 7, top + 12, bx + 7, top + 12), fill=rgba(sh(bronze, 1.4), alpha))  # rim highlight
+        d.point((bx - 3, top + 3), fill=(255, 236, 170, alpha))  # glint
+        for k, (vx, vy, ln) in enumerate(((bx - 4, top + 5, 4), (bx + 1, top + 3, 3), (bx + 4, top + 6, 5))):
+            d.line((vx, vy, vx, vy + ln), fill=rgba(verd if k % 2 else sh(verd, 0.8), alpha))  # verdigris streaks
+        d.point((bx + 5, top + 11), fill=rgba(verd, alpha))
+        d.ellipse((bx - 1, top + 11, bx + 1, top + 13), fill=rgba(sh(bronze, 0.45), alpha))  # clapper
+        if ring:
+            for rr, st in ((9, 0.8), (13, 0.55), (17, 0.35)):
+                r = rr + ring
+                gd = ImageDraw.Draw(g)
+                gd.arc((bx - r, top + 6 - r, bx + r, top + 6 + r), 200, 520 - 180, fill=(190, 255, 235, int(255 * st * alpha / 255)))
+        return d
+
+    def body(p, alpha=255, eye=eye_c, ring=0, pile=0, swing=0, drip=0, diss=0):
+        im = blank(fw, fh)
+        g = blank(fw, fh)
+        d = ImageDraw.Draw(im)
+        if pile:
+            pm = mask(fw, fh, lambda dd: dd.ellipse((4, 37, 34, 49), fill=FULL))
+            lit(im, pm, skin, 12, 39, 14, 5, alpha)
+            d = ImageDraw.Draw(im)
+            for k in range(4):
+                d.line((7 + k * 7, 44, 8 + k * 7, 47), fill=rgba(weed, alpha))
+            bell(im, g, 30, 35, alpha)
+            for k in range(max(0, 4 - pile // 2)):
+                d.point((10 + k * 6, 47), fill=(150, 220, 210, alpha))  # water pooling
+            return post(im, g, alpha)
+        s = gs.skel(p, race, cx=22, ground=47)
+        hx, hy = s["hip"]
+        nx, ny = s["neck"]
+        # legs: swollen, barnacled
+        for side in ("l", "r"):
+            back = side == "l"
+            base = sh(skin, 0.68 if back else 0.95)[:3]
+            thick_line(d, (hx + (-2 if back else 2), hy), s[side + "knee"], rgba(base, alpha), 4, None if back else rgba(sh(skin, 1.2), alpha))
+            thick_line(d, s[side + "knee"], s[side + "foot"], rgba(base, alpha), 3)
+            fx, fy = s[side + "foot"]
+            d.line((fx, fy, fx + 3, fy), fill=rgba(sh(base, 0.8), alpha), width=2)
+        # back arm, hanging
+        thick_line(d, (nx - 3, ny + 2), s["lhand"], rgba(sh(skin, 0.6), alpha), 3)
+        # bloated torso: lit belly with folds and a stretched navel
+        tm = mask(fw, fh, lambda dd: dd.ellipse((hx - 11, ny + 1, hx + 10, hy + 7), fill=FULL))
+        lit(im, tm, skin, hx - 4, ny + 5, 10, 9, alpha)
+        d = ImageDraw.Draw(im)
+        d.arc((hx - 9, hy - 6, hx + 8, hy + 4), 20, 160, fill=rgba(sh(skin, 0.6), alpha))  # fold
+        d.arc((hx - 7, ny + 3, hx + 6, ny + 11), 20, 160, fill=rgba(sh(skin, 0.7), alpha))  # chest fold
+        d.ellipse((hx - 1, hy - 4, hx + 1, hy - 2), fill=rgba(sh(skin, 0.45), alpha))  # navel
+        d.point((hx - 6, ny + 5), fill=rgba(sh(skin, 1.4), alpha))
+        for bx_, by_ in ((hx + 6, ny + 6), (hx + 7, ny + 7), (hx - 7, hy - 1), (hx + 3, hy + 3)):
+            d.point((bx_, by_), fill=(222, 216, 198, alpha))  # barnacles
+            d.point((bx_ + 1, by_), fill=(150, 140, 126, alpha))
+        # fishing net over the shoulder and across the chest
+        net = (176, 166, 130)
+        d.line((nx - 7, ny + 1, nx + 3, ny + 10), fill=rgba(net, alpha))  # the net's rope over the shoulder
+        for k in range(3):
+            x0 = nx - 6 + k * 3
+            d.line((x0, ny + 2 + k * 3, x0 - 2, ny + 6 + k * 3), fill=rgba(sh(net, 0.75), alpha))
+        d.point((nx + 1, ny + 8), fill=(220, 140, 60, alpha))  # cork float
+        # kelp belt with an anchor-chain buckle
+        d.line((hx - 10, hy + 2, hx + 9, hy + 2), fill=rgba(weed, alpha), width=2)
+        for k, x in enumerate((hx - 8, hx - 4, hx + 1, hx + 6)):
+            d.polygon([(x - 1, hy + 3), (x + 1, hy + 3), (x + (k % 2), hy + 8 + (k % 2))], fill=rgba(sh(weed, 0.8 + 0.2 * (k % 2)), alpha))
+        for k in range(3):
+            d.ellipse((hx + 2 + k * 2, hy + 1, hx + 3 + k * 2, hy + 3), outline=rgba(chain, alpha))
+        # head: sunken into the shoulders, kelp hair, lantern eyes, slack jaw
+        sx, sy = s["head"]
+        sy += 2
+        hm = mask(fw, fh, lambda dd: dd.ellipse((sx - 5, sy - 5, sx + 5, sy + 4), fill=FULL))
+        lit(im, hm, (146, 168, 150), sx - 2, sy - 3, 5, 5, alpha)  # paler face than the body
+        d = ImageDraw.Draw(im)
+        for k, (kx, ln) in enumerate(((sx - 5, 9), (sx - 4, 7), (sx - 2, 4), (sx, 3))):
+            d.line((kx, sy - 4, kx - 1, sy - 4 + ln), fill=rgba(sh(weed, 1.1 if k % 2 else 0.8), alpha))
+        hole = (14, 30, 24, alpha)
+        d.rectangle((sx, sy - 1, sx + 1, sy + 1), fill=hole)
+        d.rectangle((sx + 3, sy - 1, sx + 4, sy + 1), fill=hole)
+        d.point((sx, sy), fill=rgba(eye, alpha))
+        d.point((sx + 3, sy), fill=rgba(eye, alpha))
+        glow_dot(g, sx + 0.5, sy, 2.6, eye, 0.9 * alpha / 255)
+        glow_dot(g, sx + 3.5, sy, 2.6, eye, 0.9 * alpha / 255)
+        d.rectangle((sx, sy + 3, sx + 4, sy + 4), fill=hole)  # slack mouth
+        for tx in (sx, sx + 2, sx + 4):
+            d.point((tx, sy + 3), fill=(220, 214, 196, alpha))
+        d.point((sx + 5, sy + 5 + drip % 2), fill=(150, 230, 210, alpha))  # drip
+        # front arm and the anchor chain down to the bell
+        rx, ry = s["rhand"]
+        thick_line(d, (nx + 2, ny + 2), (rx, ry), rgba(skin, alpha), 4, rgba(sh(skin, 1.25), alpha))
+        d.ellipse((rx - 2, ry - 2, rx + 2, ry + 2), fill=rgba(sh(skin, 1.05), alpha))  # fist
+        bx = int(min(fw - 8, max(8, rx + 6 + swing)))
+        btop = int(min(fh - 14, max(2, ry + 4)))
+        for k in range(4):  # chain links from the fist to the bell crown
+            t = k / 3
+            cx_ = rx + (bx - rx) * t
+            cy_ = ry + (btop - ry) * t
+            d.ellipse((cx_ - 1, cy_ - 1, cx_ + 1, cy_ + 1), outline=rgba(sh(chain, 1.2 if k % 2 else 0.9), alpha))
+        bell(im, g, bx, btop, alpha, ring)
+        return post(im, g, alpha, diss, 13, (150, 230, 210, 255))
+
+    def fn(name, i, n):
+        if name == "idle":
+            return body(P(by=[0, 0, 1, 1][i], ra=(6, 6 + [0, 1, 0, -1][i])), swing=[0, 1, 0, -1][i], drip=i)
         if name == "walk":
             lx = [-4, -2, 2, 4, 2, -2][i]
-            return body(P(lean=1, lf=(lx, 0), rf=(-lx, 0), by=[0, 1, 0, 0, 1, 0][i], ra=(6, 8)))
+            return body(P(lean=1, lf=(lx, 0), rf=(-lx, 0), by=[0, 1, 0, 0, 1, 0][i], ra=(6, 8)), swing=[-1, 0, 1, 1, 0, -1][i], drip=i)
         if name == "windup":
-            return body(P(lean=-2 - i, crouch=i, ra=(8, -8 - i * 2)), eye=(255, 230, 160))
+            return body(P(lean=-2 - i, crouch=i, ra=(8, -8 - i * 2)), eye=(255, 236, 170), swing=-2 - i)
         if name == "attack":
             return body(P(lean=4, lf=(-5, 0), rf=(7, 0), crouch=3, ra=[(10, -2), (14, 6), (12, 12)][i]),
-                        ring=i == 1, eye=(200, 255, 240))
+                        ring=[0, 1, 3][i], eye=(220, 255, 245), swing=[2, 3, 1][i])
         if name == "hurt":
-            return body(P(lean=-4, by=2, ra=(6, 8)), eye=(255, 255, 255))
+            return body(P(lean=-4, by=2, ra=(6, 8)), eye=(255, 255, 255), swing=-2)
         if i < 2:
-            return body(P(crouch=3 + i * 3, by=2 + i, ra=(8, 10)), eye=(90, 160, 130))
-        return body(P(), pile=1, alpha=255 - (i - 2) * 30)
+            return body(P(crouch=3 + i * 3, by=2 + i, ra=(8, 10)), eye=(90, 160, 130), diss=2 + i * 2)
+        return body(P(), pile=i, alpha=255 - (i - 2) * 30)
 
-    lay.write_tres()
     render(lay, fn, "sprites/bosses/drowned_bell_sheet.png")
 
 
