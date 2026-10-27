@@ -45,7 +45,8 @@ spawn_weight = 1.0
 biomes = Array[StringName]([])
 tint = Color(1, 1, 1, 1)
 resistances = {
-"res_poison": 1.0
+"res_poison": 1.0,
+"res_magic": -0.5
 }
 status_immunities = Array[StringName]([&"poison", &"bleed"])
 on_hit_effects = Array[ExtResource("2_bkhkl")]([SubResource("Resource_nxs1m")])

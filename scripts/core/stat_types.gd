@@ -57,6 +57,11 @@ const LABELS := {
 }
 
 
+## Element of a resistance key for "weak to ...": огонь, лёд, яд, магия.
+static func element_name(res_key: String) -> String:
+	return {RES_FIRE: "огонь", RES_ICE: "лёд", RES_POISON: "яд", RES_MAGIC: "магия"}.get(res_key, res_key)
+
+
 static func label(stat: String) -> String:
 	return LABELS.get(stat, stat)
 

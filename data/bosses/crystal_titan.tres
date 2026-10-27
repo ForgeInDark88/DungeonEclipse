@@ -157,7 +157,7 @@ spawn_weight = 0.0
 biomes = Array[StringName]([])
 tint = Color(1, 1, 1, 1)
 resistances = {
-"res_fire": 0.3,
+"res_fire": -0.4,
 "res_ice": 0.75
 }
 status_immunities = Array[StringName]([&"poison", &"bleed"])

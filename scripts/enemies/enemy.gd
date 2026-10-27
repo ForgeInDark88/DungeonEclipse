@@ -90,6 +90,7 @@ var role: SquadRoleData
 var _role_timer := 0.0
 ## Bonus from a nearby bannerman (speed and damage), refreshed every think tick.
 var _banner_mult := 1.0
+var _weak_shown := 0.0  # throttle for the "Уязвим!" text
 var _pounce_cd := 0.0
 var _pounce_windup := 0.0
 var _pouncing := false
@@ -1699,6 +1700,17 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 	if dealt <= 0:
 		EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 4), "Иммунитет", Color(0.7, 0.7, 0.7))
 		return
+	if damage_type > 0 and resistance(damage_type) < 0.0:
+		# Weakness: say it (not on every hit) so elemental gear feels right.
+		var now := Time.get_ticks_msec() / 1000.0
+		if now - _weak_shown > 1.2:
+			_weak_shown = now
+			var spot := global_position + Vector2(0, -data.collision_size.y - 14)
+			EventBus.floating_text.emit(spot, "Уязвим!", Color(1.0, 0.7, 0.2))
+			if Net.active and Net.is_host:
+				var nsw := get_tree().get_first_node_in_group("net_game") as NetSync
+				if nsw:
+					nsw.enemy_float_text.rpc(spot, "Уязвим!", Color(1.0, 0.7, 0.2))
 	hp -= dealt
 	_dormant = false
 	hp_bar.visible = true

@@ -47,7 +47,8 @@ summon = ExtResource("7_sm")
 max_summons = 2
 resistances = {
 "res_magic": 0.4,
-"res_poison": 1.0
+"res_poison": 1.0,
+"res_fire": -0.5
 }
 status_immunities = Array[StringName]([&"curse", &"poison"])
 on_hit_effects = Array[ExtResource("6_he")]([])

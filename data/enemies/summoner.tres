@@ -46,7 +46,8 @@ aoe_radius = 0.0
 summon = ExtResource("7_chdn3")
 max_summons = 3
 resistances = {
-"res_magic": 0.4
+"res_magic": 0.4,
+"res_fire": -0.4
 }
 status_immunities = Array[StringName]([])
 on_hit_effects = Array[ExtResource("2_h3ng8")]([])

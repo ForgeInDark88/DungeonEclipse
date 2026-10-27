@@ -52,7 +52,8 @@ ceiling_ambush = false
 aoe_radius = 0.0
 max_summons = 3
 resistances = {
-"res_fire": 1.0
+"res_fire": 1.0,
+"res_ice": -0.6
 }
 status_immunities = Array[StringName]([&"burn"])
 on_hit_effects = Array[ExtResource("2_he")]([SubResource("Resource_burn")])

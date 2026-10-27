@@ -48,7 +48,7 @@ biomes = Array[StringName]([&"fungal", &"ruins", &"catacombs", &"mirror_halls"])
 tint = Color(1, 1, 1, 1)
 resistances = {
 "res_ice": 0.6,
-"res_fire": -0.3
+"res_fire": -0.75
 }
 status_immunities = Array[StringName]([])
 on_hit_effects = Array[ExtResource("2_eamu5")]([SubResource("Resource_0di6u")])
