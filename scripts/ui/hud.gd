@@ -17,6 +17,8 @@ var _mana: StatBar
 var _xp: StatBar
 var _level_label: Label
 var _floor_label: Label
+## Exit seal of the floor: "Печать: 3/8" under the floor plaque.
+var _seal_label: Label
 var _message: Label
 var _hint: Label
 var _points_label: Label
@@ -212,6 +214,12 @@ func _build() -> void:
 	_floor_label.position = Vector2(6, 2)
 	_floor_label.size = Vector2(140, 14)
 	plaque.add_child(_floor_label)
+	_seal_label = UIStyle.outlined_label("", 7, Color(1.0, 0.55, 0.5))
+	_seal_label.position = Vector2(6, 21)
+	_seal_label.visible = false
+	root.add_child(_seal_label)
+	EventBus.seal_changed.connect(_on_seal_changed)
+	EventBus.floor_changed.connect(func(_f: int) -> void: _seal_label.visible = false)
 	_hint = UIStyle.outlined_label("", 8, UIStyle.PARCHMENT)
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hint.anchor_left = 0.0
@@ -304,6 +312,19 @@ func _refresh_skills() -> void:
 func _refresh_xp() -> void:
 	_xp.set_values(hero.xp, hero.xp_to_next(), "XP %d / %d" % [hero.xp, hero.xp_to_next()])
 	_level_label.text = "Ур. %d  %s" % [hero.level, hero.class_data.display_name]
+
+
+func _on_seal_changed(kills: int, required: int) -> void:
+	if required <= 0:
+		_seal_label.visible = false
+		return
+	_seal_label.visible = true
+	if kills < required:
+		_seal_label.text = "Печать выхода: %d / %d" % [kills, required]
+		_seal_label.add_theme_color_override("font_color", Color(1.0, 0.55, 0.5))
+	else:
+		_seal_label.text = "Выход открыт"
+		_seal_label.add_theme_color_override("font_color", Color(0.75, 0.6, 1.0))
 
 
 func _refresh_floor() -> void:

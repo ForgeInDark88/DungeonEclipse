@@ -140,6 +140,10 @@ func elite_chance_mult() -> float:
 	return difficulty.elite_chance_mult if difficulty else 1.0
 
 
+func seal_share() -> float:
+	return difficulty.seal_share if difficulty else 0.6
+
+
 func trap_damage_mult() -> float:
 	return difficulty.trap_damage_mult if difficulty else 1.0
 

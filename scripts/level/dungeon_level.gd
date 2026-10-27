@@ -50,6 +50,10 @@ var _nav_area := Rect2i()
 var _nav_timer := 0.0
 ## Cells whose look changed (explored or dug): the minimap redraws only these.
 var changed_cells: Array[Vector2i] = []
+## Exit seal: the exit opens after seal_required kills on this floor
+## (GameState.seal_share() of the monsters placed by the generator).
+var seal_required := 0
+var seal_kills := 0
 
 
 func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeData = null) -> void:
@@ -97,6 +101,7 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	_spawn_specials()
 	_spawn_chests()
 	_spawn_enemies()
+	_setup_seal()
 	_spawn_ambience()
 	_spawn_decorations()
 	_spawn_traps()
@@ -148,6 +153,48 @@ func _spawn_town() -> void:
 	flies.scale_amount_max = 2.0
 	flies.color = biome.ambient_particles if biome else Color(0.85, 1, 0.55)
 	add_entity(flies, to_global(Vector2(layout.width * TILE / 2.0, (TownBuilder.GROUND - 3) * TILE)))
+
+
+## Exit seal: every kill on the floor counts (each machine counts its own
+## enemy_killed events; the host also broadcasts its count for late joiners).
+func _setup_seal() -> void:
+	seal_required = ceili(layout.enemy_cells.size() * GameState.seal_share())
+	seal_kills = 0
+	EventBus.enemy_killed.connect(_on_seal_kill)
+	_emit_seal.call_deferred()
+
+
+func is_sealed() -> bool:
+	return seal_kills < seal_required
+
+
+func _on_seal_kill(_d: EnemyData, _p: Vector2) -> void:
+	if not is_sealed():
+		return
+	seal_kills += 1
+	if Net.active and Net.is_host:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.seal_state.rpc(seal_kills)
+	_seal_progress()
+
+
+## Clients: the host's count (late join, kills the client did not see).
+func set_seal_kills(kills: int) -> void:
+	if kills > seal_kills:
+		seal_kills = mini(kills, seal_required)
+		_seal_progress()
+
+
+func _seal_progress() -> void:
+	_emit_seal()
+	if not is_sealed():
+		EventBus.message.emit("Печать снята! Выход открыт.")
+		AudioManager.play_sfx(&"portal")
+
+
+func _emit_seal() -> void:
+	EventBus.seal_changed.emit(seal_kills, seal_required)
 
 
 ## Arena: the boss; door and reward chest appear when it dies.

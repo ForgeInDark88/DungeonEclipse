@@ -564,6 +564,17 @@ func send_world_state(peer_id: int) -> void:
 			list.append([id, String(e.data.id), e.global_position.x, e.global_position.y,
 					e.elite.id if e.elite else StringName(), e.champion, e.held, e.hp])
 	world_state.rpc_id(peer_id, GameState.floor_number, tiles, chests, stock, puzzles, list)
+	if level != null:
+		seal_state.rpc_id(peer_id, level.seal_kills)
+
+
+## Host → clients: kills counted toward the floor's exit seal.
+@rpc("authority", "call_remote", "reliable")
+func seal_state(kills: int) -> void:
+	var game := get_tree().current_scene
+	var level: DungeonLevel = game.level if game != null and "level" in game else null
+	if level != null:
+		level.set_seal_kills(kills)
 
 
 # ---------------------------------------------------- chests and shops
@@ -1164,6 +1175,9 @@ func request_floor(action: StringName) -> void:
 			if GameState.town_return_floor > 0:
 				GameState.resume_from_town()
 			else:
+				var lvl: DungeonLevel = game.level if game != null and "level" in game else null
+				if lvl != null and lvl.is_sealed():
+					return  # the exit seal holds until enough monsters fall
 				GameState.next_floor()
 		&"town":
 			GameState.return_to_town()

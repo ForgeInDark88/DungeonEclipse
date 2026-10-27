@@ -42,5 +42,7 @@ signal gold_earned(amount: int)
 signal event_completed(event: Node)
 signal item_bought(item: ItemData)
 signal achievement_unlocked(achievement: AchievementData)
+## Exit seal of the floor: monsters killed / needed to open the exit (0 needed = no seal).
+signal seal_changed(kills: int, required: int)
 ## A loud sound at `pos` heard by monsters within `radius` (fights, explosions).
 signal noise(pos: Vector2, radius: float)
