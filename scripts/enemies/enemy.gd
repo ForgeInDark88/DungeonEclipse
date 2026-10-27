@@ -31,7 +31,13 @@ const ELITE_LOOT_TABLE := &"enemy_rare"
 const WORLD_MASK := 1
 const PLATFORM_LAYER := 2
 ## Seconds the hero's last position is remembered after losing sight.
-const MEMORY_TIME := 4.0
+const MEMORY_TIME := 7.0  # how long a chase goes on after losing sight of the hero
+## Monsters see a bit further than their data says (the hunt starts earlier).
+const AGGRO_MULT := 1.3
+## Pounce: a melee walker leaps at a hero 40-120 px away (gap closer).
+const POUNCE_MIN := 40.0
+const POUNCE_MAX := 120.0
+const POUNCE_WINDUP := 0.25
 const ALERT_TIME := 0.45
 const SEARCH_LOOK_TIME := 1.6
 const REPATH_TIME := 0.6
@@ -79,6 +85,9 @@ var _flash_tween: Tween
 ## Elite modifier (null for normal monsters).
 var elite: EliteAffixData
 var _speed_mult := 1.0
+var _pounce_cd := 0.0
+var _pounce_windup := 0.0
+var _pouncing := false
 var _cooldown_mult := 1.0
 var _summons: Array[Node] = []
 var _summon_next := true
@@ -151,6 +160,9 @@ func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null, p_ch
 		damage = roundi(damage * elite.damage_mult)
 		_speed_mult = elite.speed_mult
 		_cooldown_mult = elite.attack_cooldown_mult
+	# The hunt: everyone moves faster deeper down and on harder difficulties.
+	_speed_mult *= hunt_speed_mult()
+	_pounce_cd = randf_range(1.0, 3.0)
 	if champion:
 		# The floor guardian: a monster of legends behind slammed doors.
 		max_hp = roundi(max_hp * 2.4)
@@ -399,6 +411,7 @@ func _physics_process(delta: float) -> void:
 	_attack_timer = maxf(0.0, _attack_timer - delta)
 	_state_time += delta
 	_recoil = maxf(0.0, _recoil - delta)
+	_pounce_cd = maxf(0.0, _pounce_cd - delta)
 	_memory = maxf(0.0, _memory - delta)
 	_repath_timer -= delta
 	if _drop_timer > 0.0:
@@ -417,7 +430,10 @@ func _physics_process(delta: float) -> void:
 			_walk(delta)
 	# Slows / swift elites scale this step only: velocity itself is kept, so
 	# the factor never compounds frame after frame.
-	var slow := status.speed_multiplier() * _speed_mult
+	# Planned leaps (path jumps, pounces) are ballistic: _launch() already
+	# solved their horizontal speed, so the hunt / elite speed must not
+	# stretch them past the landing cell.
+	var slow := status.speed_multiplier() * (1.0 if _jumping else _speed_mult)
 	var flyer := data.behavior == EnemyData.Behavior.FLYER
 	if slow != 1.0:
 		velocity.x *= slow
@@ -499,7 +515,7 @@ func _can_see_player() -> bool:
 		return false
 	var to_player := _player.global_position - global_position
 	var dist := to_player.length()
-	if dist > data.aggro_range:
+	if dist > data.aggro_range * AGGRO_MULT:
 		return false
 	# Invisibility potion: only noticed when bumped into.
 	if _player.status.has(&"invisible") and dist > 14.0:
@@ -554,6 +570,10 @@ func _think() -> void:
 func _set_state(new_state: State) -> void:
 	if state == new_state:
 		return
+	if _pounce_windup > 0.0:
+		_pounce_windup = 0.0
+		_set_flash(0.0)
+	_pouncing = false
 	state = new_state
 	_state_time = 0.0
 	_path.clear()
@@ -605,6 +625,13 @@ func _update_mark(delta: float) -> void:
 	if _mark_time > 0.0:
 		_mark_time -= delta
 		_mark.visible = _mark_time > 0.0
+
+
+## Speed factor of the hunt: +15% on floor 1, +1.2% per floor (at most +45%),
+## plus the difficulty's "enemy_speed" run effect.
+func hunt_speed_mult() -> float:
+	var m := 1.15 + minf(0.3, 0.012 * (floor_number - 1))
+	return maxf(0.6, m * (1.0 + GameState.run_effect("enemy_speed")))
 
 
 ## 0 on the first floors, 1 from floor 10: calling allies, flanking, waiting
@@ -704,6 +731,13 @@ func _walk(delta: float) -> void:
 		State.ATTACK:
 			velocity.x = move_toward(velocity.x, 0.0, 600.0 * delta)
 			_update_attack(delta)
+	# A leap whose path was dropped mid-air (state change, repath) still flies
+	# its planned arc: losing the horizontal speed would drop the monster
+	# into whatever it was jumping over (spikes, a pit).
+	if _jumping and _path.is_empty() and not _pouncing:
+		velocity.x = _jump_vx
+		if is_on_floor() and _air_time == 0.0 and velocity.y >= 0.0:
+			_jumping = false
 	# Spread out only while standing (waiting, aiming): never against the walk.
 	if state in [State.CHASE, State.SEARCH] and not _jumping and not _climbing and absf(velocity.x) < 4.0 and _sep.x != 0.0:
 		var keep := dir
@@ -788,6 +822,8 @@ func _chase_walk(delta: float) -> void:
 	if _recoil > 0.0:
 		_retreat(delta)
 		return
+	if _update_pounce(delta, dist):
+		return
 	if _sees_player and _can_melee() and _attack_timer <= 0.0:
 		_stop_climb()
 		_face_point(_player.global_position)
@@ -808,6 +844,46 @@ func _chase_walk(delta: float) -> void:
 			_set_state(State.SEARCH)
 	elif data.jumps and is_on_floor() and not _jumping and randf() < 0.02 and not _danger_near():
 		velocity.y = -200.0  # slimes keep bouncing (never next to a trap)
+
+
+## Pounce: a short telegraph (crouch, orange glow), then a leap at the hero.
+## Only for melee walkers, with a clear line, never onto a trap. True while
+## the pounce owns the movement.
+func _update_pounce(delta: float, dist: float) -> bool:
+	if _pounce_windup > 0.0:
+		_pounce_windup -= delta
+		velocity.x = move_toward(velocity.x, 0.0, 900.0 * delta)
+		_face_point(_player.global_position)
+		if _pounce_windup <= 0.0:
+			_set_flash(0.0)
+			_launch(_player.global_position)
+			_pouncing = true
+			AudioManager.play_sfx(&"jump", global_position, -6.0)
+		return true
+	if _pouncing:
+		velocity.x = _jump_vx
+		if is_on_floor() and _air_time == 0.0 and velocity.y >= 0.0:
+			_pouncing = false
+			_jumping = false
+			_path.clear()
+			if _can_melee() and _attack_timer <= 0.0:
+				_begin_attack()
+		return true
+	if _pounce_cd > 0.0 or not _sees_player or data.behavior != EnemyData.Behavior.WALKER or data.jumps:
+		return false
+	if not is_on_floor() or _climbing or _jumping or dist < POUNCE_MIN or dist > POUNCE_MAX:
+		return false
+	var rel := _player.global_position - global_position
+	if rel.y < -56.0 or rel.y > 24.0 or not has_line_to(_player.global_position + Vector2(0, -8)):
+		return false
+	var lvl := _level()
+	if lvl and lvl.nav and lvl.nav.is_forbidden(lvl.world_to_cell(_player.global_position + Vector2(0, -2))):
+		return false
+	# Deeper floors: pounce more often.
+	_pounce_cd = lerpf(5.0, 2.5, coordination()) + randf() * 1.5
+	_pounce_windup = POUNCE_WINDUP
+	_set_flash(0.3, Color(1.0, 0.55, 0.1))
+	return true
 
 
 ## Melee only with a clear line and on (about) the same level.
@@ -1454,7 +1530,12 @@ func _shoot() -> void:
 		return
 	var p: Projectile = PROJECTILE_SCENE.instantiate()
 	var from := global_position + Vector2(0, -12)
-	var dir_v := (_player.global_position + Vector2(0, -10) - from).normalized()
+	# Aim where the hero will be: lead the shot by the flight time (capped,
+	# so a jumping hero is not over-predicted).
+	var aim := _player.global_position + Vector2(0, -10)
+	var flight := clampf(from.distance_to(aim) / maxf(data.projectile_speed, 1.0), 0.0, 0.8)
+	aim += Vector2(_player.velocity.x, _player.velocity.y * 0.4) * flight * lerpf(0.6, 1.0, coordination())
+	var dir_v := (aim - from).normalized()
 	p.setup(data.projectile_texture, dir_v, data.projectile_speed, damage, "player")
 	p.blast_color = Color(0.8, 0.3, 1.0)
 	p.on_hit = func(target: Node, dmg: int) -> void: _apply_hit_effects(target, dmg)

@@ -10,6 +10,7 @@ description = "Монстры крепче и злее, элиты встреч�
 order = 2
 color = Color(0.95, 0.6, 0.3, 1)
 effects = {
+"enemy_speed": 0.1,
 "enemy_hp": 0.6,
 "enemy_damage": 0.6,
 "xp": 0.15,

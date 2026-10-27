@@ -39,6 +39,8 @@ func _ready() -> void:
 	await _scenario("weapon stops at the wall", _wall_clip)
 	await _scenario("skills and bombs do not pass walls", _wall_skills)
 	await _scenario("projectiles stop at bricks", _wall_projectiles)
+	await _scenario("pounce at the hero", _pounce)
+	await _scenario("faster on deeper floors", _hunt_speed)
 	print("FAILURES: ", failures.size())
 	for f in failures:
 		print("  - ", f)
@@ -209,8 +211,7 @@ func _digging() -> void:
 	await _build(l, Vector2i(25, 9))
 	var v := level.nav.version
 	level.break_tile(Vector2i(10, 10), false)
-	await get_tree().physics_frame
-	await get_tree().physics_frame
+	await _run(0.35)  # the local nav update is debounced (0.2 s) against stutter
 	check(level.nav.version > v, "nav rebuilt after a brick broke")
 	check(not level.nav.standable(10, 9), "the hole is no longer standable")
 
@@ -310,9 +311,9 @@ func _wall_melee() -> void:
 	for with_wall in [true, false]:
 		var e := await _wall_setup(with_wall)
 		var hp := e.hp
-		player._perform_attack(glaive, 1.0)
+		player._perform_attack(glaive, Vector2.RIGHT)
 		var sword: WeaponItemData = ItemFactory.create(ItemDatabase.get_item(&"iron_sword"))
-		player._perform_attack(sword, 1.0)
+		player._perform_attack(sword, Vector2.RIGHT)
 		await get_tree().physics_frame
 		if with_wall:
 			check(e.hp == hp, "glaive and sword: no damage through the wall")
@@ -327,7 +328,7 @@ func _wall_clip() -> void:
 	await _wall_setup(true)
 	var free := LineOfSight.free_length(player, player._attack_origin(), Vector2.RIGHT, 46.0)
 	check(free < 12.0, "the glaive thrust is cut at the wall (%.1f px of 46)" % free)
-	var q := player._melee_targets(free, true, 1.0)
+	var q := player._melee_targets(free, true, Vector2.RIGHT)
 	check(q.is_empty(), "nothing inside the cut hitbox")
 
 
@@ -369,7 +370,7 @@ func _wall_projectiles() -> void:
 	var e := await _wall_setup(true)
 	var hp := e.hp
 	var bow: WeaponItemData = ItemFactory.create(ItemDatabase.get_item(&"hunter_bow"))
-	player._perform_attack(bow, 1.0)
+	player._perform_attack(bow, Vector2.RIGHT)
 	var fb := ProjectileSkill.new()
 	fb.texture = AssetPaths.tex(AssetPaths.SHARD)
 	fb.blast_radius = 40.0
@@ -385,3 +386,29 @@ func _wall_projectiles() -> void:
 		player._invulnerable = 0.0
 		await get_tree().physics_frame
 	check(player.hero.stats.hp == php and not is_instance_valid(p), "a monster's shot dies on the wall")
+
+
+func _pounce() -> void:
+	var l := _room()
+	await _build(l, Vector2i(14, 9))
+	var e := _enemy(&"skeleton", Vector2i(8, 9))  # 6 cells (96 px) away, same floor
+	e._pounce_cd = 0.0
+	e._set_state(Enemy.State.CHASE)
+	e._player = player
+	var leapt := [false]
+	await _run(3.0, func() -> bool:
+		if e._pouncing:
+			leapt[0] = true
+		return leapt[0])
+	check(leapt[0], "the skeleton leapt at the hero")
+	await _run(2.0, func() -> bool: return not e._pouncing and e.is_on_floor())
+	check(absf(e.global_position.x - player.global_position.x) < 40.0, "landed next to the hero (%.0f px)" % absf(e.global_position.x - player.global_position.x))
+
+
+func _hunt_speed() -> void:
+	var l := _room()
+	await _build(l, Vector2i(25, 9))
+	var shallow := _enemy(&"skeleton", Vector2i(3, 9), 1)
+	var deep := _enemy(&"skeleton", Vector2i(5, 9), 20)
+	check(deep.hunt_speed_mult() > shallow.hunt_speed_mult() and shallow.hunt_speed_mult() > 1.0,
+			"hunt speed grows with the floor (%.2f → %.2f)" % [shallow.hunt_speed_mult(), deep.hunt_speed_mult()])
