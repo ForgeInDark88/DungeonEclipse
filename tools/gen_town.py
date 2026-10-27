@@ -636,6 +636,107 @@ def parallax():
     im.save(os.path.join(A, "sprites/backgrounds/town_near.png"))
 
 
+def barracks():
+    """Barracks of the town guard: grey stone hall with a crenellated top,
+    the guard's banner, shields on the wall, a weapon rack and a heavy door."""
+    w, h = 84, 72
+    im, g = blank(w, h), blank(w, h)
+    top = 14
+    bricks(im, 4, top, w - 5, h - 6, (126, 122, 124), bw=6, bh=3, seed=41)
+    d = ImageDraw.Draw(im)
+    # crenellations
+    for x in range(4, w - 5, 8):
+        bricks(im, x, top - 6, x + 4, top - 1, (134, 130, 132), bw=2, bh=2, seed=x)
+        d = ImageDraw.Draw(im)
+        d.line((x, top - 6, x + 4, top - 6), fill=sh(STONE, 1.35))
+    d.line((4, top, w - 5, top), fill=sh(STONE, 1.3))
+    # banner of the guard: crimson with a gold crossed-swords sign
+    bx = w // 2 - 6
+    d.rectangle((bx, top + 2, bx + 11, top + 24), fill=(140, 34, 40, 255))
+    d.polygon([(bx, top + 24), (bx + 5.5, top + 20), (bx + 11, top + 24), (bx + 11, top + 27), (bx + 5.5, top + 23), (bx, top + 27)],
+              fill=(140, 34, 40, 255))
+    d.line((bx, top + 2, bx, top + 26), fill=(176, 60, 64, 255))
+    d.line((bx + 11, top + 2, bx + 11, top + 26), fill=(100, 22, 28, 255))
+    d.line((bx + 2, top + 8, bx + 9, top + 15), fill=(236, 196, 70, 255))
+    d.line((bx + 9, top + 8, bx + 2, top + 15), fill=(236, 196, 70, 255))
+    d.line((bx - 2, top + 2, bx + 13, top + 2), fill=(90, 60, 36, 255), width=2)
+    # shields on the wall
+    for k, sx in enumerate((12, w - 22)):
+        col = ((60, 90, 150), (150, 60, 50))[k]
+        sm = mask(w, h, lambda dd, sx=sx: dd.polygon([(sx, top + 8), (sx + 10, top + 8), (sx + 10, top + 15), (sx + 5, top + 20), (sx, top + 15)], fill=FULL))
+        lit(im, sm, col, sx + 2, top + 9, 5, 6)
+        d = ImageDraw.Draw(im)
+        d.line((sx + 5, top + 9, sx + 5, top + 18), fill=(236, 196, 70, 255))
+        d.point((sx + 5, top + 12), fill=(255, 240, 180, 255))
+    # windows with bars
+    for wx in (14, w - 22):
+        window(im, g, wx, top + 26, 8, 8, shutters=False)
+        d = ImageDraw.Draw(im)
+        for k in range(1, 4):
+            d.line((wx + k * 2, top + 26, wx + k * 2, top + 33), fill=(60, 60, 70, 255))
+    door(im, w // 2 - 6, h - 6, 12, 18, color=(96, 64, 40))
+    # weapon rack by the door: spears and a sword
+    rx = w - 14
+    d = ImageDraw.Draw(im)
+    d.line((rx - 4, h - 7, rx + 6, h - 7), fill=(110, 76, 44, 255), width=2)
+    d.line((rx - 4, h - 16, rx + 6, h - 16), fill=(110, 76, 44, 255))
+    for k, x in enumerate((rx - 2, rx + 1, rx + 4)):
+        d.line((x, h - 26, x, h - 7), fill=(130, 92, 56, 255))
+        d.polygon([(x - 1, h - 26), (x, h - 30), (x + 1, h - 26)], fill=(196, 200, 212, 255))
+    foundation(im, 3, w - 4, h - 6, h - 1, 41)
+    save(finish(im, g), "barracks")
+
+
+def training_dummy():
+    """The straw training dummy (an Enemy sheet: monster_layout 20x30)."""
+    import gen_sheets as gs
+    fw, fh = 20, 30
+    lay = gs.monster_layout("dummy_layout", fw, fh, (10, 30))
+    straw = (206, 170, 96)
+    sack = (176, 150, 110)
+    wood = (120, 82, 48)
+
+    def body(tilt=0.0):
+        im = blank(fw, fh)
+        d = ImageDraw.Draw(im)
+        # stand and post
+        d.rectangle((5, 27, 14, 29), fill=rgba(sh(wood, 0.8)))
+        d.line((5, 27, 14, 27), fill=rgba(sh(wood, 1.3)))
+        d.rectangle((9, 8, 10, 27), fill=rgba(wood))
+        d.line((9, 8, 9, 27), fill=rgba(sh(wood, 1.3)))
+        # straw body tied with rope, arms on a crossbar
+        t = int(round(tilt))
+        d.line((2 + t, 12, 17 + t, 12), fill=rgba(wood), width=2)
+        for x in (2, 17):
+            d.line((x + t, 11, x + t - (1 if x < 9 else -1), 15), fill=rgba(straw))
+        bm = mask(fw, fh, lambda dd: dd.ellipse((5 + t, 10, 14 + t, 24), fill=FULL))
+        lit(im, bm, straw, 7 + t, 12, 4, 6)
+        d = ImageDraw.Draw(im)
+        for y in (13, 19):
+            d.line((5 + t, y, 14 + t, y), fill=(110, 80, 50, 255))
+        for k in range(4):
+            d.point((6 + t + k * 2, 22 + k % 2), fill=rgba(sh(straw, 1.3)))
+        # sack head with a painted target
+        hm = mask(fw, fh, lambda dd: dd.ellipse((6 + t, 2, 13 + t, 10), fill=FULL))
+        lit(im, hm, sack, 8 + t, 4, 4, 4)
+        d = ImageDraw.Draw(im)
+        d.ellipse((7 + t, 3, 12 + t, 8), outline=(170, 40, 40, 255))
+        d.point((9 + t, 5), fill=(170, 40, 40, 255))
+        d.point((10 + t, 6), fill=(170, 40, 40, 255))
+        d.line((7 + t, 9, 12 + t, 9), fill=(110, 80, 50, 255))
+        return im
+
+    def fn(name, i, n):
+        if name == "hurt":
+            return body([2.0, -1.0][i])
+        if name == "death":
+            return body([1.0, -1.0, 0.5, 0, 0, 0][i])
+        return body([0, 0, 0.6, 0][i % 4] if name == "idle" else 0)
+
+    gs.render_sheet(lay, fn, "sprites/town/dummy_sheet.png")
+    lay.write_tres()
+
+
 def main():
     os.makedirs(os.path.join(A, OUT_DIR), exist_ok=True)
     gb.tileset("town", TOWN)
@@ -649,6 +750,8 @@ def main():
     chapel()
     dungeon_gate()
     props()
+    barracks()
+    training_dummy()
     print("town generated")
 
 

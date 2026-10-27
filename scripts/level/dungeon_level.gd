@@ -621,6 +621,12 @@ func _spawn_specials() -> void:
 				add_entity((load(QUEST_SCENE) as PackedScene).instantiate(), cell_bottom(info["cell"]))
 			&"event":
 				_spawn_event(info)
+			&"dummy":
+				# Training dummy at the barracks: local on every machine
+				# (no net id), each player trains on their own copy.
+				var dummy: Enemy = (load(ENEMY_SCENE) as PackedScene).instantiate()
+				dummy.setup(load(AssetPaths.TRAINING_DUMMY) as EnemyData, maxi(1, floor_number))
+				add_entity(dummy, cell_bottom(info["cell"]))
 			&"miniboss":
 				_spawn_miniboss(info)
 

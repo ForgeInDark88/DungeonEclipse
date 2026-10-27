@@ -61,6 +61,7 @@ const LIGHT := SPRITES_DIR + "fx/light.png"
 ## Town buildings and props (tools/gen_town.py): TOWN_DIR + name + ".png".
 const TOWN_DIR := SPRITES_DIR + "town/"
 const TOWN_BIOME := "res://data/town/town.tres"
+const TRAINING_DUMMY := "res://data/town/training_dummy.tres"
 ## Mouse cursor during the run (aiming).
 const CROSSHAIR := "res://assets/ui/crosshair.png"
 const PIXEL := SPRITES_DIR + "fx/pixel.png"

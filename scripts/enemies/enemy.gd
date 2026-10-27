@@ -91,6 +91,9 @@ var _role_timer := 0.0
 ## Bonus from a nearby bannerman (speed and damage), refreshed every think tick.
 var _banner_mult := 1.0
 var _weak_shown := 0.0  # throttle for the "Уязвим!" text
+## Training dummy: recent hits [time, damage] and the DPS read-out.
+var _dummy_log: Array = []
+var _dps_label: Label
 var _pounce_cd := 0.0
 var _pounce_windup := 0.0
 var _pouncing := false
@@ -223,6 +226,19 @@ func _ready() -> void:
 		_setup_elite()
 	if role:
 		_setup_role()
+	if data.training_dummy:
+		_dps_label = Label.new()
+		_dps_label.add_theme_font_size_override("font_size", 6)
+		_dps_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.6))
+		_dps_label.add_theme_color_override("font_outline_color", Color(0.05, 0.03, 0.02))
+		_dps_label.add_theme_constant_override("outline_size", 3)
+		_dps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_dps_label.size = Vector2(110, 10)
+		_dps_label.position = Vector2(-55, -data.collision_size.y - 16)
+		var lm := CanvasItemMaterial.new()
+		lm.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+		_dps_label.material = lm
+		add_child(_dps_label)
 	if champion and not elite:
 		scale = Vector2(1.45, 1.45)
 	if data.ceiling_ambush:
@@ -343,6 +359,9 @@ func _nearest_alive_player() -> Player:
 
 
 func _physics_process(delta: float) -> void:
+	if data.training_dummy:
+		_dummy_step(delta)
+		return
 	if puppet:
 		# Shell on a client: glide to the host's last word, no thinking,
 		# but still animate - windup/attack when the host is, walk when
@@ -1274,6 +1293,37 @@ func _free_fly_cell(lvl: DungeonLevel, from: Vector2i) -> Vector2i:
 	return Vector2i(-1, -1)
 
 
+# ------------------------------------------------------- training dummy
+## The dummy never dies: every hit is logged for the damage-per-second
+## read-out (last 5 s) and the health is topped up again.
+func _dummy_hit(amount: int) -> void:
+	_dummy_log.append([Time.get_ticks_msec() / 1000.0, amount])
+	hp = max_hp
+	hp_bar.visible = false
+	_hurt_timer = 0.3
+
+
+func _dummy_step(delta: float) -> void:
+	velocity.x = 0.0
+	velocity.y = minf(velocity.y + GRAVITY * delta, 420.0)
+	move_and_slide()
+	_hurt_timer = maxf(0.0, _hurt_timer - delta)
+	_play(&"hurt" if _hurt_timer > 0.0 else &"idle")
+	var now := Time.get_ticks_msec() / 1000.0
+	while not _dummy_log.is_empty() and now - float(_dummy_log[0][0]) > 5.0:
+		_dummy_log.pop_front()
+	if _dps_label == null:
+		return
+	if _dummy_log.is_empty():
+		_dps_label.text = "Бей меня!"
+		return
+	var total := 0
+	for h in _dummy_log:
+		total += int(h[1])
+	var span := clampf(now - float(_dummy_log[0][0]), 1.0, 5.0)
+	_dps_label.text = "Урон/с: %d · за 5 с: %d" % [roundi(total / span), total]
+
+
 # ------------------------------------------------------------- squads
 ## Makes this monster the leader of a squad (call after setup, before adding
 ## it to the tree): tougher, with an aura and a support action.
@@ -1743,6 +1793,9 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
 			ns.enemy_hurt.rpc(net_id)
+	if data.training_dummy:
+		_dummy_hit(dealt)
+		return
 	if hp <= 0:
 		_die()
 		return
@@ -1775,6 +1828,9 @@ func take_status_damage(amount: int, p_status: StringName, color: Color) -> void
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
 			ns.enemy_float_text.rpc(spot, str(amount), color)
+	if data.training_dummy:
+		_dummy_hit(amount)
+		return
 	if hp <= 0:
 		_die()
 
