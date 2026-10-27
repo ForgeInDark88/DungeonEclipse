@@ -238,6 +238,10 @@ func _toggle_pause() -> void:
 func _on_spawn_items(pos: Vector2, stacks: Array) -> void:
 	if level == null:
 		return
+	# Co-op: loot is the host's (spawned there and broadcast to everyone). A
+	# guest's own copy would be a phantom nobody else sees or can share.
+	if Net.active and not Net.is_host:
+		return
 	for entry: Dictionary in stacks:
 		var p: ItemPickup = PICKUP_SCENE.instantiate()
 		p.setup(entry["item"], entry["count"], Vector2(randf_range(-70.0, 70.0), randf_range(-170.0, -110.0)))
@@ -527,6 +531,8 @@ func _net_spawn_players() -> void:
 	world.remove_child(player)
 	net_players.add_child(player)
 	player.name = "Player_%d" % my_id
+	# Our own id: attack / cast fx carry it, the others skip their own echo.
+	player.peer_id = my_id
 	# The host addresses real damage at this node (net_sync.player_damage).
 	net_sync.local_player = player
 	for peer_id in Net.players:

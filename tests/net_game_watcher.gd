@@ -73,10 +73,17 @@ func _watch_game() -> void:
 		_finish(0.5)
 		return
 	# --- live movement phase
-	var start := theirs.global_position
-	mine.global_position += Vector2(150, 0)
-	await get_tree().create_timer(2.5).timeout
-	var moved := absf(theirs.global_position.x - start.x)
+	# The two machines run this phase at different moments: both walk back
+	# and forth for a while and watch the range the other's puppet covers.
+	var lo := theirs.global_position.x
+	var hi := lo
+	for i in 30:
+		if i % 6 == 0:
+			mine.global_position += Vector2(150 if (i / 6) % 2 == 0 else -150, 0)
+		await get_tree().create_timer(0.15).timeout
+		lo = minf(lo, theirs.global_position.x)
+		hi = maxf(hi, theirs.global_position.x)
+	var moved := hi - lo
 	check(moved > 40.0, "the other hero's puppet moved (%.0f px)" % moved)
 	# --- input phase: the guest fires a synthetic skill keypress; the host
 	# must see the cast fx (broadcast_cast works from a client).

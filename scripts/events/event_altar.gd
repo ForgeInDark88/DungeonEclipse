@@ -8,6 +8,14 @@ func get_prompt() -> String:
 	return "Принести жертву: −%d%% здоровья за дар" % roundi(SACRIFICE * 100)
 
 
+func can_activate(player: Node) -> bool:
+	var hero: Hero = player.hero
+	if hero.stats.hp <= roundi(hero.stats.max_hp() * SACRIFICE) + 1:
+		EventBus.message.emit("Слишком мало крови для жертвы")
+		return false
+	return true
+
+
 func _activate(player: Node) -> bool:
 	var hero: Hero = player.hero
 	var cost := roundi(hero.stats.max_hp() * SACRIFICE)

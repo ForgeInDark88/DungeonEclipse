@@ -841,10 +841,46 @@ func request_event_use(seq: int) -> void:
 	var p: Player = game.net_players.get_node_or_null("Player_%d" % sender) if game != null and "net_players" in game else null
 	if p == null or p.dead:
 		return
-	# Execute on the host's mirror of the sender; rewards (gold/xp/status)
-	# are then forwarded by the regular hero/player sync channels.
-	event._activate(p)
+	# Booked for the sender: everyone sees it used, the sender applies the
+	# effect to its real hero (the mirror here would only fake it) and asks
+	# back for the shared parts (loot, ambush) through request_event_world.
+	event.net_grantee = sender
+	event.net_world_calls = 0
 	event.finish()
+	event_grant.rpc_id(sender, seq)
+
+
+## Host → the guest who used the event: apply it to your hero.
+@rpc("authority", "call_remote", "reliable")
+func event_grant(seq: int) -> void:
+	for e in get_tree().get_nodes_in_group("events"):
+		if e.net_seq == seq:
+			if not e.used:
+				e.finish()
+			if local_player and not local_player.dead:
+				e.net_granted(local_player)
+			return
+
+
+## Guest → host: the world part of an event granted to me (loot roll,
+## ambush). Only the grantee, only a few times per event.
+@rpc("any_peer", "call_remote", "reliable")
+func request_event_world(seq: int, kind: StringName, table_name: StringName, number: int, chance: float) -> void:
+	if not Net.is_host:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	for e in get_tree().get_nodes_in_group("events"):
+		if e.net_seq != seq:
+			continue
+		if not e.used or e.net_grantee != sender or e.net_world_calls >= 4:
+			return
+		e.net_world_calls += 1
+		match kind:
+			&"loot":
+				e._reward_item(table_name, clampi(number, 1, GameState.floor_number + 3))
+			&"ambush":
+				e._ambush(clampi(number, 1, 8), clampf(chance, 0.0, 1.0))
+		return
 
 
 @rpc("authority", "call_remote", "reliable")

@@ -839,7 +839,13 @@ func _net_costume() -> Dictionary:
 		var it: EquipmentItemData = hero.equipment.items[slot_id]
 		c[String(slot_id)] = String(it.id) if it else ""
 	# Other players see the pet (a visual follower shell on their machines).
-	c["pet"] = String(GameState.pet.id) if GameState.pet else ""
+	# (A puppet reports the pet copy it shows, not this machine's own pet:
+	# otherwise the costume never matches and the visual rebuilds 20 times a
+	# second, restarting every animation - the endless death pose.)
+	if puppet:
+		c["pet"] = _net_pet_id
+	else:
+		c["pet"] = String(GameState.pet.id) if GameState.pet else ""
 	return c
 
 
