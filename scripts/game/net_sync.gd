@@ -59,14 +59,14 @@ func unregister_enemy(net_id: int) -> void:
 ## Host → clients: an enemy exists at this spot (spawned only on the host).
 @rpc("authority", "call_remote", "reliable")
 func spawn_enemy(net_id: int, enemy_id: String, pos: Vector2, elite_id: StringName,
-		champion: bool, held: bool, hp: int) -> void:
-	_spawn_shell(net_id, enemy_id, pos, elite_id, champion, held, hp)
+		champion: bool, held: bool, hp: int, role_id: StringName) -> void:
+	_spawn_shell(net_id, enemy_id, pos, elite_id, champion, held, hp, role_id)
 
 
 ## Builds the client-side shell. setup() applies floor scaling, the party
 ## multipliers and altar curses — no extra multiplication here.
 func _spawn_shell(net_id: int, enemy_id: String, pos: Vector2, elite_id: StringName,
-		champion: bool, held: bool, hp: int) -> void:
+		champion: bool, held: bool, hp: int, role_id: StringName = &"") -> void:
 	if enemies.has(net_id):
 		return
 	var data := ItemDatabase.enemy_by_id(enemy_id)
@@ -79,6 +79,9 @@ func _spawn_shell(net_id: int, enemy_id: String, pos: Vector2, elite_id: StringN
 			break
 	var e := (load("res://scenes/enemies/enemy.tscn") as PackedScene).instantiate()
 	e.setup(data, GameState.floor_number, elite, champion)
+	var role := ItemDatabase.squad_role(role_id) if role_id != &"" else null
+	if role:
+		e.assign_role(role)
 	e.puppet = true
 	e.held = held
 	if hp > 0 and hp < e.max_hp:
@@ -270,6 +273,8 @@ func enemy_died(net_id: int, xp: int, gold: int, killer: int) -> void:
 		EventBus.enemy_killed.emit(e.data, e.global_position)
 		var b := e as Boss
 		if b and b.boss:
+			if b.boss.final:
+				GameState.run_stats["victory"] = true
 			EventBus.boss_defeated.emit(b.boss, e.global_position)
 			# The +1 skill point the host's boss death grants locally.
 			GameState.hero.skills.add_points(1)
@@ -531,7 +536,7 @@ func world_state(floor_num: int, tiles: Array, chests: Array, stock: Array,
 				break
 	for d in enemy_list:
 		_spawn_shell(int(d[0]), String(d[1]), Vector2(d[2], d[3]), d[4],
-				bool(d[5]), bool(d[6]), int(d[7]))
+				bool(d[5]), bool(d[6]), int(d[7]), StringName(d[8]) if d.size() > 8 else &"")
 
 
 ## Host: collect everything a late joiner missed and push it over.
@@ -562,8 +567,30 @@ func send_world_state(peer_id: int) -> void:
 		var e: Enemy = enemies[id]
 		if is_instance_valid(e) and not e.is_dead():
 			list.append([id, String(e.data.id), e.global_position.x, e.global_position.y,
-					e.elite.id if e.elite else StringName(), e.champion, e.held, e.hp])
+					e.elite.id if e.elite else StringName(), e.champion, e.held, e.hp,
+					e.role.id if e.role else StringName()])
 	world_state.rpc_id(peer_id, GameState.floor_number, tiles, chests, stock, puzzles, list)
+	if level != null:
+		seal_state.rpc_id(peer_id, level.seal_kills)
+
+
+## Client → host: a status on a real enemy (a guest's parry stuns it).
+@rpc("any_peer", "call_remote", "reliable")
+func request_enemy_status(net_id: int, id: StringName, duration: float) -> void:
+	if not Net.is_host or id != &"stun":
+		return
+	var e: Enemy = enemies.get(net_id)
+	if e and is_instance_valid(e) and not e.is_dead():
+		e.status.apply(id, clampf(duration, 0.0, 2.0))
+
+
+## Host → clients: kills counted toward the floor's exit seal.
+@rpc("authority", "call_remote", "reliable")
+func seal_state(kills: int) -> void:
+	var game := get_tree().current_scene
+	var level: DungeonLevel = game.level if game != null and "level" in game else null
+	if level != null:
+		level.set_seal_kills(kills)
 
 
 # ---------------------------------------------------- chests and shops
@@ -593,12 +620,15 @@ func chest_opened_remote(seq: int, opener_peer: int, consume_key: bool) -> void:
 	for c in get_tree().get_nodes_in_group("chests"):
 		if c.net_seq != seq or c.opened:
 			continue
+		if consume_key and opener_peer == multiplayer.get_unique_id():
+			GameState.hero.inventory.remove_by_id(&"key", 1)
+		if c.mimic:
+			c.queue_free()  # the monster arrives as an enemy descriptor
+			continue
 		c.opened = true
 		c.locked = false
 		c.sprite.play(&"opening")
 		c.sprite.animation_finished.connect(func() -> void: c.sprite.play(&"open"), CONNECT_ONE_SHOT)
-		if consume_key and opener_peer == multiplayer.get_unique_id():
-			GameState.hero.inventory.remove_by_id(&"key", 1)
 
 
 ## Client → host: buy an offer; host checks that the offer still exists.
@@ -1164,6 +1194,9 @@ func request_floor(action: StringName) -> void:
 			if GameState.town_return_floor > 0:
 				GameState.resume_from_town()
 			else:
+				var lvl: DungeonLevel = game.level if game != null and "level" in game else null
+				if lvl != null and lvl.is_sealed():
+					return  # the exit seal holds until enough monsters fall
 				GameState.next_floor()
 		&"town":
 			GameState.return_to_town()

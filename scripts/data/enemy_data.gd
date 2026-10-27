@@ -55,6 +55,8 @@ enum Behavior { WALKER, FLYER, RANGED }
 @export var max_summons: int = 3
 ## Fakes (boss illusions): no XP, gold, loot or kill count on death.
 @export var no_rewards: bool = false
+## Training dummy in the town: never attacks, never dies, shows damage per second.
+@export var training_dummy: bool = false
 @export_group("Statuses and elements")
 ## Resistances by stat key: {"res_fire": 0.5, "res_poison": 1.0}.
 @export var resistances: Dictionary = {}

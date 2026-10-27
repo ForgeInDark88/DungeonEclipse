@@ -51,7 +51,7 @@ aoe_radius = 0.0
 max_summons = 3
 resistances = {
 "res_ice": 1.0,
-"res_fire": -0.4
+"res_fire": -0.6
 }
 status_immunities = Array[StringName]([&"slow"])
 on_hit_effects = Array[ExtResource("2_he")]([SubResource("Resource_slow")])

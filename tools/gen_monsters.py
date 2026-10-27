@@ -1451,6 +1451,81 @@ def crystal_crawler():
 
     return lay, fn, None
 
+# ================================================================== mimic
+def mimic():
+    """A chest that bites: planked body with iron bands, the lid hinged open
+    on rows of teeth, a long tongue, a yellow eye in the dark; it hops."""
+    fw, fh = 22, 24
+    lay = gs.monster_layout("mimic_layout", fw, fh, (11, 24))
+    wood = (128, 84, 46)
+    band = (70, 68, 78)
+
+    def body(gape=2, dy=0, alpha=255, tongue=0, eye=(255, 220, 60), broken=0, dis=0):
+        im = blank(fw, fh)
+        d = ImageDraw.Draw(im)
+        if broken:
+            # smashed: planks and the lid on the floor
+            for k in range(4):
+                x = 2 + k * 5
+                d.line((x, 23 - (k % 2), x + 4, 22 + (k % 2)), fill=sh(wood, 0.8 + 0.1 * k, alpha), width=2)
+            d.rectangle((6, 20, 15, 21), fill=rgba(band, alpha))
+            d.point((10, 19), fill=(255, 240, 200, alpha))
+            return im
+        base_y = 23 + dy
+        # lower box
+        bm = mask(fw, fh, lambda dd: dd.rectangle((3, base_y - 7, 18, base_y), fill=FULL))
+        lit(im, bm, wood, 6, base_y - 5, 8, 4, alpha, flat=0.4)
+        d = ImageDraw.Draw(im)
+        for y in (base_y - 4, base_y - 1):
+            d.line((3, y, 18, y), fill=sh(wood, 0.62, alpha))
+        for x in (5, 16):
+            d.line((x, base_y - 7, x, base_y), fill=rgba(band, alpha))
+            d.point((x, base_y - 6), fill=sh(band, 1.6, alpha))
+        # mouth: dark inside, teeth on both jaws, tongue
+        top = base_y - 7
+        d.rectangle((4, top - gape, 17, top), fill=(40, 10, 16, alpha))
+        for x in range(4, 18, 2):
+            d.polygon([(x, top), (x + 1, top - 2), (x + 2, top)], fill=(240, 236, 220, alpha))
+            if gape > 2:
+                d.polygon([(x, top - gape), (x + 1, top - gape + 2), (x + 2, top - gape)], fill=(240, 236, 220, alpha))
+        if tongue:
+            d.line((10, top - 1, 10 + tongue, top + 1, 12 + tongue, top + 3), fill=(220, 70, 90, alpha), width=2)
+        # lid: tilted up by `gape`
+        lm = mask(fw, fh, lambda dd: dd.polygon([(3, top - gape), (18, top - gape - 1), (18, top - gape - 5), (3, top - gape - 4)], fill=FULL))
+        lit(im, lm, sh(wood, 1.08)[:3], 6, top - gape - 4, 8, 3, alpha, flat=0.3)
+        d = ImageDraw.Draw(im)
+        d.line((3, top - gape - 4, 18, top - gape - 5), fill=sh(wood, 1.4, alpha))
+        for x in (5, 16):
+            d.line((x, top - gape - 4, x, top - gape), fill=rgba(band, alpha))
+        # the eye peering from the dark under the lid
+        if eye:
+            d.point((14, top - gape // 2 - 1), fill=rgba(eye, alpha))
+            d.point((15, top - gape // 2 - 1), fill=(30, 10, 10, alpha))
+        # lock plate turned into a nose
+        d.rectangle((9, base_y - 6, 12, base_y - 4), fill=(200, 170, 70, alpha))
+        d.point((10, base_y - 5), fill=(40, 20, 20, alpha))
+        if dis:
+            dissolve(im, dis, color=(200, 150, 90, alpha))
+        return im
+
+    def fn(name, i, n):
+        if name == "idle":
+            return body(gape=[1, 1, 2, 1][i], tongue=0)
+        if name == "walk":
+            return body(gape=[2, 4, 5, 3, 2, 1][i], dy=[0, -3, -4, -3, -1, 0][i], tongue=1 if i in (2, 3) else 0)
+        if name == "windup":
+            return body(gape=[4, 6, 7][i], tongue=2, eye=(255, 120, 60))
+        if name == "attack":
+            return body(gape=[7, 1, 3][i], tongue=[3, 0, 1][i], eye=(255, 255, 220))
+        if name == "hurt":
+            return body(gape=3, eye=(255, 255, 255))
+        if i < 2:
+            return body(gape=5 + i, dis=2 + i * 3)
+        return body(broken=1, alpha=255 - (i - 2) * 30)
+
+    return lay, fn, None
+
+
 
 MONSTERS = {
     # name: (builder, sheet file, write the layout .tres, outline)
@@ -1473,6 +1548,7 @@ MONSTERS = {
     "ash_husk": (ash_husk, "ash_husk", False, True),  # uses cultist_layout
     "glass_stalker": (glass_stalker, "glass_stalker", True, True),
     "crystal_crawler": (crystal_crawler, "crystal_crawler", True, True),
+    "mimic": (mimic, "mimic", True, True),
 }
 
 

@@ -17,7 +17,7 @@ const PROPS := [
 	["tavern", 45, -2, false], ["lamppost", 50, -1, true], ["well", 54, -1, false], ["tree", 58, -1, false],
 	["quest_board", 62, -1, false],
 	["house_b", 63, -2, false], ["smithy", 71, -2, false], ["crates", 76, -1, false], ["lamppost", 79, -1, true],
-	["house_c", 85, -2, false], ["fence", 90, -1, false], ["fence", 92, -1, false], ["signpost", 96, -1, false],
+	["barracks", 85, -2, false], ["fence", 92, -1, false], ["fence", 94, -1, false], ["signpost", 96, -1, false],
 	["tree", 99, -1, false], ["dungeon_gate", 105, -2, false], ["lamppost", 7, -1, true],
 ]
 
@@ -39,4 +39,5 @@ static func build() -> LevelLayout:
 	l.specials.append({"type": &"merchant", "cell": Vector2i(33, GROUND - 1)})
 	l.specials.append({"type": &"quest", "cell": Vector2i(61, GROUND - 1)})
 	l.specials.append({"type": &"smith", "cell": Vector2i(73, GROUND - 1)})
+	l.specials.append({"type": &"dummy", "cell": Vector2i(90, GROUND - 1)})
 	return l

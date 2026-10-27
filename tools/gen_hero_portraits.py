@@ -188,6 +188,7 @@ CLASSES = {
     "paladin": dict(rim=(255, 230, 150), shadow=(60, 60, 90), glow=(255, 215, 120), bg=(40, 34, 24), cloth=(220, 216, 205)),
     "rogue": dict(rim=(110, 230, 190), shadow=(20, 50, 50), glow=(60, 180, 150), bg=(12, 26, 26), cloth=(44, 70, 50)),
     "mage": dict(rim=(190, 130, 255), shadow=(50, 30, 90), glow=(160, 90, 255), bg=(24, 14, 44), cloth=(66, 46, 140)),
+    "necromancer": dict(rim=(120, 255, 160), shadow=(20, 40, 34), glow=(70, 220, 120), bg=(10, 22, 18), cloth=(46, 52, 50)),
 }
 
 
@@ -247,6 +248,31 @@ def body_layer(r, cls_id, cfg):
         d.ellipse((34, 52, 41, 59), fill=(186, 186, 198, 255), outline=(80, 80, 92, 255))
         d.ellipse((36, 54, 39, 57), fill=(140, 40, 50, 255))
         d.point((36, 54), fill=(255, 255, 255, 255))
+    elif cls_id == "necromancer":
+        robe = cfg["cloth"]
+        bone = (222, 214, 190)
+        col = mask(lambda dd: dd.polygon([(0, 63), (2, 52), (14, 44), (24, 50), (30, 58), (46, 50), (54, 44), (63, 50), (63, 63)],
+                                         fill=FULL))
+        lit(im, col, robe, 24, 50, 40, 14, shadow=sh, flat=0.4)
+        d = ImageDraw.Draw(im)
+        # a collar of ribs and a vertebrae chain over the robe
+        for k in range(4):
+            y = 52 + k * 3
+            d.arc((26 - k, y - 4, 50 + k, y + 4), 20, 160, fill=tone(bone, 1.0 - k * 0.08))
+        for y in range(46, 63, 3):
+            d.rectangle((37, y, 39, y + 1), fill=c4(bone))
+            d.point((37, y), fill=tone(bone, 1.25))
+        # skull pauldron
+        sk = mask(lambda dd: dd.ellipse((0, 44, 18, 60), fill=FULL))
+        lit(im, sk, bone, 6, 47, 9, 8, shadow=sh, flat=0.2)
+        d = ImageDraw.Draw(im)
+        d.rectangle((5, 51, 7, 53), fill=(20, 30, 24, 255))
+        d.rectangle((11, 51, 13, 53), fill=(20, 30, 24, 255))
+        d.point((6, 52), fill=(110, 255, 150, 255))
+        d.point((12, 52), fill=(110, 255, 150, 255))
+        d.line((6, 57, 12, 57), fill=tone(bone, 0.6, sh))
+        d.ellipse((34, 57, 42, 64), fill=(70, 230, 120, 255), outline=c4(bone))  # soul gem
+        d.ellipse((36, 59, 38, 61), fill=(210, 255, 220, 255))
     elif cls_id == "mage":
         robe = cfg["cloth"]
         gold = (224, 184, 74)
@@ -617,6 +643,34 @@ def head_gear(im, cls_id, cfg, r, sway):
         for x0 in (30, 35, 40, 45):
             d.line((x0, 35, x0 - 2, 49), fill=(28, 28, 34, 255))
         d.line((24, 33, 37, 30, 45, 31, 49, 35), fill=(82, 82, 96, 255))
+    elif cls_id == "necromancer":
+        cloth = cfg["cloth"]
+        bone = (222, 214, 190)
+        hood = mask(lambda dd: dd.polygon([(10, 50), (10, 26), (14, 11), (22, 3), (32 - sway, -1), (42, 1), (49, 8), (52, 18), (47, 17),
+                                           (42, 12), (34, 10), (26, 14), (22, 22), (22, 42), (26, 50)], fill=FULL))
+        lit(im, hood, cloth, 28, 10, 22, 24, shadow=sh, flat=0.2)
+        d = ImageDraw.Draw(im)
+        d.line((22, 22, 26, 14, 34, 10, 42, 12, 47, 17), fill=tone(cloth, 0.38, sh), width=2)
+        d.line((14, 14, 20, 6), fill=tone(cloth, 1.25))
+        # bone circlet across the hood's brow with a small skull
+        d.line((24, 13, 34, 9, 44, 11), fill=c4(bone), width=1)
+        sk = mask(lambda dd: dd.ellipse((30, 4, 38, 12), fill=FULL))
+        lit(im, sk, bone, 32, 6, 4, 4, shadow=sh)
+        d = ImageDraw.Draw(im)
+        d.point((32, 8), fill=(20, 30, 24, 255))
+        d.point((35, 8), fill=(20, 30, 24, 255))
+        px = im.load()
+        base = tuple(c4(cloth)[:3])
+        for y in range(13, 52):  # hood shadow above, green soul-light from below
+            for x in range(23, 50):
+                r_, g_, b_, a_ = px[x, y]
+                if a_ and (r_, g_, b_) != base:
+                    if y < 22:
+                        k = 0.45
+                        px[x, y] = (clamp(r_ * (1 - k)), clamp(g_ * (1 - k)), clamp(b_ * (1 - k) + 6), a_)
+                    elif y > 36:
+                        k = 0.22 * (y - 36) / 15
+                        px[x, y] = (clamp(r_ + (60 - r_) * k), clamp(g_ + (255 - g_) * k), clamp(b_ + (140 - b_) * k), a_)
     elif cls_id == "mage":
         robe = cfg["cloth"]
         gold = (224, 184, 74)
@@ -700,6 +754,17 @@ def background(cls_id):
         for _ in range(7):
             x, y = rnd.randint(-8, 56), rnd.randint(10, 60)
             dr.arc((x, y, x + 22, y + 10), 180, 360, fill=c4((40, 90, 80)), width=2)
+    elif cls_id == "necromancer":  # green mist, floating skulls and souls
+        for _ in range(7):
+            x, y = rnd.randint(-8, 56), rnd.randint(24, 62)
+            dr.ellipse((x, y, x + 20, y + 7), fill=c4((24, 60, 40)))
+        for x, y in ((8, 10), (52, 16), (14, 40)):
+            dr.ellipse((x, y, x + 6, y + 5), fill=c4((70, 110, 84)))
+            dr.point((x + 2, y + 2), fill=(140, 255, 170, 255))
+            dr.point((x + 4, y + 2), fill=(140, 255, 170, 255))
+        for _ in range(12):
+            x, y = rnd.randint(2, 62), rnd.randint(2, 62)
+            dr.point((x, y), fill=(150, 255, 180, 255))
     elif cls_id == "mage":  # rune circle
         dr.ellipse((14, 2, 62, 50), outline=c4((110, 70, 200)), width=1)
         dr.ellipse((19, 7, 57, 45), outline=c4((90, 56, 170)), width=1)

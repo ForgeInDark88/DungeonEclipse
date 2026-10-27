@@ -18,6 +18,9 @@ var net_seq := 0
 var unlocked_by_default := false
 ## Behind a puzzle barrier: cannot be opened until the puzzle is solved.
 var sealed := false
+## A mimic: opening it wakes a monster instead of loot (it twitches now and then).
+var mimic := false
+var _twitch := 0.0
 
 @onready var sprite: AnimatedSprite2D = $Sprite
 
@@ -28,6 +31,27 @@ func _ready() -> void:
 	locked = tier == 2 and not unlocked_by_default
 	AssetPaths.layout(AssetPaths.CHEST_LAYOUT).apply_to(sprite, AssetPaths.tex(AssetPaths.CHEST_SHEETS[tier]))
 	sprite.play(&"closed")
+	_twitch = randf_range(3.0, 7.0)
+	set_process(mimic)
+
+
+## The tell of a mimic: the lid lifts a crack for a moment, a tiny hop.
+func _process(delta: float) -> void:
+	if opened:
+		return
+	_twitch -= delta
+	if _twitch > 0.0:
+		return
+	_twitch = randf_range(4.0, 8.0)
+	sprite.play(&"opening")
+	sprite.pause()
+	sprite.frame = 1
+	var tw := create_tween()
+	tw.tween_property(sprite, "position:y", -2.0, 0.08)
+	tw.tween_property(sprite, "position:y", 0.0, 0.1)
+	tw.tween_callback(func() -> void:
+		if not opened:
+			sprite.play(&"closed"))
 
 
 func can_interact() -> bool:
@@ -71,6 +95,9 @@ func unlock() -> void:
 
 
 func open(opener_peer: int = 1, consume_key := false) -> void:
+	if mimic:
+		_wake_mimic(opener_peer, consume_key)
+		return
 	opened = true
 	AudioManager.play_sfx(&"chest_open", global_position)
 	sprite.play(&"opening")
@@ -88,6 +115,24 @@ func open(opener_peer: int = 1, consume_key := false) -> void:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
 			ns.broadcast_chest(net_seq, opener_peer, consume_key)
+
+
+func _wake_mimic(opener_peer: int, consume_key: bool) -> void:
+	opened = true
+	EventBus.message.emit("Это мимик!")
+	AudioManager.play_sfx(&"chest_locked", global_position)
+	EventBus.screen_shake.emit(3.0)
+	Fx.sparks(get_parent(), global_position + Vector2(0, -8), Color(0.9, 0.3, 0.3), 12, 90.0)
+	var level := get_parent()
+	while level != null and not (level is DungeonLevel):
+		level = level.get_parent()
+	if level != null and (not Net.active or Net.is_host):
+		level.spawn_mimic(global_position)
+	if Net.active and Net.is_host:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.broadcast_chest(net_seq, opener_peer, consume_key)
+	queue_free()
 
 
 func _shake() -> void:

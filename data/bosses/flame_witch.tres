@@ -203,7 +203,7 @@ biomes = Array[StringName]([])
 tint = Color(1, 1, 1, 1)
 resistances = {
 "res_fire": 0.8,
-"res_ice": -0.3
+"res_ice": -0.5
 }
 status_immunities = Array[StringName]([&"burn"])
 on_hit_effects = Array[ExtResource("2_ujs5u")]([])

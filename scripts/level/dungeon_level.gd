@@ -50,6 +50,10 @@ var _nav_area := Rect2i()
 var _nav_timer := 0.0
 ## Cells whose look changed (explored or dug): the minimap redraws only these.
 var changed_cells: Array[Vector2i] = []
+## Exit seal: the exit opens after seal_required kills on this floor
+## (GameState.seal_share() of the monsters placed by the generator).
+var seal_required := 0
+var seal_kills := 0
 
 
 func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeData = null) -> void:
@@ -96,7 +100,9 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	_spawn_return_stairs()
 	_spawn_specials()
 	_spawn_chests()
+	_spawn_secret_walls()
 	_spawn_enemies()
+	_setup_seal()
 	_spawn_ambience()
 	_spawn_decorations()
 	_spawn_traps()
@@ -150,6 +156,48 @@ func _spawn_town() -> void:
 	add_entity(flies, to_global(Vector2(layout.width * TILE / 2.0, (TownBuilder.GROUND - 3) * TILE)))
 
 
+## Exit seal: every kill on the floor counts (each machine counts its own
+## enemy_killed events; the host also broadcasts its count for late joiners).
+func _setup_seal() -> void:
+	seal_required = ceili(layout.enemy_cells.size() * GameState.seal_share())
+	seal_kills = 0
+	EventBus.enemy_killed.connect(_on_seal_kill)
+	_emit_seal.call_deferred()
+
+
+func is_sealed() -> bool:
+	return seal_kills < seal_required
+
+
+func _on_seal_kill(_d: EnemyData, _p: Vector2) -> void:
+	if not is_sealed():
+		return
+	seal_kills += 1
+	if Net.active and Net.is_host:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.seal_state.rpc(seal_kills)
+	_seal_progress()
+
+
+## Clients: the host's count (late join, kills the client did not see).
+func set_seal_kills(kills: int) -> void:
+	if kills > seal_kills:
+		seal_kills = mini(kills, seal_required)
+		_seal_progress()
+
+
+func _seal_progress() -> void:
+	_emit_seal()
+	if not is_sealed():
+		EventBus.message.emit("Печать снята! Выход открыт.")
+		AudioManager.play_sfx(&"portal")
+
+
+func _emit_seal() -> void:
+	EventBus.seal_changed.emit(seal_kills, seal_required)
+
+
 ## Arena: the boss; door and reward chest appear when it dies.
 func _spawn_boss() -> void:
 	var data := ItemDatabase.boss_for_floor(floor_number)
@@ -177,7 +225,7 @@ func _on_boss_defeated(_boss: BossData, _pos: Vector2) -> void:
 	chest.table_override = &"boss"  # boss loot: the main source of legendary items
 	add_entity(chest, cell_bottom(Vector2i(layout.width / 2, layout.boss_cell.y)))
 	Fx.sparks(entities, cell_bottom(layout.exit_cell) + Vector2(0, -16), Color(0.7, 0.4, 1.0), 30, 120.0)
-	EventBus.message.emit("Страж повержен! Открылся проход.")
+	EventBus.message.emit("Затмение рассеяно! Свет возвращается в подземелья." if _boss.final else "Страж повержен! Открылся проход.")
 
 
 ## Deterministic 0..3 variant per cell.
@@ -574,6 +622,12 @@ func _spawn_specials() -> void:
 				add_entity((load(QUEST_SCENE) as PackedScene).instantiate(), cell_bottom(info["cell"]))
 			&"event":
 				_spawn_event(info)
+			&"dummy":
+				# Training dummy at the barracks: local on every machine
+				# (no net id), each player trains on their own copy.
+				var dummy: Enemy = (load(ENEMY_SCENE) as PackedScene).instantiate()
+				dummy.setup(load(AssetPaths.TRAINING_DUMMY) as EnemyData, maxi(1, floor_number))
+				add_entity(dummy, cell_bottom(info["cell"]))
 			&"miniboss":
 				_spawn_miniboss(info)
 
@@ -649,9 +703,53 @@ func _spawn_chests() -> void:
 	for info in layout.chests:
 		var chest := (load(CHEST_SCENE) as PackedScene).instantiate()
 		chest.tier = info["tier"]
+		chest.mimic = info.get("mimic", false)
 		chest.floor_number = floor_number
 		_net_seq_node(chest)
 		add_entity(chest, cell_bottom(info["cell"]))
+
+
+# ------------------------------------------------------------ secrets
+## cell -> wall index into layout.secret_walls.
+var _secret_cells := {}
+
+
+func _spawn_secret_walls() -> void:
+	_secret_cells.clear()
+	for i in layout.secret_walls.size():
+		for cell: Vector2i in layout.secret_walls[i]:
+			_secret_cells[cell] = i
+			var crack := SecretCrack.new()
+			crack.level = self
+			crack.cell = cell
+			crack.first = cell == layout.secret_walls[i][0]
+			add_entity(crack, cell_center(cell))
+
+
+func is_secret_wall(cell: Vector2i) -> bool:
+	return _secret_cells.has(cell) and layout.get_tile(cell.x, cell.y) == T.BRICK
+
+
+## A hit on a cracked wall brings the whole passage down.
+func break_secret(cell: Vector2i) -> void:
+	if not _secret_cells.has(cell):
+		return
+	for c: Vector2i in layout.secret_walls[_secret_cells[cell]]:
+		break_tile(c, true)
+
+
+## A mimic jumps out of a chest (host / single player; guests get it as an
+## enemy descriptor like any other monster).
+func spawn_mimic(pos: Vector2) -> void:
+	var data := ItemDatabase.enemy_by_id(&"mimic")
+	if data == null:
+		return
+	var e: Enemy = (load(ENEMY_SCENE) as PackedScene).instantiate()
+	e.setup(data, floor_number)
+	_net_tag(e)
+	add_entity(e, pos)
+	_net_broadcast_enemy(e, null, false)
+	e.hear(pos)
 
 
 ## Decoration only: wall torches (one per room at most) and ceiling drips.
@@ -859,21 +957,68 @@ func _spawn_enemies() -> void:
 		if e.min_floor <= floor_number:
 			elite_pool.append(e)
 			elite_weights.append(e.weight)
+	# Squads: from floor 2 some monsters lead a group with a support role
+	# (healer, shieldbearer, bannerman) and bring 1-2 companions.
+	var squad_chance := 0.0 if floor_number < 2 else minf(0.1 + 0.025 * (floor_number - 2), 0.3)
+	var roles: Array[SquadRoleData] = []
+	var role_weights: Array[float] = []
+	for r in ItemDatabase.squad_roles:
+		if r.min_floor <= floor_number:
+			roles.append(r)
+			role_weights.append(r.weight)
+	var taken := {}
+	for cell in layout.enemy_cells:
+		taken[cell] = true
 	for cell in layout.enemy_cells:
 		var data: EnemyData = pool[LootTable._weighted_index(weights, rng)]
 		var elite: EliteAffixData = null
 		if not elite_pool.is_empty() and rng.randf() < elite_chance:
 			elite = elite_pool[LootTable._weighted_index(elite_weights, rng)]
+		# Every roll happens before the client early-out: RNG stays in sync.
+		var role: SquadRoleData = null
+		var mates: Array = []  # [EnemyData, cell]
+		if not roles.is_empty() and rng.randf() < squad_chance:
+			role = roles[LootTable._weighted_index(role_weights, rng)]
+			var count := rng.randi_range(1, 2)
+			for k in count:
+				var mate_data: EnemyData = pool[LootTable._weighted_index(weights, rng)]
+				var mate_cell := _squad_cell(cell, k, taken)
+				if mate_cell != Vector2i(-1, -1):
+					taken[mate_cell] = true
+					mates.append([mate_data, mate_cell])
 		if Net.active and not Net.is_host:
-			continue  # RNG stays in sync; shells arrive as host descriptors
-		var enemy := (load(ENEMY_SCENE) as PackedScene).instantiate()
-		enemy.setup(data, floor_number, elite)
-		_net_tag(enemy)
-		var pos := cell_bottom(cell)
-		if data.behavior == EnemyData.Behavior.FLYER:
-			pos.y -= TILE * 2
-		add_entity(enemy, pos)
-		_net_broadcast_enemy(enemy, elite, false)
+			continue  # shells arrive as host descriptors
+		_spawn_floor_enemy(data, elite, cell, role)
+		for m in mates:
+			_spawn_floor_enemy(m[0], null, m[1], null)
+
+
+func _spawn_floor_enemy(data: EnemyData, elite: EliteAffixData, cell: Vector2i, role: SquadRoleData) -> void:
+	var enemy := (load(ENEMY_SCENE) as PackedScene).instantiate()
+	enemy.setup(data, floor_number, elite)
+	if role:
+		enemy.assign_role(role)
+	_net_tag(enemy)
+	var pos := cell_bottom(cell)
+	if data.behavior == EnemyData.Behavior.FLYER:
+		pos.y -= TILE * 2
+	add_entity(enemy, pos)
+	_net_broadcast_enemy(enemy, elite, false)
+
+
+## A free standable cell next to a squad leader for companion `k` (1-3 cells
+## to either side on the same floor), or (-1, -1).
+func _squad_cell(cell: Vector2i, k: int, taken: Dictionary) -> Vector2i:
+	for off in ([1, -1, 2, -2, 3, -3] if k % 2 == 0 else [-1, 1, -2, 2, -3, 3]):
+		var c := cell + Vector2i(off, 0)
+		if taken.has(c):
+			continue
+		if layout.get_tile(c.x, c.y) != T.EMPTY or not LevelLayout.is_ground(layout.get_tile(c.x, c.y + 1)):
+			continue
+		if c.distance_to(layout.start_cell) < SAFE_START_RADIUS:
+			continue
+		return c
+	return Vector2i(-1, -1)
 
 
 ## Host → clients: a live enemy descriptor for the client shells.
@@ -883,4 +1028,43 @@ func _net_broadcast_enemy(e: Enemy, elite: EliteAffixData, champion: bool, held 
 	var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 	if ns:
 		ns.spawn_enemy.rpc(e.net_id, String(e.data.id), e.global_position,
-				elite.id if elite else StringName(), champion, held, e.hp)
+				elite.id if elite else StringName(), champion, held, e.hp, e.role.id if e.role else StringName())
+
+
+## Cracks over a secret wall cell: a jagged dark crack, a faint draft of light
+## and dust trickling out now and then. Gone when the brick is.
+class SecretCrack extends Node2D:
+	var level: DungeonLevel
+	var cell: Vector2i
+	var first := false
+	var _t := 0.0
+	var _dust := 0.0
+
+	func _ready() -> void:
+		z_index = 1
+		_dust = randf_range(1.0, 4.0)
+
+	func _process(delta: float) -> void:
+		_t += delta
+		if level == null or level.layout.get_tile(cell.x, cell.y) != LevelLayout.Tile.BRICK:
+			if first and level != null:
+				EventBus.message.emit("Открыт тайный проход!")
+				AudioManager.play_sfx(&"chest_open", global_position)
+			queue_free()
+			return
+		_dust -= delta
+		if _dust <= 0.0:
+			_dust = randf_range(2.5, 5.0)
+			Fx.sparks(get_parent(), global_position + Vector2(randf_range(-4, 4), 6), Color(0.7, 0.62, 0.5), 3, 25.0)
+		queue_redraw()
+
+	func _draw() -> void:
+		var c := Color(0.08, 0.05, 0.05, 0.9)
+		var pts := PackedVector2Array([Vector2(-1, -8), Vector2(1, -4), Vector2(-2, -1), Vector2(2, 2), Vector2(0, 5), Vector2(1, 8)])
+		draw_polyline(pts, c, 1.0)
+		draw_line(Vector2(-2, -1), Vector2(-6, 1), c, 1.0)
+		draw_line(Vector2(2, 2), Vector2(6, 0), c, 1.0)
+		draw_line(Vector2(1, -4), Vector2(4, -7), c, 1.0)
+		# a draft of light seeping through the crack
+		var a := 0.25 + 0.15 * sin(_t * 2.0)
+		draw_line(Vector2(0, -3), Vector2(1, 3), Color(1.0, 0.9, 0.6, a), 1.0)

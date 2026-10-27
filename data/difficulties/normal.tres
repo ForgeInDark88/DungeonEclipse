@@ -13,3 +13,4 @@ effects = {}
 elite_chance_mult = 1.0
 trap_damage_mult = 1.0
 shard_mult = 1.0
+seal_share = 0.6

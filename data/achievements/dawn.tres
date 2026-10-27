@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AchievementData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/achievement_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/achievements/star_gold.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"dawn"
+display_name = "Рассвет"
+description = "Победите Затмение на 35 этаже."
+icon = ExtResource("2_icon")
+order = 50
+counter = &"victories"
+target = 1
+reward_shards = 20
+hidden = false

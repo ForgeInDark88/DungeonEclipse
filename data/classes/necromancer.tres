@@ -1,0 +1,98 @@
+[gd_resource type="Resource" script_class="ClassData" load_steps=7 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/portraits/class_mage.png" id="1_portrait"]
+[ext_resource type="Script" path="res://scripts/data/class_data.gd" id="2_script"]
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="3_skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/mage.png" id="8_sprite"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/head_necromancer.png" id="sheet_head"]
+[ext_resource type="Texture2D" path="res://assets/sprites/player/outfit_necromancer.png" id="sheet_outfit"]
+[ext_resource type="Resource" path="res://data/skills/n_raise_skeleton.tres" id="tree_n_raise_skeleton"]
+[ext_resource type="Resource" path="res://data/skills/n_bone_bond.tres" id="tree_n_bone_bond"]
+[ext_resource type="Resource" path="res://data/skills/n_skeleton_archer.tres" id="tree_n_skeleton_archer"]
+[ext_resource type="Resource" path="res://data/skills/n_grave_call.tres" id="tree_n_grave_call"]
+[ext_resource type="Resource" path="res://data/skills/n_bone_golem.tres" id="tree_n_bone_golem"]
+[ext_resource type="Resource" path="res://data/skills/n_dark_frenzy.tres" id="tree_n_dark_frenzy"]
+[ext_resource type="Resource" path="res://data/skills/n_corpse_blast.tres" id="tree_n_corpse_blast"]
+[ext_resource type="Resource" path="res://data/skills/n_army_of_dead.tres" id="tree_n_army_of_dead"]
+[ext_resource type="Resource" path="res://data/skills/n_plague_bolt.tres" id="tree_n_plague_bolt"]
+[ext_resource type="Resource" path="res://data/skills/n_rot.tres" id="tree_n_rot"]
+[ext_resource type="Resource" path="res://data/skills/n_poison_cloud.tres" id="tree_n_poison_cloud"]
+[ext_resource type="Resource" path="res://data/skills/n_soul_bolt.tres" id="tree_n_soul_bolt"]
+[ext_resource type="Resource" path="res://data/skills/n_life_drain.tres" id="tree_n_life_drain"]
+[ext_resource type="Resource" path="res://data/skills/n_pestilence.tres" id="tree_n_pestilence"]
+[ext_resource type="Resource" path="res://data/skills/n_doom.tres" id="tree_n_doom"]
+[ext_resource type="Resource" path="res://data/skills/n_death_mark.tres" id="tree_n_death_mark"]
+[ext_resource type="Resource" path="res://data/skills/n_bone_spear.tres" id="tree_n_bone_spear"]
+[ext_resource type="Resource" path="res://data/skills/n_bone_armor.tres" id="tree_n_bone_armor"]
+[ext_resource type="Resource" path="res://data/skills/n_bone_shards.tres" id="tree_n_bone_shards"]
+[ext_resource type="Resource" path="res://data/skills/n_marrow.tres" id="tree_n_marrow"]
+[ext_resource type="Resource" path="res://data/skills/n_bone_prison.tres" id="tree_n_bone_prison"]
+[ext_resource type="Resource" path="res://data/skills/n_ossuary.tres" id="tree_n_ossuary"]
+[ext_resource type="Resource" path="res://data/skills/n_bone_storm.tres" id="tree_n_bone_storm"]
+[ext_resource type="Resource" path="res://data/skills/n_lich_form.tres" id="tree_n_lich_form"]
+
+[resource]
+script = ExtResource("2_script")
+id = &"necromancer"
+display_name = "Некромант"
+order = 4
+description = "Повелитель мёртвых: поднимает скелетов, насылает мор и прячется за костяным доспехом. Урон зависит от Интеллекта."
+portrait_overlay = ExtResource("1_portrait")
+sprite = ExtResource("8_sprite")
+outfit_sheet = ExtResource("sheet_outfit")
+head_sheet = ExtResource("sheet_head")
+base_stats = {
+"agility": 4,
+"intellect": 8,
+"strength": 2,
+"vitality": 5
+}
+growth_per_level = {
+"agility": 1,
+"intellect": 3,
+"strength": 0,
+"vitality": 2
+}
+main_attribute = "intellect"
+base_damage = 2
+attack_range = 18.0
+attack_cooldown = 0.45
+starting_items = {
+"health_potion": 3,
+"mana_crystal": 2,
+"bomb": 2,
+"rope": 1
+}
+starting_equipment = Array[StringName]([&"apprentice_wand", &"cloth_hood"])
+starting_quick_bar = Array[StringName]([&"bomb", &"mana_crystal", &"health_potion", &"rope"])
+skills = Array[ExtResource("3_skill")]([ExtResource("tree_n_raise_skeleton"), ExtResource("tree_n_bone_bond"), ExtResource("tree_n_skeleton_archer"), ExtResource("tree_n_grave_call"), ExtResource("tree_n_bone_golem"), ExtResource("tree_n_dark_frenzy"), ExtResource("tree_n_corpse_blast"), ExtResource("tree_n_army_of_dead"), ExtResource("tree_n_plague_bolt"), ExtResource("tree_n_rot"), ExtResource("tree_n_poison_cloud"), ExtResource("tree_n_soul_bolt"), ExtResource("tree_n_life_drain"), ExtResource("tree_n_pestilence"), ExtResource("tree_n_doom"), ExtResource("tree_n_death_mark"), ExtResource("tree_n_bone_spear"), ExtResource("tree_n_bone_armor"), ExtResource("tree_n_bone_shards"), ExtResource("tree_n_marrow"), ExtResource("tree_n_bone_prison"), ExtResource("tree_n_ossuary"), ExtResource("tree_n_bone_storm"), ExtResource("tree_n_lich_form")])
+allowed_weapon_types = Array[int]([5, 8, 3])
+unlock_shards = 25
+unlock_gold = 350
+branch_names = Array[String](["Легион", "Порча", "Кость"])
+tree_layout = {
+"n_raise_skeleton": {"branch": 0, "row": 0, "points": 0, "level": 1, "choice": ""},
+"n_bone_bond": {"branch": 0, "row": 1, "points": 1, "level": 2, "choice": ""},
+"n_skeleton_archer": {"branch": 0, "row": 2, "points": 3, "level": 4, "choice": "necromancer_0_2"},
+"n_grave_call": {"branch": 0, "row": 2, "points": 3, "level": 4, "choice": "necromancer_0_2"},
+"n_bone_golem": {"branch": 0, "row": 3, "points": 6, "level": 6, "choice": ""},
+"n_dark_frenzy": {"branch": 0, "row": 4, "points": 9, "level": 9, "choice": "necromancer_0_4"},
+"n_corpse_blast": {"branch": 0, "row": 4, "points": 9, "level": 9, "choice": "necromancer_0_4"},
+"n_army_of_dead": {"branch": 0, "row": 5, "points": 12, "level": 12, "choice": ""},
+"n_plague_bolt": {"branch": 1, "row": 0, "points": 0, "level": 1, "choice": ""},
+"n_rot": {"branch": 1, "row": 1, "points": 1, "level": 2, "choice": ""},
+"n_poison_cloud": {"branch": 1, "row": 2, "points": 3, "level": 4, "choice": "necromancer_1_2"},
+"n_soul_bolt": {"branch": 1, "row": 2, "points": 3, "level": 4, "choice": "necromancer_1_2"},
+"n_life_drain": {"branch": 1, "row": 3, "points": 6, "level": 6, "choice": ""},
+"n_pestilence": {"branch": 1, "row": 4, "points": 9, "level": 9, "choice": "necromancer_1_4"},
+"n_doom": {"branch": 1, "row": 4, "points": 9, "level": 9, "choice": "necromancer_1_4"},
+"n_death_mark": {"branch": 1, "row": 5, "points": 12, "level": 12, "choice": ""},
+"n_bone_spear": {"branch": 2, "row": 0, "points": 0, "level": 1, "choice": ""},
+"n_bone_armor": {"branch": 2, "row": 1, "points": 1, "level": 2, "choice": ""},
+"n_bone_shards": {"branch": 2, "row": 2, "points": 3, "level": 4, "choice": "necromancer_2_2"},
+"n_marrow": {"branch": 2, "row": 2, "points": 3, "level": 4, "choice": "necromancer_2_2"},
+"n_bone_prison": {"branch": 2, "row": 3, "points": 6, "level": 6, "choice": ""},
+"n_ossuary": {"branch": 2, "row": 4, "points": 9, "level": 9, "choice": "necromancer_2_4"},
+"n_bone_storm": {"branch": 2, "row": 4, "points": 9, "level": 9, "choice": "necromancer_2_4"},
+"n_lich_form": {"branch": 2, "row": 5, "points": 12, "level": 12, "choice": ""}
+}

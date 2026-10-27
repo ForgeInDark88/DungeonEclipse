@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1_data"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/mimic.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/mimic_sheet.png" id="3_sheet"]
+[ext_resource type="Resource" path="res://data/animations/mimic_layout.tres" id="4_layout"]
+[ext_resource type="Resource" path="res://data/loot_tables/chest_epic.tres" id="5_loot"]
+
+[resource]
+script = ExtResource("1_data")
+id = &"mimic"
+display_name = "Мимик"
+gender = "m"
+description = "Сундук, который кусается. Иногда крышка вздрагивает сама по себе - присмотритесь, прежде чем открывать."
+texture = ExtResource("2_icon")
+sheet = ExtResource("3_sheet")
+sheet_layout = ExtResource("4_layout")
+behavior = 0
+collision_size = Vector2(16, 14)
+max_hp = 70
+damage = 13
+armor = 3
+speed = 50.0
+chase_speed = 105.0
+aggro_range = 220.0
+attack_range = 18.0
+attack_cooldown = 0.9
+jumps = true
+xp_reward = 45
+loot_table = ExtResource("5_loot")
+loot_chance = 1.0
+gold_min = 15
+gold_max = 40
+min_floor = 999
+spawn_weight = 0.0
+resistances = {
+"res_fire": -0.5,
+"res_poison": 0.5
+}
+sound_hurt = &"enemy_hurt"
+sound_death = &"enemy_death"

@@ -20,6 +20,9 @@ var is_arena := false
 var boss_cell := Vector2i.ZERO
 ## The town before the dungeon (TownBuilder): no back wall, props instead of rooms.
 var is_town := false
+## Cracked walls into secret rooms: Array of Array[Vector2i] (one wall each).
+## A melee hit on any cell of a wall breaks the whole passage.
+var secret_walls: Array = []
 ## Array of {"tex": String, "cell": Vector2i, "z": int, "lamp": bool}.
 var town_props: Array[Dictionary] = []
 

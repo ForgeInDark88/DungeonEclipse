@@ -42,9 +42,10 @@
 [resource]
 script = ExtResource("2_script")
 id = &"paladin"
+defense_move = &"parry"
 display_name = "Паладин"
 order = 3
-description = "Рыцарь света с булавой. Медленнее воина, но лечит себя и стойко держит стихии. Урон зависит от Силы."
+description = "Рыцарь света с булавой. Медленнее воина, но лечит себя и стойко держит стихии. Урон зависит от Силы. Парирование (ПКМ / L): блок в момент удара оглушает врага."
 portrait_overlay = ExtResource("1_portrait")
 sprite = ExtResource("8_sprite")
 outfit_sheet = ExtResource("sheet_outfit")

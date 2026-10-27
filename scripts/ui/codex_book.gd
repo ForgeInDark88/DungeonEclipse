@@ -207,16 +207,25 @@ func _show_creature(e: EnemyData) -> void:
 	if not traits.is_empty():
 		lines.append("Особенности: " + ", ".join(traits))
 	var res: Array[String] = []
+	var weak: Array[String] = []
 	for k in e.resistances:
-		res.append("%s %d%%" % [StatTypes.label(k), roundi(float(e.resistances[k]) * 100.0)])
+		var v := float(e.resistances[k])
+		if v < 0.0:
+			weak.append("%s +%d%%" % [StatTypes.element_name(k), roundi(-v * 100.0)])
+		else:
+			res.append("%s %d%%" % [StatTypes.label(k), roundi(v * 100.0)])
 	if not res.is_empty():
 		lines.append("Сопротивления: " + ", ".join(res))
+	if not weak.is_empty():
+		lines.append("Уязвим к: " + ", ".join(weak))
 	if not e.status_immunities.is_empty():
 		var names: Array[String] = []
 		for s in e.status_immunities:
 			names.append(StatusEffects.display_name(s))
 		lines.append("Иммунитет: " + ", ".join(names))
-	if e is BossData:
+	if e is BossData and (e as BossData).final:
+		lines.append("Встречается: %d этаж, после всех стражей" % ItemDatabase.final_floor())
+	elif e is BossData:
 		lines.append("Встречается: каждый %d-й этаж" % GameState.BOSS_EVERY)
 	else:
 		var where: Array[String] = []

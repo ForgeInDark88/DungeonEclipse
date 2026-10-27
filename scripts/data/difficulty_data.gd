@@ -19,3 +19,5 @@ extends Resource
 @export var trap_damage_mult: float = 1.0
 ## Multiplier of the Sanctum shards earned at the end of the run.
 @export var shard_mult: float = 1.0
+## Share of the floor's monsters that must die before the exit unseals.
+@export_range(0.0, 1.0) var seal_share: float = 0.6

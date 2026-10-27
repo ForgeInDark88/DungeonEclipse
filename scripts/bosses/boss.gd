@@ -623,6 +623,8 @@ func _die() -> void:
 		if is_instance_valid(s) and not s.is_dead():
 			s.take_damage(99999)
 	GameState.run_stats["bosses"] = int(GameState.run_stats.get("bosses", 0)) + 1
+	if boss.final:
+		GameState.run_stats["victory"] = true
 	# Bosses pay a skill point: the risk buys progress in the tree.
 	if GameState.hero and GameState.run_active:
 		GameState.hero.skills.add_points(1)

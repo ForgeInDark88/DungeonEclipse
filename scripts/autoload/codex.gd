@@ -8,7 +8,7 @@ const SECTION := "codex"
 ## Counters an AchievementData can watch. "floor", "bestiary" and
 ## "items_known" keep the best value, the rest are sums.
 const COUNTERS: Array[StringName] = [&"kills", &"elites", &"bosses", &"floor", &"chests", &"epic_items",
-	&"gold", &"traps", &"events", &"purchases", &"deaths", &"bestiary", &"items_known", &"runs"]
+	&"gold", &"traps", &"events", &"purchases", &"deaths", &"bestiary", &"items_known", &"runs", &"victories"]
 
 var counters: Dictionary = {}
 ## enemy / boss id -> kills
@@ -30,7 +30,10 @@ func _ready() -> void:
 	add_child(AchievementToast.new())
 	EventBus.enemy_killed.connect(_on_enemy_killed)
 	EventBus.elite_killed.connect(func(_d: EnemyData) -> void: add(&"elites"))
-	EventBus.boss_defeated.connect(func(_b: BossData, _p: Vector2) -> void: add(&"bosses"))
+	EventBus.boss_defeated.connect(func(b: BossData, _p: Vector2) -> void:
+		add(&"bosses")
+		if b.final:
+			add(&"victories"))
 	EventBus.floor_changed.connect(func(n: int) -> void: record_max(&"floor", n))
 	EventBus.chest_opened.connect(func(_c: Node) -> void: add(&"chests"))
 	EventBus.item_collected.connect(func(item: ItemData, _p: Vector2) -> void: discover_item(item))

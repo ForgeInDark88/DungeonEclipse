@@ -41,7 +41,9 @@ phases_through_walls = false
 ceiling_ambush = false
 aoe_radius = 0.0
 max_summons = 3
-resistances = {}
+resistances = {
+"res_fire": -0.5
+}
 status_immunities = Array[StringName]([])
 on_hit_effects = Array[ExtResource("2_iwg3r")]([])
 sound_hurt = &"enemy_hurt"

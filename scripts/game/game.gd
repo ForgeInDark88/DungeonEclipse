@@ -87,9 +87,11 @@ func _ready() -> void:
 			book.open())
 	EventBus.boss_spawned.connect(func(b: Node) -> void: AudioManager.play_music((b as Boss).boss.music))
 	# Boss defeated: a victory sting, then back to the floor's music.
-	EventBus.boss_defeated.connect(func(_b: BossData, _p: Vector2) -> void:
+	EventBus.boss_defeated.connect(func(b: BossData, _p: Vector2) -> void:
 		var biome := GameState.current_biome()
-		AudioManager.play_sting(&"victory", biome.music if biome else &""))
+		AudioManager.play_sting(&"victory", biome.music if biome else &"")
+		if b.final:
+			_on_eclipse_defeated())
 	_load_floor()
 
 
@@ -356,6 +358,57 @@ func _on_player_died() -> void:
 		overlay.add_text(text, 7)
 	overlay.add_button("В главное меню", func() -> void: GameState.go_to_menu()).grab_focus()
 	overlay.visible = true
+
+
+## The Eclipse fell: the ending of the run. The hero may end the run with
+## the victory bonus or keep descending (endless floors, the bonus is kept:
+## run_stats.victory is already set and paid whenever the run ends).
+func _on_eclipse_defeated() -> void:
+	await get_tree().create_timer(2.5).timeout
+	if not is_inside_tree() or player == null or player.dead:
+		return
+	book.close()
+	skill_tree.close()
+	_flash_screen(Color(1.0, 0.9, 0.6, 0.8))
+	var hero := GameState.hero
+	var stats := GameState.run_stats.duplicate()
+	var seconds := (Time.get_ticks_msec() - int(stats.get("start_ms", 0))) / 1000
+	get_tree().paused = true
+	overlay.clear()
+	overlay.set_panel_size(Vector2(360, 262))
+	overlay.add_text("Затмение рассеяно", 14)
+	overlay.add_text("Чёрное солнце угасло, и свет вернулся в подземелья.\n%s %s · уровень %d — %s." % [
+		hero.race.display_name, hero.class_data.display_name, hero.level,
+		"героиня, разбившая Затмение" if hero.female else "герой, разбивший Затмение"], 7)
+	overlay.add_control(_stats_grid([
+		["Этаж", str(GameState.floor_number)], ["Время", "%d:%02d" % [seconds / 60, seconds % 60]],
+		["Убито врагов", str(GameState.kills)], ["Элиты / стражи", "%d / %d" % [int(stats.get("elites", 0)), int(stats.get("bosses", 0))]],
+		["Золото собрано", str(int(stats.get("gold", 0)))], ["Находки", _found_text(stats.get("found", [0, 0, 0]))],
+		["Лучшее комбо", "×%d" % int(stats.get("best_combo", 0))],
+	]))
+	overlay.add_text("Награда за победу: +%d осколков Затмения." % MetaProgress.SHARDS_VICTORY, 7)
+	overlay.add_button("Завершить забег", _finish_victory).grab_focus()
+	overlay.add_button("Спуститься глубже (бесконечный режим)", func() -> void:
+		get_tree().paused = false
+		overlay.visible = false
+		EventBus.message.emit("Глубины зовут дальше. Награда за победу сохранится."))
+	overlay.visible = true
+
+
+func _finish_victory() -> void:
+	var reward := GameState.end_run()
+	overlay.clear()
+	overlay.set_panel_size(Vector2(340, 150))
+	overlay.add_text("Забег завершён победой", 13)
+	if not reward.is_empty():
+		var text := "Святилище Затмения: +%d осколков, +%d золота" % [reward["shards"], reward["gold"]]
+		if not reward["parts"].is_empty():
+			text += "\n(" + ", ".join(reward["parts"]) + ")"
+		overlay.add_text(text, 7)
+	overlay.add_button("В главное меню", func() -> void:
+		if Net.active:
+			Net.leave()
+		GameState.go_to_menu()).grab_focus()
 
 
 ## Found items by rarity, each number in its rarity color.

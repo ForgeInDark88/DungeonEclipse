@@ -5,6 +5,9 @@ extends EnemyData
 
 @export var title: String = ""
 @export var order: int = 0
+## The Eclipse itself: not in the rotation, waits on ItemDatabase.final_floor()
+## after all the guardians; its death is the end of the run (victory screen).
+@export var final: bool = false
 @export var phases: Array[BossPhase] = []
 @export var music: StringName = &"boss"
 ## Contact damage multiplier while touching the hero.

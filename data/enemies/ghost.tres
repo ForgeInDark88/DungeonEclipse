@@ -51,7 +51,7 @@ aoe_radius = 0.0
 max_summons = 3
 resistances = {
 "res_ice": 0.5,
-"res_magic": -0.5
+"res_magic": -0.75
 }
 status_immunities = Array[StringName]([&"bleed", &"poison"])
 on_hit_effects = Array[ExtResource("2_l7asn")]([SubResource("Resource_3d3ub")])

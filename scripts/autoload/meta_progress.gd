@@ -13,6 +13,8 @@ const GOLD_BANK_SHARE := 0.25
 ## Shards for depth: one per this many floors reached.
 const FLOORS_PER_SHARD := 2
 const SHARDS_PER_BOSS := 3
+## Bonus for defeating the Eclipse (the end of the run).
+const SHARDS_VICTORY := 30
 ## Item id of the shard pickup (elites drop it, see EliteAffixData.shard_drop).
 const SHARD_ITEM := &"eclipse_shard"
 
@@ -158,6 +160,9 @@ func finish_run(hero: Hero, floor_reached: int, stats: Dictionary) -> Dictionary
 	if from_bosses > 0:
 		parts.append("стражи: %d" % from_bosses)
 	var s := from_items + from_depth + from_bosses
+	if stats.get("victory", false):
+		parts.append("победа над Затмением: %d" % SHARDS_VICTORY)
+		s += SHARDS_VICTORY
 	var diff: DifficultyData = GameState.difficulty
 	if diff and not is_equal_approx(diff.shard_mult, 1.0) and s > 0:
 		var total := roundi(s * diff.shard_mult)

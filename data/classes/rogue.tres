@@ -42,9 +42,10 @@
 [resource]
 script = ExtResource("2_1ke0y")
 id = &"rogue"
+defense_move = &"roll"
 display_name = "Разбойник"
 order = 1
-description = "Быстрый и смертоносный, полагается на криты. Урон зависит от Ловкости."
+description = "Быстрый и смертоносный, полагается на криты. Урон зависит от Ловкости. Перекат (ПКМ / L): рывок, во время которого вас нельзя ранить."
 portrait_overlay = ExtResource("1_8t6c3")
 sprite = ExtResource("8_fq2fb")
 outfit_sheet = ExtResource("sheet_outfit")

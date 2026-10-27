@@ -199,5 +199,6 @@ gold_min = 80
 gold_max = 130
 min_floor = 999
 resistances = {
-"res_magic": 0.5
+"res_magic": 0.5,
+"res_poison": -0.3
 }

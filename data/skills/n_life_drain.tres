@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/n_life_drain.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/buff_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+key = "n_drain"
+bonuses = {
+"intellect": 3
+}
+bonuses_per_level = {
+"intellect": 1
+}
+duration = 6.0
+duration_per_level = 1.0
+tint = Color(0.7, 0.3, 0.4, 1)
+heal_percent = 0.18
+
+[resource]
+script = ExtResource("skill")
+id = &"n_life_drain"
+display_name = "Похищение жизни"
+description = "Некромант выпивает силы: лечение и прилив мощи."
+icon = ExtResource("icon")
+mana_cost = 22
+cooldown = 14.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3

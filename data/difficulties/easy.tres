@@ -10,6 +10,7 @@ description = "Монстры слабее и бьют мягче. Для зна
 order = 0
 color = Color(0.55, 0.85, 0.45, 1)
 effects = {
+"enemy_speed": -0.1,
 "enemy_hp": -0.3,
 "enemy_damage": -0.35,
 "gold": -0.1
@@ -17,3 +18,4 @@ effects = {
 elite_chance_mult = 0.6
 trap_damage_mult = 0.6
 shard_mult = 0.5
+seal_share = 0.45

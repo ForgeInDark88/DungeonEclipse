@@ -51,7 +51,7 @@ aoe_radius = 36.0
 max_summons = 3
 resistances = {
 "res_fire": 0.3,
-"res_ice": -0.25,
+"res_ice": -0.5,
 "res_poison": 1.0
 }
 status_immunities = Array[StringName]([&"poison", &"bleed"])

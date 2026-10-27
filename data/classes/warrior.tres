@@ -42,9 +42,10 @@
 [resource]
 script = ExtResource("2_3268n")
 id = &"warrior"
+defense_move = &"parry"
 display_name = "Воин"
 order = 0
-description = "Крепкий боец ближнего боя с мечом и щитом. Урон зависит от Силы."
+description = "Крепкий боец ближнего боя с мечом и щитом. Урон зависит от Силы. Парирование (ПКМ / L): блок в момент удара оглушает врага."
 portrait_overlay = ExtResource("1_1y7wg")
 sprite = ExtResource("8_h8h0d")
 outfit_sheet = ExtResource("sheet_outfit")

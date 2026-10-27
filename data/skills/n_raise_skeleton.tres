@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/n_raise_skeleton.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/summon_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+kind = 0
+count = 1
+extra_every_levels = 2
+max_alive = 2
+max_alive_per_level = 1
+damage_multiplier = 0.6
+damage_per_level = 0.1
+lifetime = 20.0
+lifetime_per_level = 3.0
+
+[resource]
+script = ExtResource("skill")
+id = &"n_raise_skeleton"
+display_name = "Поднять скелета"
+description = "Из земли встаёт скелет-воин и бьётся за вас."
+icon = ExtResource("icon")
+mana_cost = 18
+cooldown = 6.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_cast"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3

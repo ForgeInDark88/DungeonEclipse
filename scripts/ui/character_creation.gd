@@ -26,7 +26,8 @@ func _ready() -> void:
 	right_page.add_theme_constant_override("separation", 3)
 
 	left_page.add_child(UIStyle.label("Раса", 11))
-	var race_row := HBoxContainer.new()
+	var race_row := HFlowContainer.new()
+	race_row.add_theme_constant_override("v_separation", 2)
 	left_page.add_child(race_row)
 	var race_group := ButtonGroup.new()
 	for r in ItemDatabase.races:
@@ -39,7 +40,8 @@ func _ready() -> void:
 	left_page.add_child(_race_desc)
 
 	left_page.add_child(UIStyle.label("Класс", 11))
-	var class_row := HBoxContainer.new()
+	var class_row := HFlowContainer.new()
+	class_row.add_theme_constant_override("v_separation", 2)
 	left_page.add_child(class_row)
 	var class_group := ButtonGroup.new()
 	for c in ItemDatabase.classes:

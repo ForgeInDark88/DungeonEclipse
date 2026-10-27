@@ -53,6 +53,7 @@ func generate(floor_number: int, seed_value: int) -> LevelLayout:
 			_collect_spots(Vector2i(c, r))
 	_place_start_and_exit()
 	_place_specials(floor_number)
+	_place_secret_walls()
 	_place_chests(floor_number)
 	_place_enemies(floor_number)
 	return layout
@@ -304,12 +305,19 @@ func _place_chests(floor_number: int) -> void:
 	_shuffle(rooms)
 	var count := 2 + (cols * rows) / 3
 	var placed := 0
-	# Sealed rooms always hide a good chest.
+	# Sealed (secret) rooms always hide a good chest, often a second one -
+	# and greed is punished: a third of them are mimics.
 	for room in rooms:
 		if not _connected.has(room):
-			var cell: Variant = _take_spot(room, true)
-			if cell != null:
-				layout.chests.append({"cell": cell, "tier": 2 if rng.randf() < 0.5 else 1})
+			for k in 2:
+				var tier := 2 if rng.randf() < 0.5 else 1
+				var mimic := rng.randf() < 0.3
+				var extra := rng.randf() < 0.5
+				if k == 1 and not extra:
+					break
+				var cell: Variant = _take_spot(room, true)
+				if cell != null:
+					layout.chests.append({"cell": cell, "tier": tier, "mimic": mimic})
 	for room in rooms:
 		if placed >= count:
 			break
@@ -322,8 +330,35 @@ func _place_chests(floor_number: int) -> void:
 		var gold_chance := 0.06 + 0.02 * floor_number
 		var iron_chance := 0.22 + 0.03 * floor_number
 		var tier := 2 if roll < gold_chance else (1 if roll < gold_chance + iron_chance else 0)
-		layout.chests.append({"cell": cell, "tier": tier})
+		# From floor 3 a few ordinary chests bite back.
+		var mimic_chance := 0.0 if floor_number < 3 else minf(0.04 + 0.01 * floor_number, 0.14)
+		layout.chests.append({"cell": cell, "tier": tier, "mimic": rng.randf() < mimic_chance})
 		placed += 1
+
+
+## Secret rooms (rooms no corridor leads to): a cracked wall to a connected
+## neighbour on the same row, 3 cells tall at the floor. A hit breaks it.
+func _place_secret_walls() -> void:
+	for r in rows:
+		for c in cols:
+			var room := Vector2i(c, r)
+			if _connected.has(room):
+				continue
+			var sides: Array[int] = []
+			if c > 0 and _connected.has(Vector2i(c - 1, r)):
+				sides.append(c * ROOM_W)  # left wall
+			if c < cols - 1 and _connected.has(Vector2i(c + 1, r)):
+				sides.append((c + 1) * ROOM_W)  # right wall
+			if sides.is_empty():
+				continue  # only bombs get in here
+			var x: int = sides[rng.randi_range(0, sides.size() - 1)]
+			var fy := _floor_y(room)
+			var wall: Array[Vector2i] = []
+			for y in range(fy - 3, fy):
+				if layout.get_tile(x, y) == T.BRICK:
+					wall.append(Vector2i(x, y))
+			if not wall.is_empty():
+				layout.secret_walls.append(wall)
 
 
 func _place_enemies(floor_number: int) -> void:

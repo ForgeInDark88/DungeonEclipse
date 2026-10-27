@@ -50,7 +50,8 @@ ceiling_ambush = false
 aoe_radius = 0.0
 max_summons = 3
 resistances = {
-"res_poison": 1.0
+"res_poison": 1.0,
+"res_fire": -0.75
 }
 status_immunities = Array[StringName]([&"poison"])
 on_hit_effects = Array[ExtResource("2_he")]([SubResource("Resource_pois")])

@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="SkillData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/skill_data.gd" id="skill"]
+[ext_resource type="Texture2D" path="res://assets/sprites/skills/n_bone_storm.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/skills/area_blast_skill.gd" id="eff"]
+
+[sub_resource type="Resource" id="Effect"]
+script = ExtResource("eff")
+radius = 64.0
+radius_per_level = 5.0
+damage_multiplier = 2.2
+damage_per_level = 0.4
+knockback = 140.0
+breaks_tiles = false
+stun_time = 0.0
+damage_type = 0
+color = Color(0.95, 0.92, 0.85, 1)
+vfx = &"blades"
+
+[resource]
+script = ExtResource("skill")
+id = &"n_bone_storm"
+display_name = "Костяная буря"
+description = "Вихрь осколков рвёт всех вокруг."
+icon = ExtResource("icon")
+mana_cost = 30
+cooldown = 10.0
+max_level = 4
+effect = SubResource("Effect")
+cast_animation = &"attack_heavy"
+synergy_weapons = Array[int]([])
+synergy_power = 0.3
