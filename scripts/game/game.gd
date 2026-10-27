@@ -197,7 +197,7 @@ func _apply_brightness() -> void:
 func _process(delta: float) -> void:
 	# A fallen hero spectates the party until the next floor revives them.
 	if Net.active and player != null and player.dead and net_players:
-		for p: Player in net_players.get_children():
+		for p: Player in party():
 			if p != player and not p.dead:
 				player.camera.global_position = p.global_position + Vector2(0, -10)
 				break
@@ -503,6 +503,16 @@ func _make_hero_from(info: Dictionary) -> Hero:
 	return h
 
 
+## Co-op heroes (the container also holds their sparks, dust and trails).
+func party() -> Array[Player]:
+	var list: Array[Player] = []
+	if net_players:
+		for n in net_players.get_children():
+			if n is Player:
+				list.append(n)
+	return list
+
+
 func _net_player_name(peer_id: int) -> String:
 	return String(Net.players.get(peer_id, {}).get("name", "Игрок"))
 
@@ -582,14 +592,14 @@ func _net_on_floor_loaded() -> void:
 		net_sync.net_hello.rpc_id(1)
 	var sp := level.start_position()
 	player.global_position = sp
-	for p: Player in net_players.get_children():
+	for p: Player in party():
 		if p == player:
 			continue
 		p.net_place(sp + Vector2(14, 0))
 	# A fallen hero rises on the next floor (co-op rule).
 	if player.dead:
 		player.revive()
-	for p: Player in net_players.get_children():
+	for p: Player in party():
 		if p != player and p.dead:
 			p.revive()
 
@@ -603,7 +613,7 @@ func _on_player_died_coop() -> void:
 	net_sync.broadcast_player_hp(Net.multiplayer.get_unique_id(), 0,
 			GameState.hero.stats.max_hp() if GameState.hero else 0, true)
 	var any_alive := false
-	for p: Player in net_players.get_children():
+	for p: Player in party():
 		if p != player and not p.dead:
 			any_alive = true
 	if any_alive:

@@ -13,6 +13,14 @@ var items := {}            # net_id -> ItemPickup node
 var _last_hitter := {}     # net_id -> peer id (kill credit)
 var _hit_budget := {}      # peer id -> hits sent this second (anti-spam)
 var minions := {}         # uid -> Minion: other players' servants (visual copies)
+## Host: a hero asked to move the party (exit / gate / stairs) and waits there
+## for the others; the move happens by itself once everyone living is near.
+const GATHER_RADIUS := 220.0
+var _pending_action := &""
+var _pending_peer := 0
+var _pending_pos := Vector2.ZERO
+var _pending_left := 0.0
+var _gather_timer := 0.0
 var _hit_second := 0
 var _state_timer := 0.0
 
@@ -28,6 +36,12 @@ func _process(delta: float) -> void:
 	if _state_timer <= 0.0:
 		_state_timer = STATE_RATE
 		_broadcast_enemy_state()
+	if _pending_action != &"":
+		_gather_timer -= delta
+		_pending_left -= delta
+		if _gather_timer <= 0.0:
+			_gather_timer = 0.3
+			_check_gathering()
 
 
 # --------------------------------------------------------------- registry
@@ -42,6 +56,7 @@ func clear_floor() -> void:
 	_last_hitter.clear()
 	_hit_budget.clear()
 	minions.clear()  # the copies lived among the old level's entities
+	_pending_action = &""
 
 
 func register_enemy(e: Enemy) -> int:
@@ -106,7 +121,7 @@ func enemy_state(states: Array) -> void:
 		if e == null or not is_instance_valid(e):
 			continue
 		e.net_apply_state(st[1], st[2], int(st[3]), bool(st[4]), int(st[5]),
-				float(st[6]))
+				float(st[6]), int(st[7]) if st.size() > 7 else -1)
 
 
 func _broadcast_enemy_state() -> void:
@@ -122,7 +137,7 @@ func _broadcast_enemy_state() -> void:
 				if b.act == Boss.Act.WINDUP or b.act == Boss.Act.ACTING:
 					ai_state = Enemy.State.ATTACK
 			states.append([id, e.global_position.x, e.global_position.y, e.hp,
-					e.is_dead(), ai_state, e._attack_anim_left])
+					e.is_dead(), ai_state, e._attack_anim_left, e.max_hp])
 	if not states.is_empty():
 		enemy_state.rpc(states)
 
@@ -281,6 +296,8 @@ func enemy_died(net_id: int, xp: int, gold: int, killer: int) -> void:
 			# The +1 skill point the host's boss death grants locally.
 			GameState.hero.skills.add_points(1)
 			EventBus.message.emit("%s повержен: +1 очко навыка" % b.boss.title)
+	if killer == multiplayer.get_unique_id() and e:
+		EventBus.own_kill.emit(e.data)
 	if killer == multiplayer.get_unique_id() and (xp > 0 or gold > 0):
 		GameState.hero.gain_kill_reward(xp, gold)
 
@@ -301,6 +318,7 @@ func broadcast_death(e: Enemy, xp: int, gold: int) -> void:
 	_last_hitter.erase(e.net_id)
 	EventBus.enemy_killed.emit(e.data, e.global_position)
 	if killer == 1:
+		EventBus.own_kill.emit(e.data)
 		GameState.hero.gain_kill_reward(xp, gold)
 
 
@@ -1166,7 +1184,7 @@ func party_at(pos: Vector2, radius: float) -> bool:
 	var game := get_tree().current_scene
 	if game == null or not ("net_players" in game):
 		return true
-	for p: Player in game.net_players.get_children():
+	for p: Player in _party(game):
 		if p.dead:
 			continue
 		if p.global_position.distance_to(pos) > radius:
@@ -1174,21 +1192,100 @@ func party_at(pos: Vector2, radius: float) -> bool:
 	return true
 
 
+## Living heroes near `pos` / all living heroes (the door prompt shows it).
+func party_count_at(pos: Vector2, radius: float = GATHER_RADIUS) -> Vector2i:
+	var game := get_tree().current_scene
+	if game == null or not ("net_players" in game):
+		return Vector2i(1, 1)
+	var near := 0
+	var total := 0
+	for p: Player in _party(game):
+		if p.dead:
+			continue
+		total += 1
+		if p.global_position.distance_to(pos) <= radius:
+			near += 1
+	return Vector2i(near, total)
+
+
+## The heroes in the co-op container (their sparks and trails live there too).
+func _party(game: Node) -> Array[Player]:
+	var list: Array[Player] = []
+	for n in game.net_players.get_children():
+		if n is Player:
+			list.append(n)
+	return list
+
+
+func _hero_node(peer_id: int) -> Player:
+	var game := get_tree().current_scene
+	if game == null or not ("net_players" in game):
+		return null
+	return game.net_players.get_node_or_null("Player_%d" % peer_id) as Player
+
+
+func _peer_name(peer_id: int) -> String:
+	return String(Net.players.get(peer_id, {}).get("name", "Игрок"))
+
+
+## Client → host: move the party (`next`, `town`, `resume`).
 @rpc("any_peer", "call_remote", "reliable")
 func request_floor(action: StringName) -> void:
 	if not Net.is_host:
 		return
-	# Only a living hero may move the party, and the whole living party
-	# must be gathered at the exit for the descent to happen.
-	var game := get_tree().current_scene
-	var sender_p: Player = null
-	if game != null and "net_players" in game:
-		sender_p = game.net_players.get_node_or_null("Player_%d" % multiplayer.get_remote_sender_id()) as Player
-		if sender_p == null or sender_p.dead:
-			return
-	if not party_at(sender_p.global_position, 220.0):
-		EventBus.message.emit("Все живые герои должны подойти к выходу!")
+	host_party_move(multiplayer.get_remote_sender_id(), action)
+
+
+## Host: a living hero at an exit asks to move on. Everyone gathered: go now;
+## otherwise the hero waits at the exit, everyone is told who is missing, and
+## the move happens by itself when the party gathers (or is called off when
+## the waiting hero walks away).
+func host_party_move(peer_id: int, action: StringName) -> void:
+	var p := _hero_node(peer_id)
+	if p == null or p.dead:
 		return
+	if action == &"next" and GameState.town_return_floor <= 0 and not GameState.is_town():
+		var game := get_tree().current_scene
+		var lvl: DungeonLevel = game.level if game != null and "level" in game else null
+		if lvl != null and lvl.is_sealed():
+			return  # the exit seal holds until enough monsters fall
+	if party_at(p.global_position, GATHER_RADIUS):
+		_pending_action = &""
+		_do_party_move(action)
+		return
+	var fresh := _pending_action != action or _pending_peer != peer_id
+	_pending_action = action
+	_pending_peer = peer_id
+	_pending_pos = p.global_position
+	_pending_left = 90.0
+	if fresh:
+		_announce("%s ждёт у выхода. Подойдите: %s" % [_peer_name(peer_id), ", ".join(_missing_names())])
+
+
+func _missing_names() -> Array[String]:
+	var names: Array[String] = []
+	var game := get_tree().current_scene
+	if game == null or not ("net_players" in game):
+		return names
+	for p: Player in _party(game):
+		if not p.dead and p.global_position.distance_to(_pending_pos) > GATHER_RADIUS:
+			names.append(_peer_name(int(String(p.name).get_slice("_", 1))))
+	return names
+
+
+func _check_gathering() -> void:
+	var p := _hero_node(_pending_peer)
+	if p == null or p.dead or p.global_position.distance_to(_pending_pos) > 160.0 or _pending_left <= 0.0:
+		_pending_action = &""
+		_announce("Спуск отменён: %s отошёл от выхода." % _peer_name(_pending_peer) if p != null and not p.dead and _pending_left > 0.0 else "Спуск отменён.")
+		return
+	if party_at(_pending_pos, GATHER_RADIUS):
+		var action := _pending_action
+		_pending_action = &""
+		_do_party_move(action)
+
+
+func _do_party_move(action: StringName) -> void:
 	match action:
 		&"next":
 			# A guest's town gate: while a return floor is pending, "next"
@@ -1196,14 +1293,22 @@ func request_floor(action: StringName) -> void:
 			if GameState.town_return_floor > 0:
 				GameState.resume_from_town()
 			else:
-				var lvl: DungeonLevel = game.level if game != null and "level" in game else null
-				if lvl != null and lvl.is_sealed():
-					return  # the exit seal holds until enough monsters fall
 				GameState.next_floor()
 		&"town":
 			GameState.return_to_town()
 		&"resume":
 			GameState.resume_from_town()
+
+
+## A party-wide message (host → everyone, itself included).
+func _announce(text: String) -> void:
+	EventBus.message.emit(text)
+	party_message.rpc(text)
+
+
+@rpc("authority", "call_remote", "reliable")
+func party_message(text: String) -> void:
+	EventBus.message.emit(text)
 
 
 # A late joiner needs the current floor + world (spawned by game.gd).

@@ -43,9 +43,8 @@ var town_return_floor: int = 0
 
 func _ready() -> void:
 	quests.attach()
-	EventBus.enemy_killed.connect(func(_d: EnemyData, _p: Vector2) -> void:
-		kills += 1
-		_add_combo())
+	EventBus.enemy_killed.connect(func(_d: EnemyData, _p: Vector2) -> void: kills += 1)
+	EventBus.own_kill.connect(func(_d: EnemyData) -> void: _add_combo())
 	EventBus.damage_dealt.connect(func(_pos: Vector2, _a: int, _c: bool, on_player: bool) -> void:
 		if on_player:
 			_set_combo(0))

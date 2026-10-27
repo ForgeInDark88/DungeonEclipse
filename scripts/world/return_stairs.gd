@@ -87,10 +87,10 @@ func interact(_player: Node) -> void:
 			ns.request_floor.rpc_id(1, &"town")
 		return
 	if Net.active and Net.is_host:
-		# Co-op: the whole living party must be gathered at the stairs.
+		# Co-op: the party moves together (NetSync waits for everyone).
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
-		if ns and not ns.party_at(_player.global_position, 220.0):
-			EventBus.message.emit("Все живые герои должны подойти к выходу!")
+		if ns:
+			ns.host_party_move(Net.multiplayer.get_unique_id(), &"town")
 			return
 	EventBus.message.emit("Ты поднимаешься по лестнице на поверхность...")
 	GameState.return_to_town()

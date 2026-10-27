@@ -33,6 +33,9 @@ signal pact_taken(pact: RunPactData)
 signal pet_changed(pet: PetData)
 ## Kill streak without taking damage (0 = broken).
 signal combo_changed(combo: int)
+## A kill credited to THIS machine's hero (co-op: enemy_killed fires on every
+## machine for every kill; the combo counts only one's own).
+signal own_kill(enemy: EnemyData)
 signal boss_spawned(boss: Node)
 signal boss_hp_changed(hp: int, max_hp: int)
 signal boss_defeated(boss: BossData, world_pos: Vector2)

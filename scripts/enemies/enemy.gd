@@ -1858,7 +1858,7 @@ func is_dead() -> bool:
 
 ## Client shell: host says where I am and how hurt.
 func net_apply_state(x: float, y: float, new_hp: int, dead: bool, ai_state: int = -1,
-		attack_left: float = 0.0) -> void:
+		attack_left: float = 0.0, new_max_hp: int = -1) -> void:
 	var now := Time.get_ticks_msec() / 1000.0
 	var dt := maxf(0.03, now - _net_last)
 	# Speed of the last hop: the extrapolation speed on packet loss.
@@ -1871,6 +1871,10 @@ func net_apply_state(x: float, y: float, new_hp: int, dead: bool, ai_state: int 
 		net_die()
 		return
 	hp = new_hp
+	# The host's max hp is the truth: altar curses and the party size are
+	# known there for sure, the shell's own estimate may differ.
+	if new_max_hp > 0:
+		max_hp = new_max_hp
 	if hp_bar.visible or hp < max_hp:
 		hp_bar.visible = true
 		hp_bar.max_value = max_hp
@@ -1964,6 +1968,7 @@ func _give_rewards() -> void:
 			EventBus.elite_killed.emit(data)
 	else:
 		EventBus.enemy_killed.emit(data, global_position)
+		EventBus.own_kill.emit(data)
 		if GameState.hero:
 			GameState.hero.add_xp(xp)
 		EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 12), "+%d XP" % xp, Color(1.0, 0.85, 0.3))

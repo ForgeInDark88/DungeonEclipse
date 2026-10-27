@@ -63,10 +63,16 @@ func _on_seal_changed(kills: int, required: int, initial := false) -> void:
 func get_prompt() -> String:
 	if _sealed:
 		return "Выход запечатан: убито %d из %d" % [_kills, _required]
-	return "Спуститься глубже (этаж %d)" % (GameState.floor_number + 1)
+	var text := "Спуститься глубже (этаж %d)" % (GameState.floor_number + 1)
+	var ns := get_tree().get_first_node_in_group("net_game") as NetSync if Net.active else null
+	if ns:
+		var c := ns.party_count_at(global_position)
+		if c.y > 1:
+			text += " · отряд у выхода: %d из %d" % [c.x, c.y]
+	return text
 
 
-func interact(player: Node) -> void:
+func interact(_player: Node) -> void:
 	if _sealed:
 		EventBus.message.emit("Печать держится: нужно убить ещё %d врагов" % (_required - _kills))
 		AudioManager.play_sfx(&"dig", global_position, -6.0)
@@ -78,10 +84,10 @@ func interact(player: Node) -> void:
 			ns.request_floor.rpc_id(1, &"next")
 		return
 	if Net.active and Net.is_host:
-		# Co-op: the whole living party must be gathered at the door.
+		# Co-op: the party moves together (NetSync waits for everyone).
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
-		if ns and not ns.party_at(player.global_position, 220.0):
-			EventBus.message.emit("Все живые герои должны подойти к выходу!")
+		if ns:
+			ns.host_party_move(Net.multiplayer.get_unique_id(), &"next")
 			return
 	GameState.next_floor()
 

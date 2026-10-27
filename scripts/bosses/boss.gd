@@ -94,6 +94,18 @@ func _nearest_alive_player() -> Player:
 	return best
 
 
+## The big HUD bar follows the real numbers whatever changed them: hits,
+## poison and fire ticks, heals, the host's snapshots on a co-op shell.
+var _shown_hp := Vector2i(-1, -1)
+
+
+func _process(_delta: float) -> void:
+	var now := Vector2i(maxi(hp, 0), max_hp)
+	if now != _shown_hp:
+		_shown_hp = now
+		EventBus.boss_hp_changed.emit(now.x, now.y)
+
+
 func _physics_process(delta: float) -> void:
 	if puppet:
 		# Boss shells have no local phase machine; mirror the host's Enemy
