@@ -89,7 +89,8 @@ func _ready() -> void:
 	# Boss defeated: a victory sting, then back to the floor's music.
 	EventBus.boss_defeated.connect(func(b: BossData, _p: Vector2) -> void:
 		var biome := GameState.current_biome()
-		AudioManager.play_sting(&"victory", biome.music if biome else &"")
+		# The Eclipse: a long dawn chord instead of the usual fanfare.
+		AudioManager.play_sting(&"ending" if b.final else &"victory", biome.music if biome else &"")
 		if b.final:
 			_on_eclipse_defeated())
 	_load_floor()
