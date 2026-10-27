@@ -169,11 +169,29 @@ func traps_for_floor(floor_number: int, biome_id: StringName) -> Array[TrapData]
 	return list
 
 
-## Bosses take turns: floor 5 -> first, floor 10 -> second, ...
+## Bosses take turns: floor 5 -> first, floor 10 -> second, ...; the final
+## boss (BossData.final) appears once, on final_floor().
 func boss_for_floor(floor_number: int) -> BossData:
 	if bosses.is_empty():
 		return null
-	return bosses[(floor_number / GameState.BOSS_EVERY - 1) % bosses.size()]
+	var rotation := bosses.filter(func(b: BossData) -> bool: return not b.final)
+	if floor_number == final_floor():
+		for b in bosses:
+			if b.final:
+				return b
+	if rotation.is_empty():
+		return null
+	return rotation[(floor_number / GameState.BOSS_EVERY - 1) % rotation.size()]
+
+
+## The Eclipse's floor: the boss floor right after every guardian has had its
+## turn once (6 guardians -> floor 35).
+func final_floor() -> int:
+	var guardians := 0
+	for b in bosses:
+		if not b.final:
+			guardians += 1
+	return GameState.BOSS_EVERY * (guardians + 1)
 
 
 ## Biome of a floor: they rotate every GameState.FLOORS_PER_BIOME floors.

@@ -1,0 +1,209 @@
+[gd_resource type="Resource" script_class="BossData" load_steps=24 format=3]
+
+[ext_resource type="Resource" path="res://data/loot_tables/chest_epic.tres" id="loot"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="hit"]
+[ext_resource type="Script" path="res://scripts/data/boss_phase.gd" id="phase"]
+[ext_resource type="Script" path="res://scripts/data/boss_attack.gd" id="attack"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="status_hit"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/dark_bolt.png" id="bolt"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/fireball.png" id="fire"]
+[ext_resource type="Texture2D" path="res://assets/sprites/fx/shard.png" id="shard"]
+[ext_resource type="Resource" path="res://data/enemies/ghost.tres" id="ghost"]
+[ext_resource type="Resource" path="res://data/enemies/illusion.tres" id="illusion"]
+[ext_resource type="Script" path="res://scripts/data/boss_data.gd" id="boss"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bosses/eclipse_sheet.png" id="sheet"]
+[ext_resource type="Resource" path="res://data/animations/eclipse_layout.tres" id="layout"]
+[ext_resource type="Texture2D" path="res://assets/sprites/bosses/eclipse.png" id="tex"]
+
+[sub_resource type="Resource" id="Curse"]
+script = ExtResource("status_hit")
+status = &"curse"
+duration = 3.0
+power = 1.0
+chance = 0.3
+
+[sub_resource type="Resource" id="Burn"]
+script = ExtResource("status_hit")
+status = &"burn"
+duration = 3.0
+power = 1.0
+chance = 0.4
+
+[sub_resource type="Resource" id="Fan7"]
+script = ExtResource("attack")
+kind = 2
+windup = 0.8
+damage_mult = 0.8
+count = 7
+spread_degrees = 50.0
+projectile_texture = ExtResource("bolt")
+projectile_speed = 165.0
+damage_type = 4
+hit_effects = Array[ExtResource("hit")]([SubResource("Curse")])
+
+[sub_resource type="Resource" id="Rain6"]
+script = ExtResource("attack")
+kind = 5
+windup = 1.0
+damage_mult = 1.0
+count = 6
+projectile_texture = ExtResource("fire")
+projectile_speed = 170.0
+damage_type = 1
+radius = 28.0
+hit_effects = Array[ExtResource("hit")]([SubResource("Burn")])
+
+[sub_resource type="Resource" id="Ghosts"]
+script = ExtResource("attack")
+kind = 3
+windup = 0.9
+damage_mult = 1.0
+count = 2
+summon = ExtResource("ghost")
+max_summons = 4
+hit_effects = Array[ExtResource("hit")]([])
+
+[sub_resource type="Resource" id="Phase1"]
+script = ExtResource("phase")
+hp_threshold = 1.0
+message = ""
+attacks = Array[ExtResource("attack")]([SubResource("Fan7"), SubResource("Rain6"), SubResource("Ghosts")])
+attack_interval = 1.5
+speed_mult = 1.0
+tint = Color(1, 1, 1, 1)
+
+[sub_resource type="Resource" id="Beam"]
+script = ExtResource("attack")
+kind = 8
+windup = 0.9
+damage_mult = 1.5
+count = 7
+projectile_texture = ExtResource("bolt")
+projectile_speed = 170.0
+damage_type = 4
+radius = 24.0
+hit_effects = Array[ExtResource("hit")]([SubResource("Curse")])
+
+[sub_resource type="Resource" id="Blink5"]
+script = ExtResource("attack")
+kind = 4
+windup = 0.6
+damage_mult = 0.8
+count = 5
+spread_degrees = 40.0
+projectile_texture = ExtResource("bolt")
+projectile_speed = 180.0
+damage_type = 4
+hit_effects = Array[ExtResource("hit")]([])
+
+[sub_resource type="Resource" id="Spikes"]
+script = ExtResource("attack")
+kind = 7
+windup = 0.9
+damage_mult = 0.9
+count = 11
+projectile_texture = ExtResource("shard")
+projectile_speed = 170.0
+damage_type = 4
+radius = 26.0
+hit_effects = Array[ExtResource("hit")]([])
+
+[sub_resource type="Resource" id="Phase2"]
+script = ExtResource("phase")
+hp_threshold = 0.66
+message = "Свет гаснет. Солнце смотрит на вас."
+attacks = Array[ExtResource("attack")]([SubResource("Beam"), SubResource("Blink5"), SubResource("Spikes"), SubResource("Fan7")])
+attack_interval = 1.2
+speed_mult = 1.3
+tint = Color(0.9, 0.82, 1, 1)
+
+[sub_resource type="Resource" id="Rain10"]
+script = ExtResource("attack")
+kind = 5
+windup = 0.8
+damage_mult = 1.0
+count = 10
+projectile_texture = ExtResource("fire")
+projectile_speed = 180.0
+damage_type = 1
+radius = 28.0
+hit_effects = Array[ExtResource("hit")]([SubResource("Burn")])
+
+[sub_resource type="Resource" id="Illusions"]
+script = ExtResource("attack")
+kind = 6
+windup = 0.8
+damage_mult = 0.7
+count = 3
+spread_degrees = 30.0
+projectile_texture = ExtResource("bolt")
+projectile_speed = 170.0
+damage_type = 4
+summon = ExtResource("illusion")
+max_summons = 5
+lifetime = 9.0
+hit_effects = Array[ExtResource("hit")]([])
+
+[sub_resource type="Resource" id="Fan11"]
+script = ExtResource("attack")
+kind = 2
+windup = 0.6
+damage_mult = 0.8
+count = 11
+spread_degrees = 80.0
+projectile_texture = ExtResource("bolt")
+projectile_speed = 180.0
+damage_type = 4
+hit_effects = Array[ExtResource("hit")]([SubResource("Curse")])
+
+[sub_resource type="Resource" id="Phase3"]
+script = ExtResource("phase")
+hp_threshold = 0.33
+message = "ПОЛНОЕ ЗАТМЕНИЕ!"
+attacks = Array[ExtResource("attack")]([SubResource("Rain10"), SubResource("Illusions"), SubResource("Beam"), SubResource("Fan11"), SubResource("Spikes")])
+attack_interval = 0.85
+speed_mult = 1.5
+tint = Color(1, 0.72, 0.7, 1)
+
+[resource]
+script = ExtResource("boss")
+glow_color = Color(1, 0.65, 0.3, 1)
+glow_scale = 1.6
+title = "Затмение — Чёрное солнце"
+order = 100
+final = true
+phases = Array[ExtResource("phase")]([SubResource("Phase1"), SubResource("Phase2"), SubResource("Phase3")])
+music = &"boss_ashen_king"
+contact_damage_mult = 0.8
+reward_items = Array[StringName]([&"guardian_seal", &"guardian_seal", &"eclipse_shard", &"eclipse_shard", &"eclipse_shard", &"eclipse_shard", &"eclipse_shard"])
+id = &"eclipse"
+display_name = "Затмение"
+description = "Источник проклятия подземелий: погасшее солнце, которому служат все шесть стражей. Холод гасит его корону."
+texture = ExtResource("tex")
+sheet = ExtResource("sheet")
+sheet_layout = ExtResource("layout")
+behavior = 1
+collision_size = Vector2(24, 34)
+max_hp = 520
+damage = 22
+armor = 6
+speed = 50.0
+chase_speed = 52.0
+aggro_range = 700.0
+attack_range = 18.0
+attack_cooldown = 1.0
+jumps = false
+projectile_speed = 160.0
+xp_reward = 400
+loot_table = ExtResource("loot")
+loot_chance = 1.0
+gold_min = 250
+gold_max = 400
+min_floor = 999
+resistances = {
+"res_magic": 0.5,
+"res_fire": 0.5,
+"res_poison": 0.3,
+"res_ice": -0.35
+}
+status_immunities = Array[StringName]([&"stun", &"curse"])

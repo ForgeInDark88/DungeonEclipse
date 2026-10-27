@@ -225,7 +225,7 @@ func _on_boss_defeated(_boss: BossData, _pos: Vector2) -> void:
 	chest.table_override = &"boss"  # boss loot: the main source of legendary items
 	add_entity(chest, cell_bottom(Vector2i(layout.width / 2, layout.boss_cell.y)))
 	Fx.sparks(entities, cell_bottom(layout.exit_cell) + Vector2(0, -16), Color(0.7, 0.4, 1.0), 30, 120.0)
-	EventBus.message.emit("Страж повержен! Открылся проход.")
+	EventBus.message.emit("Затмение рассеяно! Свет возвращается в подземелья." if _boss.final else "Страж повержен! Открылся проход.")
 
 
 ## Deterministic 0..3 variant per cell.

@@ -223,7 +223,9 @@ func _show_creature(e: EnemyData) -> void:
 		for s in e.status_immunities:
 			names.append(StatusEffects.display_name(s))
 		lines.append("Иммунитет: " + ", ".join(names))
-	if e is BossData:
+	if e is BossData and (e as BossData).final:
+		lines.append("Встречается: %d этаж, после всех стражей" % ItemDatabase.final_floor())
+	elif e is BossData:
 		lines.append("Встречается: каждый %d-й этаж" % GameState.BOSS_EVERY)
 	else:
 		var where: Array[String] = []

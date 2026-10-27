@@ -273,6 +273,8 @@ func enemy_died(net_id: int, xp: int, gold: int, killer: int) -> void:
 		EventBus.enemy_killed.emit(e.data, e.global_position)
 		var b := e as Boss
 		if b and b.boss:
+			if b.boss.final:
+				GameState.run_stats["victory"] = true
 			EventBus.boss_defeated.emit(b.boss, e.global_position)
 			# The +1 skill point the host's boss death grants locally.
 			GameState.hero.skills.add_points(1)

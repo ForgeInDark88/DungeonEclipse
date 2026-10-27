@@ -836,11 +836,117 @@ def drowned_bell():
     render(lay, fn, "sprites/bosses/drowned_bell_sheet.png")
 
 
+# ================================================================ eclipse
+def eclipse():
+    """The final boss: a black sun with a burning corona and one eye, shadow
+    tendrils hanging below and shards of the broken moon in orbit."""
+    fw, fh = 56, 58
+    lay = gs.monster_layout("eclipse_layout", fw, fh, (28, 58), "fly", {"idle": 4, "fly": 4, "windup": 4, "attack": 3, "death": 6})
+    cx, cy, r = 28, 24, 12
+    corona = (255, 170, 60)
+    hot = (255, 236, 170)
+    void = (16, 8, 26)
+    rim = (150, 60, 220)
+
+    def sun(phase=0.0, open_=1.0, flare=0, alpha=255, diss=0, flash=False, wrath=0.0):
+        im = blank(fw, fh)
+        g = blank(fw, fh)
+        d = ImageDraw.Draw(im)
+        dy = int(round(math.sin(phase) * 2))
+        y0 = cy + dy
+        # shadow tendrils hanging from the disc, swaying
+        for k in range(5):
+            bx = cx - 8 + k * 4
+            pts = []
+            for j in range(9):
+                t = j / 8
+                sway = math.sin(phase * 1.3 + k * 1.7 + t * 3.0) * (1 + t * 3)
+                pts.append((bx + sway, y0 + r - 2 + t * (18 + (k % 2) * 6)))
+            for j in range(len(pts) - 1):
+                w = 3 if j < 3 else 2 if j < 6 else 1
+                d.line((pts[j][0], pts[j][1], pts[j + 1][0], pts[j + 1][1]), fill=rgba(sh(void, 1.6 - j * 0.08)), width=w)
+            tip = pts[-1]
+            d.point((round(tip[0]), round(tip[1])), fill=rgba(rim))
+            glow_dot(g, tip[0], tip[1], 1.5, rim, 0.5)
+        # corona: long rotating rays, longer during a flare
+        n_rays = 14
+        for k in range(n_rays):
+            ang = phase * 0.35 + k * math.tau / n_rays
+            ln = r + 5 + (3 if k % 2 else 0) + flare * 2 + math.sin(phase * 2 + k) * 1.5
+            ax, ay = cx + math.cos(ang) * (r - 1), y0 + math.sin(ang) * (r - 1)
+            bx, by = cx + math.cos(ang) * ln, y0 + math.sin(ang) * ln
+            col = sh(corona, 1.0 + wrath * 0.1)
+            if wrath > 0.5:
+                col = (255, 90 + (k % 3) * 20, 70)
+            d.line((ax, ay, bx, by), fill=rgba(col), width=2 if k % 2 == 0 else 1)
+            d.point((round(bx), round(by)), fill=rgba(hot))
+            glow_dot(g, bx, by, 2.0 + flare * 0.6, col, 0.55)
+        # bright ring of light around the black disc
+        d.ellipse((cx - r - 2, y0 - r - 2, cx + r + 2, y0 + r + 2), fill=rgba(hot))
+        d.ellipse((cx - r - 1, y0 - r - 1, cx + r + 1, y0 + r + 1), fill=rgba(corona))
+        for k in range(12):  # halo along the rim, the disc itself stays black
+            a = k * math.tau / 12
+            glow_dot(g, cx + math.cos(a) * (r + 2), y0 + math.sin(a) * (r + 2), 4 + flare, corona, 0.35)
+        # the moon's shadow: the disc, slightly shifted (thin crescent on the left)
+        dm = mask(fw, fh, lambda dd: dd.ellipse((cx - r + 1, y0 - r, cx + r + 1, y0 + r), fill=FULL))
+        lit(im, dm, void, cx + 5, y0 - 5, r, r, flat=0.9)
+        d = ImageDraw.Draw(im)
+        d.arc((cx - r + 1, y0 - r, cx + r + 1, y0 + r), 200, 330, fill=rgba(sh(rim, 0.7)))
+        # cracks of violet light across the disc
+        for a, b in (((cx - 7, y0 - 4), (cx - 2, y0 - 7)), ((cx + 6, y0 + 3), (cx + 9, y0 + 7)), ((cx - 6, y0 + 6), (cx - 3, y0 + 9))):
+            d.line((a[0], a[1], b[0], b[1]), fill=rgba(sh(rim, 1.1)))
+            glow_dot(g, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, 2.0, rim, 0.45)
+        # the eye: slit opens wider in windup / attack
+        eh = max(0, round(4 * open_))
+        if eh > 0:
+            d.ellipse((cx - 7, y0 - eh, cx + 7, y0 + eh), fill=(236, 226, 214, 255))
+            d.ellipse((cx - 7, y0 - eh, cx + 7, y0 + eh), outline=rgba(sh(rim, 0.6)))
+            iris = (255, 255, 255) if flash else (220, 40, 60) if wrath > 0.5 else (200, 70, 255)
+            ir = min(eh, 3)
+            d.ellipse((cx - ir, y0 - ir, cx + ir, y0 + ir), fill=rgba(iris))
+            d.line((cx, y0 - ir, cx, y0 + ir), fill=(10, 4, 16, 255))  # slit pupil
+            glow_dot(g, cx, y0, 4 + flare, iris, 0.9)
+        else:
+            d.line((cx - 7, y0, cx + 7, y0), fill=rgba(sh(rim, 0.8)))
+        # crown of black thorns on top
+        for k in range(5):
+            tx = cx - 8 + k * 4
+            th = 5 + (2 if k == 2 else 0)
+            d.polygon([(tx - 1, y0 - r + 2), (tx + 1, y0 - r + 2), (tx, y0 - r - th)], fill=rgba(sh(void, 1.4)))
+            d.point((tx, y0 - r - th), fill=rgba(hot))
+        # orbiting shards of the broken moon
+        for k in range(4):
+            ang = -phase * 0.7 + k * math.tau / 4
+            sx_, sy_ = cx + math.cos(ang) * (r + 11), y0 + math.sin(ang) * (r + 4)
+            col = (210, 214, 236) if math.sin(ang) > 0 else (130, 130, 160)
+            d.polygon([(sx_, sy_ - 2), (sx_ + 2, sy_), (sx_, sy_ + 2), (sx_ - 1, sy_)], fill=rgba(col))
+            glow_dot(g, sx_, sy_, 1.6, (190, 170, 255), 0.4)
+        out = finish(im, g)
+        if diss:
+            dissolve(out, diss, 11, (255, 200, 120, 255))
+        return fade(out, alpha)
+
+    def fn(name, i, n):
+        if name in ("idle", "fly"):
+            return sun(i * math.tau / 4)
+        if name == "windup":
+            return sun(i * 0.5, open_=0.3 + i * 0.25, flare=i)
+        if name == "attack":
+            return sun(i * 0.5, open_=1.2, flare=[4, 2, 1][i], flash=i == 0, wrath=1.0 if i == 0 else 0.0)
+        if name == "hurt":
+            return sun(0, open_=0.0, flash=True)
+        return sun(i, open_=1.0 - i * 0.2, flare=6 - i, diss=1 + i * 2 if i < 4 else 8 + (i - 4), alpha=255 - i * 30)
+
+    render(lay, fn, "sprites/bosses/eclipse_sheet.png")
+    sun(0.0).save(os.path.join(A, "sprites/bosses/eclipse.png"))
+
+
 def main():
     bone_king()
     flame_witch()
     illusionist()
     drowned_bell()
+    eclipse()
     print("bosses generated")
 
 
