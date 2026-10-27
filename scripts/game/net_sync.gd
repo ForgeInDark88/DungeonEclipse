@@ -572,6 +572,16 @@ func send_world_state(peer_id: int) -> void:
 		seal_state.rpc_id(peer_id, level.seal_kills)
 
 
+## Client → host: a status on a real enemy (a guest's parry stuns it).
+@rpc("any_peer", "call_remote", "reliable")
+func request_enemy_status(net_id: int, id: StringName, duration: float) -> void:
+	if not Net.is_host or id != &"stun":
+		return
+	var e: Enemy = enemies.get(net_id)
+	if e and is_instance_valid(e) and not e.is_dead():
+		e.status.apply(id, clampf(duration, 0.0, 2.0))
+
+
 ## Host → clients: kills counted toward the floor's exit seal.
 @rpc("authority", "call_remote", "reliable")
 func seal_state(kills: int) -> void:

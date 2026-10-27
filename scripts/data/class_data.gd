@@ -43,6 +43,9 @@ extends Resource
 @export_group("")
 ## WeaponItemData.WeaponType values this class is trained in (empty = all).
 ## Other weapons still work but with WRONG_WEAPON_* penalties.
+## Class move on the "defend" key: &"parry" (block in the moment of a hit
+## stuns the attacker), &"roll" (dodge roll with invulnerability) or none.
+@export var defense_move: StringName = &""
 @export var allowed_weapon_types: Array[int] = []
 ## Price in the Sanctum of the Eclipse; 0/0 = available from the start.
 @export var unlock_shards: int = 0

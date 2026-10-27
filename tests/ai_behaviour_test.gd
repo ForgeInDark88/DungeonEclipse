@@ -42,6 +42,7 @@ func _ready() -> void:
 	await _scenario("pounce at the hero", _pounce)
 	await _scenario("faster on deeper floors", _hunt_speed)
 	await _scenario("squads: healer, shieldbearer, bannerman", _squads)
+	await _scenario("parry and roll", _defence)
 	print("FAILURES: ", failures.size())
 	for f in failures:
 		print("  - ", f)
@@ -451,3 +452,40 @@ func _role_enemy(id: StringName, cell: Vector2i, role_id: StringName) -> Enemy:
 	e.assign_role(ItemDatabase.squad_role(role_id))
 	level.add_entity(e, level.cell_bottom(cell))
 	return e
+
+
+func _defence() -> void:
+	var l := _room()
+	await _build(l, Vector2i(10, 9))
+	var hero := player.hero
+	var e := _enemy(&"skeleton", Vector2i(11, 9))
+	hero.class_data = _class(&"warrior")
+	player._invulnerable = 0.0
+	var hp := hero.stats.hp
+	player.defend()
+	player.take_damage(15, e.global_position)
+	check(hero.stats.hp == hp, "parry: no damage taken")
+	check(e.status.is_stunned(), "parry: the attacker is stunned")
+	player._invulnerable = 0.0
+	player._parry_time = 0.0
+	player.take_damage(15, e.global_position)
+	check(hero.stats.hp < hp, "without the guard the hit lands")
+	hero.class_data = _class(&"rogue")
+	player._invulnerable = 0.0
+	player._defend_cd = 0.0
+	var x0 := player.global_position.x
+	hp = hero.stats.hp
+	player.defend()
+	player.take_damage(15, e.global_position)
+	check(hero.stats.hp == hp, "roll: invulnerable while rolling")
+	for i in 20:
+		player._invulnerable = 0.0
+		await get_tree().physics_frame
+	check(absf(player.global_position.x - x0) > 30.0, "roll moves the hero (%.0f px)" % absf(player.global_position.x - x0))
+
+
+func _class(id: StringName) -> ClassData:
+	for c in ItemDatabase.classes:
+		if c.id == id:
+			return c
+	return null

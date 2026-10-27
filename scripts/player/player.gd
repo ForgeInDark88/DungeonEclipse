@@ -62,6 +62,14 @@ var skill_power := 1.0
 var _external_velocity := Vector2.ZERO
 var _hint := ""
 var _dash_time := 0.0
+## Class defence on the "defend" key (ClassData.defense_move): parry window
+## and the shared cooldown of parry / roll.
+const PARRY_WINDOW := 0.22
+const PARRY_STUN := 1.6
+const ROLL_SPEED := 250.0
+const ROLL_TIME := 0.3
+var _parry_time := 0.0
+var _defend_cd := 0.0
 var _afterimage_timer := 0.0
 var _run_dust_timer := 0.0
 var _step_timer := 0.0
@@ -320,6 +328,8 @@ func _tick_timers(delta: float) -> void:
 	_coyote = COYOTE_TIME if is_on_floor() else maxf(0.0, _coyote - delta)
 	_jump_buffer = maxf(0.0, _jump_buffer - delta)
 	_attack_cooldown = maxf(0.0, _attack_cooldown - delta)
+	_parry_time = maxf(0.0, _parry_time - delta)
+	_defend_cd = maxf(0.0, _defend_cd - delta)
 	var regen := hero.stats.get_value(StatTypes.HP_REGEN)
 	if regen > 0.0 and not dead and hero.stats.hp < hero.stats.max_hp():
 		_regen_acc += regen * delta
@@ -458,6 +468,10 @@ func _input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed("attack"):
 		attack()
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("defend"):
+		defend()
 		get_viewport().set_input_as_handled()
 		return
 	for i in SkillSet.SLOT_COUNT:
@@ -740,6 +754,9 @@ func take_damage(amount: int, from_pos: Vector2 = Vector2.INF, damage_type: int 
 		return
 	if dead or _invulnerable > 0.0 or _dash_time > 0.0:
 		return
+	if _parry_time > 0.0:
+		_parry_success(from_pos)
+		return
 	if damage_type > 0:
 		amount = roundi(amount * (1.0 - hero.stats.resistance(damage_type)))
 	if status.has(&"curse"):
@@ -913,6 +930,63 @@ func status_resistance(id: StringName) -> float:
 
 func push(impulse: Vector2) -> void:
 	_external_velocity += impulse
+
+
+# ----------------------------------------------------------- defence
+## The class move: warrior / paladin raise the guard for a short parry
+## window, the rogue rolls (a dash: invulnerable while it lasts).
+func defend() -> void:
+	if hero == null or _defend_cd > 0.0 or climbing or status.is_stunned():
+		return
+	match hero.class_data.defense_move:
+		&"parry":
+			_parry_time = PARRY_WINDOW
+			_defend_cd = 0.75
+			animator.play_action(&"attack_thrust", 0.25)
+			visual.flash(Color(0.7, 0.85, 1.0), 0.2)
+			AudioManager.play_sfx(&"cast_shield", global_position, -4.0)
+		&"roll":
+			var dir := Input.get_axis("move_left", "move_right")
+			if dir != 0.0:
+				facing = signf(dir)
+				visual.facing = facing
+			_defend_cd = 0.85
+			status.remove(&"invisible")
+			dash(ROLL_SPEED, ROLL_TIME)
+			visual.squash_to(Vector2(1.3, 0.6), ROLL_TIME)
+			Fx.dust(get_parent(), global_position, false)
+
+
+## A hit landed inside the parry window: no damage, the attacker is stunned
+## (bosses only briefly), the guard is ready again at once.
+func _parry_success(from_pos: Vector2) -> void:
+	_parry_time = 0.0
+	_defend_cd = 0.0
+	_invulnerable = 0.3
+	var at := from_pos if from_pos != Vector2.INF else global_position
+	EventBus.floating_text.emit(global_position + Vector2(0, -30), "Парирование!", Color(0.75, 0.9, 1.0))
+	Fx.sparks(get_parent(), global_position + Vector2(facing * 8.0, -14), Color(1.0, 0.95, 0.7), 14, 120.0)
+	EventBus.screen_shake.emit(2.5)
+	AudioManager.play_sfx(&"hit_crit", global_position)
+	visual.flash(Color(1.0, 1.0, 0.8), 0.15)
+	var best: Enemy = null
+	var best_d := 48.0
+	for n in get_tree().get_nodes_in_group("enemies"):
+		var e := n as Enemy
+		if e == null or e.is_dead():
+			continue
+		var d := e.global_position.distance_to(at)
+		if d < best_d:
+			best_d = d
+			best = e
+	if best == null:
+		return  # a projectile: blocked, nobody to stun
+	if best.puppet:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.request_enemy_status.rpc_id(1, best.net_id, &"stun", PARRY_STUN)
+	else:
+		best.status.apply(&"stun", PARRY_STUN)
 
 
 ## Dash: short invulnerable horizontal burst (used by skills).

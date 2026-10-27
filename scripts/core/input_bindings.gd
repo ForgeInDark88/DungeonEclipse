@@ -8,7 +8,7 @@ extends RefCounted
 ## Actions shown in the settings, in order: [action, label].
 const REBINDABLE := [
 	["move_left", "Влево"], ["move_right", "Вправо"], ["move_up", "Вверх / лезть"],
-	["move_down", "Вниз / спуск"], ["jump", "Прыжок"], ["attack", "Атака"],
+	["move_down", "Вниз / спуск"], ["jump", "Прыжок"], ["attack", "Атака"], ["defend", "Парирование / перекат"],
 	["interact", "Взаимодействие"], ["inventory", "Инвентарь"], ["skill_tree", "Дерево навыков"],
 	["minimap", "Карта"], ["pause", "Пауза"],
 	["skill_1", "Навык 1"], ["skill_2", "Навык 2"], ["skill_3", "Навык 3"], ["skill_4", "Навык 4"],
