@@ -686,6 +686,131 @@ TRACKS = {
 }
 
 
+# The Eclipse (final boss): a written-out piece instead of a TRACKS line, so it
+# sounds like the end. Leitmotif: the "Dies irae" chant (day of wrath).
+#   intro  (4 bars)  drone, tolling bell, heartbeat; the choir rises
+#   wrath  (12 bars) full battle: taiko + rock kit, brass stabs, the chant in brass
+#   clock  (8 bars)  breakdown: drums gone, a ticking bell like the last seconds,
+#                    the chant slow in the choir, a long low swell
+#   end    (12 bars) climax a semitone higher, double-time drums, chant in
+#                    octaves, fast arpeggio; the last bar falls back into the intro
+DIES_IRAE = [(2, 1), (1, 1), (2, 1), (0, 1), (1, 1), (-1, 1), (0, 2),  # Di-es i-rae, di-es il-la
+             (2, 1), (3, 1), (2, 1), (1, 1), (0, 1), (-1, 1), (0, 2)]  # sol-vet sae-clum in fa-vil-la
+
+
+def compose_eclipse():
+    s = Song("D", "harmonic", 132, 4, 36, seed=51)
+    B, b = s.bar, s.beat
+    prog_wrath = [0, 5, 3, 4, 0, 5, 1, 4, 0, 3, 5, 4]
+    prog_clock = [0, 0, 5, 5, 3, 3, 4, 4]
+    prog_end = [0, 5, 3, 4, 0, 3, 5, 4, 0, 5, 4, 4]
+
+    def chant(t0, beat_len, inst, octave, shift, bus, gain):
+        t = t0
+        for deg, beats in DIES_IRAE:
+            sec = beats * beat_len
+            s.add(bus, t, inst(s.deg(deg, octave) + shift, sec * 0.95), gain)
+            t += sec
+
+    for bar in range(s.bars):
+        t0 = bar * B
+        if bar < 4:  # ---------------------------------------------- intro
+            sec, d, shift = "intro", 0, 0
+        elif bar < 16:
+            sec, d, shift = "wrath", prog_wrath[bar - 4], 0
+        elif bar < 24:
+            sec, d, shift = "clock", prog_clock[bar - 16], 0
+        else:
+            sec, d, shift = "end", prog_end[bar - 24], 1
+        chord = [m + shift for m in s.chord(d, 0, 3)]
+        root = s.deg(d, -1) + shift
+        # Sub drone under everything: the dark of the eclipse.
+        s.add("drone", t0, i_bass(s.deg(0, -2) + shift, B + 0.05), 0.55 if sec != "end" else 0.4)
+        # Choir: grows from a murmur to full voice.
+        cg = {"intro": 0.3 + bar * 0.15, "wrath": 0.8, "clock": 0.6, "end": 1.0}[sec]
+        for m in chord:
+            s.add("pad", t0, i_choir(m + 12, B + 0.6), cg)
+        if sec in ("wrath", "end"):
+            s.add("pad", t0, i_choir(chord[0] + 24, B + 0.6), cg * 0.5)
+        # Funeral bell: every two bars in the intro and the climax, on 1 elsewhere.
+        if sec == "intro" or bar % 2 == 0:
+            s.add("bell", t0, i_bell(root + 12, B * 1.6), 1.0 if sec != "wrath" else 0.6)
+        if sec == "intro":
+            s.add("kick", t0, d_kick(0.4, 0.7), 0.6)  # heartbeat
+            s.add("kick", t0 + b * 0.3, d_kick(0.35, 0.6), 0.4)
+            if bar == 3:  # drum roll into the battle
+                for k in range(8):
+                    s.add("tom", t0 + B / 2 + k * b / 4, d_tom(110 + k * 12, 0.3), 0.35 + k * 0.07)
+            continue
+        if sec == "clock":
+            # The clock runs out: ticks on every beat, a heartbeat, the chant slow.
+            for k in range(s.beats):
+                s.add("tick", t0 + k * b, i_box(s.deg(4, 2), 0.25), 0.8 if k == 0 else 0.5)
+            s.add("kick", t0, d_kick(0.4, 0.7), 0.5)
+            s.add("bass", t0, i_bass(root, B * 0.95), 0.8)
+            if bar >= 20:  # rising snare roll in the last bars of the breakdown
+                n = 4 * (bar - 19)
+                for k in range(n):
+                    s.add("snare", t0 + k * B / n, d_snare(0.12), 0.15 + 0.6 * (bar - 20 + k / n) / 4)
+            continue
+        # Battle: ostinato bass, drums, brass stabs, arpeggio in the climax.
+        pat = [0, 0, 7, 0, 3, 0, 7, 10] if sec == "wrath" else [0, 12, 7, 0, 3, 12, 7, 10]
+        for k, iv in enumerate(pat):
+            s.add("bass", t0 + k * b / 2, i_bass(root + iv, b * 0.45, 0.5), 0.8)
+        for k in range(s.beats):
+            tb = t0 + k * b
+            if k == 0 or (k == 2 and bar % 2):
+                s.add("kick", tb, d_taiko(), 1.0)
+            if sec == "end":  # double-time
+                s.add("kick", tb, d_kick(), 0.8)
+                s.add("kick", tb + b / 2, d_kick(0.3), 0.5)
+                if k % 2:
+                    s.add("snare", tb, d_snare(), 0.9)
+                if k == 3:
+                    s.add("snare", tb + b * 0.75, d_snare(0.15), 0.5)
+                for h in range(4):
+                    s.add("hat", tb + h * b / 4, d_hat(), 0.6 if h % 2 == 0 else 0.35)
+            else:
+                if k % 2:
+                    s.add("snare", tb, d_snare(), 0.8)
+                s.add("hat", tb, d_hat(), 0.6)
+                s.add("hat", tb + b / 2, d_hat(), 0.4)
+            s.add("tom", tb + b / 2, d_tom(140, 0.3), 0.4)
+        for m in chord:
+            s.add("brass", t0, i_brass(m + 12, b * 0.9), 0.8)
+            if bar % 2:
+                s.add("brass", t0 + b * 2.5, i_brass(m + 12, b * 0.4), 0.6)
+        if sec == "end":
+            notes = chord + [chord[1] + 12, chord[2] + 12]
+            for k in range(16):
+                s.add("arp", t0 + k * b / 4, i_pluck(notes[[0, 1, 2, 3, 4, 3, 2, 1][k % 8]] + 12, b / 4 * 2.5), 0.6)
+    # The chant (8+8 notes = 4 bars at one note per beat).
+    chant(8 * B, b, i_brass, 1, 0, "lead", 1.0)          # wrath: brass call
+    chant(12 * B, b, i_lead, 1, 0, "lead", 0.8)         # answered by the lead
+    chant(16 * B, b * 2, i_choir, 1, 0, "chant", 0.9)   # clock: slow in the choir
+    chant(24 * B, b, i_brass, 1, 1, "lead", 1.0)        # end: brass in octaves
+    chant(24 * B, b, i_brass, 2, 1, "lead", 0.6)
+    chant(28 * B, b, i_lead, 2, 1, "lead", 0.8)
+    chant(28 * B, b, i_choir, 1, 1, "chant", 1.0)
+    chant(32 * B, b * 0.5, i_lead, 2, 1, "lead", 0.7)   # the last frantic run
+    chant(34 * B, b * 0.5, i_brass, 1, 1, "lead", 0.9)
+    return s.render({
+        "drone": dict(hi=300, pan=0, send=0.3, gain=0.9),
+        "pad": dict(hi=4000, pan=0, width=16, send=0.6, gain=0.9),
+        "chant": dict(hi=4500, pan=-0.05, width=10, send=0.6, gain=1.0),
+        "bass": dict(hi=900, pan=0, send=0.05, gain=1.0, drive=1.5),
+        "arp": dict(hi=7000, pan=-0.35, width=10, send=0.45, gain=0.6),
+        "bell": dict(hi=6000, pan=0.3, width=12, send=0.7, gain=0.9),
+        "tick": dict(lo=600, hi=8000, pan=0.4, width=4, send=0.3, gain=0.7),
+        "lead": dict(hi=6000, pan=0.1, width=6, send=0.4, gain=0.95),
+        "brass": dict(hi=3500, pan=-0.1, width=10, send=0.3, gain=0.8),
+        "kick": dict(hi=5000, pan=0, send=0.1, gain=1.0),
+        "snare": dict(lo=120, pan=0.05, send=0.25, gain=0.7),
+        "hat": dict(lo=5000, pan=0.3, send=0.1, gain=0.55),
+        "tom": dict(hi=4000, pan=-0.15, send=0.25, gain=0.8),
+    })
+
+
 def sting(notes, sec, inst, chord_inst=None, drum=None, minor=False):
     """One-shot: notes one after another, then the chord rings out."""
     n = n_of(sec)
@@ -728,6 +853,9 @@ def write_ogg(name, stereo):
 def make_music():
     for name, spec in TRACKS.items():
         write_ogg("music_" + name, compose(spec))
+    write_ogg("music_boss_eclipse", compose_eclipse())
+    # The end of the run: the minor third turns major (F -> F#) - the light returns.
+    write_ogg("music_ending", sting([62, 65, 69, 74, 77, 78, 81, 86], 7.0, i_choir, i_pad, drum=lambda: d_taiko(1.2)))
     write_ogg("music_victory", sting([60, 64, 67, 72, 76, 79, 84], 3.2, i_brass, i_pad, drum=lambda: d_tom(110, 0.6)))
     write_ogg("music_death", sting([69, 67, 65, 64, 62, 57], 4.5, i_choir, i_choir, minor=True))
 

@@ -183,6 +183,10 @@ const MUSIC := {
 	&"boss_illusionist": MUSIC_DIR + "music_boss_illusionist.ogg",
 	&"boss_crystal_titan": MUSIC_DIR + "music_boss_crystal_titan.ogg",
 	&"boss_ashen_king": MUSIC_DIR + "music_boss_ashen_king.ogg",
+	&"drowned_vaults": MUSIC_DIR + "music_drowned_vaults.ogg",
+	&"boss_drowned_bell": MUSIC_DIR + "music_boss_drowned_bell.ogg",
+	&"boss_eclipse": MUSIC_DIR + "music_boss_eclipse.ogg",
+	&"ending": MUSIC_DIR + "music_ending.ogg",
 	&"victory": MUSIC_DIR + "music_victory.ogg",
 	&"death": MUSIC_DIR + "music_death.ogg",
 }
@@ -192,9 +196,10 @@ const MUSIC_FALLBACK := {
 	&"boss_flame_witch": &"boss",
 	&"boss_illusionist": &"boss",
 	&"mirror_halls": &"ruins",
+	&"boss_eclipse": &"boss",
 }
 ## Tracks played once (not looped): AudioManager.play_sting().
-const MUSIC_ONE_SHOT: Array[StringName] = [&"victory", &"death"]
+const MUSIC_ONE_SHOT: Array[StringName] = [&"victory", &"death", &"ending"]
 
 # --- Shaders ---
 const SHADER_FLASH := "res://assets/shaders/flash.gdshader"
