@@ -1792,7 +1792,7 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 	if Net.active and Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.enemy_hurt.rpc(net_id)
+			ns.enemy_hurt.rpc(net_id, crit)
 	if data.training_dummy:
 		_dummy_hit(dealt)
 		return
@@ -1889,9 +1889,13 @@ func net_apply_state(x: float, y: float, new_hp: int, dead: bool, ai_state: int 
 
 
 ## Client shell: the host says this enemy flinched — flash + hurt pose.
-func net_hurt() -> void:
+func net_hurt(crit := false) -> void:
 	if _dead or not puppet:
 		return
+	# The same impact the host sees: spark, hit sounds.
+	AudioManager.play_sfx(&"hit_crit" if crit else &"hit_flesh", global_position)
+	AudioManager.play_sfx(data.sound_hurt, global_position, -4.0)
+	Fx.hit_spark(get_parent(), global_position + Vector2(0, -data.collision_size.y / 2.0), crit)
 	state = State.HURT
 	_attack_anim_left = 0.0
 	if _flash_tween:

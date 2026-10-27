@@ -540,7 +540,7 @@ func _spawn_net_puppet(peer_id: int) -> void:
 	p.setup(mirror, null)
 	p.camera.enabled = false  # only the local player owns the viewport
 	p.add_to_group("player")
-	p.global_position = level.start_position() + Vector2(14, 0)
+	p.net_place(level.start_position() + Vector2(14, 0))
 	var tag := UIStyle.outlined_label(_net_player_name(peer_id), 6, UIStyle.PARCHMENT)
 	tag.position = Vector2(-20, -46)
 	tag.size = Vector2(40, 10)
@@ -585,7 +585,7 @@ func _net_on_floor_loaded() -> void:
 	for p: Player in net_players.get_children():
 		if p == player:
 			continue
-		p.global_position = sp + Vector2(14, 0)
+		p.net_place(sp + Vector2(14, 0))
 	# A fallen hero rises on the next floor (co-op rule).
 	if player.dead:
 		player.revive()
