@@ -41,6 +41,7 @@ func _ready() -> void:
 	await _scenario("projectiles stop at bricks", _wall_projectiles)
 	await _scenario("pounce at the hero", _pounce)
 	await _scenario("faster on deeper floors", _hunt_speed)
+	await _scenario("squads: healer, shieldbearer, bannerman", _squads)
 	print("FAILURES: ", failures.size())
 	for f in failures:
 		print("  - ", f)
@@ -412,3 +413,41 @@ func _hunt_speed() -> void:
 	var deep := _enemy(&"skeleton", Vector2i(5, 9), 20)
 	check(deep.hunt_speed_mult() > shallow.hunt_speed_mult() and shallow.hunt_speed_mult() > 1.0,
 			"hunt speed grows with the floor (%.2f → %.2f)" % [shallow.hunt_speed_mult(), deep.hunt_speed_mult()])
+
+
+func _squads() -> void:
+	var l := _room()
+	await _build(l, Vector2i(27, 9))
+	var healer := _role_enemy(&"cultist", Vector2i(6, 9), &"healer")
+	var patient := _enemy(&"skeleton", Vector2i(8, 9))
+	patient.hp = patient.max_hp / 2
+	var before := patient.hp
+	await _run(3.0, func() -> bool: return patient.hp > before)
+	check(patient.hp > before, "the healer healed the wounded ally (%d → %d)" % [before, patient.hp])
+	check(healer.display_name().begins_with("Лекарь"), "the leader is named by its role (%s)" % healer.display_name())
+	var guard := _role_enemy(&"golem", Vector2i(14, 9), &"shieldbearer")
+	var warded := _enemy(&"skeleton", Vector2i(16, 9))
+	var plain := _enemy(&"skeleton", Vector2i(24, 9))
+	var hp_w := warded.hp
+	var hp_p := plain.hp
+	warded.take_damage(20)
+	plain.take_damage(20)
+	check(hp_w - warded.hp < hp_p - plain.hp, "the shieldbearer wards its neighbour (%d vs %d damage)" % [hp_w - warded.hp, hp_p - plain.hp])
+	guard.take_damage(999999)
+	await _run(0.2)
+	var hp_w2 := warded.hp
+	warded.take_damage(20)
+	check(hp_w2 - warded.hp == hp_p - plain.hp, "no ward once the shieldbearer is dead")
+	var banner := _role_enemy(&"skeleton", Vector2i(20, 9), &"bannerman")
+	var buffed := _enemy(&"skeleton", Vector2i(21, 9))
+	await _run(0.5)
+	check(buffed.hit_damage() > buffed.damage and banner._banner_mult > 1.0, "the bannerman buffs allies (%d → %d)" % [buffed.damage, buffed.hit_damage()])
+
+
+func _role_enemy(id: StringName, cell: Vector2i, role_id: StringName) -> Enemy:
+	var data: EnemyData = ItemDatabase.enemy_by_id(id)
+	var e: Enemy = ENEMY_SCENE.instantiate()
+	e.setup(data, 3)
+	e.assign_role(ItemDatabase.squad_role(role_id))
+	level.add_entity(e, level.cell_bottom(cell))
+	return e

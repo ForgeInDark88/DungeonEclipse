@@ -85,6 +85,11 @@ var _flash_tween: Tween
 ## Elite modifier (null for normal monsters).
 var elite: EliteAffixData
 var _speed_mult := 1.0
+## Squad support role of this monster (leader of a group), see SquadRoleData.
+var role: SquadRoleData
+var _role_timer := 0.0
+## Bonus from a nearby bannerman (speed and damage), refreshed every think tick.
+var _banner_mult := 1.0
 var _pounce_cd := 0.0
 var _pounce_windup := 0.0
 var _pouncing := false
@@ -186,6 +191,8 @@ func display_name() -> String:
 		base = "%s %s" % [elite.prefix(data.gender), base.left(1).to_lower() + base.substr(1)]
 	if champion:
 		return "Страж этажа: %s" % base
+	if role:
+		return "%s: %s" % [role.title, base]
 	return base
 
 
@@ -213,6 +220,8 @@ func _ready() -> void:
 		sprite.self_modulate.a = 0.85
 	if elite:
 		_setup_elite()
+	if role:
+		_setup_role()
 	if champion and not elite:
 		scale = Vector2(1.45, 1.45)
 	if data.ceiling_ambush:
@@ -433,7 +442,7 @@ func _physics_process(delta: float) -> void:
 	# Planned leaps (path jumps, pounces) are ballistic: _launch() already
 	# solved their horizontal speed, so the hunt / elite speed must not
 	# stretch them past the landing cell.
-	var slow := status.speed_multiplier() * (1.0 if _jumping else _speed_mult)
+	var slow := status.speed_multiplier() * (1.0 if _jumping else _speed_mult * _banner_mult)
 	var flyer := data.behavior == EnemyData.Behavior.FLYER
 	if slow != 1.0:
 		velocity.x *= slow
@@ -543,6 +552,7 @@ func _player_visible() -> bool:
 
 
 func _think() -> void:
+	_update_squad(0.2)
 	_sees_player = _can_see_player()
 	if _sees_player:
 		_last_seen = _player.global_position
@@ -822,6 +832,9 @@ func _chase_walk(delta: float) -> void:
 	if _recoil > 0.0:
 		_retreat(delta)
 		return
+	if role and role.kind == SquadRoleData.Kind.HEALER and _sees_player and dist < 72.0 and _retreat(delta):
+		_face_point(_player.global_position)
+		return  # the healer stays behind its squad
 	if _update_pounce(delta, dist):
 		return
 	if _sees_player and _can_melee() and _attack_timer <= 0.0:
@@ -1260,6 +1273,104 @@ func _free_fly_cell(lvl: DungeonLevel, from: Vector2i) -> Vector2i:
 	return Vector2i(-1, -1)
 
 
+# ------------------------------------------------------------- squads
+## Makes this monster the leader of a squad (call after setup, before adding
+## it to the tree): tougher, with an aura and a support action.
+func assign_role(r: SquadRoleData) -> void:
+	role = r
+	max_hp = maxi(1, roundi(max_hp * r.hp_mult))
+	hp = max_hp
+	_role_timer = r.interval * 0.5
+
+
+func hit_damage() -> int:
+	return maxi(1, roundi(damage * _banner_mult))
+
+
+func _setup_role() -> void:
+	add_to_group("squad_leaders")
+	var aura := SquadAura.new()
+	aura.role = role
+	aura.position = Vector2(0, -2)
+	add_child(aura)
+	move_child(aura, 0)
+	if _name_label == null:
+		_name_label = Label.new()
+		_name_label.add_theme_font_size_override("font_size", 6)
+		_name_label.add_theme_color_override("font_outline_color", Color(0.05, 0.03, 0.02))
+		_name_label.add_theme_constant_override("outline_size", 3)
+		_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_name_label.size = Vector2(90, 10)
+		_name_label.position = Vector2(-45, -data.collision_size.y - 16)
+		var m := CanvasItemMaterial.new()
+		m.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+		_name_label.material = m
+		add_child(_name_label)
+	_name_label.text = display_name()
+	_name_label.add_theme_color_override("font_color", role.color)
+
+
+## Living squad leaders of `kind` within their radius of this monster.
+func _leaders_near(kind: int, include_self := false) -> Array[Enemy]:
+	var out: Array[Enemy] = []
+	for n in get_tree().get_nodes_in_group("squad_leaders"):
+		var e := n as Enemy
+		if e == null or e.is_dead() or e.role == null or e.role.kind != kind:
+			continue
+		if e == self and not include_self:
+			continue
+		if e.global_position.distance_to(global_position) <= e.role.radius:
+			out.append(e)
+	return out
+
+
+## Damage reduction from a shieldbearer nearby (0 = none).
+func _shield_ward() -> float:
+	var best := 0.0
+	for e in _leaders_near(SquadRoleData.Kind.SHIELD):
+		best = maxf(best, e.role.power)
+	return best
+
+
+## Every think tick: the bannerman's buff on this monster, the healer's heal.
+func _update_squad(dt: float) -> void:
+	_banner_mult = 1.0
+	for e in _leaders_near(SquadRoleData.Kind.BANNER, true):
+		_banner_mult = maxf(_banner_mult, 1.0 + e.role.power)
+	if role == null or role.kind != SquadRoleData.Kind.HEALER:
+		return
+	_role_timer -= dt
+	if _role_timer > 0.0:
+		return
+	var target: Enemy = null
+	var worst := 0.95
+	for n in all_enemies():
+		var o := n as Enemy
+		if o == null or o == self or o.is_dead() or o.max_hp <= 0:
+			continue
+		if o.global_position.distance_to(global_position) > role.radius:
+			continue
+		var ratio := float(o.hp) / o.max_hp
+		if ratio < worst and has_line_to(o.global_position + Vector2(0, -8)):
+			worst = ratio
+			target = o
+	if target == null:
+		_role_timer = 0.5
+		return
+	_role_timer = role.interval
+	var amount := maxi(1, roundi(target.max_hp * role.power))
+	target.heal_status(amount)
+	var spot := target.global_position + Vector2(0, -target.data.collision_size.y - 6)
+	EventBus.floating_text.emit(spot, "+%d" % amount, Color(0.45, 1.0, 0.5))
+	if Net.active and Net.is_host:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			ns.enemy_float_text.rpc(spot, "+%d" % amount, Color(0.45, 1.0, 0.5))
+	HealBeam.spawn(get_parent(), global_position + Vector2(0, -data.collision_size.y * 0.7),
+			target.global_position + Vector2(0, -target.data.collision_size.y * 0.5), role.color)
+	_attack_anim_left = 0.3  # a casting gesture
+
+
 func _level() -> DungeonLevel:
 	var p := get_parent()
 	return p.get_parent() as DungeonLevel if p else null
@@ -1470,11 +1581,11 @@ func _update_attack(delta: float) -> void:
 		Fx.dust(get_parent(), global_position, true)
 		Fx.explosion(get_parent(), global_position + Vector2(0, -4), data.aoe_radius, Color(0.8, 0.75, 0.65))
 		if clear and _player.global_position.distance_to(global_position) <= data.aoe_radius:
-			_player.take_damage(damage, global_position)
-			_apply_hit_effects(_player, damage)
+			_player.take_damage(hit_damage(), global_position)
+			_apply_hit_effects(_player, hit_damage())
 	elif clear and _distance_to_player() <= data.attack_range + 14.0:
-		_player.take_damage(damage, global_position)
-		_apply_hit_effects(_player, damage)
+		_player.take_damage(hit_damage(), global_position)
+		_apply_hit_effects(_player, hit_damage())
 
 
 func _apply_hit_effects(target: Node, dmg: int) -> void:
@@ -1536,7 +1647,7 @@ func _shoot() -> void:
 	var flight := clampf(from.distance_to(aim) / maxf(data.projectile_speed, 1.0), 0.0, 0.8)
 	aim += Vector2(_player.velocity.x, _player.velocity.y * 0.4) * flight * lerpf(0.6, 1.0, coordination())
 	var dir_v := (aim - from).normalized()
-	p.setup(data.projectile_texture, dir_v, data.projectile_speed, damage, "player")
+	p.setup(data.projectile_texture, dir_v, data.projectile_speed, hit_damage(), "player")
 	p.blast_color = Color(0.8, 0.3, 1.0)
 	p.on_hit = func(target: Node, dmg: int) -> void: _apply_hit_effects(target, dmg)
 	AudioManager.play_sfx(data.sound_attack if data.sound_attack != &"" else &"enemy_shoot", global_position)
@@ -1581,6 +1692,10 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 	var dealt := maxi(1, amount - armor) if damage_type == 0 else roundi(amount * (1.0 - resistance(damage_type)))
 	if status.has(&"curse"):
 		dealt = roundi(dealt * StatusEffects.CURSE_DAMAGE_MULT)
+	var ward := _shield_ward()
+	if ward > 0.0 and dealt > 0:
+		dealt = maxi(1, roundi(dealt * (1.0 - ward)))
+		Fx.sparks(get_parent(), global_position + Vector2(0, -data.collision_size.y * 0.6), Color(0.5, 0.75, 1.0), 4, 50.0)
 	if dealt <= 0:
 		EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 4), "Иммунитет", Color(0.7, 0.7, 0.7))
 		return
@@ -1795,3 +1910,55 @@ func _give_rewards() -> void:
 		var loot := table.roll(floor_number)
 		if not loot.is_empty():
 			EventBus.spawn_items.emit(global_position + Vector2(0, -8), loot)
+
+
+## Squad leader's aura: a soft ring of the role colour on the ground showing
+## the reach, and a small role sign above the head.
+class SquadAura extends Node2D:
+	var role: SquadRoleData
+	var _t := 0.0
+
+	func _process(delta: float) -> void:
+		_t += delta
+		queue_redraw()
+
+	func _draw() -> void:
+		if role == null:
+			return
+		var c := role.color
+		var pulse := 0.5 + 0.5 * sin(_t * 2.4)
+		# ground ellipse of the reach (flattened circle)
+		var pts := PackedVector2Array()
+		for i in 33:
+			var a := TAU * i / 32.0
+			pts.append(Vector2(cos(a) * role.radius, sin(a) * role.radius * 0.18))
+		draw_polyline(pts, Color(c.r, c.g, c.b, 0.25 + 0.2 * pulse), 1.0)
+		# role sign over the head
+		var top := Vector2(0, -get_parent().data.collision_size.y - 22)
+		match role.kind:
+			SquadRoleData.Kind.HEALER:
+				draw_rect(Rect2(top + Vector2(-1, -3), Vector2(2, 6)), c)
+				draw_rect(Rect2(top + Vector2(-3, -1), Vector2(6, 2)), c)
+			SquadRoleData.Kind.SHIELD:
+				draw_colored_polygon(PackedVector2Array([top + Vector2(-3, -3), top + Vector2(3, -3), top + Vector2(3, 0), top + Vector2(0, 3), top + Vector2(-3, 0)]), c)
+			SquadRoleData.Kind.BANNER:
+				draw_line(top + Vector2(-2, 3), top + Vector2(-2, -4), c.darkened(0.3), 1.0)
+				draw_colored_polygon(PackedVector2Array([top + Vector2(-1, -4), top + Vector2(3, -3), top + Vector2(-1, -1)]), c)
+
+
+## Short green beam from the healer to its patient.
+class HealBeam extends Line2D:
+	static func spawn(parent: Node, from: Vector2, to: Vector2, color: Color) -> void:
+		var b := HealBeam.new()
+		b.width = 2.0
+		b.default_color = Color(color.r, color.g, color.b, 0.85)
+		b.add_point(from)
+		b.add_point(to)
+		var m := CanvasItemMaterial.new()
+		m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+		m.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+		b.material = m
+		parent.add_child(b)
+		var tw := b.create_tween()
+		tw.tween_property(b, "modulate:a", 0.0, 0.45)
+		tw.tween_callback(b.queue_free)

@@ -59,14 +59,14 @@ func unregister_enemy(net_id: int) -> void:
 ## Host → clients: an enemy exists at this spot (spawned only on the host).
 @rpc("authority", "call_remote", "reliable")
 func spawn_enemy(net_id: int, enemy_id: String, pos: Vector2, elite_id: StringName,
-		champion: bool, held: bool, hp: int) -> void:
-	_spawn_shell(net_id, enemy_id, pos, elite_id, champion, held, hp)
+		champion: bool, held: bool, hp: int, role_id: StringName) -> void:
+	_spawn_shell(net_id, enemy_id, pos, elite_id, champion, held, hp, role_id)
 
 
 ## Builds the client-side shell. setup() applies floor scaling, the party
 ## multipliers and altar curses — no extra multiplication here.
 func _spawn_shell(net_id: int, enemy_id: String, pos: Vector2, elite_id: StringName,
-		champion: bool, held: bool, hp: int) -> void:
+		champion: bool, held: bool, hp: int, role_id: StringName = &"") -> void:
 	if enemies.has(net_id):
 		return
 	var data := ItemDatabase.enemy_by_id(enemy_id)
@@ -79,6 +79,9 @@ func _spawn_shell(net_id: int, enemy_id: String, pos: Vector2, elite_id: StringN
 			break
 	var e := (load("res://scenes/enemies/enemy.tscn") as PackedScene).instantiate()
 	e.setup(data, GameState.floor_number, elite, champion)
+	var role := ItemDatabase.squad_role(role_id) if role_id != &"" else null
+	if role:
+		e.assign_role(role)
 	e.puppet = true
 	e.held = held
 	if hp > 0 and hp < e.max_hp:
@@ -531,7 +534,7 @@ func world_state(floor_num: int, tiles: Array, chests: Array, stock: Array,
 				break
 	for d in enemy_list:
 		_spawn_shell(int(d[0]), String(d[1]), Vector2(d[2], d[3]), d[4],
-				bool(d[5]), bool(d[6]), int(d[7]))
+				bool(d[5]), bool(d[6]), int(d[7]), StringName(d[8]) if d.size() > 8 else &"")
 
 
 ## Host: collect everything a late joiner missed and push it over.
@@ -562,7 +565,8 @@ func send_world_state(peer_id: int) -> void:
 		var e: Enemy = enemies[id]
 		if is_instance_valid(e) and not e.is_dead():
 			list.append([id, String(e.data.id), e.global_position.x, e.global_position.y,
-					e.elite.id if e.elite else StringName(), e.champion, e.held, e.hp])
+					e.elite.id if e.elite else StringName(), e.champion, e.held, e.hp,
+					e.role.id if e.role else StringName()])
 	world_state.rpc_id(peer_id, GameState.floor_number, tiles, chests, stock, puzzles, list)
 	if level != null:
 		seal_state.rpc_id(peer_id, level.seal_kills)

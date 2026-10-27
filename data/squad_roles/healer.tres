@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="SquadRoleData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/squad_role_data.gd" id="1_role"]
+
+[resource]
+script = ExtResource("1_role")
+id = &"healer"
+title = "Лекарь"
+description = "Лечит самого раненого союзника рядом. Убивайте первым."
+kind = 0
+color = Color(0.45, 1.0, 0.5, 1)
+radius = 96.0
+power = 0.18
+interval = 2.6
+hp_mult = 1.2
+min_floor = 2
+weight = 1.0

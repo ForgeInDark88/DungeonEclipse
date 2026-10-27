@@ -906,21 +906,68 @@ func _spawn_enemies() -> void:
 		if e.min_floor <= floor_number:
 			elite_pool.append(e)
 			elite_weights.append(e.weight)
+	# Squads: from floor 2 some monsters lead a group with a support role
+	# (healer, shieldbearer, bannerman) and bring 1-2 companions.
+	var squad_chance := 0.0 if floor_number < 2 else minf(0.1 + 0.025 * (floor_number - 2), 0.3)
+	var roles: Array[SquadRoleData] = []
+	var role_weights: Array[float] = []
+	for r in ItemDatabase.squad_roles:
+		if r.min_floor <= floor_number:
+			roles.append(r)
+			role_weights.append(r.weight)
+	var taken := {}
+	for cell in layout.enemy_cells:
+		taken[cell] = true
 	for cell in layout.enemy_cells:
 		var data: EnemyData = pool[LootTable._weighted_index(weights, rng)]
 		var elite: EliteAffixData = null
 		if not elite_pool.is_empty() and rng.randf() < elite_chance:
 			elite = elite_pool[LootTable._weighted_index(elite_weights, rng)]
+		# Every roll happens before the client early-out: RNG stays in sync.
+		var role: SquadRoleData = null
+		var mates: Array = []  # [EnemyData, cell]
+		if not roles.is_empty() and rng.randf() < squad_chance:
+			role = roles[LootTable._weighted_index(role_weights, rng)]
+			var count := rng.randi_range(1, 2)
+			for k in count:
+				var mate_data: EnemyData = pool[LootTable._weighted_index(weights, rng)]
+				var mate_cell := _squad_cell(cell, k, taken)
+				if mate_cell != Vector2i(-1, -1):
+					taken[mate_cell] = true
+					mates.append([mate_data, mate_cell])
 		if Net.active and not Net.is_host:
-			continue  # RNG stays in sync; shells arrive as host descriptors
-		var enemy := (load(ENEMY_SCENE) as PackedScene).instantiate()
-		enemy.setup(data, floor_number, elite)
-		_net_tag(enemy)
-		var pos := cell_bottom(cell)
-		if data.behavior == EnemyData.Behavior.FLYER:
-			pos.y -= TILE * 2
-		add_entity(enemy, pos)
-		_net_broadcast_enemy(enemy, elite, false)
+			continue  # shells arrive as host descriptors
+		_spawn_floor_enemy(data, elite, cell, role)
+		for m in mates:
+			_spawn_floor_enemy(m[0], null, m[1], null)
+
+
+func _spawn_floor_enemy(data: EnemyData, elite: EliteAffixData, cell: Vector2i, role: SquadRoleData) -> void:
+	var enemy := (load(ENEMY_SCENE) as PackedScene).instantiate()
+	enemy.setup(data, floor_number, elite)
+	if role:
+		enemy.assign_role(role)
+	_net_tag(enemy)
+	var pos := cell_bottom(cell)
+	if data.behavior == EnemyData.Behavior.FLYER:
+		pos.y -= TILE * 2
+	add_entity(enemy, pos)
+	_net_broadcast_enemy(enemy, elite, false)
+
+
+## A free standable cell next to a squad leader for companion `k` (1-3 cells
+## to either side on the same floor), or (-1, -1).
+func _squad_cell(cell: Vector2i, k: int, taken: Dictionary) -> Vector2i:
+	for off in ([1, -1, 2, -2, 3, -3] if k % 2 == 0 else [-1, 1, -2, 2, -3, 3]):
+		var c := cell + Vector2i(off, 0)
+		if taken.has(c):
+			continue
+		if layout.get_tile(c.x, c.y) != T.EMPTY or not LevelLayout.is_ground(layout.get_tile(c.x, c.y + 1)):
+			continue
+		if c.distance_to(layout.start_cell) < SAFE_START_RADIUS:
+			continue
+		return c
+	return Vector2i(-1, -1)
 
 
 ## Host → clients: a live enemy descriptor for the client shells.
@@ -930,4 +977,4 @@ func _net_broadcast_enemy(e: Enemy, elite: EliteAffixData, champion: bool, held 
 	var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 	if ns:
 		ns.spawn_enemy.rpc(e.net_id, String(e.data.id), e.global_position,
-				elite.id if elite else StringName(), champion, held, e.hp)
+				elite.id if elite else StringName(), champion, held, e.hp, e.role.id if e.role else StringName())
