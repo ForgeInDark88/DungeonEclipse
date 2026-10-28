@@ -30,6 +30,8 @@ func _ready() -> void:
 	add_to_group("interactable")
 	add_to_group("pickups")
 	sprite.texture = item.icon if item else null
+	if sprite.texture:
+		sprite.scale = Vector2.ONE * (16.0 / sprite.texture.get_width())  # 32 px icons: same size, finer
 	count_label.text = str(count) if count > 1 else ""
 	_bob = randf() * TAU
 	# Rare and epic items glow on the floor.
