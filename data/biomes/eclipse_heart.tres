@@ -1,0 +1,111 @@
+[gd_resource type="Resource" script_class="BiomeData" load_steps=21 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor_script"]
+[ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="biome_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tiles/tiles_eclipse_heart.png" id="tiles"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/eclipse_heart_far.png" id="bg_far"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/eclipse_heart_mid.png" id="bg_mid"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/eclipse_heart_near.png" id="bg_near"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/sun_altar.png" id="dx_sun_altar"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/eclipse_banner.png" id="dx_eclipse_banner"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/golden_statue.png" id="dx_golden_statue"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/corona_brazier.png" id="dx_corona_brazier"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/sun_relief.png" id="dx_sun_relief"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/black_sun_lamp.png" id="dx_black_sun_lamp"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/offering_pile.png" id="dx_offering_pile"]
+
+[sub_resource type="Resource" id="Decor_sun_altar"]
+script = ExtResource("decor_script")
+texture = ExtResource("dx_sun_altar")
+placement = 0
+weight = 0.8
+light_color = Color(1.0, 0.75, 0.35, 1)
+light_scale = 0.25
+unshaded = true
+sway = false
+
+[sub_resource type="Resource" id="Decor_eclipse_banner"]
+script = ExtResource("decor_script")
+texture = ExtResource("dx_eclipse_banner")
+placement = 2
+weight = 1.2
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = true
+
+[sub_resource type="Resource" id="Decor_golden_statue"]
+script = ExtResource("decor_script")
+texture = ExtResource("dx_golden_statue")
+placement = 0
+weight = 0.9
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Decor_corona_brazier"]
+script = ExtResource("decor_script")
+texture = ExtResource("dx_corona_brazier")
+placement = 0
+weight = 1.1
+light_color = Color(1.0, 0.7, 0.3, 1)
+light_scale = 0.25
+unshaded = true
+sway = false
+
+[sub_resource type="Resource" id="Decor_sun_relief"]
+script = ExtResource("decor_script")
+texture = ExtResource("dx_sun_relief")
+placement = 2
+weight = 1.2
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[sub_resource type="Resource" id="Decor_black_sun_lamp"]
+script = ExtResource("decor_script")
+texture = ExtResource("dx_black_sun_lamp")
+placement = 1
+weight = 1.0
+light_color = Color(1.0, 0.75, 0.4, 1)
+light_scale = 0.25
+unshaded = true
+sway = false
+
+[sub_resource type="Resource" id="Decor_offering_pile"]
+script = ExtResource("decor_script")
+texture = ExtResource("dx_offering_pile")
+placement = 0
+weight = 1.0
+light_color = Color(0, 0, 0, 0)
+light_scale = 0.25
+unshaded = false
+sway = false
+
+[resource]
+script = ExtResource("biome_script")
+music = &"eclipse_heart"
+step_sound = &"step_stone"
+id = &"eclipse_heart"
+display_name = "Сердце Затмения"
+order = 10
+tileset_texture = ExtResource("tiles")
+parallax_far = ExtResource("bg_far")
+parallax_mid = ExtResource("bg_mid")
+parallax_near = ExtResource("bg_near")
+ambient = Color(0.92, 0.86, 0.9, 1)
+back_wall_modulate = Color(0.76, 0.68, 0.76, 1)
+torch_color = Color(1.0, 0.72, 0.36, 1)
+ambient_particles = Color(1.0, 0.8, 0.45, 1)
+particle_style = &"sparkles"
+fog_color = Color(0.34, 0.22, 0.3, 1)
+fog_amount = 0.12
+grade_tint = Color(1.03, 0.97, 0.95, 1)
+saturation = 1.0
+contrast = 1.07
+decorations = Array[ExtResource("decor_script")]([SubResource("Decor_sun_altar"), SubResource("Decor_eclipse_banner"), SubResource("Decor_golden_statue"), SubResource("Decor_corona_brazier"), SubResource("Decor_sun_relief"), SubResource("Decor_black_sun_lamp"), SubResource("Decor_offering_pile")])
+decor_per_room = 4.5
+ore_chance = 0.05
+ore_item = &"moon_crystal"
