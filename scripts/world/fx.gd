@@ -60,19 +60,48 @@ static func sparks(parent: Node, pos: Vector2, color: Color, amount := 8, speed 
 	p.one_shot = true
 	p.emitting = true
 	p.amount = amount
-	p.lifetime = 0.5
+	p.lifetime = 0.55
+	p.lifetime_randomness = 0.4
 	p.explosiveness = 1.0
 	p.spread = 180.0
 	p.initial_velocity_min = speed * 0.4
 	p.initial_velocity_max = speed
+	p.damping_min = speed * 0.25
+	p.damping_max = speed * 0.6
 	p.gravity = Vector2(0, 200)
-	p.scale_amount_min = 1.0
-	p.scale_amount_max = 2.0
-	p.color = color
-	p.material = _unshaded()
+	p.scale_amount_min = 1.5
+	p.scale_amount_max = 3.0
+	# born white-hot, cooling to the colour, fading out; sizes shrink
+	p.color_ramp = _ramp(color)
+	var sc := Curve.new()
+	sc.add_point(Vector2(0, 1))
+	sc.add_point(Vector2(1, 0.35))
+	p.scale_amount_curve = sc
+	p.material = _glow()
 	parent.add_child(p)
 	p.global_position = pos
 	p.finished.connect(p.queue_free)
+	# a few slow embers drift up after the burst
+	if amount >= 8:
+		var e := CPUParticles2D.new()
+		e.one_shot = true
+		e.emitting = true
+		e.amount = maxi(3, amount / 3)
+		e.lifetime = 1.1
+		e.lifetime_randomness = 0.5
+		e.explosiveness = 0.8
+		e.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
+		e.emission_sphere_radius = 6.0
+		e.direction = Vector2.UP
+		e.spread = 50.0
+		e.initial_velocity_min = 8.0
+		e.initial_velocity_max = 26.0
+		e.gravity = Vector2(0, -18)
+		e.color_ramp = _ramp(color)
+		e.material = _glow()
+		parent.add_child(e)
+		e.global_position = pos
+		e.finished.connect(e.queue_free)
 
 
 ## Rotating shards (broken bricks, shattered things).
@@ -115,6 +144,19 @@ static func _flash_light(parent: Node, pos: Vector2, color: Color, energy := 2.5
 	var tw := light.create_tween()
 	tw.tween_property(light, "energy", 0.0, time)
 	tw.tween_callback(light.queue_free)
+	var core := Sprite2D.new()
+	core.texture = AssetPaths.tex(AssetPaths.LIGHT)
+	core.modulate = Color(color.r * 0.7 + 0.3, color.g * 0.7 + 0.3, color.b * 0.7 + 0.3, 0.75)
+	core.scale = Vector2.ONE * clampf(scale * 0.3, 0.06, 0.6)
+	core.material = _glow()
+	core.z_index = 24
+	parent.add_child(core)
+	core.global_position = pos
+	var twc := core.create_tween()
+	twc.set_parallel(true)
+	twc.tween_property(core, "scale", core.scale * 1.6, time).set_ease(Tween.EASE_OUT)
+	twc.tween_property(core, "modulate:a", 0.0, time)
+	twc.chain().tween_callback(core.queue_free)
 
 
 ## A wide sword sweep in front of the caster (cleave, backstab, execution).
@@ -126,11 +168,12 @@ static func arc_slash(parent: Node, pos: Vector2, radius: float, color: Color, f
 		var a := base - 1.35 + 2.7 * i / 14.0
 		pts.append(Vector2(cos(a), sin(a) * 0.75) * radius)
 	var line := Line2D.new()
-	line.width = 8.0
+	line.width = 12.0
 	line.default_color = color.lerp(Color.WHITE, 0.45)
 	line.points = pts
 	line.z_index = 20
 	line.material = _unshaded()
+	_beam(line)
 	parent.add_child(line)
 	line.global_position = pos
 	var tw := line.create_tween()
@@ -139,11 +182,12 @@ static func arc_slash(parent: Node, pos: Vector2, radius: float, color: Color, f
 	tw.tween_property(line, "width", 0.0, 0.24)
 	tw.chain().tween_callback(line.queue_free)
 	var echo := Line2D.new()
-	echo.width = 4.0
+	echo.width = 6.0
 	echo.default_color = color
 	echo.points = pts
 	echo.z_index = 19
 	echo.material = _unshaded()
+	_beam(echo)
 	parent.add_child(echo)
 	echo.global_position = pos
 	var tw2 := echo.create_tween()
@@ -182,6 +226,7 @@ static func blade_fan(parent: Node, pos: Vector2, radius: float, color: Color, c
 		streak.default_color = color.lerp(Color.WHITE, 0.3)
 		streak.z_index = 19
 		streak.material = _unshaded()
+		_beam(streak)
 		streak.points = PackedVector2Array([pos, pos + Vector2.from_angle(a) * radius * 1.1])
 		parent.add_child(streak)
 		var tws := streak.create_tween()
@@ -218,6 +263,7 @@ static func nova_ring(parent: Node, pos: Vector2, radius: float, color: Color) -
 		line.points = pts
 		line.z_index = 20
 		line.material = _unshaded()
+		_beam(line)
 		parent.add_child(line)
 		line.global_position = pos
 		var delay := 0.09 * k
@@ -243,6 +289,7 @@ static func nova_ring(parent: Node, pos: Vector2, radius: float, color: Color) -
 	halo.points = hpts
 	halo.z_index = 21
 	halo.material = _unshaded()
+	_beam(halo)
 	parent.add_child(halo)
 	halo.global_position = pos
 	var twh := halo.create_tween()
@@ -261,6 +308,7 @@ static func ice_burst(parent: Node, pos: Vector2, radius: float, color: Color) -
 		spike.default_color = Color(0.75, 0.95, 1.0)
 		spike.z_index = 19
 		spike.material = _unshaded()
+		_beam(spike)
 		var base := pos + Vector2.from_angle(a) * radius * 0.7
 		spike.points = PackedVector2Array([base, base + Vector2(0, -12 - (i % 2) * 5)])
 		parent.add_child(spike)
@@ -303,9 +351,11 @@ static func light_pillars(parent: Node, pos: Vector2, radius: float, color: Colo
 		halo.points = beam.points
 		halo.z_index = 19
 		halo.material = _unshaded()
+		_beam(halo)
 		beam.add_child(halo)
 		beam.z_index = 20
 		beam.material = _unshaded()
+		_beam(beam)
 		parent.add_child(beam)
 		beam.global_position = px
 		var tw := beam.create_tween()
@@ -325,6 +375,7 @@ static func light_pillars(parent: Node, pos: Vector2, radius: float, color: Colo
 	flash.points = PackedVector2Array([Vector2(-radius, 0), Vector2(radius, 0)])
 	flash.z_index = 22
 	flash.material = _unshaded()
+	_beam(flash)
 	parent.add_child(flash)
 	flash.global_position = pos
 	var twf := flash.create_tween()
@@ -407,6 +458,7 @@ static func meteor_fall(parent: Node, pos: Vector2, radius: float, color: Color)
 	trail.default_color = Color(1.0, 0.6, 0.25, 0.85)
 	trail.z_index = 21
 	trail.material = _unshaded()
+	_beam(trail)
 	parent.add_child(trail)
 	var tw := rock.create_tween()
 	tw.tween_method(func(t: float) -> void:
@@ -497,6 +549,67 @@ static func afterimage(visual: Node2D, parent: Node) -> void:
 	var tw := ghost.create_tween()
 	tw.tween_property(ghost, "modulate:a", 0.0, 0.25)
 	tw.tween_callback(ghost.queue_free)
+
+
+## Additive, unlit: light that adds up where effects overlap.
+static func _glow() -> CanvasItemMaterial:
+	var m := CanvasItemMaterial.new()
+	m.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+	m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	return m
+
+
+## White-hot -> colour -> gone (particle colour over life).
+static func _ramp(color: Color) -> Gradient:
+	var g := Gradient.new()
+	g.offsets = PackedFloat32Array([0.0, 0.18, 0.7, 1.0])
+	g.colors = PackedColorArray([Color(1, 1, 1, 1), color.lerp(Color.WHITE, 0.25), color, Color(color.r, color.g, color.b, 0.0)])
+	return g
+
+
+static var _beam_cache := {}
+
+
+## Turns a flat Line2D into a beam of light: a white-hot core inside the
+## colour, soft edges across its width, additive, round ends; open strokes
+## (slashes, trails, beams) taper toward their ends.
+static func _beam(line: Line2D) -> void:
+	var col := line.default_color
+	var key := col.to_html(false)
+	var tex: Texture2D = _beam_cache.get(key)
+	if tex == null:
+		var g := Gradient.new()
+		g.offsets = PackedFloat32Array([0.0, 0.22, 0.42, 0.5, 0.58, 0.78, 1.0])
+		var c := Color(col.r, col.g, col.b, 1.0)
+		var hot := c.lerp(Color.WHITE, 0.8)
+		g.colors = PackedColorArray([Color(c.r, c.g, c.b, 0.0), Color(c.r, c.g, c.b, 0.45), c.lerp(Color.WHITE, 0.3), hot,
+				c.lerp(Color.WHITE, 0.3), Color(c.r, c.g, c.b, 0.45), Color(c.r, c.g, c.b, 0.0)])
+		# Built at once (a GradientTexture2D fills itself a frame later and
+		# the first beams would be blank).
+		var img := Image.create(2, 16, false, Image.FORMAT_RGBA8)
+		for y in 16:
+			var gc := g.sample((y + 0.5) / 16.0)
+			img.set_pixel(0, y, gc)
+			img.set_pixel(1, y, gc)
+		tex = ImageTexture.create_from_image(img)
+		_beam_cache[key] = tex
+	line.texture = tex
+	line.texture_mode = Line2D.LINE_TEXTURE_STRETCH
+	line.default_color = Color(1, 1, 1, col.a)
+	line.width *= 2.0
+	line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	line.end_cap_mode = Line2D.LINE_CAP_ROUND
+	line.joint_mode = Line2D.LINE_JOINT_ROUND
+	line.material = _glow()
+	var n := line.points.size()
+	if n >= 8 and line.points[0].distance_to(line.points[n - 1]) <= line.width * 2.0:
+		line.closed = true  # rings: no gap
+	elif n >= 3:
+		var curve := Curve.new()
+		curve.add_point(Vector2(0, 0.15))
+		curve.add_point(Vector2(0.5, 1))
+		curve.add_point(Vector2(1, 0.15))
+		line.width_curve = curve
 
 
 static func _unshaded() -> CanvasItemMaterial:

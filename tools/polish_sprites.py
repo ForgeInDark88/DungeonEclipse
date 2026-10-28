@@ -32,7 +32,7 @@ ROOT = os.path.join(HERE, "..")
 SRC = os.path.join(HERE, "sprite_src")
 DEFAULT = ["assets/sprites/player/body_*.png", "assets/sprites/player/outfit_*.png",
            "assets/sprites/player/head_*.png", "assets/sprites/player/equip_*.png",
-           "assets/sprites/portraits/hero_*.png", "@weapons"]
+           "assets/sprites/portraits/hero_*.png"]  # weapons: gen_weapon_remaster polishes them
 
 
 def _weapons():
