@@ -15,6 +15,7 @@ var _repair: Button
 var _heal: Button
 var _identify: Button
 var _uncurse: Button
+var _sell_junk: Button
 var _inv_slots: Array[ItemSlot] = []
 
 
@@ -100,6 +101,9 @@ func _build() -> void:
 	_uncurse = BookPageScreen.button("", _do_uncurse)
 	services2.add_child(_identify)
 	services2.add_child(_uncurse)
+	_sell_junk = BookPageScreen.button("", _sell_all_junk)
+	_sell_junk.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_left.add_child(_sell_junk)
 	var close_btn := BookPageScreen.button("Уйти", close)
 	close_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_left.add_child(close_btn)
@@ -143,6 +147,26 @@ func _refresh_goods() -> void:
 func _refresh_inventory() -> void:
 	for s in _inv_slots:
 		s.refresh()
+	if _sell_junk:
+		var n := 0
+		var total := 0
+		for i in hero.inventory.junk_indices():
+			var st := hero.inventory.stack_at(i)
+			n += st.count
+			total += st.item.sell_price() * st.count
+		_sell_junk.text = "Продать мусор: %d шт. (+%d з.)" % [n, total] if n > 0 else "Мусор: Ctrl+ЛКМ по предмету"
+		_sell_junk.disabled = n == 0
+
+
+## Everything marked as junk goes in one go.
+func _sell_all_junk() -> void:
+	var idx := hero.inventory.junk_indices()
+	idx.reverse()
+	for i in idx:
+		var st := hero.inventory.stack_at(i)
+		while st != null and st.junk and hero.inventory.stack_at(i) == st and st.count > 0:
+			sell(i)
+	_refresh_inventory()
 
 
 func _on_gold(gold: int) -> void:

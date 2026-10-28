@@ -22,6 +22,7 @@ var _inv_slots: Array[ItemSlot] = []
 var _equip_slots: Array[ItemSlot] = []
 var _stat_labels: Dictionary = {}  # stat -> Label
 var _capacity_label: Label
+var _pouch: HFlowContainer
 var _title_label: Label
 ## Right page tabs: the backpack and the crafting list («Ремесло»).
 var _bag_page: Control
@@ -270,6 +271,10 @@ func _build_right_page(page: Control) -> void:
 		b.add_theme_font_size_override("font_size", 8)
 		tabs.add_child(b)
 		_tab_buttons.append(b)
+	# Sorting sits with the tabs: equipment by rarity first, junk last.
+	var sort_b := BookPageScreen.button("Сортировать", func() -> void: hero.inventory.sort_slots())
+	sort_b.add_theme_font_size_override("font_size", 8)
+	tabs.add_child(sort_b)
 	_bag_page = Control.new()
 	_bag_page.size = page.size
 	page.add_child(_bag_page)
@@ -286,8 +291,16 @@ func _build_right_page(page: Control) -> void:
 		_inv_slots.append(s)
 	_capacity_label = UIStyle.label("", 7, UIStyle.INK_SOFT)
 	var rows := ceili(float(hero.inventory.capacity()) / GRID_COLUMNS)
-	_capacity_label.position = Vector2(grid.position.x, 20 + rows * (UIStyle.SLOT_SIZE.y + 2) + 2)
+	var below := 20 + rows * (UIStyle.SLOT_SIZE.y + 2) + 2
+	_capacity_label.position = Vector2(grid.position.x, below)
 	_bag_page.add_child(_capacity_label)
+	# The material pouch: ores, essences, shards... never take a slot.
+	_pouch = HFlowContainer.new()
+	_pouch.position = Vector2(grid.position.x, below + 14)
+	_pouch.size = Vector2(grid_w, 40)
+	_pouch.add_theme_constant_override("h_separation", 6)
+	_pouch.add_theme_constant_override("v_separation", 1)
+	_bag_page.add_child(_pouch)
 
 	_craft_page = Control.new()
 	_craft_page.size = page.size
@@ -379,6 +392,27 @@ func _refresh_inventory() -> void:
 			if st != null:
 				used += 1
 		_capacity_label.text = "Занято: %d / %d" % [used, hero.inventory.capacity()]
+	if _pouch:
+		for c in _pouch.get_children():
+			c.queue_free()
+		var head := UIStyle.label("Мешок:" if not hero.inventory.pouch.is_empty() else "Мешок материалов пуст", 7, UIStyle.INK_SOFT)
+		_pouch.add_child(head)
+		for st in hero.inventory.pouch:
+			var cell := HBoxContainer.new()
+			cell.add_theme_constant_override("separation", 1)
+			cell.tooltip_text = st.item.display_name
+			cell.mouse_filter = Control.MOUSE_FILTER_PASS
+			var ic := TextureRect.new()
+			ic.texture = st.item.icon
+			ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			ic.custom_minimum_size = Vector2(11, 11)
+			ic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			cell.add_child(ic)
+			var n := UIStyle.label(str(st.count), 7, UIStyle.INK)
+			n.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			cell.add_child(n)
+			_pouch.add_child(cell)
 	_refresh_crafting()
 
 

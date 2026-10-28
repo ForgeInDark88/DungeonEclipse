@@ -5,16 +5,20 @@ extends Node
 
 const ACHIEVEMENT_DIR := "res://data/achievements"
 const SECTION := "codex"
-## Counters an AchievementData can watch. "floor", "bestiary" and
-## "items_known" keep the best value, the rest are sums.
+## Counters an AchievementData can watch. "floor", "bestiary", "items_known"
+## and "lore" keep the best value, the rest are sums.
 const COUNTERS: Array[StringName] = [&"kills", &"elites", &"bosses", &"floor", &"chests", &"epic_items",
-	&"gold", &"traps", &"events", &"purchases", &"deaths", &"bestiary", &"items_known", &"runs", &"victories"]
+	&"gold", &"traps", &"events", &"purchases", &"deaths", &"bestiary", &"items_known", &"runs", &"victories", &"lore", &"secret_endings"]
 
 var counters: Dictionary = {}
 ## enemy / boss id -> kills
 var enemy_kills: Dictionary = {}
 ## item id -> times found
 var items_found: Dictionary = {}
+## lore note id -> unix time of the first reading
+var lore_read: Dictionary = {}
+## chronicle chapter id -> true once its reward was taken at the chronicler
+var lore_claimed: Dictionary = {}
 ## achievement id -> unix time of unlocking
 var achieved: Dictionary = {}
 var achievements: Array[AchievementData] = []
@@ -60,6 +64,8 @@ func load_progress() -> void:
 	enemy_kills = cfg.get_value(SECTION, "enemy_kills", {})
 	items_found = cfg.get_value(SECTION, "items_found", {})
 	achieved = cfg.get_value(SECTION, "achieved", {})
+	lore_read = cfg.get_value(SECTION, "lore_read", {})
+	lore_claimed = cfg.get_value(SECTION, "lore_claimed", {})
 
 
 func save_progress() -> void:
@@ -70,6 +76,8 @@ func save_progress() -> void:
 	cfg.set_value(SECTION, "enemy_kills", enemy_kills)
 	cfg.set_value(SECTION, "items_found", items_found)
 	cfg.set_value(SECTION, "achieved", achieved)
+	cfg.set_value(SECTION, "lore_read", lore_read)
+	cfg.set_value(SECTION, "lore_claimed", lore_claimed)
 	cfg.save(SaveManager.META_PATH)
 	_dirty = false
 
@@ -147,3 +155,50 @@ func _check(counter: StringName) -> void:
 			MetaProgress.save_progress()
 		save_progress()
 		EventBus.achievement_unlocked.emit(a)
+
+
+func is_lore_read(id: StringName) -> bool:
+	return lore_read.has(id)
+
+
+func lore_read_count() -> int:
+	return lore_read.size()
+
+
+## The first reading of a note: kept for the Codex, counts for achievements.
+func read_lore(id: StringName) -> void:
+	if lore_read.has(id):
+		return
+	lore_read[id] = int(Time.get_unix_time_from_system())
+	record_max(&"lore", lore_read.size())
+	_dirty = true
+	save_progress()
+
+
+func is_chapter_claimed(id: StringName) -> bool:
+	return lore_claimed.has(id)
+
+
+func claim_chapter(id: StringName) -> void:
+	lore_claimed[id] = true
+	_dirty = true
+	save_progress()
+
+
+## Every guardian's note read: the Eclipse can be ended the other way.
+func knows_all_guardians() -> bool:
+	for n in ItemDatabase.lore:
+		if n.boss != &"" and not lore_read.has(n.id):
+			return false
+	return true
+
+
+func guardians_known() -> Vector2i:
+	var have := 0
+	var total := 0
+	for n in ItemDatabase.lore:
+		if n.boss != &"":
+			total += 1
+			if lore_read.has(n.id):
+				have += 1
+	return Vector2i(have, total)

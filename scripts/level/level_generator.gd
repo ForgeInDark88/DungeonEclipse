@@ -56,6 +56,7 @@ func generate(floor_number: int, seed_value: int) -> LevelLayout:
 	_place_secret_walls()
 	_place_chests(floor_number)
 	_place_enemies(floor_number)
+	_place_lore()
 	return layout
 
 
@@ -123,6 +124,8 @@ func generate_arena(floor_number: int, seed_value: int) -> LevelLayout:
 	layout.exit_cell = Vector2i(w - 5, fy - 1)
 	layout.boss_cell = Vector2i(w / 2 + 6, fy - 1)
 	layout.is_arena = true
+	# The guardian's note lies near the entrance: read it before the fight.
+	layout.lore_cell = layout.start_cell + Vector2i(3, 0)
 	return layout
 
 
@@ -306,6 +309,21 @@ func _place_start_and_exit() -> void:
 		layout.set_tile(exit.x, exit.y, T.EMPTY)
 		layout.set_tile(exit.x, exit.y - 1, T.EMPTY)
 	layout.exit_cell = exit
+
+
+## A note of the chronicle in some room off the start (placed last, so the
+## rest of the floor is laid out exactly as before).
+func _place_lore() -> void:
+	var rooms: Array[Vector2i] = []
+	for room: Vector2i in _spots:
+		if room != _path[0] and _connected.has(room):
+			rooms.append(room)
+	_shuffle(rooms)
+	for room in rooms:
+		var cell: Variant = _take_spot(room, true)
+		if cell != null:
+			layout.lore_cell = cell
+			return
 
 
 ## Reserves side rooms for the merchant (and random events, see below).

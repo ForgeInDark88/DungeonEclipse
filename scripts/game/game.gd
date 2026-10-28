@@ -392,12 +392,41 @@ func _on_eclipse_defeated() -> void:
 		["Лучшее комбо", "×%d" % int(stats.get("best_combo", 0))],
 	]))
 	overlay.add_text("Награда за победу: +%d осколков Затмения." % MetaProgress.SHARDS_VICTORY, 7)
-	overlay.add_button("Завершить забег", _finish_victory).grab_focus()
+	# The secret ending: everyone who knows the guardians' stories may let the
+	# sun go instead of breaking it.
+	if Codex.knows_all_guardians() and not stats.get("secret_ending", false):
+		overlay.add_button("Вспомнить их имена и вернуть свет", _secret_ending).grab_focus()
+	else:
+		var gk := Codex.guardians_known()
+		if not stats.get("secret_ending", false):
+			overlay.add_text("Летописец говорил о другом пути... (записи стражей: %d из %d)" % [gk.x, gk.y], 6)
+	var finish := overlay.add_button("Завершить забег", _finish_victory)
+	if not Codex.knows_all_guardians():
+		finish.grab_focus()
 	overlay.add_button("Спуститься глубже (бесконечный режим)", func() -> void:
 		get_tree().paused = false
 		overlay.visible = false
 		EventBus.message.emit("Глубины зовут дальше. Награда за победу сохранится."))
 	overlay.visible = true
+
+
+func _secret_ending() -> void:
+	GameState.run_stats["secret_ending"] = true
+	Codex.add(&"secret_endings")
+	Codex.save_progress()
+	overlay.visible = false
+	var se := SecretEnding.new()
+	add_child(se)
+	se.finished.connect(func() -> void:
+		overlay.clear()
+		overlay.set_panel_size(Vector2(340, 150))
+		overlay.add_text("Рассвет над Аурелией", 13)
+		overlay.add_text("Награда за тайную концовку: +%d осколков." % MetaProgress.SHARDS_SECRET, 7)
+		overlay.add_button("Завершить забег", _finish_victory).grab_focus()
+		overlay.add_button("Спуститься глубже (бесконечный режим)", func() -> void:
+			get_tree().paused = false
+			overlay.visible = false)
+		overlay.visible = true)
 
 
 func _finish_victory() -> void:
@@ -557,7 +586,7 @@ func _spawn_net_puppet(peer_id: int) -> void:
 	p.camera.enabled = false  # only the local player owns the viewport
 	p.add_to_group("player")
 	p.net_place(level.start_position() + Vector2(14, 0))
-	var tag := UIStyle.outlined_label(_net_player_name(peer_id), 6, UIStyle.PARCHMENT)
+	var tag := UIStyle.outlined_label(_net_player_name(peer_id), 6, UIStyle.ally_color(peer_id))
 	tag.position = Vector2(-20, -46)
 	tag.size = Vector2(40, 10)
 	tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

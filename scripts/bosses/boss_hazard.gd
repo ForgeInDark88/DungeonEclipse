@@ -116,6 +116,14 @@ func _physics_process(delta: float) -> void:
 			p.status.apply(&"slow", 0.6, slow)
 		if stun > 0.0:
 			p.status.apply(&"stun", stun, 1.0)
+	# Servants burn, drown and get rung out too.
+	if damage > 0:
+		for n in get_tree().get_nodes_in_group("minions"):
+			var m := n as Minion
+			if m and not m.is_queued_for_deletion() and float(_hit_cd.get(m, 0.0)) <= 0.0 \
+					and rect.has_point(m.global_position + Vector2(0, -3)):
+				_hit_cd[m] = TICK
+				m.take_damage(damage)
 
 
 func _fade() -> void:

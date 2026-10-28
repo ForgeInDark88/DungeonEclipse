@@ -150,6 +150,8 @@ base_damage = 2
 attack_range = 18.0
 attack_cooldown = 0.45
 starting_items = {
+"apprentice_wand": 1,
+"cloth_hood": 1,
 "health_potion": 3,
 "mana_crystal": 2,
 "bomb": 2,

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"guardian_crystal_titan"
+title = "Сердце горы"
+author = "Бригадир Гримм"
+text = "Каменный не был человеком. Его вырезали жрецы из живой скалы, чтобы он держал печать в глубине. Мы ранили его сердце — и он больше не отличает воров от гостей. Прости нас, старик."
+biome = &""
+boss = &"crystal_titan"
+order = 27

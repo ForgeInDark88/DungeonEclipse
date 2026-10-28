@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"decree_3"
+title = "Пепельная страница"
+author = "Олдрик?"
+text = "Я был могильщиком. Потом — Королём костей. Меня убили, и я думал, что наконец лягу в землю. Но солнце внизу не отпускает своих. Оно выжимает из меня силу, как воду из тряпки, и каждая капля горит. Теперь я пепел в короне. И пепел помнит всех, кто меня хоронил."
+biome = &"ashen_halls"
+boss = &""
+order = 17

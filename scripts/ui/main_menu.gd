@@ -9,7 +9,8 @@ func _ready() -> void:
 	# The living title: one block - the violet glow breathes BEHIND the
 	# letters (they overlap, not stack as separate rows).
 	var block := Control.new()
-	block.custom_minimum_size = Vector2(200, 76)
+	block.custom_minimum_size = Vector2(150, 52)
+	block.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	var glow := TextureRect.new()
 	glow.texture = load("res://assets/ui/title_glow.png")
 	glow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -18,7 +19,9 @@ func _ready() -> void:
 	glow.modulate = Color(1, 1, 1, 0.0)
 	block.add_child(glow)
 	var title := TextureRect.new()
-	title.texture = load("res://assets/ui/title.png")
+	# The title in the game's own style (tools/gen_title.py); the original
+	# artwork stays as res://assets/ui/title.png.
+	title.texture = load("res://assets/ui/title_stone.png")
 	title.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	title.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	title.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -39,7 +42,7 @@ func _ready() -> void:
 	var fill := Control.new()
 	fill.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	left_page.add_child(fill)
-	var version := UIStyle.label("Версия %s" % ProjectSettings.get_setting("application/config/version", "0.1"), 7, UIStyle.INK_SOFT)
+	var version := UIStyle.label("Версия %s" % ProjectSettings.get_setting("application/config/version", "1.0 release"), 7, UIStyle.INK_SOFT)
 	version.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	left_page.add_child(version)
 

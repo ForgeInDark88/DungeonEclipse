@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"bellringer_2"
+title = "Проповедь звонаря, вторая"
+author = "Брат Оствин, звонарь"
+text = "Подземные воды поднялись. Своды затопило по колено, потом по пояс. Братья ушли. Я привязал себя к колоколу. Вода холодная, но звон под водой слышен дальше — его чувствуют даже камни. Пусть слышит. Пусть не спит."
+biome = &"drowned_vaults"
+boss = &""
+order = 22

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"guardian_ashen_king"
+title = "Пепельный король"
+author = "Советник Вэлдр"
+text = "Это всё ещё Олдрик. Король костей пал, но Затмение не отпустило его: ему было мало, оно хотело выжать из могильщика остаток сил. Его кости сожгли — и тьма раздула пепел в огненного короля. Его клинок раскалён его же болью. Если он падёт во второй раз — Затмению нечем будет закрываться. Путь к нему откроется."
+biome = &""
+boss = &"ashen_king"
+order = 29

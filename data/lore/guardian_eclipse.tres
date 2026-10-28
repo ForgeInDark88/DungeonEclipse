@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"guardian_eclipse"
+title = "Чёрное солнце"
+author = "Неизвестный"
+text = "Оно было солнцем. Оно устало светить для тех, кто не смотрел вверх, и упало вниз, чтобы его наконец увидели. Оно звало слуг и выжимало их до пепла — могильщика оно подняло дважды. Ты прошёл сквозь всех. Теперь посмотри ему в глаз и реши, достаточно ли в тебе света."
+biome = &""
+boss = &"eclipse"
+order = 30

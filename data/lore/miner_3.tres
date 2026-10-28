@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"miner_3"
+title = "Журнал рудокопа, последняя смена"
+author = "Бригадир Гримм"
+text = "Мы откололи кусок сердца. Каменный проснулся. Он не злился — он кричал от боли, и потолок падал вместе с его криком. Гора — это не гора. Это печать. Каменный — её замок. А мы украли ключ."
+biome = &"crystal_depths"
+boss = &""
+order = 20

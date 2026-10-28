@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"guardian_drowned_bell"
+title = "Колокол, что звонит сам"
+author = "Брат Оствин, звонарь"
+text = "Колокол отлили из меди первого храмового купола. Пока он звонит — Затмение не спит. Я утонул, но колокол помнит мои руки. Не останавливай его до конца. Хотя... может быть, пора дать нам обоим тишину."
+biome = &""
+boss = &"drowned_bell"
+order = 28

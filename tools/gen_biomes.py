@@ -146,6 +146,8 @@ def top_edge(b, seed):
     rnd = random.Random(seed)
     t = c4(b["top"])
     kind = b["top_kind"]
+    algae = kind == "algae"  # Drowned Vaults: moss-like, plus barnacles and drips
+    kind = "moss" if algae else kind
     for x in range(16):
         h = rnd.randint(1, 3) if kind != "dust" else rnd.randint(0, 2)
         for y in range(h):
@@ -179,6 +181,15 @@ def top_edge(b, seed):
             x = rnd.randint(1, 14)
             d.point((x, 0), fill=gp.shade(t, 0.75))
             d.point((x + 1, 0), fill=gp.shade(t, 1.15))
+    if algae:
+        for _ in range(2):  # barnacles on the slimy top, strands dripping down
+            x = rnd.randint(1, 14)
+            d.point((x, 1), fill=(200, 200, 182, 255))
+            d.point((x + 1, 1), fill=(150, 150, 136, 255))
+        for _ in range(2):
+            x = rnd.randint(0, 15)
+            for y in range(2, 2 + rnd.randint(2, 5)):
+                d.point((x, y), fill=gp.shade(t, 0.6))
     return im
 
 
@@ -188,6 +199,8 @@ def bottom_edge(b, seed):
     rnd = random.Random(seed)
     stone = c4(b["stone"])
     kind = b["top_kind"]
+    algae = kind == "algae"  # Drowned Vaults: moss-like, plus barnacles and drips
+    kind = "moss" if algae else kind
     for x in range(1, 15, 3):
         if rnd.random() < 0.6:
             h = rnd.randint(1, 3)
@@ -206,6 +219,11 @@ def bottom_edge(b, seed):
     elif kind == "crystal":
         x = rnd.randint(2, 13)
         d.polygon([(x - 1, 12), (x + 1, 12), (x, 15)], fill=c4(b["ore"]))
+    if algae:
+        for _ in range(2):  # water seeping out under the bricks
+            x = rnd.randint(1, 14)
+            d.line((x, 12, x, 15), fill=(110, 200, 200, 200))
+            d.point((x, 15), fill=(200, 250, 250, 255))
     return im
 
 
@@ -279,6 +297,8 @@ def backwall(b, seed):
             for y in range(y0 + 1, y0 + 8):
                 _px_shade(px, jx + 1, y, 1.08)
     kind = b["top_kind"]
+    algae = kind == "algae"  # Drowned Vaults: moss-like, plus barnacles and drips
+    kind = "moss" if algae else kind
     if seed == 2:
         cm = gp.shade(base, 0.5)
         d.line((10, 2, 12, 5), fill=cm)
@@ -324,6 +344,25 @@ def floor_fringe(b, v):
     d = ImageDraw.Draw(im)
     rnd = random.Random(100 + v)
     kind = b["top_kind"]
+    algae = kind == "algae"  # Drowned Vaults: moss-like, plus barnacles and drips
+    kind = "moss" if algae else kind
+    if algae:
+        # Drowned Vaults: seaweed sprouts, a shell, a puddle - no mushrooms.
+        t = c4(b["top"])
+        for _ in range(4 + v):
+            x = rnd.randint(0, 15)
+            h = rnd.randint(2, 6)
+            for y in range(h):
+                d.point((x + (1 if (y + x) % 4 == 0 else 0), 15 - y), fill=gp.shade(c4((60, 140, 90)), 0.8 + y * 0.08))
+        if v % 2 == 0:
+            x = rnd.randint(3, 11)
+            d.line((x, 15, x + 4, 15), fill=(70, 160, 170, 200))  # puddle
+            d.point((x + 1, 15), fill=(190, 250, 250, 255))
+        else:
+            x = rnd.randint(3, 12)
+            d.pieslice((x - 2, 13, x + 2, 17), 180, 360, fill=(226, 206, 184, 255))  # shell
+            d.point((x, 14), fill=(170, 150, 130, 255))
+        return im
     t = c4(b["top"])
     if kind == "grass":
         for _ in range(6 + v):
@@ -380,6 +419,8 @@ def ceil_fringe(b, v):
     d = ImageDraw.Draw(im)
     rnd = random.Random(200 + v)
     kind = b["top_kind"]
+    algae = kind == "algae"  # Drowned Vaults: moss-like, plus barnacles and drips
+    kind = "moss" if algae else kind
     t = c4(b["top"])
     stone = c4(b["stone"])
     if kind in ("grass", "moss"):
@@ -388,7 +429,9 @@ def ceil_fringe(b, v):
             ln = rnd.randint(4, 11)
             for y in range(ln):
                 d.point((x + (y // 3) % 2, y), fill=gp.shade(t, 0.65 if kind == "grass" else 0.75))
-            if kind == "moss":
+            if algae:
+                d.point((x, ln + 1), fill=(170, 230, 240, 230))  # a drop about to fall
+            elif kind == "moss":
                 d.point((x, ln), fill=(160, 255, 230, 255))
             elif rnd.random() < 0.6:
                 d.point((x + 1, ln // 2), fill=gp.shade(t, 1.2))  # leaf
@@ -425,6 +468,8 @@ def wall_detail(b, v):
     rnd = random.Random(300 + v)
     back = c4(b["back"])
     kind = b["top_kind"]
+    algae = kind == "algae"  # Drowned Vaults: moss-like, plus barnacles and drips
+    kind = "moss" if algae else kind
     if v == 0:  # crack
         x, y = rnd.randint(3, 8), rnd.randint(2, 5)
         pts = [(x, y)]
@@ -476,6 +521,8 @@ def enrich_stone(im, b, seed, back=False):
     px = im.load()
     mortar = gp.shade(c4(b["mortar"]), 0.9) if not back else gp.shade(c4(b["back"]), 0.68)
     kind = b["top_kind"]
+    algae = kind == "algae"  # Drowned Vaults: moss-like, plus barnacles and drips
+    kind = "moss" if algae else kind
     stone = [(x, y) for y in range(16) for x in range(16) if px[x, y][3] and not _is_mortar(px[x, y], mortar)]
     if not stone:
         return im

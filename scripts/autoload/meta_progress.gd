@@ -15,6 +15,8 @@ const FLOORS_PER_SHARD := 2
 const SHARDS_PER_BOSS := 3
 ## Bonus for defeating the Eclipse (the end of the run).
 const SHARDS_VICTORY := 30
+## Bonus for the secret ending («Рассвет над Аурелией»).
+const SHARDS_SECRET := 25
 ## Item id of the shard pickup (elites drop it, see EliteAffixData.shard_drop).
 const SHARD_ITEM := &"eclipse_shard"
 
@@ -148,7 +150,7 @@ func finish_run(hero: Hero, floor_reached: int, stats: Dictionary) -> Dictionary
 	var parts: Array[String] = []
 	var from_items := 0
 	if hero:
-		for stack in hero.inventory.slots:
+		for stack in hero.inventory.all_stacks():
 			if stack and stack.item.shard_value > 0:
 				from_items += stack.item.shard_value * stack.count
 	if from_items > 0:
@@ -163,6 +165,9 @@ func finish_run(hero: Hero, floor_reached: int, stats: Dictionary) -> Dictionary
 	if stats.get("victory", false):
 		parts.append("победа над Затмением: %d" % SHARDS_VICTORY)
 		s += SHARDS_VICTORY
+	if stats.get("secret_ending", false):
+		parts.append("рассвет над Аурелией: %d" % SHARDS_SECRET)
+		s += SHARDS_SECRET
 	var diff: DifficultyData = GameState.difficulty
 	if diff and not is_equal_approx(diff.shard_mult, 1.0) and s > 0:
 		var total := roundi(s * diff.shard_mult)

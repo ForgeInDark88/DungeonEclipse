@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"guardian_bone_king"
+title = "Король костей"
+author = "Летописец двора"
+text = "Его звали Олдрик, и всю жизнь он хоронил чужих. Когда солнце упало, тёплый голос из-под катакомб пообещал ему корону. Он собрал трон из костей предков и сел на него — первый слуга Затмения. Мёртвые служат ему. Мёртвым всё равно — так он говорил."
+biome = &""
+boss = &"bone_king"
+order = 24

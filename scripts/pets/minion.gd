@@ -1,9 +1,9 @@
 class_name Minion
 extends CharacterBody2D
 ## A raised undead servant of the necromancer: walks with the hero, attacks
-## monsters it can see, crumbles to dust when its time runs out. Monsters do
-## not target minions (they are invulnerable); the limit is the lifetime and
-## the number the caster may keep (SummonSkill).
+## monsters it can see, crumbles to dust when its time runs out or when its
+## health is gone: monsters strike servants in their reach, enemy shots,
+## boss attacks and hazards hurt them too (take_damage, hurt_in_radius).
 ##   WARRIOR - melee skeleton, ARCHER - shoots bone arrows, GOLEM - slams an area.
 ##
 ## Co-op: the caster's machine runs the servant (AI, damage); every other
@@ -17,6 +17,11 @@ const SIGHT := 210.0
 const LEASH := 320.0  # further from the hero than this: rise again next to him
 const GUARD := 260.0  # targets further than this from the hero are left alone
 const JUMP_SPEED := 300.0
+## Collision layer of the servants: enemy shots look for it (not the
+## heroes' layer - code that finds heroes by physics stays hero-only).
+const LAYER := 64
+## Health: a share of the caster's max health.
+const HP_SHARE := {Kind.WARRIOR: 0.45, Kind.ARCHER: 0.3, Kind.GOLEM: 0.9}
 
 var kind: Kind = Kind.WARRIOR
 var owner_player: Player
@@ -38,6 +43,11 @@ var _net_timer := 0.0
 var _net_target := Vector2.ZERO
 var _net_flip := false
 var _data: EnemyData
+var hp := 1
+var max_hp := 1
+var _hp_bar: ColorRect
+var _hp_back: ColorRect
+var _flash := 0.0
 
 @onready var sprite: AnimatedSprite2D = AnimatedSprite2D.new()
 
@@ -80,7 +90,20 @@ static func spawn_remote(p_owner: Player, uid: int, p_kind: Kind, pos: Vector2, 
 func _ready() -> void:
 	add_to_group("minions")
 	z_index = 1
-	collision_layer = 0
+	collision_layer = LAYER
+	if owner_player and owner_player.hero:
+		max_hp = maxi(5, roundi(owner_player.hero.stats.max_hp() * float(HP_SHARE[kind])))
+	hp = max_hp
+	_hp_back = ColorRect.new()
+	_hp_back.color = Color(0, 0, 0, 0.7)
+	_hp_back.size = Vector2(14, 2)
+	_hp_back.position = Vector2(-7, -24 if kind != Kind.GOLEM else -32)
+	_hp_back.visible = false
+	add_child(_hp_back)
+	_hp_bar = ColorRect.new()
+	_hp_bar.color = Color(0.45, 1.0, 0.55)
+	_hp_bar.size = Vector2(14, 2)
+	_hp_back.add_child(_hp_bar)
 	collision_mask = 1 | 2  # world and one-way platforms
 	_data = ItemDatabase.enemy_by_id(&"golem" if kind == Kind.GOLEM else &"skeleton")
 	var shape := CollisionShape2D.new()
@@ -135,6 +158,9 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 		return
 	_attack_anim = maxf(0.0, _attack_anim - delta)
+	if _flash > 0.0:
+		_flash -= delta
+		sprite.self_modulate = Color(2.2, 2.2, 2.2) if _flash > 0.0 else Color.WHITE
 	if remote:
 		_remote_step(delta)
 		return
@@ -338,3 +364,48 @@ func _crumble() -> void:
 func _play(anim: StringName) -> void:
 	if sprite.sprite_frames and sprite.sprite_frames.has_animation(anim) and sprite.animation != anim:
 		sprite.play(anim)
+
+
+# ----------------------------------------------------------------- health
+## Hurt by monsters, enemy shots, bosses and hazards. On another machine the
+## copy forwards the blow to the caster's machine, which owns the servant.
+func take_damage(amount: int, _from := Vector2.INF) -> void:
+	if amount <= 0 or is_queued_for_deletion():
+		return
+	if remote:
+		var ns := _net()
+		if ns:
+			ns.minion_damage.rpc_id(net_uid / 100000, net_uid, amount)
+		_flash = 0.15
+		return
+	hp -= amount
+	_flash = 0.15
+	_hp_back.visible = true
+	_hp_bar.size.x = 14.0 * clampf(float(hp) / max_hp, 0.0, 1.0)
+	EventBus.floating_text.emit(global_position + Vector2(randf_range(-3, 3), -24), str(amount), Color(0.75, 1.0, 0.7))
+	if hp <= 0:
+		_crumble()
+
+
+## Every servant within `radius` of `center` takes `amount` (boss slams,
+## spikes, sweeps, enemy area attacks).
+static func hurt_in_radius(tree: SceneTree, center: Vector2, radius: float, amount: int) -> void:
+	for n in tree.get_nodes_in_group("minions"):
+		var m := n as Minion
+		if m and not m.is_queued_for_deletion() and m.global_position.distance_to(center) <= radius:
+			m.take_damage(amount, center)
+
+
+## The servant nearest to `from` within `reach` (monsters pick a target).
+static func nearest(tree: SceneTree, from: Vector2, reach: float) -> Minion:
+	var best: Minion = null
+	var best_d := reach
+	for n in tree.get_nodes_in_group("minions"):
+		var m := n as Minion
+		if m == null or m.is_queued_for_deletion():
+			continue
+		var d := m.global_position.distance_to(from)
+		if d < best_d:
+			best_d = d
+			best = m
+	return best

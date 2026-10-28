@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"guardian_flame_witch"
+title = "Пламя, которое не гаснет"
+author = "Торн, кузнец"
+text = "Чародейку звали Илара. Она хотела зажечь новое солнце и спасти всех сразу. Её огонь теперь горит внизу вечно, и она вместе с ним — не мёртвая и не живая, злая на всех, кто ещё может уйти наверх."
+biome = &""
+boss = &"flame_witch"
+order = 25

@@ -4,6 +4,9 @@ extends RefCounted
 
 var item: ItemData
 var count: int = 1
+## Marked as junk by the player: sold / smelted in one go at the merchant
+## and the blacksmith (Inventory.junk_indices).
+var junk := false
 
 
 func _init(p_item: ItemData = null, p_count: int = 1) -> void:

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"bellringer_3"
+title = "Записка в бутылке"
+author = "?"
+text = "Звонарь утонул, а колокол звонит. Сам. Глухо, под водой, раз в час. Иногда — когда кто-то спускается слишком глубоко. Если услышишь звон за спиной, не оборачивайся: это он считает живых."
+biome = &"drowned_vaults"
+boss = &""
+order = 23

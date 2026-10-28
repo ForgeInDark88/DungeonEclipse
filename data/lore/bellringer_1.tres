@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"bellringer_1"
+title = "Проповедь звонаря, первая"
+author = "Брат Оствин, звонарь"
+text = "Колокол Храма Солнца звонил на рассвете тысячу лет. Теперь рассвета нет, но я звоню. Пока звенит колокол, чёрное солнце не может уснуть спокойно — звук держит его в полусне, как дитя, которому не дают закрыть глаза. Звоню. Звоню."
+biome = &"drowned_vaults"
+boss = &""
+order = 21

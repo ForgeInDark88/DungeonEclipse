@@ -15,6 +15,18 @@ const INK_HEX := "#40240f"
 const SLOT_SIZE := Vector2(26, 26)
 
 
+## Co-op: each ally has one colour everywhere - the name over the head, the
+## arrow at the screen edge, the mark on the minimap.
+const ALLY_COLORS: Array[Color] = [Color(0.45, 0.85, 1.0), Color(1.0, 0.65, 0.3), Color(0.6, 1.0, 0.45), Color(1.0, 0.5, 0.8)]
+
+
+static func ally_color(peer_id: int) -> Color:
+	var ids: Array = Net.players.keys()
+	ids.sort()
+	var i := ids.find(peer_id)
+	return ALLY_COLORS[maxi(0, i) % ALLY_COLORS.size()]
+
+
 static func frame(path: String, margin: int, pixel_scale: float = 1.0) -> PixelFrame:
 	var f := PixelFrame.new()
 	f.texture = AssetPaths.tex(path)

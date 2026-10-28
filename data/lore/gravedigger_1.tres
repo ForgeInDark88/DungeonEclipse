@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"gravedigger_1"
+title = "Дневник могильщика, страница первая"
+author = "Олдрик, могильщик"
+text = "Третий день солнце не встаёт. Звонари говорят — затмение, к полудню пройдёт. Но полдень был вчера, и позавчера тоже. Люди несут ко мне покойников, а земля под кладбищем тёплая, будто внизу кто-то дышит. Я копаю и слышу, как оно дышит."
+biome = &"catacombs"
+boss = &""
+order = 0

@@ -3,7 +3,7 @@ extends BookPageScreen
 ## Left page: tabs + list / grid, right page: details of the selected entry.
 ## Entries open up as they are met in runs (Codex autoload).
 
-enum Tab { ACHIEVEMENTS, BESTIARY, ITEMS }
+enum Tab { ACHIEVEMENTS, BESTIARY, ITEMS, LORE }
 
 const UNKNOWN := "???"
 
@@ -27,7 +27,7 @@ func _ready() -> void:
 	tabs.add_theme_constant_override("separation", 3)
 	left_page.add_child(tabs)
 	var group := ButtonGroup.new()
-	for entry in [[Tab.ACHIEVEMENTS, "Достижения"], [Tab.BESTIARY, "Бестиарий"], [Tab.ITEMS, "Предметы"]]:
+	for entry in [[Tab.ACHIEVEMENTS, "Достижения"], [Tab.BESTIARY, "Бестиарий"], [Tab.ITEMS, "Предметы"], [Tab.LORE, "Записи"]]:
 		var b := BookPageScreen.button(entry[1], func() -> void: select_tab(entry[0]))
 		b.toggle_mode = true
 		b.button_group = group
@@ -88,6 +88,8 @@ func select_tab(tab: Tab) -> void:
 			_build_bestiary()
 		Tab.ITEMS:
 			_build_items()
+		Tab.LORE:
+			_build_lore()
 
 
 func _show_detail(icon: Texture2D, title: String, bbcode: String, dark := false) -> void:
@@ -281,6 +283,37 @@ func _show_item(item: ItemData) -> void:
 
 
 # --- Helpers ----------------------------------------------------------------
+
+# --- Notes of the chronicle -------------------------------------------------
+
+func _build_lore() -> void:
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 2)
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_set_list(box)
+	var icon := AssetPaths.tex(AssetPaths.SPRITES_DIR + "props/lore_note.png")
+	var chapter := &"?"
+	for n in ItemDatabase.lore:
+		var group: StringName = n.biome if n.biome != &"" else &"guardians"
+		if group != chapter:
+			chapter = group
+			var head := UIStyle.label("Стражи" if group == &"guardians" else _biome_name(group), 8, UIStyle.INK_SOFT)
+			box.add_child(head)
+		var known := Codex.is_lore_read(n.id)
+		var row := HBoxContainer.new()
+		row.mouse_filter = Control.MOUSE_FILTER_STOP
+		var l := UIStyle.label(("  " + n.title) if known else "  ???", 8, UIStyle.INK if known else UIStyle.INK_SOFT)
+		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(l)
+		row.mouse_entered.connect(func() -> void:
+			if known:
+				_show_detail(icon, n.title, "[i]%s[/i]\n\n[right]— %s[/right]" % [n.text, n.author])
+			else:
+				_show_detail(icon, UNKNOWN, "[color=#%s]Запись ещё не найдена. Ищите её %s.[/color]" % [UIStyle.INK_SOFT.to_html(false),
+						("на арене стража" if n.boss != &"" else "в локации «%s»" % _biome_name(n.biome))], true))
+		box.add_child(row)
+	_summary.text = "Найдено записей: %d из %d" % [Codex.lore_read_count(), ItemDatabase.lore.size()]
+
 
 func _set_list(c: Container) -> void:
 	_list = c

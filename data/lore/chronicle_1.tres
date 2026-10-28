@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"chronicle_1"
+title = "Хроника Аурелии, глава о процветании"
+author = "Летописец двора"
+text = "Аурелия была самым светлым королевством под небом. Храм Солнца на холме, золотые крыши, мост через ущелье, по которому шли караваны. Мы молились солнцу каждое утро и думали, что оно будет вставать всегда. Так думает каждый, кто не видел ночи без утра."
+biome = &"ruins"
+boss = &""
+order = 6

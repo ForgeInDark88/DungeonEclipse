@@ -67,6 +67,9 @@ static func save_hero(hero: Hero) -> Dictionary:
 	var inv: Array = []
 	for stack in hero.inventory.slots:
 		inv.append(_item_to_dict(stack))
+	var pouch: Array = []
+	for stack in hero.inventory.pouch:
+		pouch.append(_item_to_dict(stack))
 	var eq: Dictionary = {}
 	for slot: StringName in hero.equipment.items:
 		var it: ItemData = hero.equipment.items[slot]
@@ -96,7 +99,7 @@ static func save_hero(hero: Hero) -> Dictionary:
 		"gold": hero.gold,
 		"hp": hero.stats.hp,
 		"mana": hero.stats.mana,
-		"inventory": inv,
+		"inventory": inv, "pouch": pouch,
 		"equipment": eq,
 		"quick_bar": quick,
 		"ranks": ranks,
@@ -145,6 +148,11 @@ static func load_hero(d: Dictionary) -> Hero:
 		var st := _item_from_dict(inv[i])
 		if st:
 			hero.inventory.slots[i] = st
+	for e in d.get("pouch", []):
+		var ps := _item_from_dict(e)
+		if ps:
+			hero.inventory.add_item(ps.item, ps.count)
+	hero.inventory.tidy_materials()
 	# Worn gear.
 	var eq: Dictionary = d.get("equipment", {})
 	for slot in eq:
@@ -210,6 +218,8 @@ static func _item_to_dict(stack: ItemStack) -> Variant:
 		return null
 	var it: ItemData = stack.item
 	var d := {"id": String(it.id), "count": stack.count}
+	if stack.junk:
+		d["junk"] = true
 	if it.is_instance():
 		var f := {
 			"name": it.display_name,
@@ -262,4 +272,6 @@ static func _item_from_dict(d: Variant) -> ItemStack:
 		var w := it as WeaponItemData
 		if w and f.has("dmg"):
 			w.base_damage = float(f["dmg"])
-	return ItemStack.new(it, maxi(1, int(d.get("count", 1))))
+	var st := ItemStack.new(it, maxi(1, int(d.get("count", 1))))
+	st.junk = bool(d.get("junk", false))
+	return st

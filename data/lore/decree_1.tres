@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"decree_1"
+title = "Королевский указ, обугленный"
+author = "Король Аурелии"
+text = "Повелеваю: сжечь катакомбы и всё, что в них ходит. Могильщик, назвавший себя Королём костей, мёртв — его трон рассыпан, — но кости его не лежат спокойно. Пусть огонь сделает то, чего не сделал меч. Ни косточки не оставить тьме."
+biome = &"ashen_halls"
+boss = &""
+order = 15

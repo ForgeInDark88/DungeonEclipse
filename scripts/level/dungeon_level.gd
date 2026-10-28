@@ -93,6 +93,7 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 		return
 	if layout.is_arena:
 		_spawn_boss()
+		_spawn_lore()
 		_spawn_ambience()
 		_spawn_decorations()
 		return
@@ -101,6 +102,8 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	_spawn_specials()
 	_spawn_chests()
 	_spawn_secret_walls()
+	_spawn_lore()
+	_spawn_fishing()
 	_spawn_enemies()
 	_setup_seal()
 	_spawn_ambience()
@@ -614,6 +617,46 @@ func _net_tag(e: Enemy) -> void:
 	get_tree().call_group("net_game", "register_enemy_node", e)
 
 
+## Drowned Vaults: two pools to fish in, on free floor spots away from the
+## entrance and the exit (same spots on every co-op machine).
+func _spawn_fishing() -> void:
+	if biome == null or biome.id != &"drowned_vaults":
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash(Vector2i(floor_number, 4242))
+	var candidates: Array[Vector2i] = []
+	for y in range(1, layout.height - 1):
+		for x in range(1, layout.width - 2):
+			var c := Vector2i(x, y)
+			if layout.get_tile(x, y) == LevelLayout.Tile.EMPTY and layout.get_tile(x + 1, y) == LevelLayout.Tile.EMPTY \
+					and LevelLayout.is_solid(layout.get_tile(x, y + 1)) and LevelLayout.is_solid(layout.get_tile(x + 1, y + 1)) \
+					and c.distance_to(layout.start_cell) > 8.0 and c.distance_to(layout.exit_cell) > 6.0 \
+					and (layout.lore_cell.x < 0 or c.distance_to(layout.lore_cell) > 4.0):
+				candidates.append(c)
+	var placed: Array[Vector2i] = []
+	for i in 40:
+		if placed.size() >= 2 or candidates.is_empty():
+			break
+		var c: Vector2i = candidates[rng.randi_range(0, candidates.size() - 1)]
+		if placed.any(func(p: Vector2i) -> bool: return p.distance_to(c) < 20.0):
+			continue
+		placed.append(c)
+		var spot := FishingSpot.new()
+		add_entity(spot, cell_bottom(c) + Vector2(TILE * 0.5, 0))
+
+
+## The floor's note of the chronicle (ItemDatabase.lore_for_floor).
+func _spawn_lore() -> void:
+	if layout.lore_cell.x < 0:
+		return
+	var note := ItemDatabase.lore_for_floor(floor_number)
+	if note == null:
+		return
+	var n := LoreNote.new()
+	n.lore = note
+	add_entity(n, cell_bottom(layout.lore_cell))
+
+
 ## Stairs back to town near the floor entrance (every normal floor).
 func _spawn_return_stairs() -> void:
 	var cell := _free_cell_near(layout.start_cell)
@@ -647,6 +690,8 @@ func _spawn_specials() -> void:
 				add_entity((load(SMITH_SCENE) as PackedScene).instantiate(), cell_bottom(info["cell"]))
 			&"quest":
 				add_entity((load(QUEST_SCENE) as PackedScene).instantiate(), cell_bottom(info["cell"]))
+			&"chronicler":
+				add_entity(Chronicler.new(), cell_bottom(info["cell"]))
 			&"event":
 				_spawn_event(info)
 			&"dummy":

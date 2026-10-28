@@ -76,6 +76,9 @@ var _think_timer := 0.0
 var _float_t := 0.0
 var _home := Vector2.ZERO
 var _player: Player
+## A necromancer's servant in reach: the next strike goes at it.
+var _minion_target: Minion
+var _minion_scan := 0.0
 var _dead := false
 ## Remaining time of the one-shot "attack" animation after a hit/shot.
 var _attack_anim_left := 0.0
@@ -392,6 +395,19 @@ func _physics_process(delta: float) -> void:
 		_home_set = true
 		_home = global_position
 		_stuck_anchor = global_position
+	# Servants in reach get struck too (melee monsters: whoever stands
+	# in front of them; the heroes still come first when equally close).
+	_minion_scan -= delta
+	if _minion_scan <= 0.0 and state != State.ATTACK and _attack_timer <= 0.0 \
+			and data.behavior != EnemyData.Behavior.RANGED and not status.is_stunned():
+		_minion_scan = 0.3
+		var m := Minion.nearest(get_tree(), global_position, data.attack_range + 10.0)
+		if m and absf(m.global_position.y - global_position.y) < 26.0 \
+				and (_player == null or _player.dead or _player.global_position.distance_to(global_position) > m.global_position.distance_to(global_position) + 4.0) \
+				and has_line_to(m.global_position + Vector2(0, -8)):
+			_minion_target = m
+			_face_point(m.global_position)
+			_begin_attack()
 	# Re-target to the closest living hero periodically: otherwise a mob
 	# stays fixated on its first target even when another hero walks up.
 	_retarget -= delta
@@ -1608,6 +1624,16 @@ func _update_attack(delta: float) -> void:
 	_attack_timer = data.attack_cooldown * _cooldown_mult
 	state = State.CHASE
 	_attack_anim_left = 0.25
+	if _minion_target != null:
+		var m := _minion_target
+		_minion_target = null
+		if is_instance_valid(m) and not m.is_queued_for_deletion():
+			if data.aoe_radius > 0.0:
+				Fx.explosion(get_parent(), global_position + Vector2(0, -4), data.aoe_radius, Color(0.8, 0.75, 0.65))
+				Minion.hurt_in_radius(get_tree(), global_position, data.aoe_radius, hit_damage())
+			elif m.global_position.distance_to(global_position) <= data.attack_range + 14.0:
+				m.take_damage(hit_damage(), global_position)
+			return
 	if _player == null or _player.dead:
 		return
 	if data.behavior == EnemyData.Behavior.RANGED:
@@ -1634,6 +1660,7 @@ func _update_attack(delta: float) -> void:
 		if clear and _player.global_position.distance_to(global_position) <= data.aoe_radius:
 			_player.take_damage(hit_damage(), global_position)
 			_apply_hit_effects(_player, hit_damage())
+		Minion.hurt_in_radius(get_tree(), global_position, data.aoe_radius, hit_damage())
 	elif clear and _distance_to_player() <= data.attack_range + 14.0:
 		_player.take_damage(hit_damage(), global_position)
 		_apply_hit_effects(_player, hit_damage())
@@ -1676,6 +1703,12 @@ func _raise_summons() -> void:
 		Fx.sparks(level.entities, e.global_position + Vector2(0, -8), Color(0.5, 1.0, 0.6), 12, 70.0)
 		_summons.append(e)
 	AudioManager.play_sfx(&"skill_cast", global_position)
+
+
+## The lowest hp a hit may leave (bosses hold at their next phase threshold
+## until the phase change has played out).
+func min_hp() -> int:
+	return -999999
 
 
 ## Elite / regen: statuses can heal monsters too.
@@ -1761,7 +1794,7 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 				var nsw := get_tree().get_first_node_in_group("net_game") as NetSync
 				if nsw:
 					nsw.enemy_float_text.rpc(spot, "Уязвим!", Color(1.0, 0.7, 0.2))
-	hp -= dealt
+	hp = maxi(hp - dealt, min_hp())
 	_dormant = false
 	hp_bar.visible = true
 	hp_bar.max_value = max_hp
@@ -1818,7 +1851,7 @@ func take_status_damage(amount: int, p_status: StringName, color: Color) -> void
 	amount = roundi(amount * (1.0 - status_resistance(p_status)))
 	if _dead or amount <= 0:
 		return
-	hp -= amount
+	hp = maxi(hp - amount, min_hp())
 	hp_bar.visible = true
 	hp_bar.max_value = max_hp
 	hp_bar.value = hp

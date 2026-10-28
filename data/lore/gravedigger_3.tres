@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"gravedigger_3"
+title = "Дневник могильщика, последняя страница"
+author = "Олдрик, могильщик"
+text = "Голос снизу говорит со мной каждую ночь. Тёплый, ласковый, как солнце в детстве. Обещает: собери мне трон из костей, Олдрик, — и станешь королём над всеми, кого хоронил. Короля наверху больше никто не видел, люди бегут к ущелью. А мёртвые... мёртвые меня слушаются. Я спускаюсь."
+biome = &"catacombs"
+boss = &""
+order = 2

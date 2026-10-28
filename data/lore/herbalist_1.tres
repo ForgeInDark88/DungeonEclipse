@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"herbalist_1"
+title = "Тетрадь травницы, о грибах"
+author = "Мира, травница"
+text = "Без солнца поля погибли за месяц. Зато под землёй выросли грибы — светятся, растут за ночь и кормят лучше хлеба. Люди называют их даром. Я называю их странными: они поворачивают шляпки к тому, что лежит внизу, как цветы к солнцу."
+biome = &"fungal"
+boss = &""
+order = 3

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"herbalist_2"
+title = "Тетрадь травницы, о спорах"
+author = "Мира, травница"
+text = "Кто ест их каждый день, начинает видеть во сне чёрное солнце. Оно не светит — оно смотрит. Сегодня мой ученик не проснулся. Под его кожей светились те же голубые жилки, что в шляпках. Я сожгла запасы. Город меня проклял."
+biome = &"fungal"
+boss = &""
+order = 4

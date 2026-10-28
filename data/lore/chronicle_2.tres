@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"chronicle_2"
+title = "Хроника Аурелии, глава о совете"
+author = "Летописец двора"
+text = "Когда тьма легла на город, король собрал четверых: придворную чародейку, шута, каменного стража горы и звонаря храма. Они поклялись спуститься вниз и запечатать то, что упало. Но первым вниз ушёл тот, кого никто не звал: старый могильщик Олдрик. Говорят, его позвало само Затмение."
+biome = &"ruins"
+boss = &""
+order = 7

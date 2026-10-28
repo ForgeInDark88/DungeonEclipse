@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"miner_2"
+title = "Журнал рудокопа, смена 140"
+author = "Бригадир Гримм"
+text = "Кристаллы растут обратно за ночь. И растут не куда попало — к одному месту, к сердцу горы. Там ходит Каменный. Огромный, кристаллы торчат из спины. Нас не трогает, пока мы не трогаем сердце. Король приказал добыть сердце."
+biome = &"crystal_depths"
+boss = &""
+order = 19

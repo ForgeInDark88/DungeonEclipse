@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"decree_2"
+title = "Запись королевского советника"
+author = "Советник Вэлдр"
+text = "Мы сожгли кости Олдрика, как велел король. Пламя шло три дня. А на четвёртый снизу дохнуло чёрным жаром, и пепел... поднялся. Затмению было мало его службы при жизни. Оно решило выжать из него всё до последней искры — и раздуло угли в новое тело."
+biome = &"ashen_halls"
+boss = &""
+order = 16

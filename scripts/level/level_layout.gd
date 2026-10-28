@@ -16,6 +16,8 @@ var enemy_cells: Array[Vector2i] = []
 var specials: Array[Dictionary] = []
 ## Boss arena floors: one big room, the boss spawns at boss_cell and the exit
 ## door appears only after the boss is defeated.
+## Where the floor's note lies (Vector2i(-1, -1) = none).
+var lore_cell := Vector2i(-1, -1)
 var is_arena := false
 ## Boss arenas: lasting hazards {"style": BossHazard.Style, "x0", "x1" (cells),
 ## "row" (the cell row they lie on), "h" (px), "damage" (true/false)}.
