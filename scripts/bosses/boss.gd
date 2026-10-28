@@ -28,6 +28,14 @@ var _beam_line: Line2D = null
 var _beam_core: Line2D = null
 var _beam_time := 0.0
 var _beam_tick := 0.0
+## Presentation: the intro waits for the heroes to come close; phase changes
+## make the boss untouchable for a moment (the roar).
+const INTRO_RANGE := 230.0
+const INTRO_TIME := 2.6
+const PHASE_LOCK := 1.3
+var _intro_started := false
+var _phase_lock := 0.0
+var _aura: CPUParticles2D
 
 
 ## Enrage below this HP fraction: faster, hits harder, contact hurts.
@@ -94,6 +102,18 @@ func _nearest_alive_player() -> Player:
 	return best
 
 
+## The big HUD bar follows the real numbers whatever changed them: hits,
+## poison and fire ticks, heals, the host's snapshots on a co-op shell.
+var _shown_hp := Vector2i(-1, -1)
+
+
+func _process(_delta: float) -> void:
+	var now := Vector2i(maxi(hp, 0), max_hp)
+	if now != _shown_hp:
+		_shown_hp = now
+		EventBus.boss_hp_changed.emit(now.x, now.y)
+
+
 func _physics_process(delta: float) -> void:
 	if puppet:
 		# Boss shells have no local phase machine; mirror the host's Enemy
@@ -134,6 +154,7 @@ func _physics_process(delta: float) -> void:
 		_player = _nearest_alive_player()
 	_contact_cd = maxf(0.0, _contact_cd - delta)
 	_hop_cd = maxf(0.0, _hop_cd - delta)
+	_phase_lock = maxf(0.0, _phase_lock - delta)
 	# Boss._physics_process fully replaces Enemy's, so the one-shot "attack"
 	# animation timer must be decayed here as well — otherwise it stays > 0
 	# forever after the first skill and the sprite freezes on its last frame.
@@ -151,9 +172,12 @@ func _physics_process(delta: float) -> void:
 	match act:
 		Act.INTRO:
 			velocity.x = 0.0
-			if _act_time <= 0.0:
-				EventBus.message.emit(boss.title)
-				_enter(Act.IDLE, 0.5)
+			if not _intro_started:
+				_act_time = INTRO_TIME
+				if hp < max_hp or (_player and global_position.distance_to(_player.global_position) < INTRO_RANGE):
+					_start_intro()
+			elif _act_time <= 0.0:
+				_enter(Act.IDLE, 0.4)
 		Act.IDLE, Act.RECOVER:
 			_move_idle(delta, flyer)
 			if _act_time <= 0.0 and _player and not _player.dead:
@@ -185,18 +209,17 @@ func _check_phase() -> void:
 		phase_index += 1
 		var ph := current_phase()
 		data_tint_override(ph.tint)
-		if ph.message != "":
-			EventBus.message.emit(ph.message)
-		EventBus.screen_shake.emit(6.0)
-		Fx.sparks(get_parent(), global_position + Vector2(0, -24), ph.tint, 30, 160.0)
+		_phase_roar(ph.message, ph.tint)
 		phase_changed.emit(phase_index)
 	# Enrage: the last stand - faster cadence, heavier contact, red haze.
 	if not _enraged and ratio <= ENRAGE_THRESHOLD and ratio > 0.0:
 		_enraged = true
-		EventBus.message.emit("%s в ярости!" % display_name())
+		_banner(display_name(), "в ярости!", Color(1.0, 0.3, 0.2))
 		EventBus.screen_shake.emit(8.0)
 		Fx.sparks(get_parent(), global_position + Vector2(0, -24), Color(1.0, 0.25, 0.15), 40, 180.0)
 		data_tint_override(Color(1.0, 0.55, 0.5))
+		set_aura(3, Color(1.0, 0.3, 0.15))
+		_net_boss_fx(&"aura", global_position, Vector2.ZERO, Color(1.0, 0.3, 0.15), [3])
 
 
 func data_tint_override(tint: Color) -> void:
@@ -274,6 +297,54 @@ func _choose_attack() -> void:
 		BossAttack.Kind.TELEPORT, BossAttack.Kind.ILLUSIONS:
 			var tw := create_tween()
 			tw.tween_property(sprite, "modulate:a", 0.2, _attack.windup)
+		BossAttack.Kind.RAISE_DEAD:
+			_spike_spots.clear()
+			for p in _alive_heroes():
+				_spike_spots.append(_ground_below(p.global_position + Vector2(0, -20), lvl))
+			while _spike_spots.size() < _attack.count:
+				var x := _player.global_position.x + randf_range(-110.0, 110.0)
+				_spike_spots.append(_ground_below(Vector2(x, _player.global_position.y - 20.0), lvl))
+			for spot in _spike_spots:
+				var t := Telegraph.circle(parent, spot, _attack.radius, _attack.windup + 0.3)
+				t.color = Color(0.9, 0.85, 0.6)
+		BossAttack.Kind.FIRE_WALL:
+			var b := lvl.bounds_px() if lvl else Rect2(global_position - Vector2(300, 200), Vector2(600, 400))
+			var ground := _ground_below(global_position + Vector2(0, -20), lvl)
+			# The wall rolls out from the boss's side of the arena toward the heroes.
+			var from_left := global_position.x < _player.global_position.x
+			_target_pos = Vector2(b.position.x + 24.0 if from_left else b.end.x - 24.0, ground.y)
+			Telegraph.line(parent, _target_pos + Vector2(0, -2), (b.size.x - 48.0) * (1.0 if from_left else -1.0), _attack.windup + 0.3)
+			if _attack.count >= 2:
+				Telegraph.line(parent, Vector2(b.end.x - 24.0 if from_left else b.position.x + 24.0, ground.y - 2.0),
+						(b.size.x - 48.0) * (-1.0 if from_left else 1.0), _attack.windup + 0.3)
+		BossAttack.Kind.MIRROR_SWAP:
+			_target_pos = _player.global_position
+			var t := Telegraph.circle(parent, _player.global_position + Vector2(0, -10), 18.0, _attack.windup)
+			t.color = Color(0.8, 0.5, 1.0)
+			var t2 := Telegraph.circle(parent, global_position + Vector2(0, -20), 18.0, _attack.windup)
+			t2.color = Color(0.8, 0.5, 1.0)
+		BossAttack.Kind.QUAKE:
+			_rain_spots.clear()
+			var b := lvl.bounds_px() if lvl else Rect2(global_position - Vector2(300, 200), Vector2(600, 400))
+			for p in _alive_heroes():
+				_rain_spots.append(_ground_below(p.global_position + Vector2(0, -20), lvl))
+			while _rain_spots.size() < _attack.count:
+				var x := randf_range(b.position.x + 30.0, b.end.x - 30.0)
+				_rain_spots.append(_ground_below(Vector2(x, global_position.y - 40.0), lvl))
+			for spot in _rain_spots:
+				Telegraph.circle(parent, spot, _attack.radius, _attack.windup + 0.6)
+			EventBus.screen_shake.emit(3.0)
+			AudioManager.play_sfx(&"cast_quake", global_position)
+		BossAttack.Kind.TOLL:
+			var t := Telegraph.circle(parent, _ground_below(global_position + Vector2(0, -20), lvl), 46.0, _attack.windup)
+			t.color = Color(0.55, 1.0, 0.85)
+		BossAttack.Kind.ASH_SWEEP:
+			var ground := _ground_below(global_position + Vector2(0, -20), lvl)
+			Telegraph.line(parent, ground + Vector2(0, -2), _attack.radius, _attack.windup)
+			Telegraph.line(parent, ground + Vector2(0, -2), -_attack.radius, _attack.windup)
+		BossAttack.Kind.DARKNESS:
+			var tw := create_tween()
+			tw.tween_property(sprite, "modulate:a", 0.5, _attack.windup)
 	_enter(Act.WINDUP, _attack.windup)
 
 
@@ -334,6 +405,40 @@ func _start_attack() -> void:
 			_beam_time = 0.55
 			_beam_tick = 0.0
 			_enter(Act.ACTING, 0.62)
+		BossAttack.Kind.RAISE_DEAD:
+			_erupt_spikes(a, dmg, Color(0.92, 0.88, 0.72))
+			_summon_at(a, _spike_spots)
+			_attack_anim_left = 0.4
+			_end_attack()
+		BossAttack.Kind.FIRE_WALL:
+			_fire_walls(a, dmg)
+			_attack_anim_left = 0.4
+			_end_attack()
+		BossAttack.Kind.MIRROR_SWAP:
+			_mirror_swap(a, dmg)
+			_end_attack()
+		BossAttack.Kind.QUAKE:
+			for spot in _rain_spots:
+				_drop_fire(spot, a, dmg)
+			EventBus.screen_shake.emit(7.0)
+			_net_shake(7.0)
+			_attack_anim_left = 0.4
+			_end_attack()
+		BossAttack.Kind.TOLL:
+			_toll(a, dmg)
+			_attack_anim_left = 0.4
+			_end_attack()
+		BossAttack.Kind.ASH_SWEEP:
+			_ash_sweep(a, dmg)
+			_attack_anim_left = 0.4
+			_end_attack()
+		BossAttack.Kind.DARKNESS:
+			sprite.modulate.a = 1.0
+			darken(get_parent(), a.lifetime)
+			_net_boss_fx(&"darkness", global_position, Vector2.ZERO, Color.BLACK, [a.lifetime])
+			_beam_time = a.lifetime  # reused as the darkness timer
+			_beam_tick = 0.4
+			_enter(Act.ACTING, a.lifetime)
 
 
 func _end_attack() -> void:
@@ -383,6 +488,17 @@ func _update_attack_act(delta: float) -> void:
 			if _beam_time <= 0.0:
 				_fade_beam()
 				_end_attack()
+		BossAttack.Kind.DARKNESS:
+			# Out of the dark: a fan every second, then back to the fight.
+			_beam_time -= delta
+			_beam_tick -= delta
+			_move_idle(delta, data.behavior == EnemyData.Behavior.FLYER)
+			if _beam_tick <= 0.0 and _player:
+				_beam_tick = 1.0
+				_fan(a, roundi(damage * a.damage_mult))
+				_attack_anim_left = 0.3
+			if _beam_time <= 0.0:
+				_end_attack()
 
 
 func _shockwave(a: BossAttack) -> void:
@@ -398,19 +514,19 @@ func _shockwave(a: BossAttack) -> void:
 
 
 ## Crystals burst from the telegraphed spots; standing on one hurts.
-func _erupt_spikes(a: BossAttack, dmg: int) -> void:
+func _erupt_spikes(a: BossAttack, dmg: int, tint := Color(0.62, 0.93, 1.0)) -> void:
 	var parent := get_parent()
 	for spot in _spike_spots:
 		var spike := Node2D.new()
 		var poly := Polygon2D.new()
 		poly.polygon = PackedVector2Array([Vector2(-5, 1), Vector2(0, -16), Vector2(5, 1)])
-		poly.color = Color(0.62, 0.93, 1.0, 0.95)
+		poly.color = Color(tint.r, tint.g, tint.b, 0.95)
 		var side := Polygon2D.new()
 		side.polygon = PackedVector2Array([Vector2(3, 1), Vector2(7, -10), Vector2(10, 1)])
-		side.color = Color(0.42, 0.72, 0.9, 0.9)
+		side.color = tint.darkened(0.3)
 		var light := PointLight2D.new()
 		light.texture = AssetPaths.tex(AssetPaths.LIGHT)
-		light.color = Color(0.55, 0.95, 1.0)
+		light.color = tint
 		light.energy = 1.4
 		light.texture_scale = 0.35
 		light.position = Vector2(0, -8)
@@ -434,7 +550,7 @@ func _erupt_spikes(a: BossAttack, dmg: int) -> void:
 	EventBus.screen_shake.emit(5.0)
 	Fx.sparks(parent, global_position + Vector2(0, -24), Color(0.6, 0.95, 1.0), 14, 120.0)
 	AudioManager.play_sfx(&"dig", global_position)
-	_net_boss_fx(&"spikes", global_position, Vector2.ZERO, Color.WHITE, _spike_spots.duplicate())
+	_net_boss_fx(&"spikes", global_position, Vector2.ZERO, tint, _spike_spots.duplicate())
 
 
 ## A grinding crystal beam along the telegraphed line.
@@ -525,7 +641,9 @@ func _summon(a: BossAttack) -> void:
 		var e: Enemy = (load("res://scenes/enemies/enemy.tscn") as PackedScene).instantiate()
 		e.setup(a.summon, floor_number)
 		var side := -1.0 if i % 2 == 0 else 1.0
+		lvl._net_tag(e)  # co-op: guests must see (and can hit) the summons
 		lvl.add_entity(e, global_position + Vector2(side * (30.0 + i * 12.0), -8.0))
+		lvl._net_broadcast_enemy(e, null, false)
 		Fx.sparks(lvl.entities, e.global_position + Vector2(0, -8), Color(0.7, 0.4, 1.0), 12, 70.0)
 		_summons.append(e)
 
@@ -554,7 +672,9 @@ func _illusions(a: BossAttack) -> void:
 	for p in spots:
 		var e: Enemy = (load("res://scenes/enemies/enemy.tscn") as PackedScene).instantiate()
 		e.setup(a.summon, floor_number)
+		lvl._net_tag(e)
 		lvl.add_entity(e, p)
+		lvl._net_broadcast_enemy(e, null, false)
 		e.modulate = sprite.modulate
 		Fx.sparks(lvl.entities, p + Vector2(0, -20), Color(0.8, 0.5, 1.0), 12, 70.0)
 		_summons.append(e)
@@ -563,6 +683,208 @@ func _illusions(a: BossAttack) -> void:
 				Fx.sparks(e.get_parent(), e.global_position + Vector2(0, -20), Color(0.8, 0.5, 1.0), 10, 60.0)
 				e.queue_free())
 	EventBus.screen_shake.emit(3.0)
+
+
+# ------------------------------------------------------- presentation
+func _start_intro() -> void:
+	if _intro_started:
+		return
+	_intro_started = true
+	act = Act.INTRO
+	_act_time = INTRO_TIME
+	EventBus.boss_intro.emit(self)
+	_net_boss_fx(&"intro", global_position, Vector2.ZERO, boss.glow_color, [])
+	AudioManager.play_sfx(&"boss_gong", global_position)
+	_attack_anim_left = 0.6
+
+
+## A new phase: the boss roars, shoves everyone back, can't be hurt for a
+## moment, and the banner tells what changed.
+func _phase_roar(message: String, tint: Color) -> void:
+	_phase_lock = PHASE_LOCK
+	_enter(Act.RECOVER, PHASE_LOCK)
+	_fade_beam()
+	_banner(boss.display_name, message if message != "" else "Новая фаза!", tint)
+	AudioManager.play_sfx(&"boss_roar", global_position)
+	EventBus.screen_shake.emit(9.0)
+	_net_shake(9.0)
+	Fx.sparks(get_parent(), global_position + Vector2(0, -24), tint, 40, 180.0)
+	Fx.explosion(get_parent(), global_position + Vector2(0, -data.collision_size.y * 0.5), 70.0, tint)
+	_net_boss_fx(&"shockwave", global_position, Vector2.ZERO, tint, [70.0])
+	for p in _alive_heroes():
+		var rel := p.global_position - global_position
+		if rel.length() < 140.0:
+			var impulse := Vector2(signf(rel.x if absf(rel.x) > 1.0 else 1.0) * 260.0, -150.0)
+			if p.puppet:
+				var ns = get_tree().get_first_node_in_group("net_game")
+				if ns:
+					ns.player_push.rpc_id(p.peer_id, impulse)
+			else:
+				p.push(impulse)
+	set_aura(phase_index, tint)
+	_net_boss_fx(&"aura", global_position, Vector2.ZERO, tint, [phase_index])
+
+
+func _banner(title: String, text: String, color: Color) -> void:
+	EventBus.boss_banner.emit(title, text, color)
+	_net_boss_fx(&"banner", global_position, Vector2.ZERO, color, [title, text])
+
+
+## Phase aura: embers rising around the boss, denser with every phase.
+func set_aura(level: int, color: Color) -> void:
+	if level <= 0:
+		return
+	if _aura == null:
+		_aura = CPUParticles2D.new()
+		_aura.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
+		_aura.direction = Vector2.UP
+		_aura.spread = 25.0
+		_aura.gravity = Vector2(0, -40)
+		_aura.initial_velocity_min = 10.0
+		_aura.initial_velocity_max = 35.0
+		_aura.lifetime = 1.0
+		_aura.scale_amount_min = 1.0
+		_aura.scale_amount_max = 2.5
+		var m := CanvasItemMaterial.new()
+		m.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+		_aura.material = m
+		_aura.z_index = 2
+		add_child(_aura)
+	_aura.emission_sphere_radius = maxf(data.collision_size.x, data.collision_size.y) * 0.55
+	_aura.position = Vector2(0, -data.collision_size.y * 0.5)
+	_aura.amount = 10 + level * 10
+	_aura.color = color.lightened(0.2)
+	_aura.emitting = true
+
+
+# ------------------------------------------------------- signature moves
+## A hazard on this machine (it hurts on the host) plus its copy for guests.
+func _hazard(style: BossHazard.Style, pos: Vector2, size: Vector2, life: float, vel: Vector2,
+		dmg: int, dtype: int) -> BossHazard:
+	var h := BossHazard.spawn(get_parent(), style, pos, size, life, vel, dmg, dtype)
+	_net_boss_fx(&"hazard", pos, vel, Color.WHITE, [int(style), size.x, size.y, life])
+	return h
+
+
+func _net_shake(strength: float) -> void:
+	if Net.active and Net.is_host:
+		var ns = get_tree().get_first_node_in_group("net_game")
+		if ns:
+			ns.net_shake.rpc(strength)
+
+
+## Bone King: the dead rise where the spikes burst.
+func _summon_at(a: BossAttack, spots: Array[Vector2]) -> void:
+	_summons.assign(_summons.filter(func(n) -> bool: return is_instance_valid(n) and not n.is_dead()))
+	var lvl := _level()
+	if a.summon == null or lvl == null:
+		return
+	var free := a.max_summons - _summons.size()
+	for spot in spots:
+		if free <= 0:
+			break
+		free -= 1
+		var e: Enemy = (load("res://scenes/enemies/enemy.tscn") as PackedScene).instantiate()
+		e.setup(a.summon, floor_number)
+		lvl._net_tag(e)
+		lvl.add_entity(e, spot + Vector2(0, -2))
+		lvl._net_broadcast_enemy(e, null, false)
+		Fx.dust(lvl.entities, spot, true)
+		_summons.append(e)
+
+
+## Flame Witch: walls of fire roll across the arena floor; only the boards
+## (or a well-timed jump over a low lick of flame) are safe.
+func _fire_walls(a: BossAttack, dmg: int) -> void:
+	var lvl := _level()
+	var b := lvl.bounds_px() if lvl else Rect2(global_position - Vector2(300, 200), Vector2(600, 400))
+	var dir := 1.0 if _target_pos.x < b.get_center().x else -1.0
+	var life := (b.size.x - 48.0) / maxf(40.0, a.speed)
+	_hazard(BossHazard.Style.FIRE, _target_pos, Vector2(16, 30), life, Vector2(dir * a.speed, 0), dmg, a.damage_type)
+	if a.count >= 2:
+		var other := Vector2(b.end.x - 24.0 if dir > 0.0 else b.position.x + 24.0, _target_pos.y)
+		_hazard(BossHazard.Style.FIRE, other, Vector2(16, 30), life, Vector2(-dir * a.speed, 0), dmg, a.damage_type)
+	AudioManager.play_sfx(&"cast_fire_wave", global_position)
+	EventBus.screen_shake.emit(4.0)
+
+
+## Illusionist: "which of us is where?" - the boss and its target swap.
+func _mirror_swap(a: BossAttack, dmg: int) -> void:
+	if _player == null or _player.dead:
+		return
+	var hero_pos := _player.global_position
+	var boss_pos := global_position
+	var land := _ground_below(boss_pos + Vector2(0, -20), _level())
+	if _player.puppet:
+		var ns = get_tree().get_first_node_in_group("net_game")
+		if ns:
+			ns.player_teleport.rpc_id(_player.peer_id, land)
+		_player.net_place(land)
+	else:
+		_player.global_position = land
+		_player.velocity = Vector2.ZERO
+	global_position = hero_pos + Vector2(0, -24)
+	sprite.modulate.a = 1.0
+	for p in [hero_pos, land]:
+		Fx.sparks(get_parent(), p + Vector2(0, -14), Color(0.85, 0.55, 1.0), 18, 90.0)
+	_net_boss_fx(&"swap", hero_pos, land, Color(0.85, 0.55, 1.0), [])
+	AudioManager.play_sfx(&"cast_void", global_position)
+	_fan(a, dmg)
+	_attack_anim_left = 0.3
+
+
+## Drowned Bell: rolling rings of sound along the floor, both ways.
+func _toll(a: BossAttack, dmg: int) -> void:
+	var ground := _ground_below(global_position + Vector2(0, -20), _level())
+	var b := _level().bounds_px() if _level() else Rect2(global_position - Vector2(300, 200), Vector2(600, 400))
+	var life := b.size.x / maxf(40.0, a.speed) * 0.6
+	for i in maxi(1, a.count):
+		get_tree().create_timer(i * 0.7, false).timeout.connect(func() -> void:
+			if _dead or not is_inside_tree():
+				return
+			for dir in [-1.0, 1.0]:
+				_hazard(BossHazard.Style.WAVE, ground + Vector2(dir * 14.0, 0), Vector2(10, 14), life,
+						Vector2(dir * a.speed, 0), dmg, a.damage_type)
+			EventBus.screen_shake.emit(5.0)
+			_net_shake(5.0)
+			AudioManager.play_sfx(&"boss_toll", global_position)
+			Fx.explosion(get_parent(), global_position + Vector2(0, -data.collision_size.y * 0.6), 30.0, Color(0.55, 1.0, 0.85)))
+
+
+## Ashen King: one huge sweep of the molten blade; the ground smoulders after.
+func _ash_sweep(a: BossAttack, dmg: int) -> void:
+	var ground := _ground_below(global_position + Vector2(0, -20), _level())
+	for p in _alive_heroes():
+		var rel := p.global_position - global_position
+		if absf(rel.x) <= a.radius and rel.y > -48.0 and rel.y < 16.0 \
+				and LineOfSight.can_hit(self, global_position + Vector2(0, -16), p):
+			p.take_damage(dmg, global_position, a.damage_type)
+			_apply_attack_effects(a, p)
+	for dir in [-1.0, 1.0]:
+		SlashTrail.spawn(get_parent(), global_position + Vector2(0, -18), Vector2(dir, 0), a.radius, false, Color(1.0, 0.5, 0.15))
+	var n := maxi(2, a.count)
+	for i in n:
+		var x := lerpf(-a.radius, a.radius, (i + 0.5) / n)
+		var spot := _ground_below(Vector2(ground.x + x, ground.y - 20.0), _level())
+		_hazard(BossHazard.Style.ASH, spot, Vector2(a.radius * 2.0 / n - 4.0, 12), a.lifetime, Vector2.ZERO,
+				roundi(dmg * 0.35), a.damage_type)
+	EventBus.screen_shake.emit(6.0)
+	_net_shake(6.0)
+	AudioManager.play_sfx(&"cast_swing_heavy", global_position)
+
+
+## Eclipse: the light dies on every machine for `duration` seconds.
+static func darken(parent: Node, duration: float) -> void:
+	if parent == null or not parent.is_inside_tree():
+		return
+	var cm := CanvasModulate.new()
+	cm.color = Color.WHITE
+	parent.add_child(cm)
+	var tw := cm.create_tween()
+	tw.tween_property(cm, "color", Color(0.16, 0.12, 0.22), 0.5)
+	tw.tween_interval(maxf(0.1, duration - 1.0))
+	tw.tween_property(cm, "color", Color.WHITE, 0.5)
+	tw.tween_callback(cm.queue_free)
 
 
 func _apply_attack_effects(a: BossAttack, target: Node) -> void:
@@ -600,6 +922,13 @@ func _update_boss_animation() -> void:
 
 
 func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.INF, damage_type: int = 0) -> void:
+	if not puppet and (_phase_lock > 0.0 or (act == Act.INTRO and _intro_started)):
+		# The roar / the intro card: blows glance off.
+		if randf() < 0.3:
+			EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 6), "Неуязвим", Color(0.8, 0.8, 0.9))
+		return
+	if not puppet and act == Act.INTRO and not _intro_started:
+		_start_intro()  # struck from afar: the show starts now
 	# Bosses are not knocked around or interrupted by hits.
 	var v := velocity
 	var prev_state := state
@@ -631,6 +960,17 @@ func _die() -> void:
 		EventBus.message.emit("%s повержен: +1 очко навыка" % boss.title)
 	EventBus.screen_shake.emit(10.0)
 	Fx.explosion(get_parent(), global_position + Vector2(0, -20), 60.0, Color(1.0, 0.7, 0.3))
+	if boss.defeat_line != "":
+		_banner(boss.display_name, "«%s»" % boss.defeat_line, boss.glow_color)
+	# A chain of bursts across the body: the fall, not a pop.
+	var parent := get_parent()
+	var pos := global_position
+	var h := data.collision_size.y
+	for i in 4:
+		get_tree().create_timer(0.15 + i * 0.22, false).timeout.connect(func() -> void:
+			if is_instance_valid(parent):
+				Fx.explosion(parent, pos + Vector2(randf_range(-16, 16), -randf_range(0.2, 0.9) * h), 26.0 + i * 6.0, boss.glow_color)
+				EventBus.screen_shake.emit(4.0))
 	var rewards: Array = []
 	for id in boss.reward_items:
 		var it := ItemDatabase.get_item(id)

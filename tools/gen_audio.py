@@ -318,6 +318,19 @@ def make_sfx():
     sfx("skill_cast", mix(cast * 0.6, fft_filter(noise(0.4, 41), lo=5000) * adsr(0.4, 0.05, 0.1, 0.4, 0.2) * 0.3), 0.5, room=0.35)
 
 
+def make_boss_sfx():
+    """Boss fight presentation: the intro gong, the phase roar, the bell toll."""
+    gong = mix(metal(110, 3.2, 1.2, partials=(1.0, 1.52, 2.31, 2.89, 4.1), seed=21) * 0.9,
+               thud(0.8, 90, 40, 4) * 0.7, at(fft_filter(noise(2.5, 22), hi=1800) * decay(2.5, 2.2) * 0.25, 0.02))
+    sfx("boss_gong", gong, 0.85, room=0.5)
+    growl = sat(osc("saw", 55, 1.3) * (1 + 0.4 * osc("sine", 7, 1.3)) + 0.6 * osc("square", 82, 1.3), 3.0)
+    roar = mix(fft_filter(growl, hi=900) * adsr(1.3, 0.12, 0.3, 0.8, 0.6) * 0.6,
+               bandpass(noise(1.3, 23), 500, 0.7) * adsr(1.3, 0.1, 0.3, 0.7, 0.6) * 0.8, thud(0.5, 70, 35, 6) * 0.6)
+    sfx("boss_roar", roar, 0.85, room=0.35)
+    toll = mix(bell(147, 3.0, 1.4, 3.2) * 0.9, bell(294, 2.0, 2.0, 2.0) * 0.35, thud(0.4, 100, 50, 10) * 0.4)
+    sfx("boss_toll", toll, 0.8, room=0.6)
+
+
 # ====================================================================== music
 SCALES = {
     "minor": [0, 2, 3, 5, 7, 8, 10], "dorian": [0, 2, 3, 5, 7, 9, 10], "phrygian": [0, 1, 3, 5, 7, 8, 10],
@@ -862,5 +875,6 @@ def make_music():
 
 if __name__ == "__main__":
     make_sfx()
+    make_boss_sfx()
     print("sfx done")
     make_music()

@@ -15,6 +15,18 @@
 [ext_resource type="Resource" path="res://data/animations/eclipse_layout.tres" id="layout"]
 [ext_resource type="Texture2D" path="res://assets/sprites/bosses/eclipse.png" id="tex"]
 
+[sub_resource type="Resource" id="SigDark"]
+script = ExtResource("attack")
+kind = 15
+windup = 0.8
+damage_mult = 0.75
+count = 7
+spread_degrees = 45.0
+projectile_texture = ExtResource("bolt")
+projectile_speed = 165.0
+damage_type = 4
+lifetime = 5.0
+
 [sub_resource type="Resource" id="Curse"]
 script = ExtResource("status_hit")
 status = &"curse"
@@ -112,7 +124,7 @@ hit_effects = Array[ExtResource("hit")]([])
 script = ExtResource("phase")
 hp_threshold = 0.66
 message = "Свет гаснет. Солнце смотрит на вас."
-attacks = Array[ExtResource("attack")]([SubResource("Beam"), SubResource("Blink5"), SubResource("Spikes"), SubResource("Fan7")])
+attacks = Array[ExtResource("attack")]([SubResource("Beam"), SubResource("Blink5"), SubResource("Spikes"), SubResource("Fan7"), SubResource("SigDark")])
 attack_interval = 1.2
 speed_mult = 1.3
 tint = Color(0.9, 0.82, 1, 1)
@@ -160,13 +172,17 @@ hit_effects = Array[ExtResource("hit")]([SubResource("Curse")])
 script = ExtResource("phase")
 hp_threshold = 0.33
 message = "ПОЛНОЕ ЗАТМЕНИЕ!"
-attacks = Array[ExtResource("attack")]([SubResource("Rain10"), SubResource("Illusions"), SubResource("Beam"), SubResource("Fan11"), SubResource("Spikes")])
+attacks = Array[ExtResource("attack")]([SubResource("Rain10"), SubResource("Illusions"), SubResource("Beam"), SubResource("Fan11"), SubResource("Spikes"), SubResource("SigDark")])
 attack_interval = 0.85
 speed_mult = 1.5
 tint = Color(1, 0.72, 0.7, 1)
 
 [resource]
 script = ExtResource("boss")
+intro_line = "Шесть стражей пали. Но солнце уже не взойдёт."
+defeat_line = "Свет... возвращается..."
+arena_biome = &"ruins"
+arena_style = &"eclipse"
 glow_color = Color(1, 0.65, 0.3, 1)
 glow_scale = 1.6
 title = "Затмение — Чёрное солнце"

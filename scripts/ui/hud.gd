@@ -69,7 +69,7 @@ func setup(p_hero: Hero, player: Player) -> void:
 	_player = player
 	_build()
 	_ally_box = VBoxContainer.new()
-	_ally_box.position = Vector2(6, 26)  # under the floor plaque, left side
+	_ally_box.position = Vector2(6, 34)  # under the floor plaque and the exit seal line
 	_ally_box.add_theme_constant_override("separation", 2)
 	_ally_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_ally_box)
@@ -247,6 +247,8 @@ func _build() -> void:
 	_boss_bar = StatBar.create(AssetPaths.BAR_HP, Vector2(280, 12))
 	_boss_bar.position = Vector2(0, 13)
 	_boss_box.add_child(_boss_bar)
+	# Boss intro card and phase banners (over the world, under messages).
+	root.add_child(BossStage.new())
 	_message = UIStyle.outlined_label("", 9, Color.WHITE)
 	_message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_message.anchor_left = 0.0

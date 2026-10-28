@@ -11,6 +11,24 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/bosses/drowned_bell_sheet.png" id="9_sheet"]
 [ext_resource type="Resource" path="res://data/animations/drowned_bell_layout.tres" id="10_layout"]
 
+[sub_resource type="Resource" id="SigToll2"]
+script = ExtResource("4_atk")
+kind = 13
+windup = 1.0
+damage_mult = 0.6
+count = 2
+speed = 150.0
+damage_type = 2
+
+[sub_resource type="Resource" id="SigToll3"]
+script = ExtResource("4_atk")
+kind = 13
+windup = 0.85
+damage_mult = 0.65
+count = 3
+speed = 170.0
+damage_type = 2
+
 [sub_resource type="Resource" id="Resource_stun"]
 script = ExtResource("6_st")
 status = &"stun"
@@ -51,7 +69,7 @@ hit_effects = Array[ExtResource("2_he")]([])
 script = ExtResource("3_phase")
 hp_threshold = 1.0
 message = ""
-attacks = Array[ExtResource("4_atk")]([SubResource("Resource_a1"), SubResource("Resource_a2")])
+attacks = Array[ExtResource("4_atk")]([SubResource("Resource_a1"), SubResource("Resource_a2"), SubResource("SigToll2")])
 attack_interval = 1.9
 speed_mult = 1.0
 tint = Color(1, 1, 1, 1)
@@ -89,13 +107,17 @@ hit_effects = Array[ExtResource("2_he")]([SubResource("Resource_stun")])
 script = ExtResource("3_phase")
 hp_threshold = 0.5
 message = "Колокол треснул — вода кипит!"
-attacks = Array[ExtResource("4_atk")]([SubResource("Resource_a3"), SubResource("Resource_a4")])
+attacks = Array[ExtResource("4_atk")]([SubResource("Resource_a3"), SubResource("Resource_a4"), SubResource("SigToll3")])
 attack_interval = 1.2
 speed_mult = 1.3
 tint = Color(0.8, 1, 0.95, 1)
 
 [resource]
 script = ExtResource("8_bd")
+intro_line = "Слышишь звон? Это звонят по тебе."
+defeat_line = "Звон... затихает..."
+arena_biome = &"drowned_vaults"
+arena_style = &"flooded"
 glow_color = Color(0.6, 1, 0.85, 1)
 glow_scale = 1.2
 title = "Утопленный колокол — Глас глубин"

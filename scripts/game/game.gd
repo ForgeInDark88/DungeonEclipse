@@ -197,7 +197,7 @@ func _apply_brightness() -> void:
 func _process(delta: float) -> void:
 	# A fallen hero spectates the party until the next floor revives them.
 	if Net.active and player != null and player.dead and net_players:
-		for p: Player in net_players.get_children():
+		for p: Player in party():
 			if p != player and not p.dead:
 				player.camera.global_position = p.global_position + Vector2(0, -10)
 				break
@@ -237,6 +237,10 @@ func _toggle_pause() -> void:
 
 func _on_spawn_items(pos: Vector2, stacks: Array) -> void:
 	if level == null:
+		return
+	# Co-op: loot is the host's (spawned there and broadcast to everyone). A
+	# guest's own copy would be a phantom nobody else sees or can share.
+	if Net.active and not Net.is_host:
 		return
 	for entry: Dictionary in stacks:
 		var p: ItemPickup = PICKUP_SCENE.instantiate()
@@ -503,6 +507,16 @@ func _make_hero_from(info: Dictionary) -> Hero:
 	return h
 
 
+## Co-op heroes (the container also holds their sparks, dust and trails).
+func party() -> Array[Player]:
+	var list: Array[Player] = []
+	if net_players:
+		for n in net_players.get_children():
+			if n is Player:
+				list.append(n)
+	return list
+
+
 func _net_player_name(peer_id: int) -> String:
 	return String(Net.players.get(peer_id, {}).get("name", "Игрок"))
 
@@ -517,6 +531,8 @@ func _net_spawn_players() -> void:
 	world.remove_child(player)
 	net_players.add_child(player)
 	player.name = "Player_%d" % my_id
+	# Our own id: attack / cast fx carry it, the others skip their own echo.
+	player.peer_id = my_id
 	# The host addresses real damage at this node (net_sync.player_damage).
 	net_sync.local_player = player
 	for peer_id in Net.players:
@@ -582,14 +598,14 @@ func _net_on_floor_loaded() -> void:
 		net_sync.net_hello.rpc_id(1)
 	var sp := level.start_position()
 	player.global_position = sp
-	for p: Player in net_players.get_children():
+	for p: Player in party():
 		if p == player:
 			continue
 		p.net_place(sp + Vector2(14, 0))
 	# A fallen hero rises on the next floor (co-op rule).
 	if player.dead:
 		player.revive()
-	for p: Player in net_players.get_children():
+	for p: Player in party():
 		if p != player and p.dead:
 			p.revive()
 
@@ -603,7 +619,7 @@ func _on_player_died_coop() -> void:
 	net_sync.broadcast_player_hp(Net.multiplayer.get_unique_id(), 0,
 			GameState.hero.stats.max_hp() if GameState.hero else 0, true)
 	var any_alive := false
-	for p: Player in net_players.get_children():
+	for p: Player in party():
 		if p != player and not p.dead:
 			any_alive = true
 	if any_alive:

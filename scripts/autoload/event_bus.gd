@@ -33,8 +33,15 @@ signal pact_taken(pact: RunPactData)
 signal pet_changed(pet: PetData)
 ## Kill streak without taking damage (0 = broken).
 signal combo_changed(combo: int)
+## A kill credited to THIS machine's hero (co-op: enemy_killed fires on every
+## machine for every kill; the combo counts only one's own).
+signal own_kill(enemy: EnemyData)
 signal boss_spawned(boss: Node)
 signal boss_hp_changed(hp: int, max_hp: int)
+## Presentation: the intro card when the heroes meet a boss, and the big
+## banner for phase changes, rage and the last words.
+signal boss_intro(boss: Node)
+signal boss_banner(title: String, text: String, color: Color)
 signal boss_defeated(boss: BossData, world_pos: Vector2)
 ## Statistics hooks (Codex: achievements, bestiary, item encyclopedia).
 signal elite_killed(enemy_data: EnemyData)

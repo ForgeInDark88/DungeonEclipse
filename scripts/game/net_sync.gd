@@ -13,6 +13,14 @@ var items := {}            # net_id -> ItemPickup node
 var _last_hitter := {}     # net_id -> peer id (kill credit)
 var _hit_budget := {}      # peer id -> hits sent this second (anti-spam)
 var minions := {}         # uid -> Minion: other players' servants (visual copies)
+## Host: a hero asked to move the party (exit / gate / stairs) and waits there
+## for the others; the move happens by itself once everyone living is near.
+const GATHER_RADIUS := 220.0
+var _pending_action := &""
+var _pending_peer := 0
+var _pending_pos := Vector2.ZERO
+var _pending_left := 0.0
+var _gather_timer := 0.0
 var _hit_second := 0
 var _state_timer := 0.0
 
@@ -28,6 +36,12 @@ func _process(delta: float) -> void:
 	if _state_timer <= 0.0:
 		_state_timer = STATE_RATE
 		_broadcast_enemy_state()
+	if _pending_action != &"":
+		_gather_timer -= delta
+		_pending_left -= delta
+		if _gather_timer <= 0.0:
+			_gather_timer = 0.3
+			_check_gathering()
 
 
 # --------------------------------------------------------------- registry
@@ -42,6 +56,7 @@ func clear_floor() -> void:
 	_last_hitter.clear()
 	_hit_budget.clear()
 	minions.clear()  # the copies lived among the old level's entities
+	_pending_action = &""
 
 
 func register_enemy(e: Enemy) -> int:
@@ -106,7 +121,7 @@ func enemy_state(states: Array) -> void:
 		if e == null or not is_instance_valid(e):
 			continue
 		e.net_apply_state(st[1], st[2], int(st[3]), bool(st[4]), int(st[5]),
-				float(st[6]))
+				float(st[6]), int(st[7]) if st.size() > 7 else -1)
 
 
 func _broadcast_enemy_state() -> void:
@@ -122,7 +137,7 @@ func _broadcast_enemy_state() -> void:
 				if b.act == Boss.Act.WINDUP or b.act == Boss.Act.ACTING:
 					ai_state = Enemy.State.ATTACK
 			states.append([id, e.global_position.x, e.global_position.y, e.hp,
-					e.is_dead(), ai_state, e._attack_anim_left])
+					e.is_dead(), ai_state, e._attack_anim_left, e.max_hp])
 	if not states.is_empty():
 		enemy_state.rpc(states)
 
@@ -180,19 +195,41 @@ func boss_fx(kind: StringName, from: Vector2, dir_or_radius: Vector2,
 			tw3.tween_interval(0.8)
 			tw3.tween_property(core, "width", 0.0, 0.22)
 			tw3.tween_callback(core.queue_free)
+		&"hazard":
+			BossHazard.spawn(parent, int(extra[0]) as BossHazard.Style, from, Vector2(extra[1], extra[2]),
+					float(extra[3]), dir_or_radius, 0, 0, false)
+		&"intro":
+			var b := get_tree().get_first_node_in_group("bosses")
+			if b:
+				EventBus.boss_intro.emit(b)
+				AudioManager.play_sfx(&"boss_gong", from)
+		&"banner":
+			EventBus.boss_banner.emit(String(extra[0]), String(extra[1]), color)
+			if String(extra[1]) != "" and not String(extra[1]).begins_with("«"):
+				AudioManager.play_sfx(&"boss_roar", from)
+		&"aura":
+			var b := get_tree().get_first_node_in_group("bosses") as Boss
+			if b:
+				b.set_aura(int(extra[0]), color)
+				b.data_tint_override(color if int(extra[0]) < 3 else Color(1.0, 0.55, 0.5))
+		&"darkness":
+			Boss.darken(parent, float(extra[0]) if extra.size() > 0 else 4.0)
+		&"swap":
+			for p in [from, dir_or_radius]:
+				Fx.sparks(parent, p + Vector2(0, -14), color, 18, 90.0)
 		&"spikes":
 			for spot_v in extra:
 				var spot: Vector2 = spot_v
 				var spike := Node2D.new()
 				var poly := Polygon2D.new()
 				poly.polygon = PackedVector2Array([Vector2(-5, 1), Vector2(0, -16), Vector2(5, 1)])
-				poly.color = Color(0.62, 0.93, 1.0, 0.95)
+				poly.color = Color(color.r, color.g, color.b, 0.95)
 				var side := Polygon2D.new()
 				side.polygon = PackedVector2Array([Vector2(3, 1), Vector2(7, -10), Vector2(10, 1)])
-				side.color = Color(0.42, 0.72, 0.9, 0.9)
+				side.color = color.darkened(0.3)
 				var light := PointLight2D.new()
 				light.texture = AssetPaths.tex(AssetPaths.LIGHT)
-				light.color = Color(0.55, 0.95, 1.0)
+				light.color = color
 				light.energy = 1.4
 				light.texture_scale = 0.35
 				light.position = Vector2(0, -8)
@@ -281,6 +318,8 @@ func enemy_died(net_id: int, xp: int, gold: int, killer: int) -> void:
 			# The +1 skill point the host's boss death grants locally.
 			GameState.hero.skills.add_points(1)
 			EventBus.message.emit("%s повержен: +1 очко навыка" % b.boss.title)
+	if killer == multiplayer.get_unique_id() and e:
+		EventBus.own_kill.emit(e.data)
 	if killer == multiplayer.get_unique_id() and (xp > 0 or gold > 0):
 		GameState.hero.gain_kill_reward(xp, gold)
 
@@ -301,6 +340,7 @@ func broadcast_death(e: Enemy, xp: int, gold: int) -> void:
 	_last_hitter.erase(e.net_id)
 	EventBus.enemy_killed.emit(e.data, e.global_position)
 	if killer == 1:
+		EventBus.own_kill.emit(e.data)
 		GameState.hero.gain_kill_reward(xp, gold)
 
 
@@ -823,10 +863,46 @@ func request_event_use(seq: int) -> void:
 	var p: Player = game.net_players.get_node_or_null("Player_%d" % sender) if game != null and "net_players" in game else null
 	if p == null or p.dead:
 		return
-	# Execute on the host's mirror of the sender; rewards (gold/xp/status)
-	# are then forwarded by the regular hero/player sync channels.
-	event._activate(p)
+	# Booked for the sender: everyone sees it used, the sender applies the
+	# effect to its real hero (the mirror here would only fake it) and asks
+	# back for the shared parts (loot, ambush) through request_event_world.
+	event.net_grantee = sender
+	event.net_world_calls = 0
 	event.finish()
+	event_grant.rpc_id(sender, seq)
+
+
+## Host → the guest who used the event: apply it to your hero.
+@rpc("authority", "call_remote", "reliable")
+func event_grant(seq: int) -> void:
+	for e in get_tree().get_nodes_in_group("events"):
+		if e.net_seq == seq:
+			if not e.used:
+				e.finish()
+			if local_player and not local_player.dead:
+				e.net_granted(local_player)
+			return
+
+
+## Guest → host: the world part of an event granted to me (loot roll,
+## ambush). Only the grantee, only a few times per event.
+@rpc("any_peer", "call_remote", "reliable")
+func request_event_world(seq: int, kind: StringName, table_name: StringName, number: int, chance: float) -> void:
+	if not Net.is_host:
+		return
+	var sender := multiplayer.get_remote_sender_id()
+	for e in get_tree().get_nodes_in_group("events"):
+		if e.net_seq != seq:
+			continue
+		if not e.used or e.net_grantee != sender or e.net_world_calls >= 4:
+			return
+		e.net_world_calls += 1
+		match kind:
+			&"loot":
+				e._reward_item(table_name, clampi(number, 1, GameState.floor_number + 3))
+			&"ambush":
+				e._ambush(clampi(number, 1, 8), clampf(chance, 0.0, 1.0))
+		return
 
 
 @rpc("authority", "call_remote", "reliable")
@@ -1166,7 +1242,7 @@ func party_at(pos: Vector2, radius: float) -> bool:
 	var game := get_tree().current_scene
 	if game == null or not ("net_players" in game):
 		return true
-	for p: Player in game.net_players.get_children():
+	for p: Player in _party(game):
 		if p.dead:
 			continue
 		if p.global_position.distance_to(pos) > radius:
@@ -1174,21 +1250,100 @@ func party_at(pos: Vector2, radius: float) -> bool:
 	return true
 
 
+## Living heroes near `pos` / all living heroes (the door prompt shows it).
+func party_count_at(pos: Vector2, radius: float = GATHER_RADIUS) -> Vector2i:
+	var game := get_tree().current_scene
+	if game == null or not ("net_players" in game):
+		return Vector2i(1, 1)
+	var near := 0
+	var total := 0
+	for p: Player in _party(game):
+		if p.dead:
+			continue
+		total += 1
+		if p.global_position.distance_to(pos) <= radius:
+			near += 1
+	return Vector2i(near, total)
+
+
+## The heroes in the co-op container (their sparks and trails live there too).
+func _party(game: Node) -> Array[Player]:
+	var list: Array[Player] = []
+	for n in game.net_players.get_children():
+		if n is Player:
+			list.append(n)
+	return list
+
+
+func _hero_node(peer_id: int) -> Player:
+	var game := get_tree().current_scene
+	if game == null or not ("net_players" in game):
+		return null
+	return game.net_players.get_node_or_null("Player_%d" % peer_id) as Player
+
+
+func _peer_name(peer_id: int) -> String:
+	return String(Net.players.get(peer_id, {}).get("name", "Игрок"))
+
+
+## Client → host: move the party (`next`, `town`, `resume`).
 @rpc("any_peer", "call_remote", "reliable")
 func request_floor(action: StringName) -> void:
 	if not Net.is_host:
 		return
-	# Only a living hero may move the party, and the whole living party
-	# must be gathered at the exit for the descent to happen.
-	var game := get_tree().current_scene
-	var sender_p: Player = null
-	if game != null and "net_players" in game:
-		sender_p = game.net_players.get_node_or_null("Player_%d" % multiplayer.get_remote_sender_id()) as Player
-		if sender_p == null or sender_p.dead:
-			return
-	if not party_at(sender_p.global_position, 220.0):
-		EventBus.message.emit("Все живые герои должны подойти к выходу!")
+	host_party_move(multiplayer.get_remote_sender_id(), action)
+
+
+## Host: a living hero at an exit asks to move on. Everyone gathered: go now;
+## otherwise the hero waits at the exit, everyone is told who is missing, and
+## the move happens by itself when the party gathers (or is called off when
+## the waiting hero walks away).
+func host_party_move(peer_id: int, action: StringName) -> void:
+	var p := _hero_node(peer_id)
+	if p == null or p.dead:
 		return
+	if action == &"next" and GameState.town_return_floor <= 0 and not GameState.is_town():
+		var game := get_tree().current_scene
+		var lvl: DungeonLevel = game.level if game != null and "level" in game else null
+		if lvl != null and lvl.is_sealed():
+			return  # the exit seal holds until enough monsters fall
+	if party_at(p.global_position, GATHER_RADIUS):
+		_pending_action = &""
+		_do_party_move(action)
+		return
+	var fresh := _pending_action != action or _pending_peer != peer_id
+	_pending_action = action
+	_pending_peer = peer_id
+	_pending_pos = p.global_position
+	_pending_left = 90.0
+	if fresh:
+		_announce("%s ждёт у выхода. Подойдите: %s" % [_peer_name(peer_id), ", ".join(_missing_names())])
+
+
+func _missing_names() -> Array[String]:
+	var names: Array[String] = []
+	var game := get_tree().current_scene
+	if game == null or not ("net_players" in game):
+		return names
+	for p: Player in _party(game):
+		if not p.dead and p.global_position.distance_to(_pending_pos) > GATHER_RADIUS:
+			names.append(_peer_name(int(String(p.name).get_slice("_", 1))))
+	return names
+
+
+func _check_gathering() -> void:
+	var p := _hero_node(_pending_peer)
+	if p == null or p.dead or p.global_position.distance_to(_pending_pos) > 160.0 or _pending_left <= 0.0:
+		_pending_action = &""
+		_announce("Спуск отменён: %s отошёл от выхода." % _peer_name(_pending_peer) if p != null and not p.dead and _pending_left > 0.0 else "Спуск отменён.")
+		return
+	if party_at(_pending_pos, GATHER_RADIUS):
+		var action := _pending_action
+		_pending_action = &""
+		_do_party_move(action)
+
+
+func _do_party_move(action: StringName) -> void:
 	match action:
 		&"next":
 			# A guest's town gate: while a return floor is pending, "next"
@@ -1196,14 +1351,22 @@ func request_floor(action: StringName) -> void:
 			if GameState.town_return_floor > 0:
 				GameState.resume_from_town()
 			else:
-				var lvl: DungeonLevel = game.level if game != null and "level" in game else null
-				if lvl != null and lvl.is_sealed():
-					return  # the exit seal holds until enough monsters fall
 				GameState.next_floor()
 		&"town":
 			GameState.return_to_town()
 		&"resume":
 			GameState.resume_from_town()
+
+
+## A party-wide message (host → everyone, itself included).
+func _announce(text: String) -> void:
+	EventBus.message.emit(text)
+	party_message.rpc(text)
+
+
+@rpc("authority", "call_remote", "reliable")
+func party_message(text: String) -> void:
+	EventBus.message.emit(text)
 
 
 # A late joiner needs the current floor + world (spawned by game.gd).
@@ -1268,3 +1431,18 @@ func _minion(uid: int) -> Minion:
 		minions.erase(uid)
 		return null
 	return m
+
+
+## Host → one guest: a boss moved your hero (the Illusionist's swap).
+@rpc("authority", "call_remote", "reliable")
+func player_teleport(pos: Vector2) -> void:
+	if local_player and not local_player.dead:
+		local_player.global_position = pos
+		local_player.velocity = Vector2.ZERO
+
+
+## Host → one guest: a boss's roar shoves your hero away.
+@rpc("authority", "call_remote", "reliable")
+func player_push(impulse: Vector2) -> void:
+	if local_player and not local_player.dead:
+		local_player.push(impulse)

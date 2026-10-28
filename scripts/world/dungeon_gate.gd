@@ -34,7 +34,7 @@ func get_prompt() -> String:
 	return "Спуститься в подземелье"
 
 
-func interact(player: Node) -> void:
+func interact(_player: Node) -> void:
 	AudioManager.play_sfx(&"portal")
 	if Net.active and not Net.is_host:
 		# Co-op: only the host moves the party.
@@ -43,10 +43,10 @@ func interact(player: Node) -> void:
 			ns.request_floor.rpc_id(1, &"resume" if GameState.town_return_floor > 0 else &"next")
 		return
 	if Net.active and Net.is_host:
-		# Co-op: the whole living party must be gathered at the gate.
+		# Co-op: the party moves together (NetSync waits for everyone).
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
-		if ns and not ns.party_at(player.global_position, 220.0):
-			EventBus.message.emit("Все живые герои должны подойти к выходу!")
+		if ns:
+			ns.host_party_move(Net.multiplayer.get_unique_id(), &"next")
 			return
 	if GameState.town_return_floor > 0:
 		GameState.resume_from_town()
