@@ -699,130 +699,204 @@ TRACKS = {
 }
 
 
-# The Eclipse (final boss): a written-out piece instead of a TRACKS line, so it
-# sounds like the end. Leitmotif: the "Dies irae" chant (day of wrath).
-#   intro  (4 bars)  drone, tolling bell, heartbeat; the choir rises
-#   wrath  (12 bars) full battle: taiko + rock kit, brass stabs, the chant in brass
-#   clock  (8 bars)  breakdown: drums gone, a ticking bell like the last seconds,
-#                    the chant slow in the choir, a long low swell
-#   end    (12 bars) climax a semitone higher, double-time drums, chant in
-#                    octaves, fast arpeggio; the last bar falls back into the intro
+# The Eclipse (final boss): a written-out piece instead of a TRACKS line - a
+# fight with something enormous. Slow and heavy (84 BPM), an orchestra of
+# low brass, strings, a choir in three octaves, timpani and the footsteps
+# of a giant. Leitmotif: the "Dies irae" chant (day of wrath).
+#   approach (6 bars)  the giant's steps come closer, a gong, low drone, the choir rises
+#   wrath    (12 bars) horns call the chant in octaves over string ostinato, timpani
+#   breath   (8 bars)  the beast breathes: organ, a lone choir, a slow heartbeat
+#   doom     (14 bars) a semitone higher: everything at once, the chant in three
+#                      octaves, tremolo strings, stomps on every half bar, unison
+#                      hits at the end that fall back into the approach
 DIES_IRAE = [(2, 1), (1, 1), (2, 1), (0, 1), (1, 1), (-1, 1), (0, 2),  # Di-es i-rae, di-es il-la
              (2, 1), (3, 1), (2, 1), (1, 1), (0, 1), (-1, 1), (0, 2)]  # sol-vet sae-clum in fa-vil-la
 
 
+def i_horns(m, sec, swell=1.0):
+    """A horn section: detuned saws, slow attack, the tone opens up as it swells."""
+    f = midi_hz(m)
+    t = tt(sec)
+    vib = 1 + 0.004 * np.sin(2 * np.pi * 4.8 * t + m)
+    x = sum(osc("saw", f * d * vib, sec, ph) for d, ph in ((1, 0), (1.006, 1.3), (0.994, 2.1), (2.0, 0.4)))
+    x = fft_filter(x, hi=700 + 900 * swell) * 0.7 + fft_filter(x, hi=2600) * 0.15 * swell
+    return x * adsr(sec, min(0.12, sec * 0.3), 0.25, 0.85, min(0.3, sec * 0.3)) * 0.16
+
+
+def i_tuba(m, sec):
+    f = midi_hz(m)
+    x = osc("saw", f, sec) * 0.6 + osc("square", f * 1.003, sec) * 0.3 + osc("sine", f / 2, sec) * 0.5
+    return fft_filter(x, hi=450) * adsr(sec, 0.08, 0.2, 0.9, 0.2) * 0.45
+
+
+def i_strings(m, sec):
+    """String ensemble: five detuned voices with a soft bow attack."""
+    f = midi_hz(m)
+    t = tt(sec)
+    x = np.zeros(len(t))
+    for k, d in enumerate((1.0, 1.004, 0.996, 1.008, 0.992)):
+        vib = 1 + 0.005 * np.sin(2 * np.pi * (5.0 + k * 0.3) * t + k)
+        x += osc("saw", f * d * vib, sec, k * 0.7)
+    x = fft_filter(x, lo=80, hi=3200)
+    return x * adsr(sec, min(0.06, sec * 0.3), 0.1, 0.8, min(0.15, sec * 0.3)) * 0.07
+
+
+def i_organ(m, sec):
+    f = midi_hz(m)
+    x = sum(osc("sine", f * h, sec) * g for h, g in ((0.5, 0.6), (1, 1.0), (2, 0.5), (3, 0.3), (4, 0.25), (8, 0.1)))
+    return x * adsr(sec, 0.08, 0.1, 0.9, 0.25) * 0.12
+
+
+def d_timpani(f=55.0, sec=1.4, punch=1.0):
+    body = osc("sine", np.geomspace(f * 1.25, f, n_of(sec)), sec) * decay(sec, 3.0)
+    skin = fft_filter(noise(0.08, 61), hi=900) * decay(0.08, 50) * 0.5
+    return (body + 0.4 * osc("sine", f * 1.5, sec) * decay(sec, 5.0)) * punch * 0.9 + np.pad(skin, (0, n_of(sec) - len(skin)))
+
+
+def d_giant(sec=1.8, seed=62):
+    """The footstep of something enormous: a sub drop, the floor groaning,
+    stones rattling after it."""
+    sub = osc("sine", np.geomspace(70, 26, n_of(sec)), sec) * decay(sec, 2.2) * 1.4
+    rumble = fft_filter(noise(sec, seed), hi=220) * decay(sec, 2.8) * 2.2
+    rattle = fft_filter(noise(sec, seed + 1), lo=1500, hi=6000) * decay(sec, 9.0) * 0.25
+    return sat(sub + rumble, 1.6) + rattle
+
+
+def d_crash(sec=2.5):
+    return fft_filter(noise(sec, 63), lo=3000) * decay(sec, 1.6) * 0.45
+
+
+def d_swell(sec):
+    """Reverse cymbal: noise rising into the next section."""
+    x = fft_filter(noise(sec, 64), lo=2500)
+    return x * np.linspace(0, 1, len(x)) ** 2.5 * 0.5
+
+
 def compose_eclipse():
-    s = Song("D", "harmonic", 132, 4, 36, seed=51)
+    s = Song("D", "harmonic", 84, 4, 40, seed=51)
     B, b = s.bar, s.beat
     prog_wrath = [0, 5, 3, 4, 0, 5, 1, 4, 0, 3, 5, 4]
-    prog_clock = [0, 0, 5, 5, 3, 3, 4, 4]
-    prog_end = [0, 5, 3, 4, 0, 3, 5, 4, 0, 5, 4, 4]
+    prog_breath = [0, 0, 5, 5, 3, 3, 4, 4]
+    prog_doom = [0, 5, 3, 4, 0, 3, 5, 4, 0, 5, 1, 4, 4, 4]
 
     def chant(t0, beat_len, inst, octave, shift, bus, gain):
         t = t0
         for deg, beats in DIES_IRAE:
             sec = beats * beat_len
-            s.add(bus, t, inst(s.deg(deg, octave) + shift, sec * 0.95), gain)
+            s.add(bus, t, inst(s.deg(deg, octave) + shift, sec * 0.97), gain)
             t += sec
 
     for bar in range(s.bars):
         t0 = bar * B
-        if bar < 4:  # ---------------------------------------------- intro
-            sec, d, shift = "intro", 0, 0
-        elif bar < 16:
-            sec, d, shift = "wrath", prog_wrath[bar - 4], 0
-        elif bar < 24:
-            sec, d, shift = "clock", prog_clock[bar - 16], 0
+        if bar < 6:
+            sec, d, shift = "approach", 0, 0
+        elif bar < 18:
+            sec, d, shift = "wrath", prog_wrath[bar - 6], 0
+        elif bar < 26:
+            sec, d, shift = "breath", prog_breath[bar - 18], 0
         else:
-            sec, d, shift = "end", prog_end[bar - 24], 1
+            sec, d, shift = "doom", prog_doom[bar - 26], 1
         chord = [m + shift for m in s.chord(d, 0, 3)]
         root = s.deg(d, -1) + shift
-        # Sub drone under everything: the dark of the eclipse.
-        s.add("drone", t0, i_bass(s.deg(0, -2) + shift, B + 0.05), 0.55 if sec != "end" else 0.4)
-        # Choir: grows from a murmur to full voice.
-        cg = {"intro": 0.3 + bar * 0.15, "wrath": 0.8, "clock": 0.6, "end": 1.0}[sec]
+        low = s.deg(d, -2) + shift
+        # Tuba / contrabass under everything.
+        s.add("tuba", t0, i_tuba(low + 12, B * 1.02), 0.9 if sec != "breath" else 0.6)
+        # The choir: grows in the approach, three octaves in the doom.
+        cg = {"approach": 0.25 + bar * 0.12, "wrath": 0.8, "breath": 0.55, "end": 1.0, "doom": 1.0}[sec]
         for m in chord:
-            s.add("pad", t0, i_choir(m + 12, B + 0.6), cg)
-        if sec in ("wrath", "end"):
-            s.add("pad", t0, i_choir(chord[0] + 24, B + 0.6), cg * 0.5)
-        # Funeral bell: every two bars in the intro and the climax, on 1 elsewhere.
-        if sec == "intro" or bar % 2 == 0:
-            s.add("bell", t0, i_bell(root + 12, B * 1.6), 1.0 if sec != "wrath" else 0.6)
-        if sec == "intro":
-            s.add("kick", t0, d_kick(0.4, 0.7), 0.6)  # heartbeat
-            s.add("kick", t0 + b * 0.3, d_kick(0.35, 0.6), 0.4)
-            if bar == 3:  # drum roll into the battle
-                for k in range(8):
-                    s.add("tom", t0 + B / 2 + k * b / 4, d_tom(110 + k * 12, 0.3), 0.35 + k * 0.07)
-            continue
-        if sec == "clock":
-            # The clock runs out: ticks on every beat, a heartbeat, the chant slow.
-            for k in range(s.beats):
-                s.add("tick", t0 + k * b, i_box(s.deg(4, 2), 0.25), 0.8 if k == 0 else 0.5)
-            s.add("kick", t0, d_kick(0.4, 0.7), 0.5)
-            s.add("bass", t0, i_bass(root, B * 0.95), 0.8)
-            if bar >= 20:  # rising snare roll in the last bars of the breakdown
-                n = 4 * (bar - 19)
-                for k in range(n):
-                    s.add("snare", t0 + k * B / n, d_snare(0.12), 0.15 + 0.6 * (bar - 20 + k / n) / 4)
-            continue
-        # Battle: ostinato bass, drums, brass stabs, arpeggio in the climax.
-        pat = [0, 0, 7, 0, 3, 0, 7, 10] if sec == "wrath" else [0, 12, 7, 0, 3, 12, 7, 10]
-        for k, iv in enumerate(pat):
-            s.add("bass", t0 + k * b / 2, i_bass(root + iv, b * 0.45, 0.5), 0.8)
-        for k in range(s.beats):
-            tb = t0 + k * b
-            if k == 0 or (k == 2 and bar % 2):
-                s.add("kick", tb, d_taiko(), 1.0)
-            if sec == "end":  # double-time
-                s.add("kick", tb, d_kick(), 0.8)
-                s.add("kick", tb + b / 2, d_kick(0.3), 0.5)
-                if k % 2:
-                    s.add("snare", tb, d_snare(), 0.9)
-                if k == 3:
-                    s.add("snare", tb + b * 0.75, d_snare(0.15), 0.5)
-                for h in range(4):
-                    s.add("hat", tb + h * b / 4, d_hat(), 0.6 if h % 2 == 0 else 0.35)
-            else:
-                if k % 2:
-                    s.add("snare", tb, d_snare(), 0.8)
-                s.add("hat", tb, d_hat(), 0.6)
-                s.add("hat", tb + b / 2, d_hat(), 0.4)
-            s.add("tom", tb + b / 2, d_tom(140, 0.3), 0.4)
-        for m in chord:
-            s.add("brass", t0, i_brass(m + 12, b * 0.9), 0.8)
-            if bar % 2:
-                s.add("brass", t0 + b * 2.5, i_brass(m + 12, b * 0.4), 0.6)
-        if sec == "end":
-            notes = chord + [chord[1] + 12, chord[2] + 12]
-            for k in range(16):
-                s.add("arp", t0 + k * b / 4, i_pluck(notes[[0, 1, 2, 3, 4, 3, 2, 1][k % 8]] + 12, b / 4 * 2.5), 0.6)
-    # The chant (8+8 notes = 4 bars at one note per beat).
-    chant(8 * B, b, i_brass, 1, 0, "lead", 1.0)          # wrath: brass call
-    chant(12 * B, b, i_lead, 1, 0, "lead", 0.8)         # answered by the lead
-    chant(16 * B, b * 2, i_choir, 1, 0, "chant", 0.9)   # clock: slow in the choir
-    chant(24 * B, b, i_brass, 1, 1, "lead", 1.0)        # end: brass in octaves
-    chant(24 * B, b, i_brass, 2, 1, "lead", 0.6)
-    chant(28 * B, b, i_lead, 2, 1, "lead", 0.8)
-    chant(28 * B, b, i_choir, 1, 1, "chant", 1.0)
-    chant(32 * B, b * 0.5, i_lead, 2, 1, "lead", 0.7)   # the last frantic run
-    chant(34 * B, b * 0.5, i_brass, 1, 1, "lead", 0.9)
-    return s.render({
-        "drone": dict(hi=300, pan=0, send=0.3, gain=0.9),
-        "pad": dict(hi=4000, pan=0, width=16, send=0.6, gain=0.9),
-        "chant": dict(hi=4500, pan=-0.05, width=10, send=0.6, gain=1.0),
-        "bass": dict(hi=900, pan=0, send=0.05, gain=1.0, drive=1.5),
-        "arp": dict(hi=7000, pan=-0.35, width=10, send=0.45, gain=0.6),
-        "bell": dict(hi=6000, pan=0.3, width=12, send=0.7, gain=0.9),
-        "tick": dict(lo=600, hi=8000, pan=0.4, width=4, send=0.3, gain=0.7),
-        "lead": dict(hi=6000, pan=0.1, width=6, send=0.4, gain=0.95),
-        "brass": dict(hi=3500, pan=-0.1, width=10, send=0.3, gain=0.8),
-        "kick": dict(hi=5000, pan=0, send=0.1, gain=1.0),
-        "snare": dict(lo=120, pan=0.05, send=0.25, gain=0.7),
-        "hat": dict(lo=5000, pan=0.3, send=0.1, gain=0.55),
-        "tom": dict(hi=4000, pan=-0.15, send=0.25, gain=0.8),
-    })
+            s.add("choir", t0, i_choir(m + 12, B + 0.8), cg)
+        if sec in ("wrath", "doom"):
+            s.add("choir", t0, i_choir(chord[0], B + 0.8), cg * 0.7)
+        if sec == "doom":
+            s.add("choir", t0, i_choir(chord[0] + 24, B + 0.8), 0.5)
 
+        if sec == "approach":
+            # The giant's steps come closer: two a bar, louder every bar.
+            for k in (0, 2):
+                s.add("giant", t0 + k * b, d_giant(), 0.35 + bar * 0.12)
+            if bar == 0:
+                s.add("bell", t0, metal(55, 6.0, 0.8, partials=(1.0, 1.52, 2.31, 2.89, 4.1), seed=65) * 0.9, 1.0)
+            if bar % 2 == 1:
+                s.add("bell", t0 + b, i_bell(root + 12, B * 1.5), 0.8)
+            if bar == 5:
+                s.add("fx", t0, d_swell(B), 1.0)
+                for k in range(12):  # timpani roll into the battle
+                    s.add("timp", t0 + B * 0.5 + k * B / 24, d_timpani(55 + shift, 0.5, 0.35 + k * 0.05), 1.0)
+            continue
+
+        if sec == "breath":
+            # The beast breathes: organ, heartbeat, a long growl swelling.
+            for m in chord:
+                s.add("organ", t0, i_organ(m, B * 1.02), 1.0)
+            s.add("organ", t0, i_organ(root, B * 1.02), 0.8)
+            s.add("timp", t0, d_timpani(55 + shift, 1.2, 0.5), 0.9)
+            s.add("timp", t0 + b * 0.35, d_timpani(55 + shift, 1.0, 0.35), 0.7)
+            if bar % 2 == 0:
+                breath = fft_filter(noise(B * 2, 70 + bar), hi=380) * np.sin(np.linspace(0, np.pi, n_of(B * 2))) ** 2
+                s.add("fx", t0, breath * 1.2, 1.0)
+            if bar == 25:
+                s.add("fx", t0, d_swell(B), 1.2)
+                for k in range(16):
+                    s.add("timp", t0 + B * 0.5 + k * B / 32, d_timpani(58 + shift, 0.4, 0.3 + k * 0.05), 1.0)
+            continue
+
+        # Battle: string ostinato (8ths, 16th tremolo in the doom), timpani,
+        # giant stomps, horn chords, crashes every four bars.
+        per = 4 if sec == "doom" else 2
+        pat = [0, 0, 7, 0, 3, 0, 7, 12]
+        for k in range(s.beats * per):
+            iv = pat[(k // (per // 2)) % len(pat)]
+            s.add("strings", t0 + k * b / per, i_strings(root + 12 + iv, b / per * 0.95), 0.9)
+        s.add("timp", t0, d_timpani(55 + shift + (0 if d == 0 else -2), 1.6, 1.0), 1.0)
+        s.add("timp", t0 + 2 * b, d_timpani(55 + shift, 1.2, 0.8), 1.0)
+        s.add("timp", t0 + 3.5 * b, d_timpani(62 + shift, 0.6, 0.5), 1.0)
+        s.add("giant", t0, d_giant(), 0.9)
+        if sec == "doom":
+            s.add("giant", t0 + 2 * b, d_giant(seed=66), 0.8)
+            s.add("kick", t0 + b, d_taiko(), 0.7)
+            s.add("kick", t0 + 3 * b, d_taiko(), 0.7)
+        if bar % 4 == (2 if sec == "wrath" else 2):
+            s.add("crash", t0, d_crash(), 1.0)
+        for m in chord:
+            s.add("horns", t0, i_horns(m, b * 1.9, 0.6), 0.7)
+            s.add("horns", t0 + 2 * b, i_horns(m, b * 1.9, 0.8), 0.6)
+        if sec == "doom" and bar >= 38:
+            # Unison hits: the last blows before the loop falls back to the approach.
+            for k in range(4):
+                for m in [chord[0] - 12, chord[0], chord[0] + 12]:
+                    s.add("horns", t0 + k * b, i_horns(m, b * 0.6, 1.0), 1.0)
+                s.add("timp", t0 + k * b, d_timpani(55 + shift, 0.9, 1.0), 1.0)
+                s.add("crash", t0 + k * b, d_crash(0.8), 0.4)
+
+    # The chant: horns call it, the choir answers; in the doom three octaves.
+    chant(10 * B, b, i_horns, 0, 0, "lead", 1.0)
+    chant(10 * B, b, i_horns, 1, 0, "lead", 0.7)
+    chant(14 * B, b, i_choir, 1, 0, "chant", 1.0)
+    chant(14 * B, b, i_tuba, -1, 0, "lead", 0.5)
+    chant(18 * B, b * 2, i_choir, 1, 0, "chant", 0.9)   # breath: slow, alone
+    chant(26 * B, b, i_horns, 0, 1, "lead", 1.0)
+    chant(26 * B, b, i_horns, 1, 1, "lead", 0.8)
+    chant(26 * B, b, i_tuba, -1, 1, "lead", 0.6)
+    chant(30 * B, b, i_choir, 1, 1, "chant", 1.0)
+    chant(30 * B, b, i_choir, 2, 1, "chant", 0.6)
+    chant(30 * B, b, i_horns, 0, 1, "lead", 0.9)
+    chant(34 * B, b * 0.5, i_horns, 1, 1, "lead", 0.9)  # the frantic last call
+    chant(34 * B, b * 0.5, i_strings, 2, 1, "lead", 1.4)
+    return s.render({
+        "tuba": dict(hi=500, pan=0, send=0.2, gain=1.0, drive=1.2),
+        "choir": dict(hi=4500, pan=0, width=18, send=0.7, gain=0.9),
+        "chant": dict(hi=5000, pan=-0.05, width=12, send=0.65, gain=1.0),
+        "strings": dict(lo=90, hi=5000, pan=-0.3, width=14, send=0.4, gain=0.9),
+        "horns": dict(hi=3800, pan=0.2, width=12, send=0.5, gain=0.9),
+        "lead": dict(hi=4800, pan=0.05, width=8, send=0.5, gain=1.0),
+        "organ": dict(hi=4000, pan=0, width=16, send=0.6, gain=0.9),
+        "bell": dict(hi=6000, pan=0.3, width=12, send=0.7, gain=0.9),
+        "giant": dict(hi=3000, pan=0, send=0.3, gain=1.1),
+        "timp": dict(hi=4000, pan=-0.15, width=6, send=0.35, gain=1.0),
+        "kick": dict(hi=5000, pan=0.1, send=0.2, gain=0.8),
+        "crash": dict(lo=2500, pan=0.25, width=10, send=0.3, gain=0.6),
+        "fx": dict(hi=8000, pan=0, width=10, send=0.4, gain=0.9),
+    })
 
 def sting(notes, sec, inst, chord_inst=None, drum=None, minor=False):
     """One-shot: notes one after another, then the chord rings out."""
