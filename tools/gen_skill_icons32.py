@@ -951,7 +951,8 @@ def _edge_dark(im):
     return im
 
 
-def draw(spec, accent) -> Image.Image:
+def draw_v4(spec, accent) -> Image.Image:
+    """The previous look: subject on a round wash (kept for comparison)."""
     g = G(accent)
     BGS[spec.get("bg", "wash")](g)
     subj, p = spec["s"] if isinstance(spec["s"], tuple) else (spec["s"], {})
@@ -960,6 +961,228 @@ def draw(spec, accent) -> Image.Image:
         FX[f](g)
     g.im.alpha_composite(g.glow)
     return _edge_dark(icon_detail.detail(g.im))
+
+
+# ------------------------------------------------- v5: painted, full-bleed
+# Dota-like: the subject is a lit object in a scene, not a glyph on a disc.
+# A painted backdrop fills the whole cell (light pooled behind the subject,
+# clouds of the skill's colour, a motif of the old backdrop), the subject
+# gets a rim light from the top left, reflected colour light on its far
+# side and a soft shadow behind it; bright parts bloom; a vignette and a
+# bevelled frame finish it. Same size, more painting per pixel.
+BAYER = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]
+
+
+def _hash(x, y, seed):
+    n = (x * 374761393 + y * 668265263 + seed * 1442695041) & 0xFFFFFFFF
+    n = (n ^ (n >> 13)) * 1274126177 & 0xFFFFFFFF
+    return ((n ^ (n >> 16)) & 0xFFFF) / 65535.0
+
+
+def _vnoise(x, y, seed, cell):
+    gx, gy = x / cell, y / cell
+    x0, y0 = int(math.floor(gx)), int(math.floor(gy))
+    fx, fy = gx - x0, gy - y0
+    fx, fy = fx * fx * (3 - 2 * fx), fy * fy * (3 - 2 * fy)
+    a, b = _hash(x0, y0, seed), _hash(x0 + 1, y0, seed)
+    c, d = _hash(x0, y0 + 1, seed), _hash(x0 + 1, y0 + 1, seed)
+    return (a + (b - a) * fx) * (1 - fy) + (c + (d - c) * fx) * fy
+
+
+def _fbm(x, y, seed):
+    return 0.55 * _vnoise(x, y, seed, 9.0) + 0.3 * _vnoise(x, y, seed + 7, 4.5) + 0.15 * _vnoise(x, y, seed + 13, 2.2)
+
+
+def _q(v, x, y, steps=10.0):
+    """Quantise a 0..1 channel to a few levels with ordered dithering."""
+    t = (BAYER[y % 4][x % 4] + 0.5) / 16.0 - 0.5
+    return max(0.0, min(1.0, round(v * steps + t * 0.9) / steps))
+
+
+def _centroid(im):
+    a = im.split()[3].load()
+    sx = sy = n = 0
+    for y in range(S):
+        for x in range(S):
+            if a[x, y] > 0:
+                sx += x
+                sy += y
+                n += 1
+    return (sx / n, sy / n) if n else (CX, CY)
+
+
+def _backdrop(kind, acc, cx, cy, seed):
+    """The painted scene behind the subject (full cell, no disc)."""
+    im = Image.new("RGBA", (S, S))
+    px = im.load()
+    ar, ag, ab = (c / 255.0 for c in acc[:3])
+    deep = (0.05 + ar * 0.06, 0.035 + ag * 0.05, 0.07 + ab * 0.07)
+    for y in range(S):
+        for x in range(S):
+            dl = math.hypot(x - cx, y - cy) / 17.0
+            light = max(0.0, 1.0 - dl) ** 1.6  # light pooled behind the subject
+            cloud = _fbm(x, y, seed)
+            if kind == "storm":
+                cloud = 0.6 * cloud + 0.4 * _vnoise(x + y * 1.6, y * 0.35, seed + 3, 3.0)
+            elif kind == "rays":
+                ang = math.atan2(y - cy, x - cx)
+                cloud = 0.55 * cloud + 0.45 * (0.5 + 0.5 * math.sin(ang * 9 + seed))
+            elif kind == "glowline":
+                band = abs((x - y * -0.7) - 18.0) / 6.0
+                light += max(0.0, 1.0 - band) * 0.35
+            elif kind == "orbit":
+                ring = abs(math.hypot(x - cx, y - cy) - 12.5)
+                light += max(0.0, 1.0 - ring / 1.6) * 0.3
+            elif kind == "dark":
+                light *= 0.55
+            v = 0.16 + light * 0.75 + (cloud - 0.5) * 0.32
+            if kind in ("particles", "storm", "runes") and _hash(x, y, seed + 99) > 0.975:
+                v += 0.5  # motes / sparks in the air
+            vig = math.hypot((x - 15.5) / 16.0, (y - 15.5) / 16.0)
+            v *= 1.0 - 0.6 * min(1.0, vig) ** 2.2
+            r = deep[0] + (ar * 0.95 - deep[0]) * v + light * 0.08
+            g = deep[1] + (ag * 0.95 - deep[1]) * v + light * 0.07
+            b = deep[2] + (ab * 0.95 - deep[2]) * v + light * 0.06
+            px[x, y] = (int(_q(r, x, y) * 255), int(_q(g, x, y) * 255), int(_q(b, x, y) * 255), 255)
+    return im
+
+
+def _motif(kind, accent):
+    """The old backdrop's ornament (rays, runes, orbit...) without its disc,
+    laid faintly over the painting."""
+    g1, g2 = G(accent), G(accent)
+    bg_wash(g1)
+    BGS[kind](g2)
+    out = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    a, b, o = g1.im.load(), g2.im.load(), out.load()
+    for y in range(S):
+        for x in range(S):
+            if kind == "dark" or a[x, y] == b[x, y]:
+                continue
+            c = b[x, y]
+            o[x, y] = (min(255, int(c[0] * 1.3)), min(255, int(c[1] * 1.3)), min(255, int(c[2] * 1.3)), 120)
+    return out
+
+
+def _lit_subject(im, acc):
+    """Rim light from the top left, colour bounce on the far side, a little
+    more saturation and contrast in the middle tones."""
+    src = im.load()
+    out = im.copy()
+    o = out.load()
+    rim = tuple(min(255, int(c * 0.5 + 160)) for c in acc[:3])
+    bounce = tuple(min(255, int(c * 1.1)) for c in acc[:3])
+
+    def empty(x, y):
+        return not (0 <= x < S and 0 <= y < S) or src[x, y][3] < 40
+
+    for y in range(S):
+        for x in range(S):
+            r, g, b, a = src[x, y]
+            if a < 40:
+                continue
+            lum = 0.3 * r + 0.59 * g + 0.11 * b
+            # midtones: a touch of contrast and saturation
+            k = 1.12
+            r = lum + (r - lum) * 1.18
+            g = lum + (g - lum) * 1.18
+            b = lum + (b - lum) * 1.18
+            r, g, b = (128 + (c - 128) * k for c in (r, g, b))
+            if lum < 30:  # outline: keep it ink
+                o[x, y] = (max(0, int(r)), max(0, int(g)), max(0, int(b)), a)
+                continue
+            top_left = empty(x - 1, y) or empty(x, y - 1) or empty(x - 1, y - 1)
+            far = empty(x + 1, y) or empty(x, y + 1) or empty(x + 1, y + 1)
+            if top_left and not far:
+                t = 0.5
+                r, g, b = r + (rim[0] - r) * t, g + (rim[1] - g) * t, b + (rim[2] - b) * t
+            elif far and not top_left:
+                r, g, b = r * 0.62 + bounce[0] * 0.22, g * 0.62 + bounce[1] * 0.22, b * 0.62 + bounce[2] * 0.22
+            o[x, y] = (max(0, min(255, int(r))), max(0, min(255, int(g))), max(0, min(255, int(b))), a)
+    return out
+
+
+def _shadow(im):
+    """Soft shadow of the subject on the scene, down-right."""
+    a = im.split()[3]
+    sh_ = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    sp, ap = sh_.load(), a.load()
+    for y in range(S):
+        for x in range(S):
+            best = 0
+            for dx, dy, w in ((-1, -2, 150), (-2, -2, 90), (-1, -1, 110), (-2, -3, 60)):
+                sx, sy = x + dx, y + dy
+                if 0 <= sx < S and 0 <= sy < S and ap[sx, sy] > 40:
+                    best = max(best, w)
+            if best:
+                sp[x, y] = (6, 2, 10, best)
+    return sh_
+
+
+def _bloom(im, acc):
+    """Bright pixels spill light around them (pixel-art bloom, 2 rings)."""
+    src = im.load()
+    out = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    o = out.load()
+    for y in range(S):
+        for x in range(S):
+            r, g, b, a = src[x, y]
+            if a < 200 or 0.3 * r + 0.59 * g + 0.11 * b < 205:
+                continue
+            for dy in range(-2, 3):
+                for dx in range(-2, 3):
+                    d = abs(dx) + abs(dy)
+                    if d == 0 or d > 3:
+                        continue
+                    nx, ny = x + dx, y + dy
+                    if 0 <= nx < S and 0 <= ny < S:
+                        al = 70 if d == 1 else 30
+                        if o[nx, ny][3] < al:
+                            o[nx, ny] = (min(255, acc[0] + 60), min(255, acc[1] + 60), min(255, acc[2] + 60), al)
+    return out
+
+
+def _frame(im):
+    """Bevelled frame: black edge, lit top-left inner line, dark bottom-right."""
+    px = im.load()
+    for i in range(S):
+        for x, y in ((i, 0), (i, S - 1), (0, i), (S - 1, i)):
+            px[x, y] = (8, 5, 12, 255)
+    for i in range(1, S - 1):
+        for (x, y), f in (((i, 1), 1.3), ((1, i), 1.22), ((i, S - 2), 0.5), ((S - 2, i), 0.55)):
+            r, g, b, a = px[x, y]
+            px[x, y] = (min(255, int(r * f + (14 if f > 1 else 0))), min(255, int(g * f + (12 if f > 1 else 0))),
+                        min(255, int(b * f + (16 if f > 1 else 0))), 255)
+    return im
+
+
+def draw(spec, accent, seed=None) -> Image.Image:
+    acc = tuple(accent[:3]) if len(accent) >= 3 else (220, 80, 80)
+    kind = spec.get("bg", "wash")
+    subj, p = spec["s"] if isinstance(spec["s"], tuple) else (spec["s"], {})
+    import gen_skill_art as art
+    if subj in art.SUBJECTS:  # v5 illustrations
+        g = art.Art(acc)
+        art.SUBJECTS[subj](g, p)
+        subject = _lit_subject(art.outline(g.im), acc)
+    else:
+        g = G(accent)
+        SUBJECTS[subj](g, p)
+        subject = _lit_subject(icon_detail.detail(g.im), acc)
+    for f in spec.get("fx", []):
+        FX[f](g) if not hasattr(g, "A") else None
+    cx, cy = _centroid(subject)
+    if seed is None:
+        seed = sum(ord(ch) for ch in subj + kind) + acc[0] * 3 + acc[1] * 5 + acc[2] * 7
+    out = _backdrop(kind, acc, cx, cy, seed)
+    halo = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    G.glowdot(type("H", (), {"glow": halo})(), cx, cy, 13, acc, 0.9)  # light pooled behind
+    out.alpha_composite(halo)
+    out.alpha_composite(_shadow(subject))
+    out.alpha_composite(subject)
+    out.alpha_composite(g.glow)
+    out.alpha_composite(_bloom(out, acc))
+    return _frame(out)
 
 
 if __name__ == "__main__":
