@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="WeaponItemData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_item_data.gd" id="e1"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="e2"]
+[ext_resource type="Script" path="res://scripts/combat/legend_hit_effect.gd" id="e3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/mirror_dagger.png" id="e4"]
+
+[sub_resource type="Resource" id="s1"]
+script = ExtResource("e3")
+kind = 1
+power = 0.6
+chance = 0.4
+
+[resource]
+script = ExtResource("e1")
+weapon_type = 3
+base_damage = 14.0
+attack_speed = 3.0
+reach = 18.0
+knockback = 120.0
+attack_pattern = 1
+two_handed = false
+damage_type = 0
+projectile_speed = 280.0
+projectile_pierce = 0
+projectile_blast_radius = 0.0
+on_hit_effects = Array[ExtResource("e2")]([SubResource("s1")])
+held_angle = -45.0
+grip_pixel = Vector2(3.0, 12.0)
+gender = "m"
+slot_type = &"weapon"
+id = &"mirror_dagger"
+display_name = "Зеркальный кинжал Пипа"
+description = "Шут спрятал в нём своё отражение. Каждый удар повторяет кто-то из зеркала."
+icon = ExtResource("e4")
+item_type = 0
+rarity = 3
+item_level = 12
+unique = true
+max_stack = 1
+stat_bonuses = {
+"agility": 5,
+"crit_chance": 0.06
+}
+price = 0
+currency_value = 0
+has_durability = true
+max_durability = 160
