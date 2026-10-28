@@ -91,6 +91,15 @@ func _ready() -> void:
 	var sv := StatusVisual.new()
 	add_child(sv)
 	sv.setup(status, visual, 22.0)
+	# A faint warm light around the hero: they always stand in their own glow.
+	var aura := PointLight2D.new()
+	aura.name = "HeroLight"
+	aura.texture = AssetPaths.tex(AssetPaths.LIGHT)
+	aura.color = Color(1.0, 0.86, 0.66)
+	aura.energy = 0.42
+	aura.texture_scale = 0.85
+	aura.position = Vector2(0, -12)
+	add_child(aura)
 
 
 func setup(p_hero: Hero, p_level: DungeonLevel) -> void:
