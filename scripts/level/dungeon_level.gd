@@ -93,6 +93,7 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 		return
 	if layout.is_arena:
 		_spawn_boss()
+		_spawn_lore()
 		_spawn_ambience()
 		_spawn_decorations()
 		return
@@ -101,6 +102,7 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	_spawn_specials()
 	_spawn_chests()
 	_spawn_secret_walls()
+	_spawn_lore()
 	_spawn_enemies()
 	_setup_seal()
 	_spawn_ambience()
@@ -612,6 +614,18 @@ func _net_tag(e: Enemy) -> void:
 	e.net_id = enemy_seq
 	e.puppet = not Net.is_host
 	get_tree().call_group("net_game", "register_enemy_node", e)
+
+
+## The floor's note of the chronicle (ItemDatabase.lore_for_floor).
+func _spawn_lore() -> void:
+	if layout.lore_cell.x < 0:
+		return
+	var note := ItemDatabase.lore_for_floor(floor_number)
+	if note == null:
+		return
+	var n := LoreNote.new()
+	n.lore = note
+	add_entity(n, cell_bottom(layout.lore_cell))
 
 
 ## Stairs back to town near the floor entrance (every normal floor).

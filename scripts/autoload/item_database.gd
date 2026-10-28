@@ -19,6 +19,7 @@ const RECIPE_DIR := "res://data/recipes"
 const PACT_DIR := "res://data/pacts"
 const PET_DIR := "res://data/pets"
 const DIFFICULTY_DIR := "res://data/difficulties"
+const LORE_DIR := "res://data/lore"
 const EQUIPMENT_LAYOUT := "res://data/equipment_layout.tres"
 
 var items: Dictionary = {}  # StringName -> ItemData
@@ -38,6 +39,7 @@ var recipes: Array[RecipeData] = []
 var pacts: Array[RunPactData] = []
 var pets: Dictionary = {}  # StringName -> PetData
 var difficulties: Array[DifficultyData] = []  # by order
+var lore: Array[LoreData] = []  # by order
 var equipment_layout: EquipmentLayout
 
 
@@ -90,6 +92,11 @@ func reload() -> void:
 	for res in load_dir(ELITE_DIR):
 		if res is EliteAffixData:
 			elites.append(res)
+	lore.clear()
+	for res in load_dir(LORE_DIR):
+		if res is LoreData:
+			lore.append(res)
+	lore.sort_custom(func(a: LoreData, b: LoreData) -> bool: return a.order < b.order)
 	for res in load_dir(BOSS_DIR):
 		if res is BossData:
 			bosses.append(res)
@@ -238,3 +245,38 @@ func load_dir(path: String) -> Array[Resource]:
 	for sub in dirs:
 		result.append_array(load_dir(path.path_join(sub)))
 	return result
+
+
+## The note of a floor: a guardian's arena holds that guardian's note; a normal
+## floor shows the next note of its biome (the 1st normal floor of the biome the
+## 1st note, ...). Deterministic: every co-op machine picks the same.
+func lore_for_floor(floor_number: int) -> LoreData:
+	if floor_number <= GameState.TOWN_FLOOR or lore.is_empty():
+		return null
+	if GameState.is_boss_floor(floor_number):
+		var boss := boss_for_floor(floor_number)
+		for n in lore:
+			if boss and n.boss == boss.id:
+				return n
+		return null
+	var biome := biome_for_floor(floor_number)
+	if biome == null:
+		return null
+	var notes := lore.filter(func(n: LoreData) -> bool: return n.biome == biome.id)
+	if notes.is_empty():
+		return null
+	var start := ((floor_number - 1) / GameState.FLOORS_PER_BIOME) * GameState.FLOORS_PER_BIOME + 1
+	var index := 0
+	for f in range(start, floor_number):
+		if not GameState.is_boss_floor(f):
+			index += 1
+	# A guardian takes one floor of some biomes: fewer floors than notes. Each
+	# run then shows its own window of neighbouring notes (order kept), so
+	# every note turns up over a few runs.
+	var normal := 0
+	for f in range(start, start + GameState.FLOORS_PER_BIOME):
+		if not GameState.is_boss_floor(f):
+			normal += 1
+	if normal < notes.size():
+		index += absi(GameState.run_seed) % (notes.size() - normal + 1)
+	return notes[index % notes.size()]

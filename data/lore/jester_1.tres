@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"jester_1"
+title = "Афиша, приклеенная к зеркалу"
+author = "Труппа «Маска Затмения»"
+text = "Только сегодня! Величайший фокус королевства! Мастер иллюзий спрячет солнце так, что его не найдёт никто — ни боги, ни демоны, ни вы сами! Вход бесплатный. Выход не гарантирован."
+biome = &"mirror_halls"
+boss = &""
+order = 12

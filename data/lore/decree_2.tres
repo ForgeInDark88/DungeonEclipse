@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"decree_2"
+title = "Запись королевского советника"
+author = "Советник Вэлдр"
+text = "Он поджёг дворец своей рукой. Сказал, что начнёт с себя. Пламя шло по залам три дня, и чёрное солнце внизу корчилось от голода — я слышал, как дрожит камень. Но пепел падал вниз. И тьма научилась есть пепел."
+biome = &"ashen_halls"
+boss = &""
+order = 16

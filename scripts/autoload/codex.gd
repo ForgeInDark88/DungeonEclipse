@@ -5,16 +5,18 @@ extends Node
 
 const ACHIEVEMENT_DIR := "res://data/achievements"
 const SECTION := "codex"
-## Counters an AchievementData can watch. "floor", "bestiary" and
-## "items_known" keep the best value, the rest are sums.
+## Counters an AchievementData can watch. "floor", "bestiary", "items_known"
+## and "lore" keep the best value, the rest are sums.
 const COUNTERS: Array[StringName] = [&"kills", &"elites", &"bosses", &"floor", &"chests", &"epic_items",
-	&"gold", &"traps", &"events", &"purchases", &"deaths", &"bestiary", &"items_known", &"runs", &"victories"]
+	&"gold", &"traps", &"events", &"purchases", &"deaths", &"bestiary", &"items_known", &"runs", &"victories", &"lore"]
 
 var counters: Dictionary = {}
 ## enemy / boss id -> kills
 var enemy_kills: Dictionary = {}
 ## item id -> times found
 var items_found: Dictionary = {}
+## lore note id -> unix time of the first reading
+var lore_read: Dictionary = {}
 ## achievement id -> unix time of unlocking
 var achieved: Dictionary = {}
 var achievements: Array[AchievementData] = []
@@ -60,6 +62,7 @@ func load_progress() -> void:
 	enemy_kills = cfg.get_value(SECTION, "enemy_kills", {})
 	items_found = cfg.get_value(SECTION, "items_found", {})
 	achieved = cfg.get_value(SECTION, "achieved", {})
+	lore_read = cfg.get_value(SECTION, "lore_read", {})
 
 
 func save_progress() -> void:
@@ -70,6 +73,7 @@ func save_progress() -> void:
 	cfg.set_value(SECTION, "enemy_kills", enemy_kills)
 	cfg.set_value(SECTION, "items_found", items_found)
 	cfg.set_value(SECTION, "achieved", achieved)
+	cfg.set_value(SECTION, "lore_read", lore_read)
 	cfg.save(SaveManager.META_PATH)
 	_dirty = false
 
@@ -147,3 +151,21 @@ func _check(counter: StringName) -> void:
 			MetaProgress.save_progress()
 		save_progress()
 		EventBus.achievement_unlocked.emit(a)
+
+
+func is_lore_read(id: StringName) -> bool:
+	return lore_read.has(id)
+
+
+func lore_read_count() -> int:
+	return lore_read.size()
+
+
+## The first reading of a note: kept for the Codex, counts for achievements.
+func read_lore(id: StringName) -> void:
+	if lore_read.has(id):
+		return
+	lore_read[id] = int(Time.get_unix_time_from_system())
+	record_max(&"lore", lore_read.size())
+	_dirty = true
+	save_progress()

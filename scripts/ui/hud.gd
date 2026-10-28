@@ -249,6 +249,8 @@ func _build() -> void:
 	_boss_box.add_child(_boss_bar)
 	# Boss intro card and phase banners (over the world, under messages).
 	root.add_child(BossStage.new())
+	# Co-op: arrows to the allies out of sight (screen space, not the scaled root).
+	add_child(AllyArrows.new())
 	_message = UIStyle.outlined_label("", 9, Color.WHITE)
 	_message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_message.anchor_left = 0.0

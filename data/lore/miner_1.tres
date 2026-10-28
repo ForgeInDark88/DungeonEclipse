@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"miner_1"
+title = "Журнал рудокопа, смена 112"
+author = "Бригадир Гримм"
+text = "Нашли жилу лунного кристалла. Светится сам, без факела. Звенит, если стукнуть. Старики говорят, это слёзы горы — она плачет, с тех пор как в неё упало чёрное солнце. Платят втрое. Копаем."
+biome = &"crystal_depths"
+boss = &""
+order = 18

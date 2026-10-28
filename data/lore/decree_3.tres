@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"decree_3"
+title = "Пепельная страница"
+author = "?"
+text = "Король сидит на троне из углей. Корона вросла в обгоревший череп. Он всё ещё отдаёт приказы пустому залу: «Сжечь. Сжечь. Ни искры наверх». Он сжёг королевство, чтобы спасти его. Теперь он охраняет пепел."
+biome = &"ashen_halls"
+boss = &""
+order = 17

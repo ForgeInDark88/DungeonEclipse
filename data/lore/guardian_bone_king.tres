@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"guardian_bone_king"
+title = "Корона из чужих костей"
+author = "Летописец двора"
+text = "Король-отец не дал Затмению войти в мир живых и придумал, как: построить из костей предков стену, которую тьма не сможет переступить. Он сел на костяной трон и стал её частью. Мёртвые служат ему до сих пор. Мёртвым всё равно — так он говорил."
+biome = &""
+boss = &"bone_king"
+order = 24

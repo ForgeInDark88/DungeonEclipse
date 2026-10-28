@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"jester_2"
+title = "Записка шута королю"
+author = "Придворный шут"
+text = "Ваше величество, вы просили меня обмануть Его. Я построил зал из тысячи зеркал: пусть чёрное солнце смотрит на свои отражения и не найдёт дорогу наверх. Но, ваше величество, зеркала работают в обе стороны. Я уже не помню, какое из лиц — моё."
+biome = &"mirror_halls"
+boss = &""
+order = 13

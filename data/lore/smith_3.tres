@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"smith_3"
+title = "Неотправленное письмо Торна"
+author = "Торн, кузнец"
+text = "Новое солнце зажглось, Эльза. На один миг. А потом чёрное его выпило, как воду, и чародейка закричала так, что треснули наковальни. Она не умерла. Она горит до сих пор и не может сгореть. Не жди меня."
+biome = &"lava"
+boss = &""
+order = 11

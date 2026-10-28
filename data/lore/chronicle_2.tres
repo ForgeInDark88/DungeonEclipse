@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"chronicle_2"
+title = "Хроника Аурелии, глава о совете шести"
+author = "Летописец двора"
+text = "Когда тьма легла на город, король собрал шестерых: свою придворную чародейку, шута, каменного стража горы, звонаря храма, старого короля-отца и самого себя. Они поклялись спуститься вниз и запечатать то, что упало. Шестеро ушли. Вернулся лишь гул под землёй."
+biome = &"ruins"
+boss = &""
+order = 7

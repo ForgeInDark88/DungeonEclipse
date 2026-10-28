@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"guardian_ashen_king"
+title = "Последний король Аурелии"
+author = "Советник Вэлдр"
+text = "Он был добрым королём. Он сжёг своё королевство, чтобы уморить тьму голодом, и сам сгорел с ним. Его клинок до сих пор раскалён. Если он падёт — Затмению больше нечем будет закрываться. Путь к нему откроется."
+biome = &""
+boss = &"ashen_king"
+order = 29

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"guardian_illusionist"
+title = "Шут, который стал маской"
+author = "Придворный шут"
+text = "Меня звали Пип. Я смешил короля. Потом прятал солнце в зеркалах. Теперь зеркала прячут меня. Если победишь — разбей последнее зеркало. Может быть, в нём я."
+biome = &""
+boss = &"illusionist"
+order = 26

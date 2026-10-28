@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"herbalist_3"
+title = "Тетрадь травницы, вырванный лист"
+author = "Мира, травница"
+text = "Я поняла. Грибы растут не на земле — на свете, который падает вниз. Затмение не закрыло солнце. Оно его съело, и теперь свет стекает под землю, к чему-то голодному. Грибы — просто крошки с его стола."
+biome = &"fungal"
+boss = &""
+order = 5

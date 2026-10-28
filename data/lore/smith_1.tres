@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"smith_1"
+title = "Письмо кузнеца Торна жене"
+author = "Торн, кузнец"
+text = "Здесь жарко, Эльза, как в горне. Глубинный огонь не гаснет даже без солнца, и король приказал ковать для стражей оружие, что не боится тьмы. Платят щедро. Не волнуйся, я вернусь до зимы. Если зима ещё бывает там, наверху."
+biome = &"lava"
+boss = &""
+order = 9

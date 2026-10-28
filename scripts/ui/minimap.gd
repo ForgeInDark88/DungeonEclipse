@@ -113,7 +113,7 @@ func is_big_open() -> bool:
 
 func _process(delta: float) -> void:
 	_blink += delta
-	var player := get_tree().get_first_node_in_group("player") as Player
+	var player := _local_player()
 	if player == null or player.level == null:
 		return
 	if player.level != _level:
@@ -213,8 +213,26 @@ func _draw_marks(canvas: Control, scale_default: float, small: bool) -> void:
 	for m in _marks:
 		var cell: Vector2i = m[0]
 		canvas.draw_rect(Rect2(Vector2(cell) * sc - Vector2(dot, dot) / 2.0 + Vector2(sc, sc) / 2.0, Vector2(dot, dot)), m[1])
-	var player := get_tree().get_first_node_in_group("player") as Node2D
+	# Co-op allies: always shown (they reveal where they are), in their colour.
+	var game := get_tree().current_scene
+	if Net.active and game and game.has_method("party"):
+		for p: Player in game.party():
+			if p.puppet and is_instance_valid(p):
+				var ac := _level.world_to_cell(p.global_position + Vector2(0, -8))
+				var col := UIStyle.ally_color(p.peer_id) if not p.dead else Color(0.6, 0.6, 0.6)
+				var r := Rect2(Vector2(ac) * sc - Vector2(dot, dot) * 0.6 + Vector2(sc, sc) / 2.0, Vector2(dot, dot) * 1.2)
+				canvas.draw_rect(r.grow(1.0), Color(0, 0, 0, 0.8))
+				canvas.draw_rect(r, col)
+	var player := _local_player()
 	if player and int(_blink * 4.0) % 2 == 0:
 		var pc := _level.world_to_cell(player.global_position + Vector2(0, -8))
 		canvas.draw_rect(Rect2(Vector2(pc) * sc - Vector2(dot, dot) / 2.0 + Vector2(sc, sc) / 2.0, Vector2(dot, dot) * 1.2), Color.WHITE)
 
+
+
+## This machine's hero (the "player" group also holds co-op puppets).
+func _local_player() -> Player:
+	var game := get_tree().current_scene
+	if game and "player" in game and game.player is Player:
+		return game.player
+	return get_tree().get_first_node_in_group("player") as Player

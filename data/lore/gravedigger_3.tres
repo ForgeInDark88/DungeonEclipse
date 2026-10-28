@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoreData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/lore_data.gd" id="1_lore"]
+
+[resource]
+script = ExtResource("1_lore")
+id = &"gravedigger_3"
+title = "Дневник могильщика, последняя страница"
+author = "Олдрик, могильщик"
+text = "Король спустился ко мне сам, в золотой короне, с факелом. Спросил, сколько костей лежит в катакомбах. Я сказал — все наши предки. Он улыбнулся: «Значит, их хватит, чтобы построить трон». Я ухожу наверх. Если кто прочтёт — не верьте шагам за спиной."
+biome = &"catacombs"
+boss = &""
+order = 2
