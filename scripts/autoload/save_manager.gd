@@ -19,6 +19,9 @@ var fullscreen: bool = false
 var brightness: float = 1.0
 ## Size of the bottom HUD panel (Settings → «Размер панели»), 0.6–1.0.
 var hud_scale: float = 1.0
+## Graphics (Settings): bloom glow of bright pixels, block shadows on the back wall.
+var bloom: bool = true
+var block_shadows: bool = true
 var show_damage_numbers: bool = true
 var show_hints: bool = true
 ## Difficulty picked last time in hero creation (DifficultyData.id).
@@ -51,6 +54,8 @@ func load_settings() -> void:
 	fullscreen = cfg.get_value("video", "fullscreen", fullscreen)
 	brightness = cfg.get_value("video", "brightness", brightness)
 	hud_scale = cfg.get_value("video", "hud_scale", hud_scale)
+	bloom = cfg.get_value("video", "bloom", bloom)
+	block_shadows = cfg.get_value("video", "block_shadows", block_shadows)
 	show_damage_numbers = cfg.get_value("game", "damage_numbers", show_damage_numbers)
 	show_hints = cfg.get_value("game", "hints", show_hints)
 	seen_hints = cfg.get_value("game", "seen_hints", [])
@@ -68,6 +73,8 @@ func save_settings() -> void:
 	cfg.set_value("video", "fullscreen", fullscreen)
 	cfg.set_value("video", "brightness", brightness)
 	cfg.set_value("video", "hud_scale", hud_scale)
+	cfg.set_value("video", "bloom", bloom)
+	cfg.set_value("video", "block_shadows", block_shadows)
 	cfg.set_value("game", "damage_numbers", show_damage_numbers)
 	cfg.set_value("game", "hints", show_hints)
 	cfg.set_value("game", "seen_hints", seen_hints)

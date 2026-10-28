@@ -3,6 +3,9 @@ extends BookPageScreen
 
 func _ready() -> void:
 	get_tree().paused = false
+	if "--selfcheck" in OS.get_cmdline_user_args():
+		get_tree().root.add_child.call_deferred(SelfCheck.new())
+		return
 	build_book(Vector2(440, 260))
 	AudioManager.play_music(&"menu")
 
@@ -65,6 +68,15 @@ func _ready() -> void:
 	right_page.add_child(BookPageScreen.button("Летопись (%d/%d)" % [Codex.achieved.size(), Codex.achievements.size()],
 		func() -> void: get_tree().change_scene_to_file(GameState.CODEX)))
 	right_page.add_child(BookPageScreen.button("Настройки", open_settings))
+	# two small buttons on one row: the page holds a «Continue» line too
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	for entry in [["Как играть", func() -> void: add_child(InfoBook.how_to_play())],
+			["Авторы", func() -> void: add_child(InfoBook.credits())]]:
+		var b := BookPageScreen.button(entry[0], entry[1])
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(b)
+	right_page.add_child(row)
 	right_page.add_child(BookPageScreen.button("Выход", func() -> void: get_tree().quit()))
 	if cont:
 		cont.grab_focus()
@@ -82,3 +94,4 @@ func _spacer(h: float) -> Control:
 	var c := Control.new()
 	c.custom_minimum_size = Vector2(0, h)
 	return c
+

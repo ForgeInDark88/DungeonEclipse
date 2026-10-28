@@ -56,8 +56,24 @@ func _build() -> void:
 		SaveManager.fullscreen = on
 		SaveManager.apply_settings())
 	left.add_child(_fullscreen)
-	left.add_child(_check("Числа урона", SaveManager.show_damage_numbers, func(on: bool) -> void: SaveManager.show_damage_numbers = on))
-	left.add_child(_check("Подсказки новичку", SaveManager.show_hints, func(on: bool) -> void: SaveManager.show_hints = on))
+	# switches two per row, the page stays inside the book
+	var checks := [
+		_check("Свечение", SaveManager.bloom, func(on: bool) -> void:
+			SaveManager.bloom = on
+			get_tree().call_group("graphics_listeners", "apply_graphics")),
+		_check("Тени блоков", SaveManager.block_shadows, func(on: bool) -> void:
+			SaveManager.block_shadows = on
+			get_tree().call_group("graphics_listeners", "apply_graphics")),
+		_check("Числа урона", SaveManager.show_damage_numbers, func(on: bool) -> void: SaveManager.show_damage_numbers = on),
+		_check("Подсказки", SaveManager.show_hints, func(on: bool) -> void: SaveManager.show_hints = on),
+	]
+	for k in range(0, checks.size(), 2):
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 3)
+		for c: CheckButton in checks.slice(k, k + 2):
+			c.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			row.add_child(c)
+		left.add_child(row)
 	left.add_child(BookPageScreen.button("Показать подсказки заново", func() -> void:
 		SaveManager.seen_hints.clear()
 		SaveManager.save_settings()
