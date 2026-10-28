@@ -661,6 +661,8 @@ func _spawn_specials() -> void:
 				add_entity((load(SMITH_SCENE) as PackedScene).instantiate(), cell_bottom(info["cell"]))
 			&"quest":
 				add_entity((load(QUEST_SCENE) as PackedScene).instantiate(), cell_bottom(info["cell"]))
+			&"chronicler":
+				add_entity(Chronicler.new(), cell_bottom(info["cell"]))
 			&"event":
 				_spawn_event(info)
 			&"dummy":

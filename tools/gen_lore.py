@@ -215,6 +215,42 @@ def bottle():
     return finish(im, g)
 
 
+def chronicler():
+    """16x30: the town chronicler - an old scholar in a long blue robe, a huge
+    open book in his arms, spectacles, a candle on his shoulder-board."""
+    im = blank(16, 30)
+    g = blank(16, 30)
+    robe = (60, 70, 120)
+    m = mask(16, 30, lambda d: d.polygon([(5, 9), (11, 9), (13, 29), (3, 29)], fill=FULL))
+    lit(im, m, robe, 6, 14, 5, 10, flat=0.2)
+    d = ImageDraw.Draw(im)
+    d.line((8, 10, 8, 29), fill=rgba(sh(robe, 0.7)))
+    d.line((3, 29, 13, 29), fill=rgba(sh(robe, 0.6)))
+    # head: bald top, white beard, spectacles
+    hm = mask(16, 30, lambda d: d.ellipse((5, 1, 11, 8), fill=FULL))
+    lit(im, hm, (226, 186, 150), 7, 3, 3, 3)
+    d = ImageDraw.Draw(im)
+    d.polygon([(5, 6), (11, 6), (10, 12), (8, 14), (6, 12)], fill=rgba((232, 232, 226)))  # beard
+    d.line((6, 5, 10, 5), fill=rgba((60, 50, 40)))
+    d.point((6, 4), fill=rgba((200, 230, 255)))
+    d.point((10, 4), fill=rgba((200, 230, 255)))
+    # the big open book held in front
+    d.polygon([(2, 15), (8, 17), (8, 21), (2, 19)], fill=rgba((236, 222, 186)))
+    d.polygon([(8, 17), (14, 15), (14, 19), (8, 21)], fill=rgba((222, 206, 168)))
+    d.line((8, 17, 8, 21), fill=rgba((120, 70, 40)))
+    d.line((2, 19, 8, 21, 14, 19), fill=rgba((110, 40, 30)))  # cover edge
+    for k in range(2):
+        d.line((3, 17 + k, 7, 18 + k), fill=rgba((110, 90, 70)))
+        d.line((9, 18 + k, 13, 17 + k), fill=rgba((110, 90, 70)))
+    # hands
+    d.point((2, 18), fill=rgba((226, 186, 150)))
+    d.point((14, 18), fill=rgba((226, 186, 150)))
+    # quill behind the ear
+    d.line((11, 2, 14, -1), fill=rgba((240, 240, 240)))
+    glow_dot(g, 8, 18, 4.0, (255, 230, 160), 0.4)
+    return finish(im, g)
+
+
 def main():
     os.makedirs(DATA, exist_ok=True)
     for f in os.listdir(DATA):
@@ -227,6 +263,7 @@ def main():
     os.makedirs(world, exist_ok=True)
     lectern().save(os.path.join(world, "lore_note.png"))
     bottle().save(os.path.join(world, "lore_bottle.png"))
+    chronicler().save(os.path.join(gp.A, "sprites", "npc", "chronicler.png"))
     print("lore: %d notes" % len(NOTES))
 
 

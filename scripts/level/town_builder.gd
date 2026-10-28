@@ -40,4 +40,5 @@ static func build() -> LevelLayout:
 	l.specials.append({"type": &"quest", "cell": Vector2i(61, GROUND - 1)})
 	l.specials.append({"type": &"smith", "cell": Vector2i(73, GROUND - 1)})
 	l.specials.append({"type": &"dummy", "cell": Vector2i(90, GROUND - 1)})
+	l.specials.append({"type": &"chronicler", "cell": Vector2i(14, GROUND - 1)})
 	return l
