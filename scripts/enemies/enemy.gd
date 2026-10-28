@@ -398,7 +398,7 @@ func _physics_process(delta: float) -> void:
 	# Servants in reach get struck too (melee monsters: whoever stands
 	# in front of them; the heroes still come first when equally close).
 	_minion_scan -= delta
-	if _minion_scan <= 0.0 and state != State.ATTACK and _attack_timer <= 0.0 \
+	if _minion_scan <= 0.0 and not _dormant and state != State.ATTACK and _attack_timer <= 0.0 \
 			and data.behavior != EnemyData.Behavior.RANGED and not status.is_stunned():
 		_minion_scan = 0.3
 		var m := Minion.nearest(get_tree(), global_position, data.attack_range + 10.0)

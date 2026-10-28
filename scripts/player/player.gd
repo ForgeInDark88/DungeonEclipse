@@ -535,6 +535,25 @@ func _unhandled_input(event: InputEvent) -> void:
 		attack()
 		get_viewport().set_input_as_handled()
 		return
+	# Mouse buttons / gamepad bound to the other actions (the default: the
+	# right mouse button parries or rolls). Keys never get here - _input
+	# took them; clicks on the HUD were taken by the GUI.
+	if get_tree().paused:
+		return
+	if event.is_action_pressed("defend"):
+		defend()
+		get_viewport().set_input_as_handled()
+		return
+	for i in SkillSet.SLOT_COUNT:
+		if event.is_action_pressed("skill_%d" % (i + 1)):
+			use_skill(i)
+			get_viewport().set_input_as_handled()
+			return
+	for i in QuickBar.SIZE:
+		if event.is_action_pressed("quick_%d" % (i + 1)):
+			use_quick_slot(i)
+			get_viewport().set_input_as_handled()
+			return
 
 
 # ------------------------------------------------------------------ combat

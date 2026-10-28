@@ -19,6 +19,7 @@ func setup(p_status: StatusEffects, p_tint_target: CanvasItem, p_head_height: fl
 	tint_target = p_tint_target
 	head_height = p_head_height
 	status.changed.connect(_refresh)
+	_refresh()
 
 
 func _ready() -> void:
@@ -76,6 +77,11 @@ func _refresh() -> void:
 	_stars.visible = status.is_stunned()
 	_embers.emitting = status.has(&"burn")
 	_embers.position = Vector2(0, -head_height / 2.0)
+	# Nothing to animate without statuses: sleep (most monsters, most of the time).
+	var busy := n > 0
+	if not busy and is_processing() and tint_target:
+		tint_target.self_modulate = Color.WHITE
+	set_process(busy)
 
 
 func _process(delta: float) -> void:
