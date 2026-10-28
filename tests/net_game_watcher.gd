@@ -237,6 +237,41 @@ func _watch_game() -> void:
 				await get_tree().create_timer(2.0).timeout
 				check(level.layout.get_tile(cell.x, cell.y) == LevelLayout.Tile.EMPTY,
 						"client: tile break replicated back")
+	# --- trap phase: the guest springs a rock trap; the host must see the
+	# same rocks fall (shower / loose rock) at the guest's spot.
+	var trap: Node = null
+	if level != null:
+		var traps := get_tree().get_nodes_in_group("traps")
+		traps.sort_custom(func(a: Node, b: Node) -> bool: return a.net_seq < b.net_seq)
+		for t in traps:
+			if t.disarmed:
+				continue
+			if (t.data.kind == TrapData.Kind.PRESSURE_PLATE and t.linked == null) or t.data.kind == TrapData.Kind.FALLING_ROCK:
+				trap = t
+				break
+	if trap == null:
+		print("SKIP: no rock trap on this floor")
+	elif is_host:
+		var seen := false
+		for i in 40:
+			await get_tree().create_timer(0.1).timeout
+			if not is_instance_valid(trap):
+				break
+			if trap.data.kind == TrapData.Kind.FALLING_ROCK:
+				seen = trap._phase != ""
+			else:
+				seen = level.find_children("*", "RockProjectile", true, false).size() > 0 \
+						or trap._cooldown > 0.0
+			if seen:
+				break
+		check(seen, "host: guest's rock trap fell here too")
+	else:
+		if mine != null:
+			mine.global_position = trap.global_position + Vector2(0, 30)
+		await get_tree().create_timer(0.7).timeout
+		if is_instance_valid(trap):
+			trap.spring_shared(mine.global_position if mine else trap.global_position)
+		await get_tree().create_timer(1.0).timeout
 	# --- floor transition phase: the host descends; the guest must rebuild
 	# the floor and receive the new floor's enemies via the world re-sync.
 	if is_host:

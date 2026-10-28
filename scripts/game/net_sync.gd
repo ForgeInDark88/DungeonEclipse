@@ -826,16 +826,30 @@ func request_trap_disarm(seq: int) -> void:
 			return
 
 
-## Client → host: my failed attempt triggered the trap on my machine.
+## Client → host: my hero sprang this trap (stepped on the plate, walked
+## under the loose rock, failed to disarm) at `target`. The host springs its
+## copy - the one that hurts - and tells everyone else.
 @rpc("any_peer", "call_remote", "reliable")
-func request_trap_spring(seq: int) -> void:
+func request_trap_spring(seq: int, target: Vector2) -> void:
 	if not Net.is_host:
 		return
 	var sender := multiplayer.get_remote_sender_id()
 	for t in get_tree().get_nodes_in_group("traps"):
 		if t.net_seq == seq and not t.disarmed:
-			if _sender_near(sender, t.global_position, 96.0):
-				t.trigger()
+			if _sender_near(sender, t.global_position, 160.0) and _sender_near(sender, target, 160.0):
+				t.net_spring(target)
+				trap_sprung.rpc(seq, target, sender)
+			return
+
+
+## Host → all: a trap went off at `target` (`origin` already sprang it).
+@rpc("authority", "call_remote", "reliable")
+func trap_sprung(seq: int, target: Vector2, origin: int) -> void:
+	if origin == multiplayer.get_unique_id():
+		return
+	for t in get_tree().get_nodes_in_group("traps"):
+		if t.net_seq == seq:
+			t.net_spring(target)
 			return
 
 
