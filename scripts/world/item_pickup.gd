@@ -13,6 +13,8 @@ var _glow: PointLight2D
 ## LAN co-op: replicas of host-dropped loot; touching one asks the host.
 var puppet := false
 var net_id := 0
+## Host: where the replicas were last told this item lies.
+var _told_pos := Vector2.INF
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var count_label: Label = $Count
@@ -50,11 +52,22 @@ func _physics_process(delta: float) -> void:
 		if is_on_floor():
 			velocity.x = move_toward(velocity.x, 0.0, 400.0 * delta)
 		move_and_slide()
+	if settled and net_id > 0 and not puppet and Net.active and Net.is_host \
+			and global_position.distance_to(_told_pos) > 2.0:
+		_tell_replicas()
 	_bob += delta * 3.0
 	sprite.position.y = -8.0 + sin(_bob) * 1.5
 	if _glow:
 		_glow.energy = 0.9 + sin(_bob * 1.7) * 0.35
 		sprite.modulate = Color.WHITE.lerp(item.rarity_color() * 1.5, (sin(_bob * 1.7) + 1.0) * 0.2)
+
+
+## Host: send the resting place / count to the replicas.
+func _tell_replicas() -> void:
+	_told_pos = global_position
+	var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+	if ns:
+		ns.item_settled.rpc(net_id, global_position, count)
 
 
 func get_prompt() -> String:
@@ -83,9 +96,16 @@ func collect(hero: Hero) -> void:
 			EventBus.message.emit("Рюкзак полон")
 			return
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
-		if ns:
+		if ns and visible:
 			ns.take_item.rpc_id(1, net_id)
-			queue_free()
+			# Hidden until the host answers (item_taken frees it); if the
+			# host refused (too far on its side), the item comes back.
+			visible = false
+			remove_from_group("interactable")
+			get_tree().create_timer(1.5).timeout.connect(func() -> void:
+				if is_instance_valid(self) and not is_queued_for_deletion():
+					visible = true
+					add_to_group("interactable"))
 		return
 	# The host collecting its own loot must remove the replicas on clients,
 	# or they keep a phantom copy that vanishes when touched.
@@ -115,5 +135,7 @@ func collect(hero: Hero) -> void:
 		count = left
 		count_label.text = str(count) if count > 1 else ""
 		EventBus.message.emit("Рюкзак полон")
+		if Net.active and Net.is_host and net_id > 0:
+			_tell_replicas()
 	else:
 		queue_free()

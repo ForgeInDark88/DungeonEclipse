@@ -136,6 +136,22 @@ func _watch_game() -> void:
 		chest.interact(mine)
 		await get_tree().create_timer(2.0).timeout
 		check(chest.opened, "client: chest opened through the host")
+	# --- loot phase: every pickup a guest sees must be a replica of a host
+	# pickup (no phantom copies of its own).
+	await get_tree().create_timer(1.5).timeout
+	var own := 0
+	var reps := 0
+	for n in get_tree().get_nodes_in_group("pickups"):
+		var pk := n as ItemPickup
+		if pk == null or pk.is_queued_for_deletion():
+			continue
+		print("DBG pickup ", "host" if is_host else "guest", " id=", pk.net_id, " puppet=", pk.puppet, " item=", pk.item.id if pk.item else "?", " pos=", pk.global_position)
+		if pk.puppet:
+			reps += 1
+		else:
+			own += 1
+	if not is_host:
+		check(own == 0, "guest: no phantom (local) pickups (%d, replicas %d)" % [own, reps])
 	# --- costume phase: the guest equips a sword; the host's puppet copy
 	# must mirror the same gear through net_state.
 	if is_host:

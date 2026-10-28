@@ -67,7 +67,7 @@ func _physics_process(delta: float) -> void:
 				_hit(enemy)
 		Act.FETCH:
 			var coin := _target as ItemPickup
-			if coin.is_queued_for_deletion():
+			if coin.is_queued_for_deletion() or not coin.visible:
 				_act = Act.FOLLOW
 				return
 			var spot := coin.global_position + Vector2(0, -6)
@@ -112,7 +112,7 @@ func _pick_job() -> void:
 			return
 	for n in get_tree().get_nodes_in_group("pickups"):
 		var p := n as ItemPickup
-		if p and p.item and p.item.currency_value > 0 and not p.is_queued_for_deletion() \
+		if p and p.visible and p.item and p.item.currency_value > 0 and not p.is_queued_for_deletion() \
 				and p.global_position.distance_to(global_position) < data.gold_radius:
 			_target = p
 			_act = Act.FETCH

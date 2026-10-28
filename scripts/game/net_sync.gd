@@ -366,7 +366,7 @@ func broadcast_death(e: Enemy, xp: int, gold: int) -> void:
 # ------------------------------------------------------------- pickups
 ## Host → clients: a dropped item appeared.
 @rpc("authority", "call_remote", "reliable")
-func spawn_item(net_id: int, item_dict: Dictionary, count: int, pos: Vector2) -> void:
+func spawn_item(net_id: int, item_dict: Dictionary, count: int, pos: Vector2, impulse := Vector2.ZERO) -> void:
 	if items.has(net_id):
 		return
 	var it := RunCodec.item_from_dict(item_dict)
@@ -376,7 +376,9 @@ func spawn_item(net_id: int, item_dict: Dictionary, count: int, pos: Vector2) ->
 	pickup.name = "Pickup_%d" % net_id
 	pickup.puppet = true
 	pickup.net_id = net_id
-	pickup.setup(it, count, Vector2.ZERO)
+	# The same toss as on the host, so the replica lands where the item does
+	# (item_settled corrects what physics still makes differ).
+	pickup.setup(it, count, impulse)
 	items[net_id] = pickup
 	get_parent().add_child(pickup)
 	pickup.global_position = pos
@@ -444,7 +446,21 @@ func broadcast_item(pickup: ItemPickup) -> void:
 	next_net_id += 1
 	pickup.net_id = id
 	items[id] = pickup
-	spawn_item.rpc(id, RunCodec.item_to_dict(pickup.item), pickup.count, pickup.global_position)
+	spawn_item.rpc(id, RunCodec.item_to_dict(pickup.item), pickup.count, pickup.global_position, pickup.velocity)
+
+
+## Host → all: the item came to rest here (replicas snap to it, so nobody
+## sees loot where there is none).
+@rpc("authority", "call_remote", "reliable")
+func item_settled(net_id: int, pos: Vector2, count: int) -> void:
+	var pickup: ItemPickup = items.get(net_id)
+	if pickup == null or not is_instance_valid(pickup):
+		return
+	pickup.global_position = pos
+	pickup.velocity = Vector2.ZERO
+	if pickup.count != count:
+		pickup.count = count
+		pickup.count_label.text = str(count) if count > 1 else ""
 
 
 # ---------------------------------------------------------- players
