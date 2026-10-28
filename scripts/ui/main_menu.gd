@@ -19,7 +19,9 @@ func _ready() -> void:
 	glow.modulate = Color(1, 1, 1, 0.0)
 	block.add_child(glow)
 	var title := TextureRect.new()
-	title.texture = load("res://assets/ui/title.png")
+	# The title in the game's own style (tools/gen_title.py); the original
+	# artwork stays as res://assets/ui/title.png.
+	title.texture = load("res://assets/ui/title_stone.png")
 	title.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	title.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	title.set_anchors_preset(Control.PRESET_FULL_RECT)
