@@ -148,7 +148,7 @@ func finish_run(hero: Hero, floor_reached: int, stats: Dictionary) -> Dictionary
 	var parts: Array[String] = []
 	var from_items := 0
 	if hero:
-		for stack in hero.inventory.slots:
+		for stack in hero.inventory.all_stacks():
 			if stack and stack.item.shard_value > 0:
 				from_items += stack.item.shard_value * stack.count
 	if from_items > 0:

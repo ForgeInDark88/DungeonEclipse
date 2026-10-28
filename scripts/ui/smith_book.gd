@@ -17,6 +17,7 @@ var _grid: GridContainer
 var _btn_upgrade: Button
 var _btn_enchant: Button
 var _btn_smelt: Button
+var _btn_smelt_junk: Button
 var _btn_repair: Button
 
 
@@ -84,6 +85,7 @@ func _build() -> void:
 	_btn_enchant = _service(left, _do_enchant)
 	_btn_smelt = _service(left, _do_smelt)
 	_btn_repair = _service(left, _do_repair)
+	_btn_smelt_junk = _service(left, _do_smelt_junk)
 	left.add_child(BookPageScreen.button("Уйти", close))
 
 	var right := VBoxContainer.new()
@@ -117,11 +119,16 @@ func _refresh() -> void:
 	for item: EquipmentItemData in hero.equipment.items.values():
 		if item:
 			_grid.add_child(_cell(item, -1))
+	var junk := 0
 	for i in hero.inventory.capacity():
 		var st := hero.inventory.stack_at(i)
 		if st and Smithing.is_smithable(st.item):
 			_grid.add_child(_cell(st.item, i))
+			if st.junk:
+				junk += 1
 	_show()
+	_btn_smelt_junk.text = "Переплавить весь мусор (%d)" % junk if junk > 0 else "Мусор: Ctrl+ЛКМ в рюкзаке"
+	_btn_smelt_junk.disabled = junk == 0
 
 
 func _cell(item: ItemData, index: int) -> Control:
@@ -215,6 +222,21 @@ func _do_enchant() -> void:
 	if res:
 		_sel_item = res
 	_done(res != null, "Предмет зачарован")
+
+
+## Every smithable item marked as junk becomes ore and a little gold.
+func _do_smelt_junk() -> void:
+	var idx := hero.inventory.junk_indices()
+	idx.reverse()
+	var n := 0
+	for i in idx:
+		var st := hero.inventory.stack_at(i)
+		if st and Smithing.is_smithable(st.item):
+			while hero.inventory.stack_at(i) == st and Smithing.smelt(hero, i):
+				n += 1
+	_sel_item = null
+	_sel_index = -1
+	_done(n > 0, "Переплавлено предметов: %d" % n)
 
 
 func _do_smelt() -> void:

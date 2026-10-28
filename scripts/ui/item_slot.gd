@@ -21,6 +21,7 @@ var key_label := ""
 var _frame: PixelFrame
 var _icon: TextureRect
 var _count: Label
+var _junk: Label
 var _placeholder: TextureRect
 var _durability: ColorRect
 var _key: Label
@@ -81,6 +82,12 @@ func _ready() -> void:
 	_count.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_count.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	add_child(_count)
+	# Junk mark: a red cross in the corner (Ctrl + click toggles it).
+	_junk = UIStyle.outlined_label("✕", 7, Color(1.0, 0.35, 0.3))
+	_junk.position = Vector2(UIStyle.SLOT_SIZE.x - 10, 0)
+	_junk.visible = false
+	_junk.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_junk)
 	_key = UIStyle.outlined_label(key_label, 6, UIStyle.GOLD)
 	_key.position = Vector2(3, 0)
 	add_child(_key)
@@ -128,6 +135,9 @@ func refresh() -> void:
 	elif item and kind == Kind.QUICK and item.max_stack > 1:
 		_count.text = str(c)
 	_placeholder.visible = item == null
+	var st := hero.inventory.stack_at(index) if kind == Kind.INVENTORY else null
+	_junk.visible = st != null and st.junk
+	_icon.modulate = _icon.modulate * (Color(1, 1, 1, 0.55) if _junk.visible else Color.WHITE)
 	_durability.visible = item != null and item.has_durability and item.is_instance() and item.durability < item.max_durability
 	if _durability.visible:
 		var r := float(item.durability) / item.max_durability
@@ -151,6 +161,8 @@ func refresh() -> void:
 		var text := TooltipText.item(item, hero, kind == Kind.EQUIPMENT)
 		if shop:
 			text += "\n[color=%s]Продать за %d з. (ПКМ)[/color]" % [UIStyle.GOOD_HEX, item.sell_price()]
+		if kind == Kind.INVENTORY:
+			text += "\n[color=#9a7a5a]Ctrl+ЛКМ — %s[/color]" % ("снять пометку «мусор»" if _junk.visible else "пометить как мусор")
 		Tooltip.show_text(text, self)
 
 
@@ -202,6 +214,12 @@ func _on_mouse_exited() -> void:
 func _gui_input(event: InputEvent) -> void:
 	var mb := event as InputEventMouseButton
 	if mb == null or not mb.pressed:
+		return
+	if mb.button_index == MOUSE_BUTTON_LEFT and mb.ctrl_pressed and kind == Kind.INVENTORY:
+		accept_event()
+		if get_item():
+			hero.inventory.toggle_junk(index)
+			AudioManager.play_ui(&"ui_click")
 		return
 	if mb.button_index == MOUSE_BUTTON_RIGHT or (mb.button_index == MOUSE_BUTTON_LEFT and mb.double_click):
 		accept_event()
