@@ -158,13 +158,13 @@ tint = Color(1, 0.55, 0.45, 1)
 
 [resource]
 script = ExtResource("8_boss")
-intro_line = "Моё королевство сгорело. Ты станешь его пеплом."
+intro_line = "Снова ты. Солнце не дало мне лечь в землю... и тебе не даст."
 defeat_line = "Наконец... покой в пепле."
 arena_biome = &"ashen_halls"
 arena_style = &"ashen"
 glow_color = Color(1, 0.5, 0.25, 1)
 glow_scale = 1.1
-title = "Пепельный король — Наследник пепла"
+title = "Пепельный король — Олдрик, павший дважды"
 order = 5
 phases = Array[ExtResource("3_phase")]([SubResource("Phase1"), SubResource("Phase2"), SubResource("Phase3")])
 music = &"boss_ashen_king"
@@ -172,7 +172,7 @@ contact_damage_mult = 0.7
 reward_items = Array[StringName]([&"guardian_seal", &"eclipse_shard", &"eclipse_shard"])
 id = &"ashen_king"
 display_name = "Пепельный король"
-description = "Сгоревший монарх глубоких чертогов: его кости — зола, а гнев — угли, что не гаснут веками."
+description = "Король костей, поднятый Затмением из пепла: солнце выжимает из могильщика последние силы. Кости его — зола, гнев — угли."
 sheet = ExtResource("9_sheet")
 sheet_layout = ExtResource("10_layout")
 behavior = 0
