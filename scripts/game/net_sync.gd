@@ -303,6 +303,21 @@ func net_hit(net_id: int, amount: int, crit: bool, from_x: float, from_y: float,
 	e.take_damage(amount, crit, Vector2(from_x, from_y), damage_type)
 
 
+## Host → clients: an enemy left without a kill (illusion, dispelled summon):
+## the shell plays its death (or just fades) and goes, no kill events.
+@rpc("authority", "call_remote", "reliable")
+func enemy_vanished(net_id: int, with_death: bool) -> void:
+	var e: Enemy = enemies.get(net_id)
+	enemies.erase(net_id)
+	if e == null or not is_instance_valid(e):
+		return
+	if with_death:
+		e.net_die()
+	else:
+		Fx.sparks(e.get_parent(), e.global_position + Vector2(0, -16), Color(0.8, 0.5, 1.0), 10, 60.0)
+		e.queue_free()
+
+
 ## Host → clients: an enemy died; shells play the death and free themselves.
 @rpc("authority", "call_remote", "reliable")
 func enemy_died(net_id: int, xp: int, gold: int, killer: int) -> void:

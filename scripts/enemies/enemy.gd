@@ -398,7 +398,7 @@ func _physics_process(delta: float) -> void:
 	# Servants in reach get struck too (melee monsters: whoever stands
 	# in front of them; the heroes still come first when equally close).
 	_minion_scan -= delta
-	if _minion_scan <= 0.0 and state != State.ATTACK and _attack_timer <= 0.0 \
+	if _minion_scan <= 0.0 and not _dormant and state != State.ATTACK and _attack_timer <= 0.0 \
 			and data.behavior != EnemyData.Behavior.RANGED and not status.is_stunned():
 		_minion_scan = 0.3
 		var m := Minion.nearest(get_tree(), global_position, data.attack_range + 10.0)
@@ -1976,6 +1976,8 @@ func _die() -> void:
 		_name_label.visible = false
 	if not data.no_rewards:
 		_give_rewards()
+	else:
+		_net_vanish(true)  # fakes (illusions...) die without kill events
 	# Death animation, then the body breaks into particles.
 	sprite.play(&"death")
 	var parent := get_parent()
@@ -1984,6 +1986,30 @@ func _die() -> void:
 	sprite.animation_finished.connect(func() -> void:
 		Fx.sparks(parent, pos, color, 14, 100.0)
 		queue_free(), CONNECT_ONE_SHOT)
+
+
+## Co-op host: this enemy leaves the world without a kill (an illusion that
+## fades or is dispelled, a summon removed with its boss): the guests' shells
+## must go too, or they linger forever on their screens.
+var _net_gone := false
+
+
+func _net_vanish(with_death: bool) -> void:
+	if _net_gone or puppet or not Net.active or not Net.is_host or net_id <= 0:
+		return
+	_net_gone = true
+	var ns := get_tree().get_first_node_in_group("net_game") as NetSync if is_inside_tree() else null
+	# Only enemies still registered on this floor (a floor change clears the
+	# registry first: the guests rebuild their floor anyway).
+	if ns and ns.enemies.get(net_id) == self:
+		ns.enemy_vanished.rpc(net_id, with_death)
+		ns.unregister_enemy(net_id)
+
+
+func _exit_tree() -> void:
+	# Freed on the host without a death broadcast (timeouts, cleanups).
+	if not _dead or data.no_rewards:
+		_net_vanish(false)
 
 
 ## XP, gold, loot and kill events (not for illusions and other fakes).

@@ -223,7 +223,12 @@ func biome_for_floor(floor_number: int) -> BiomeData:
 			for b in biomes:
 				if b.id == boss.arena_biome:
 					return b
-	return biomes[((floor_number - 1) / GameState.FLOORS_PER_BIOME) % biomes.size()]
+	# The last biome (the Heart of the Eclipse) holds out to the final floor;
+	# only an endless run past it wraps around.
+	var idx := (floor_number - 1) / GameState.FLOORS_PER_BIOME
+	if idx >= biomes.size() and floor_number <= final_floor():
+		return biomes[biomes.size() - 1]
+	return biomes[idx % biomes.size()]
 
 
 ## Recursively loads resources. Handles ".remap" names of exported builds.

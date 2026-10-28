@@ -1,0 +1,60 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=9 format=3]
+
+[ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="1_lt"]
+[ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="2_he"]
+[ext_resource type="Script" path="res://scripts/combat/status_hit_effect.gd" id="3_st"]
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="4_ed"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/root_strangler_sheet.png" id="5_sh"]
+[ext_resource type="Resource" path="res://data/animations/cultist_layout.tres" id="6_la"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/root_strangler.png" id="7_ic"]
+
+[sub_resource type="Resource" id="Resource_hit"]
+script = ExtResource("3_st")
+status = &"slow"
+duration = 2.0
+power = 0.4
+chance = 0.5
+
+[resource]
+script = ExtResource("4_ed")
+id = &"root_strangler"
+display_name = "Корнедушец"
+description = "Узел корней мирового древа, обретший форму. Хлещет корнем и опутывает — ноги вязнут."
+texture = ExtResource("7_ic")
+sheet = ExtResource("5_sh")
+sheet_layout = ExtResource("6_la")
+behavior = 0
+collision_size = Vector2(12, 18)
+max_hp = 120
+damage = 17
+armor = 4
+speed = 26.0
+chase_speed = 50.0
+aggro_range = 160.0
+attack_range = 22.0
+attack_cooldown = 1.5
+jumps = false
+projectile_speed = 150.0
+xp_reward = 34
+loot_table = ExtResource("1_lt")
+loot_chance = 0.4
+gold_min = 4
+gold_max = 10
+min_floor = 25
+spawn_weight = 1.2
+biomes = Array[StringName]([&"world_roots"])
+tint = Color(1, 1, 1, 1)
+gender = "m"
+phases_through_walls = false
+ceiling_ambush = false
+aoe_radius = 0.0
+max_summons = 3
+resistances = {
+"res_fire": -0.6,
+"res_poison": 0.5
+}
+status_immunities = Array[StringName]([])
+on_hit_effects = Array[ExtResource("2_he")]([SubResource("Resource_hit")])
+sound_hurt = &"enemy_hurt"
+sound_death = &"enemy_death"
+sound_attack = &"enemy_attack"
