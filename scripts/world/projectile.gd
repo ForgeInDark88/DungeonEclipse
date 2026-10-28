@@ -38,7 +38,7 @@ func setup(tex: Texture2D, dir: Vector2, p_speed: float, p_damage: int, group: S
 	else:
 		ready.connect(func() -> void: sprite.texture = tex, CONNECT_ONE_SHOT)
 	# world + the target's layer
-	collision_mask = 1 | (4 if group == "player" else 8)
+	collision_mask = 1 | (4 | Minion.LAYER if group == "player" else 8)
 
 
 func _ready() -> void:
@@ -73,6 +73,11 @@ func _on_body_entered(body: Node) -> void:
 		if pierce <= 0:
 			_finish()
 		pierce -= 1
+	elif body is Minion and target_group == "player":
+		# Enemy shots hit the necromancer's servants too.
+		_hit.append(body)
+		(body as Minion).take_damage(damage, global_position)
+		_finish()
 	elif body is TileMapLayer:
 		_finish()
 

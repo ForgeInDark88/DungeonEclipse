@@ -193,10 +193,31 @@ func _physics_process(delta: float) -> void:
 		Act.ACTING:
 			_update_attack_act(delta)
 	move_and_slide()
+	_clamp_to_arena()
 	if absf(velocity.x) > 1.0:
 		sprite.flip_h = velocity.x < 0.0
 	_contact_damage()
 	_update_boss_animation()
+
+
+## The boss never leaves its arena: flyers chasing a hero over the edge,
+## teleports, illusions and swaps are all kept inside the walls.
+func _clamp_to_arena() -> void:
+	var lvl := _level()
+	if lvl == null:
+		return
+	var b := lvl.bounds_px().grow(-float(DungeonLevel.TILE))
+	var half := data.collision_size.x * 0.5 + 2.0
+	var p := global_position
+	var lo := Vector2(b.position.x + half, b.position.y + data.collision_size.y + 2.0)
+	var hi := Vector2(b.end.x - half, b.end.y)
+	var c := p.clamp(lo, hi)
+	if c != p:
+		global_position = c
+		if c.x != p.x:
+			velocity.x = 0.0
+		if c.y != p.y:
+			velocity.y = 0.0
 
 
 func _enter(new_act: Act, time: float) -> void:
@@ -385,6 +406,7 @@ func _start_attack() -> void:
 		BossAttack.Kind.TELEPORT:
 			var side := -1.0 if randf() < 0.5 else 1.0
 			global_position = _player.global_position + Vector2(side * 60.0, -60.0)
+			_clamp_to_arena()
 			sprite.modulate.a = 1.0
 			Fx.explosion(get_parent(), global_position + Vector2(0, -20), 30.0, Color(1.0, 0.5, 0.2))
 			_fan(a, dmg)
@@ -486,6 +508,14 @@ func _update_attack_act(delta: float) -> void:
 					if dist <= 15.0:
 						p.take_damage(roundi(damage * a.damage_mult * 0.45), global_position, a.damage_type)
 						_apply_attack_effects(a, p)
+				for n in get_tree().get_nodes_in_group("minions"):
+					var mn := n as Minion
+					if mn == null:
+						continue
+					var mp := mn.global_position + Vector2(0, -10)
+					var mt := clampf((mp - from).dot(ab) / ab.length_squared(), 0.0, 1.0)
+					if (mp - (from + ab * mt)).length() <= 15.0:
+						mn.take_damage(roundi(damage * a.damage_mult * 0.45), global_position)
 			if _beam_time <= 0.0:
 				_fade_beam()
 				_end_attack()
@@ -507,6 +537,7 @@ func _shockwave(a: BossAttack) -> void:
 	Fx.dust(get_parent(), global_position, true)
 	Fx.explosion(get_parent(), global_position + Vector2(0, -4), a.radius, Color(0.9, 0.8, 0.6))
 	_net_boss_fx(&"shockwave", global_position, Vector2.ZERO, Color.WHITE, [a.radius])
+	Minion.hurt_in_radius(get_tree(), global_position, a.radius + 6.0, roundi(damage * a.damage_mult))
 	for p in _alive_heroes():
 		if p.global_position.distance_to(global_position) <= a.radius + 6.0 \
 				and LineOfSight.can_hit(self, global_position + Vector2(0, -8), p):
@@ -545,6 +576,7 @@ func _erupt_spikes(a: BossAttack, dmg: int, tint := Color(0.62, 0.93, 1.0)) -> v
 					and LineOfSight.can_hit(self, spot, p):
 				p.take_damage(dmg, spot, a.damage_type)
 				_apply_attack_effects(a, p)
+		Minion.hurt_in_radius(get_tree(), spot, a.radius, dmg)
 		tw.tween_interval(0.8)
 		tw.tween_property(spike, "scale:y", 0.0, 0.2)
 		tw.tween_callback(spike.queue_free)
@@ -669,6 +701,7 @@ func _illusions(a: BossAttack) -> void:
 	var parent := get_parent()
 	Fx.sparks(parent, global_position + Vector2(0, -20), Color(0.8, 0.5, 1.0), 20, 90.0)
 	global_position = spots.pop_back()
+	_clamp_to_arena()
 	sprite.modulate.a = 1.0
 	for p in spots:
 		var e: Enemy = (load("res://scenes/enemies/enemy.tscn") as PackedScene).instantiate()
@@ -872,6 +905,7 @@ func _mirror_swap(a: BossAttack, dmg: int) -> void:
 		_player.global_position = land
 		_player.velocity = Vector2.ZERO
 	global_position = hero_pos + Vector2(0, -24)
+	_clamp_to_arena()
 	sprite.modulate.a = 1.0
 	for p in [hero_pos, land]:
 		Fx.sparks(get_parent(), p + Vector2(0, -14), Color(0.85, 0.55, 1.0), 18, 90.0)
@@ -909,6 +943,7 @@ func _ash_sweep(a: BossAttack, dmg: int) -> void:
 				and LineOfSight.can_hit(self, global_position + Vector2(0, -16), p):
 			p.take_damage(dmg, global_position, a.damage_type)
 			_apply_attack_effects(a, p)
+	Minion.hurt_in_radius(get_tree(), global_position, a.radius, dmg)
 	for dir in [-1.0, 1.0]:
 		SlashTrail.spawn(get_parent(), global_position + Vector2(0, -18), Vector2(dir, 0), a.radius, false, Color(1.0, 0.5, 0.15))
 	var n := maxi(2, a.count)
@@ -947,6 +982,12 @@ func _apply_attack_effects(a: BossAttack, target: Node) -> void:
 func _contact_damage() -> void:
 	if _contact_cd > 0.0:
 		return
+	var body_reach := maxf(data.collision_size.x, data.collision_size.y) * 0.6
+	for n in get_tree().get_nodes_in_group("minions"):
+		var mn := n as Minion
+		if mn and not mn.is_queued_for_deletion() and mn.global_position.distance_to(global_position + Vector2(0, -data.collision_size.y * 0.4)) <= body_reach:
+			mn.take_damage(roundi(damage * boss.contact_damage_mult))
+			_contact_cd = 0.5
 	var reach := data.collision_size * 0.5 + Vector2(6, 10)
 	for p in _alive_heroes():
 		var rel := p.global_position - global_position

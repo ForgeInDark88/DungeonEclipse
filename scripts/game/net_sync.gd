@@ -1450,3 +1450,14 @@ func player_teleport(pos: Vector2) -> void:
 func player_push(impulse: Vector2) -> void:
 	if local_player and not local_player.dead:
 		local_player.push(impulse)
+
+
+## Any machine → the caster: your servant was hit on my side (the host's
+## monsters hit the copy it shows).
+@rpc("any_peer", "call_remote", "reliable")
+func minion_damage(uid: int, amount: int) -> void:
+	for n in get_tree().get_nodes_in_group("minions"):
+		var m := n as Minion
+		if m and not m.remote and m.net_uid == uid:
+			m.take_damage(clampi(amount, 0, 99999))
+			return
