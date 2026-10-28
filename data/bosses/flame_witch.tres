@@ -187,6 +187,7 @@ tint = Color(1, 0.55, 0.4, 1)
 script = ExtResource("8_i8su4")
 intro_line = "Гори, как горели все до тебя!"
 defeat_line = "Пламя... гаснет..."
+arena_biome = &"lava"
 arena_style = &"pyre"
 glow_color = Color(1, 0.6, 0.3, 1)
 glow_scale = 1.1

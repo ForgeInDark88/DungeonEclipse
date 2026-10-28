@@ -24,3 +24,5 @@ extends EnemyData
 ## The arena built for this boss (LevelGenerator.generate_arena):
 ## ossuary, pyre, mirrors, crystal, flooded, ashen, eclipse; "" = plain hall.
 @export var arena_style: StringName = &""
+## The biome the arena is dressed in (tiles, light, music between fights).
+@export var arena_biome: StringName = &""

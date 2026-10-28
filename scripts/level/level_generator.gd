@@ -70,7 +70,49 @@ func generate_arena(floor_number: int, seed_value: int) -> LevelLayout:
 		for x in range(1, w - 1):
 			layout.set_tile(x, y, T.EMPTY)
 	var fy := h - 2  # floor row
-	for seg in [[7, 12, fy - 4], [w - 13, w - 8, fy - 4], [w / 2 - 4, w / 2 + 3, fy - 7]]:
+	var boss := ItemDatabase.boss_for_floor(floor_number)
+	var style: StringName = boss.arena_style if boss else &""
+	var segs: Array = [[7, 12, fy - 4], [w - 13, w - 8, fy - 4], [w / 2 - 4, w / 2 + 3, fy - 7]]
+	match style:
+		&"pyre":
+			# Lava pits under the witch; boards in three tiers to dodge the walls of fire.
+			segs = [[4, 9, fy - 3], [w - 10, w - 5, fy - 3], [12, 17, fy - 6], [w - 18, w - 13, fy - 6], [w / 2 - 3, w / 2 + 2, fy - 9]]
+			_pit(12, 17, fy, BossHazard.Style.LAVA)
+			_pit(w - 18, w - 13, fy, BossHazard.Style.LAVA)
+		&"mirrors":
+			# A hall of small floating boards: the stage of the show.
+			segs = []
+			for row in [fy - 3, fy - 6, fy - 9]:
+				var shift := 0 if row % 2 == 0 else 3
+				for x0 in range(4 + shift, w - 6, 8):
+					segs.append([x0, x0 + 3, row])
+		&"crystal":
+			# Crystal pillars to hide behind from the stalactites.
+			for px in [13, w - 14]:
+				for y in range(fy - 3, fy):
+					layout.set_tile(px, y, T.BRICK)
+			segs = [[5, 10, fy - 4], [w - 11, w - 6, fy - 4], [w / 2 - 5, w / 2 + 4, fy - 7]]
+		&"flooded":
+			# The floor is under water (slows), boards are the dry ground.
+			segs = [[4, 11, fy - 3], [w - 12, w - 5, fy - 3], [w / 2 - 5, w / 2 + 4, fy - 5], [w / 2 - 2, w / 2 + 1, fy - 8]]
+			layout.arena_hazards.append({"style": BossHazard.Style.WATER, "x0": 6, "x1": w - 7, "row": fy - 1, "h": 10.0, "damage": false})
+		&"ashen":
+			# Burnt hall: embers smoulder along the walls, the boards are broken.
+			segs = [[5, 8, fy - 4], [11, 13, fy - 4], [w - 9, w - 6, fy - 4], [w - 14, w - 12, fy - 4], [w / 2 - 4, w / 2 + 3, fy - 7]]
+			layout.arena_hazards.append({"style": BossHazard.Style.ASH, "x0": 2, "x1": 3, "row": fy - 1, "h": 12.0, "damage": true})
+			layout.arena_hazards.append({"style": BossHazard.Style.ASH, "x0": w - 4, "x1": w - 3, "row": fy - 1, "h": 12.0, "damage": true})
+		&"eclipse":
+			# A void splits the arena; islands of boards float over it.
+			_pit(w / 2 - 6, w / 2 + 5, fy, BossHazard.Style.VOID)
+			segs = [[w / 2 - 5, w / 2 - 2, fy - 3], [w / 2 + 1, w / 2 + 4, fy - 3], [w / 2 - 2, w / 2 + 1, fy - 6],
+					[6, 11, fy - 5], [w - 12, w - 7, fy - 5], [w / 2 - 9, w / 2 - 6, fy - 9], [w / 2 + 5, w / 2 + 8, fy - 9]]
+		&"ossuary":
+			# The Bone King's throne room: a raised dais in the middle, bone heaps.
+			for x in range(w / 2 - 3, w / 2 + 3):
+				layout.set_tile(x, fy - 1, T.BRICK)
+			layout.arena_hazards.append({"style": BossHazard.Style.BONE, "x0": 5, "x1": 9, "row": fy - 1, "h": 8.0, "damage": false})
+			layout.arena_hazards.append({"style": BossHazard.Style.BONE, "x0": w - 10, "x1": w - 6, "row": fy - 1, "h": 8.0, "damage": false})
+	for seg in segs:
 		for x in range(seg[0], seg[1] + 1):
 			layout.set_tile(x, seg[2], T.PLATFORM)
 	# Pillars at the walls so the boss cannot be cheesed in a corner.
@@ -82,6 +124,13 @@ func generate_arena(floor_number: int, seed_value: int) -> LevelLayout:
 	layout.boss_cell = Vector2i(w / 2 + 6, fy - 1)
 	layout.is_arena = true
 	return layout
+
+
+## Arena pit one tile deep with a lasting hazard at the bottom.
+func _pit(x0: int, x1: int, fy: int, hazard: int) -> void:
+	for x in range(x0, x1 + 1):
+		layout.set_tile(x, fy, T.EMPTY)
+	layout.arena_hazards.append({"style": hazard, "x0": x0, "x1": x1, "row": fy, "h": 12.0, "damage": true})
 
 
 # ------------------------------------------------------------------ geometry

@@ -211,7 +211,23 @@ func _spawn_boss() -> void:
 	if data.behavior == EnemyData.Behavior.FLYER:
 		pos.y -= TILE * 4
 	add_entity(b, pos)
+	_spawn_arena_hazards()
 	EventBus.boss_defeated.connect(_on_boss_defeated, CONNECT_ONE_SHOT)
+
+
+## Lava, water, embers and the void of the boss's arena (every machine builds
+## them from the layout; only the host's copies hurt).
+func _spawn_arena_hazards() -> void:
+	var dmg := 4 + roundi(floor_number * 0.7)
+	for h: Dictionary in layout.arena_hazards:
+		var x0: int = h["x0"]
+		var x1: int = h["x1"]
+		var bottom := cell_bottom(Vector2i(x0, h["row"]))
+		var center := Vector2(to_global(Vector2((x0 + x1 + 1) * TILE * 0.5, 0)).x, bottom.y)
+		var style: BossHazard.Style = h["style"]
+		var dtype := 4 if style == BossHazard.Style.VOID else 1
+		BossHazard.spawn(entities, style, center, Vector2((x1 - x0 + 1) * TILE, h["h"]), -1.0,
+				Vector2.ZERO, dmg if h["damage"] else 0, dtype)
 
 
 func _on_boss_defeated(_boss: BossData, _pos: Vector2) -> void:
@@ -223,7 +239,18 @@ func _on_boss_defeated(_boss: BossData, _pos: Vector2) -> void:
 	chest.floor_number = floor_number
 	chest.unlocked_by_default = true
 	chest.table_override = &"boss"  # boss loot: the main source of legendary items
-	add_entity(chest, cell_bottom(Vector2i(layout.width / 2, layout.boss_cell.y)))
+	# (Arenas differ: a dais or a pit may take the middle - find a free spot.)
+	var spot := _free_cell_near(Vector2i(layout.width / 2, layout.boss_cell.y))
+	for dx in range(4, 14):
+		if spot.x >= 0:
+			break
+		for c in [Vector2i(layout.width / 2 + dx, layout.boss_cell.y), Vector2i(layout.width / 2 - dx, layout.boss_cell.y)]:
+			if layout.get_tile(c.x, c.y) == LevelLayout.Tile.EMPTY and LevelLayout.is_solid(layout.get_tile(c.x, c.y + 1)):
+				spot = c
+				break
+	if spot.x < 0:
+		spot = layout.start_cell
+	add_entity(chest, cell_bottom(spot))
 	Fx.sparks(entities, cell_bottom(layout.exit_cell) + Vector2(0, -16), Color(0.7, 0.4, 1.0), 30, 120.0)
 	EventBus.message.emit("Затмение рассеяно! Свет возвращается в подземелья." if _boss.final else "Страж повержен! Открылся проход.")
 

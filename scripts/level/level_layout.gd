@@ -17,6 +17,9 @@ var specials: Array[Dictionary] = []
 ## Boss arena floors: one big room, the boss spawns at boss_cell and the exit
 ## door appears only after the boss is defeated.
 var is_arena := false
+## Boss arenas: lasting hazards {"style": BossHazard.Style, "x0", "x1" (cells),
+## "row" (the cell row they lie on), "h" (px), "damage" (true/false)}.
+var arena_hazards: Array[Dictionary] = []
 var boss_cell := Vector2i.ZERO
 ## The town before the dungeon (TownBuilder): no back wall, props instead of rooms.
 var is_town := false

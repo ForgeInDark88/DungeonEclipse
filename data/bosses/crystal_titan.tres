@@ -146,6 +146,7 @@ tint = Color(0.7, 0.9, 1, 1)
 script = ExtResource("8_boss")
 intro_line = "ГОРА... ПРОСЫПАЕТСЯ."
 defeat_line = "Камень... крошится..."
+arena_biome = &"crystal_depths"
 arena_style = &"crystal"
 glow_color = Color(0.5, 1, 1, 1)
 glow_scale = 1.2

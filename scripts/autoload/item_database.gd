@@ -209,6 +209,13 @@ func difficulty(id: StringName) -> DifficultyData:
 func biome_for_floor(floor_number: int) -> BiomeData:
 	if biomes.is_empty():
 		return null
+	# A boss fights in its own land (its arena's biome), whatever the rotation.
+	if GameState.is_boss_floor(floor_number):
+		var boss := boss_for_floor(floor_number)
+		if boss and boss.arena_biome != &"":
+			for b in biomes:
+				if b.id == boss.arena_biome:
+					return b
 	return biomes[((floor_number - 1) / GameState.FLOORS_PER_BIOME) % biomes.size()]
 
 

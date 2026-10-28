@@ -183,6 +183,7 @@ tint = Color(1, 0.6, 0.55, 1)
 script = ExtResource("8_cnwv5")
 intro_line = "Ещё одни кости для моего трона."
 defeat_line = "Мой трон... опустел..."
+arena_biome = &"catacombs"
 arena_style = &"ossuary"
 glow_color = Color(0.75, 0.9, 1, 1)
 glow_scale = 1.0

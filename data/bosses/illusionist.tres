@@ -179,6 +179,7 @@ tint = Color(0.85, 0.7, 1, 1)
 script = ExtResource("boss")
 intro_line = "Добро пожаловать на представление. Финал вам не понравится."
 defeat_line = "Браво... Это был... ты настоящий."
+arena_biome = &"mirror_halls"
 arena_style = &"mirrors"
 glow_color = Color(0.75, 0.5, 1, 1)
 glow_scale = 1.1

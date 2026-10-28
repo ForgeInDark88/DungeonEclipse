@@ -160,6 +160,7 @@ tint = Color(1, 0.55, 0.45, 1)
 script = ExtResource("8_boss")
 intro_line = "Моё королевство сгорело. Ты станешь его пеплом."
 defeat_line = "Наконец... покой в пепле."
+arena_biome = &"ashen_halls"
 arena_style = &"ashen"
 glow_color = Color(1, 0.5, 0.25, 1)
 glow_scale = 1.1

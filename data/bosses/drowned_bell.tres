@@ -116,6 +116,7 @@ tint = Color(0.8, 1, 0.95, 1)
 script = ExtResource("8_bd")
 intro_line = "Слышишь звон? Это звонят по тебе."
 defeat_line = "Звон... затихает..."
+arena_biome = &"drowned_vaults"
 arena_style = &"flooded"
 glow_color = Color(0.6, 1, 0.85, 1)
 glow_scale = 1.2

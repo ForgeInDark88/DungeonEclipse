@@ -181,6 +181,7 @@ tint = Color(1, 0.72, 0.7, 1)
 script = ExtResource("boss")
 intro_line = "Шесть стражей пали. Но солнце уже не взойдёт."
 defeat_line = "Свет... возвращается..."
+arena_biome = &"ruins"
 arena_style = &"eclipse"
 glow_color = Color(1, 0.65, 0.3, 1)
 glow_scale = 1.6
