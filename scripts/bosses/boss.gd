@@ -32,10 +32,11 @@ var _beam_tick := 0.0
 ## make the boss untouchable for a moment (the roar).
 const INTRO_RANGE := 230.0
 const INTRO_TIME := 2.6
-const PHASE_LOCK := 1.3
+const PHASE_LOCK := 2.5
 var _intro_started := false
 var _phase_lock := 0.0
 var _aura: CPUParticles2D
+var _shield: Sprite2D
 
 
 ## Enrage below this HP fraction: faster, hits harder, contact hurts.
@@ -700,8 +701,18 @@ func _start_intro() -> void:
 
 ## A new phase: the boss roars, shoves everyone back, can't be hurt for a
 ## moment, and the banner tells what changed.
+## A phase is never skipped: until the next one starts, hits stop at its
+## threshold (the roar and the shield always play).
+func min_hp() -> int:
+	if _dead or phase_index + 1 >= boss.phases.size():
+		return 0
+	return maxi(1, floori(max_hp * boss.phases[phase_index + 1].hp_threshold))
+
+
 func _phase_roar(message: String, tint: Color) -> void:
 	_phase_lock = PHASE_LOCK
+	show_shield(PHASE_LOCK, tint)
+	_net_boss_fx(&"shield", global_position, Vector2.ZERO, tint, [PHASE_LOCK])
 	_enter(Act.RECOVER, PHASE_LOCK)
 	_fade_beam()
 	_banner(boss.display_name, message if message != "" else "Новая фаза!", tint)
@@ -723,6 +734,43 @@ func _phase_roar(message: String, tint: Color) -> void:
 				p.push(impulse)
 	set_aura(phase_index, tint)
 	_net_boss_fx(&"aura", global_position, Vector2.ZERO, tint, [phase_index])
+
+
+## A glowing sphere around the boss while it cannot be hurt.
+func show_shield(duration: float, tint: Color) -> void:
+	if _shield == null:
+		_shield = Sprite2D.new()
+		_shield.texture = AssetPaths.tex(AssetPaths.SPRITES_DIR + "fx/shield_bubble.png")
+		var m := CanvasItemMaterial.new()
+		m.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+		m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+		_shield.material = m
+		_shield.z_index = 3
+		add_child(_shield)
+	var size := maxf(data.collision_size.x * 1.8, data.collision_size.y * 1.3)
+	var base := Vector2.ONE * size / 30.0
+	_shield.position = Vector2(0, -data.collision_size.y * 0.5)
+	_shield.modulate = Color(tint.r, tint.g, tint.b, 0.0).lerp(Color(0.7, 0.85, 1.0, 0.0), 0.5)
+	_shield.visible = true
+	_shield.scale = base * 0.4
+	var tw := _shield.create_tween()
+	tw.tween_property(_shield, "scale", base, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(_shield, "modulate:a", 0.85, 0.25)
+	var pulses := maxi(1, int((duration - 0.6) / 0.5))
+	for i in pulses:
+		tw.tween_property(_shield, "modulate:a", 0.55, 0.25)
+		tw.tween_property(_shield, "modulate:a", 0.85, 0.25)
+	tw.tween_property(_shield, "modulate:a", 0.0, 0.3)
+	tw.parallel().tween_property(_shield, "scale", base * 1.3, 0.3)
+	tw.tween_callback(func() -> void: _shield.visible = false)
+
+
+## A blow glances off the shield (or the intro): a quick bright ripple.
+func _shield_flash() -> void:
+	if _shield and _shield.visible:
+		_shield.modulate.a = 1.0
+	else:
+		Fx.sparks(get_parent(), global_position + Vector2(0, -data.collision_size.y * 0.5), Color(0.75, 0.85, 1.0), 4, 40.0)
 
 
 func _banner(title: String, text: String, color: Color) -> void:
@@ -839,8 +887,9 @@ func _toll(a: BossAttack, dmg: int) -> void:
 	var b := _level().bounds_px() if _level() else Rect2(global_position - Vector2(300, 200), Vector2(600, 400))
 	var life := b.size.x / maxf(40.0, a.speed) * 0.6
 	for i in maxi(1, a.count):
+		var me: WeakRef = weakref(self)
 		get_tree().create_timer(i * 0.7, false).timeout.connect(func() -> void:
-			if _dead or not is_inside_tree():
+			if me.get_ref() == null or _dead or not is_inside_tree():
 				return
 			for dir in [-1.0, 1.0]:
 				_hazard(BossHazard.Style.WAVE, ground + Vector2(dir * 14.0, 0), Vector2(10, 14), life,
@@ -922,13 +971,20 @@ func _update_boss_animation() -> void:
 
 
 func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.INF, damage_type: int = 0) -> void:
-	if not puppet and (_phase_lock > 0.0 or (act == Act.INTRO and _intro_started)):
-		# The roar / the intro card: blows glance off.
-		if randf() < 0.3:
-			EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 6), "Неуязвим", Color(0.8, 0.8, 0.9))
+	if not puppet and (_phase_lock > 0.0 or act == Act.INTRO):
+		# Before the fight (the intro) and while a new phase rises the boss
+		# cannot be hurt; a blow from afar only starts the show.
+		if act == Act.INTRO and not _intro_started:
+			_start_intro()
+		if randf() < 0.35:
+			var spot := global_position + Vector2(0, -data.collision_size.y - 6)
+			EventBus.floating_text.emit(spot, "Неуязвим", Color(0.8, 0.85, 1.0))
+			if Net.active and Net.is_host:
+				var ns = get_tree().get_first_node_in_group("net_game")
+				if ns:
+					ns.enemy_float_text.rpc(spot, "Неуязвим", Color(0.8, 0.85, 1.0))
+		_shield_flash()
 		return
-	if not puppet and act == Act.INTRO and not _intro_started:
-		_start_intro()  # struck from afar: the show starts now
 	# Bosses are not knocked around or interrupted by hits.
 	var v := velocity
 	var prev_state := state
@@ -963,14 +1019,16 @@ func _die() -> void:
 	if boss.defeat_line != "":
 		_banner(boss.display_name, "«%s»" % boss.defeat_line, boss.glow_color)
 	# A chain of bursts across the body: the fall, not a pop.
+	# (Driven by a tween on the level: the boss itself is gone by then.)
 	var parent := get_parent()
 	var pos := global_position
 	var h := data.collision_size.y
+	var col := boss.glow_color
+	var tw := parent.create_tween()
 	for i in 4:
-		get_tree().create_timer(0.15 + i * 0.22, false).timeout.connect(func() -> void:
-			if is_instance_valid(parent):
-				Fx.explosion(parent, pos + Vector2(randf_range(-16, 16), -randf_range(0.2, 0.9) * h), 26.0 + i * 6.0, boss.glow_color)
-				EventBus.screen_shake.emit(4.0))
+		tw.tween_interval(0.15 if i == 0 else 0.22)
+		tw.tween_callback(Fx.explosion.bind(parent, pos + Vector2(randf_range(-16, 16), -randf_range(0.2, 0.9) * h), 26.0 + i * 6.0, col))
+		tw.tween_callback(EventBus.screen_shake.emit.bind(4.0))
 	var rewards: Array = []
 	for id in boss.reward_items:
 		var it := ItemDatabase.get_item(id)

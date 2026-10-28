@@ -212,6 +212,10 @@ func boss_fx(kind: StringName, from: Vector2, dir_or_radius: Vector2,
 			if b:
 				b.set_aura(int(extra[0]), color)
 				b.data_tint_override(color if int(extra[0]) < 3 else Color(1.0, 0.55, 0.5))
+		&"shield":
+			var bs := get_tree().get_first_node_in_group("bosses") as Boss
+			if bs:
+				bs.show_shield(float(extra[0]), color)
 		&"darkness":
 			Boss.darken(parent, float(extra[0]) if extra.size() > 0 else 4.0)
 		&"swap":

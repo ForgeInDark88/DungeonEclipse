@@ -109,7 +109,7 @@ func apply_biome(biome: BiomeData) -> void:
 	var p := $AmbientDust as CPUParticles2D
 	p.color = biome.ambient_particles
 	# Motion by BiomeData.particle_style; glowing kinds ignore the ambient light.
-	var glow := biome.particle_style in [&"spores", &"embers", &"sparkles"]
+	var glow := biome.particle_style in [&"spores", &"embers", &"sparkles", &"bubbles"]
 	var m := CanvasItemMaterial.new()
 	m.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED if glow else CanvasItemMaterial.LIGHT_MODE_NORMAL
 	p.material = m
@@ -137,6 +137,16 @@ func apply_biome(biome: BiomeData) -> void:
 			p.initial_velocity_min = 10.0
 			p.initial_velocity_max = 24.0
 			p.gravity = Vector2(0, -4)
+		&"bubbles":
+			# Drowned Vaults: air rising from the flooded floor, wobbling.
+			p.amount = 40
+			p.direction = Vector2(0, -1)
+			p.spread = 12.0
+			p.initial_velocity_min = 8.0
+			p.initial_velocity_max = 18.0
+			p.gravity = Vector2(0, -6)
+			p.scale_amount_min = 1.0
+			p.scale_amount_max = 2.5
 		&"sparkles":
 			p.amount = 50
 			p.direction = Vector2(0, 1)

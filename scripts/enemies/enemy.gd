@@ -1678,6 +1678,12 @@ func _raise_summons() -> void:
 	AudioManager.play_sfx(&"skill_cast", global_position)
 
 
+## The lowest hp a hit may leave (bosses hold at their next phase threshold
+## until the phase change has played out).
+func min_hp() -> int:
+	return -999999
+
+
 ## Elite / regen: statuses can heal monsters too.
 func heal_status(amount: int) -> void:
 	if _dead or hp >= max_hp:
@@ -1761,7 +1767,7 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 				var nsw := get_tree().get_first_node_in_group("net_game") as NetSync
 				if nsw:
 					nsw.enemy_float_text.rpc(spot, "Уязвим!", Color(1.0, 0.7, 0.2))
-	hp -= dealt
+	hp = maxi(hp - dealt, min_hp())
 	_dormant = false
 	hp_bar.visible = true
 	hp_bar.max_value = max_hp
@@ -1818,7 +1824,7 @@ func take_status_damage(amount: int, p_status: StringName, color: Color) -> void
 	amount = roundi(amount * (1.0 - status_resistance(p_status)))
 	if _dead or amount <= 0:
 		return
-	hp -= amount
+	hp = maxi(hp - amount, min_hp())
 	hp_bar.visible = true
 	hp_bar.max_value = max_hp
 	hp_bar.value = hp
