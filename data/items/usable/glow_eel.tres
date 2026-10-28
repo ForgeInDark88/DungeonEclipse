@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="UsableItemData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/item_effect.gd" id="1_eff"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/glow_eel.png" id="3_icon"]
+[ext_resource type="Script" path="res://scripts/data/usable_item_data.gd" id="4_use"]
+[ext_resource type="Script" path="res://scripts/effects/mana_effect.gd" id="e0"]
+[ext_resource type="Script" path="res://scripts/effects/heal_effect.gd" id="e1"]
+
+[sub_resource type="Resource" id="s0"]
+script = ExtResource("e0")
+amount = 40
+
+[sub_resource type="Resource" id="s1"]
+script = ExtResource("e1")
+amount = 10
+percent = 0.0
+
+[resource]
+script = ExtResource("4_use")
+effects = Array[ExtResource("1_eff")]([SubResource("s0"), SubResource("s1")])
+consume_on_use = true
+cooldown = 0.3
+use_animation = &"use"
+use_sound = &"potion_drink"
+id = &"glow_eel"
+display_name = "Светящийся угорь"
+description = "Светится изнутри тем же светом, что грибы наверху. Возвращает ману и чуть сил."
+icon = ExtResource("3_icon")
+item_type = 1
+rarity = 1
+item_level = 1
+max_stack = 10
+stat_bonuses = {}
+price = 40
+currency_value = 0
+has_durability = false
+max_durability = 100
