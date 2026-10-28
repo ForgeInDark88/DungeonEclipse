@@ -60,13 +60,12 @@ attack_cooldown = 0.45
 starting_items = {
 "apprentice_wand": 1,
 "cloth_hood": 1,
-"bone_amulet": 1,
 "health_potion": 3,
 "mana_crystal": 2,
 "bomb": 2,
 "rope": 1
 }
-starting_equipment = Array[StringName]([&"apprentice_wand", &"cloth_hood", &"bone_amulet"])
+starting_equipment = Array[StringName]([&"apprentice_wand", &"cloth_hood"])
 starting_quick_bar = Array[StringName]([&"bomb", &"mana_crystal", &"health_potion", &"rope"])
 skills = Array[ExtResource("3_skill")]([ExtResource("tree_n_raise_skeleton"), ExtResource("tree_n_bone_bond"), ExtResource("tree_n_skeleton_archer"), ExtResource("tree_n_grave_call"), ExtResource("tree_n_bone_golem"), ExtResource("tree_n_dark_frenzy"), ExtResource("tree_n_corpse_blast"), ExtResource("tree_n_army_of_dead"), ExtResource("tree_n_plague_bolt"), ExtResource("tree_n_rot"), ExtResource("tree_n_poison_cloud"), ExtResource("tree_n_soul_bolt"), ExtResource("tree_n_life_drain"), ExtResource("tree_n_pestilence"), ExtResource("tree_n_doom"), ExtResource("tree_n_death_mark"), ExtResource("tree_n_bone_spear"), ExtResource("tree_n_bone_armor"), ExtResource("tree_n_bone_shards"), ExtResource("tree_n_marrow"), ExtResource("tree_n_bone_prison"), ExtResource("tree_n_ossuary"), ExtResource("tree_n_bone_storm"), ExtResource("tree_n_lich_form")])
 allowed_weapon_types = Array[int]([5, 8, 3])

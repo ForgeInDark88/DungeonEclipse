@@ -152,13 +152,12 @@ attack_cooldown = 0.45
 starting_items = {
 "apprentice_wand": 1,
 "cloth_hood": 1,
-"bone_amulet": 1,
 "health_potion": 3,
 "mana_crystal": 2,
 "bomb": 2,
 "rope": 1
 }
-starting_equipment = Array[StringName]([&"apprentice_wand", &"cloth_hood", &"bone_amulet"])
+starting_equipment = Array[StringName]([&"apprentice_wand", &"cloth_hood"])
 starting_quick_bar = Array[StringName]([&"bomb", &"mana_crystal", &"health_potion", &"rope"])
 skills = Array[ExtResource("3_skill")]([])
 allowed_weapon_types = Array[int]([5, 8, 3])
