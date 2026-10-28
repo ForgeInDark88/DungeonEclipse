@@ -53,6 +53,9 @@ var changed_cells: Array[Vector2i] = []
 ## Exit seal: the exit opens after seal_required kills on this floor
 ## (GameState.seal_share() of the monsters placed by the generator).
 var seal_required := 0
+## Depth: solid blocks cast a soft shadow on the back wall (light from the
+## top left) - two copies of the tile layer, black, offset down-right.
+var _shadows: Array[TileMapLayer] = []
 var seal_kills := 0
 
 
@@ -68,8 +71,23 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	back_detail.tile_set = ts
 	detail.tile_set = ts
 	if biome:
-		back.modulate = biome.back_wall_modulate
-		back_detail.modulate = biome.back_wall_modulate
+		# The back wall sits a step darker than the blocks you stand on,
+		# so the walkable world reads at a glance.
+		var deep := biome.back_wall_modulate * Color(0.86, 0.86, 0.88, 1.0)
+		back.modulate = deep
+		back_detail.modulate = deep
+	for k in 2:
+		var sh := TileMapLayer.new()
+		sh.name = "BlockShadow%d" % k
+		sh.tile_set = ts
+		sh.collision_enabled = false
+		sh.navigation_enabled = false
+		sh.z_index = -3
+		sh.position = [Vector2(1, 1), Vector2(3, 4)][k]
+		sh.modulate = Color(0, 0, 0, [0.32, 0.26][k])
+		add_child(sh)
+		move_child(sh, tiles.get_index())
+		_shadows.append(sh)
 	explored.resize(layout.width * layout.height)
 	explored.fill(1 if layout.is_town else 0)
 	if not layout.is_town:
@@ -339,6 +357,11 @@ func _apply_tile(cell: Vector2i, kind: int) -> void:
 			tiles.set_cell(cell, TilesetBuilder.SOURCE_ID, AssetPaths.TILE_LADDER, 0)
 		T.LADDER_TOP:
 			tiles.set_cell(cell, TilesetBuilder.SOURCE_ID, AssetPaths.TILE_LADDER, TilesetBuilder.LADDER_TOP_ALT)
+	for sh in _shadows:
+		if kind == T.EMPTY or kind == T.LADDER or kind == T.LADDER_TOP:
+			sh.erase_cell(cell)
+		else:
+			sh.set_cell(cell, TilesetBuilder.SOURCE_ID, tiles.get_cell_atlas_coords(cell))
 
 
 ## Fringe and wall marks of a cell, from its neighbours (stable per cell).

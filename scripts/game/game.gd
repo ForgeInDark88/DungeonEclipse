@@ -168,7 +168,9 @@ func _sync_pet() -> void:
 func _apply_biome(biome: BiomeData) -> void:
 	if biome == null:
 		return
-	($Ambient as CanvasModulate).color = biome.ambient
+	# A touch below the biome's ambient: torches, ore and magic make warm
+	# pools of light instead of vanishing in a flat even light.
+	($Ambient as CanvasModulate).color = biome.ambient * Color(0.88, 0.87, 0.86, 1.0)
 	AudioManager.play_music(biome.music)
 	player.apply_biome(biome)
 	var textures := [biome.parallax_far, biome.parallax_mid, biome.parallax_near]

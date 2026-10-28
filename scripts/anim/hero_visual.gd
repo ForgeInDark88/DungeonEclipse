@@ -170,7 +170,11 @@ func _update_held() -> void:
 		return
 	var tex := _held_override if _held_override else _held_default
 	_hand.texture = tex
-	_hand.offset = -(ICON_GRIP if _held_override else _held_grip)
+	# Icons are drawn for a 16 px cell; bigger (32 px) ones keep the same
+	# size in the hand and show their extra detail at screen resolution.
+	var k := tex.get_width() / 16.0 if tex else 1.0
+	_hand.scale = Vector2(HELD_SCALE, HELD_SCALE) / k
+	_hand.offset = -(ICON_GRIP if _held_override else _held_grip) * k
 	_hand.visible = tex != null and (hand_visible or _held_override != null)
 	if layout and current != &"":
 		var f := frame()

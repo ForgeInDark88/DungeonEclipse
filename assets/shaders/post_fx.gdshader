@@ -14,6 +14,15 @@ uniform vec2 fog_speed = vec2(0.012, 0.004);
 uniform float outline_strength : hint_range(0.0, 1.0) = 0.35;
 uniform float outline_scale : hint_range(1.0, 6.0) = 3.0;
 uniform float vignette_strength : hint_range(0.0, 1.0) = 0.25;
+// Bloom: bright pixels (flames, ore, magic, lamps) spill soft light around.
+uniform float bloom_strength : hint_range(0.0, 2.0) = 0.55;
+uniform float bloom_threshold : hint_range(0.0, 1.0) = 0.62;
+
+vec3 bright_part(vec2 uv) {
+	vec3 s = texture(screen_tex, uv).rgb;
+	float l = dot(s, vec3(0.299, 0.587, 0.114));
+	return s * clamp((l - bloom_threshold) / (1.0 - bloom_threshold), 0.0, 1.0);
+}
 
 void fragment() {
 	vec3 c = texture(screen_tex, SCREEN_UV).rgb;
@@ -35,6 +44,14 @@ void fragment() {
 	float l4 = dot(texture(screen_tex, SCREEN_UV - vec2(0.0, px.y)).rgb, w);
 	float edge = clamp(max(abs(l0 - l1), max(abs(l0 - l2), max(abs(l0 - l3), abs(l0 - l4)))) * 3.0 - 0.12, 0.0, 1.0);
 	c *= 1.0 - outline_strength * edge;
+	// Bloom: two rings of 8 taps (3 and 8 game pixels out).
+	vec3 bloom = vec3(0.0);
+	for (int k = 0; k < 8; k++) {
+		float a = float(k) * 0.785398 + 0.3;
+		vec2 d = vec2(cos(a), sin(a)) * px;
+		bloom += bright_part(SCREEN_UV + d * 3.0) * 0.6 + bright_part(SCREEN_UV + d * 8.0) * 0.4;
+	}
+	c += bloom / 8.0 * bloom_strength;
 	// Gentle vignette pulling the view toward the centre of the light.
 	float vig = smoothstep(0.9, 0.35, length(UV - vec2(0.5)));
 	c *= 1.0 - vignette_strength * (1.0 - vig);

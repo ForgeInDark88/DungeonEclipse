@@ -136,6 +136,22 @@ func _watch_game() -> void:
 		chest.interact(mine)
 		await get_tree().create_timer(2.0).timeout
 		check(chest.opened, "client: chest opened through the host")
+	# --- loot phase: every pickup a guest sees must be a replica of a host
+	# pickup (no phantom copies of its own).
+	await get_tree().create_timer(1.5).timeout
+	var own := 0
+	var reps := 0
+	for n in get_tree().get_nodes_in_group("pickups"):
+		var pk := n as ItemPickup
+		if pk == null or pk.is_queued_for_deletion():
+			continue
+		print("DBG pickup ", "host" if is_host else "guest", " id=", pk.net_id, " puppet=", pk.puppet, " item=", pk.item.id if pk.item else "?", " pos=", pk.global_position)
+		if pk.puppet:
+			reps += 1
+		else:
+			own += 1
+	if not is_host:
+		check(own == 0, "guest: no phantom (local) pickups (%d, replicas %d)" % [own, reps])
 	# --- costume phase: the guest equips a sword; the host's puppet copy
 	# must mirror the same gear through net_state.
 	if is_host:
@@ -272,6 +288,25 @@ func _watch_game() -> void:
 		if is_instance_valid(trap):
 			trap.spring_shared(mine.global_position if mine else trap.global_position)
 		await get_tree().create_timer(1.0).timeout
+	# --- phantom loot phase: the host drops an item and it vanishes there
+	# without anyone picking it up; the guest's copy must vanish too.
+	if is_host:
+		EventBus.spawn_items.emit(level.start_position() + Vector2(0, -20), [{"item": ItemDatabase.items.values()[0], "count": 1}])
+		await get_tree().create_timer(3.0).timeout
+		for id in ns.items.keys():
+			var pk: Node = ns.items[id]
+			if is_instance_valid(pk):
+				pk.queue_free()
+		await get_tree().create_timer(2.0).timeout
+	else:
+		await get_tree().create_timer(1.0).timeout
+		var had := get_tree().get_nodes_in_group("pickups").size()
+		await get_tree().create_timer(3.5).timeout
+		var live := 0
+		for n in get_tree().get_nodes_in_group("pickups"):
+			if not n.is_queued_for_deletion():
+				live += 1
+		check(had > 0 and live == 0, "client: item gone on the host is gone here (%d -> %d)" % [had, live])
 	# --- floor transition phase: the host descends; the guest must rebuild
 	# the floor and receive the new floor's enemies via the world re-sync.
 	if is_host:
@@ -287,6 +322,11 @@ func _watch_game() -> void:
 	check(GameState.floor_number == 2, "both on floor 2 (got %d)" % GameState.floor_number)
 	var shells2: int = ns.enemies.size() if ns != null else -1
 	check(shells2 > 0, "floor 2 mobs present (%d)" % shells2)
+	var stray := 0
+	for n in get_tree().get_nodes_in_group("pickups"):
+		if g.level == null or not g.level.is_ancestor_of(n):
+			stray += 1
+	check(stray == 0, "no loot left over from floor 1 (%d)" % stray)
 	_finish()
 
 

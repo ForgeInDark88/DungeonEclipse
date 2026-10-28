@@ -464,12 +464,13 @@ static func loot_popup(parent: Node, pos: Vector2, items: Array) -> void:
 		s.z_index = 30
 		parent.add_child(s)
 		s.global_position = pos
-		s.scale = Vector2(0.3, 0.3)
+		var k := 16.0 / maxf(1.0, item.icon.get_width()) if item.icon else 1.0
+		s.scale = Vector2(0.3, 0.3) * k
 		var target := pos + Vector2((i - (n - 1) / 2.0) * 14.0, -22.0)
 		var tw := s.create_tween()
 		tw.set_parallel()
 		tw.tween_property(s, "global_position", target, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT).set_delay(i * 0.06)
-		tw.tween_property(s, "scale", Vector2.ONE, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT).set_delay(i * 0.06)
+		tw.tween_property(s, "scale", Vector2.ONE * k, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT).set_delay(i * 0.06)
 		if item.rarity > ItemData.Rarity.COMMON:
 			tw.tween_property(s, "modulate", item.rarity_color() * 1.6, 0.2).set_delay(0.3)
 		tw.chain().tween_interval(0.5)

@@ -15,5 +15,5 @@ material = SubResource("Mat_unshaded")
 [node name="PointLight2D" type="PointLight2D" parent="."]
 position = Vector2(0, -12)
 color = Color(1, 0.62, 0.3, 1)
-energy = 1.0
-texture_scale = 0.7
+energy = 1.25
+texture_scale = 0.95
