@@ -195,19 +195,41 @@ func boss_fx(kind: StringName, from: Vector2, dir_or_radius: Vector2,
 			tw3.tween_interval(0.8)
 			tw3.tween_property(core, "width", 0.0, 0.22)
 			tw3.tween_callback(core.queue_free)
+		&"hazard":
+			BossHazard.spawn(parent, int(extra[0]) as BossHazard.Style, from, Vector2(extra[1], extra[2]),
+					float(extra[3]), dir_or_radius, 0, 0, false)
+		&"intro":
+			var b := get_tree().get_first_node_in_group("bosses")
+			if b:
+				EventBus.boss_intro.emit(b)
+				AudioManager.play_sfx(&"boss_gong", from)
+		&"banner":
+			EventBus.boss_banner.emit(String(extra[0]), String(extra[1]), color)
+			if String(extra[1]) != "" and not String(extra[1]).begins_with("«"):
+				AudioManager.play_sfx(&"boss_roar", from)
+		&"aura":
+			var b := get_tree().get_first_node_in_group("bosses") as Boss
+			if b:
+				b.set_aura(int(extra[0]), color)
+				b.data_tint_override(color if int(extra[0]) < 3 else Color(1.0, 0.55, 0.5))
+		&"darkness":
+			Boss.darken(parent, float(extra[0]) if extra.size() > 0 else 4.0)
+		&"swap":
+			for p in [from, dir_or_radius]:
+				Fx.sparks(parent, p + Vector2(0, -14), color, 18, 90.0)
 		&"spikes":
 			for spot_v in extra:
 				var spot: Vector2 = spot_v
 				var spike := Node2D.new()
 				var poly := Polygon2D.new()
 				poly.polygon = PackedVector2Array([Vector2(-5, 1), Vector2(0, -16), Vector2(5, 1)])
-				poly.color = Color(0.62, 0.93, 1.0, 0.95)
+				poly.color = Color(color.r, color.g, color.b, 0.95)
 				var side := Polygon2D.new()
 				side.polygon = PackedVector2Array([Vector2(3, 1), Vector2(7, -10), Vector2(10, 1)])
-				side.color = Color(0.42, 0.72, 0.9, 0.9)
+				side.color = color.darkened(0.3)
 				var light := PointLight2D.new()
 				light.texture = AssetPaths.tex(AssetPaths.LIGHT)
-				light.color = Color(0.55, 0.95, 1.0)
+				light.color = color
 				light.energy = 1.4
 				light.texture_scale = 0.35
 				light.position = Vector2(0, -8)
@@ -1409,3 +1431,18 @@ func _minion(uid: int) -> Minion:
 		minions.erase(uid)
 		return null
 	return m
+
+
+## Host → one guest: a boss moved your hero (the Illusionist's swap).
+@rpc("authority", "call_remote", "reliable")
+func player_teleport(pos: Vector2) -> void:
+	if local_player and not local_player.dead:
+		local_player.global_position = pos
+		local_player.velocity = Vector2.ZERO
+
+
+## Host → one guest: a boss's roar shoves your hero away.
+@rpc("authority", "call_remote", "reliable")
+func player_push(impulse: Vector2) -> void:
+	if local_player and not local_player.dead:
+		local_player.push(impulse)

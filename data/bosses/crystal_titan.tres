@@ -11,6 +11,28 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/bosses/crystal_titan_sheet.png" id="9_sheet"]
 [ext_resource type="Resource" path="res://data/animations/crystal_titan_layout.tres" id="10_layout"]
 
+[sub_resource type="Resource" id="SigQuake6"]
+script = ExtResource("4_attack")
+kind = 12
+windup = 1.1
+damage_mult = 0.9
+count = 6
+radius = 16.0
+projectile_texture = ExtResource("7_shard")
+projectile_speed = 170.0
+damage_type = 2
+
+[sub_resource type="Resource" id="SigQuake9"]
+script = ExtResource("4_attack")
+kind = 12
+windup = 0.95
+damage_mult = 0.95
+count = 9
+radius = 16.0
+projectile_texture = ExtResource("7_shard")
+projectile_speed = 190.0
+damage_type = 2
+
 [sub_resource type="Resource" id="Slow"]
 script = ExtResource("6_status")
 status = &"slow"
@@ -52,7 +74,7 @@ hit_effects = Array[ExtResource("2_hit")]([SubResource("Slow")])
 script = ExtResource("3_phase")
 hp_threshold = 1.0
 message = ""
-attacks = Array[ExtResource("4_attack")]([SubResource("SpikesP1"), SubResource("SlamP1")])
+attacks = Array[ExtResource("4_attack")]([SubResource("SpikesP1"), SubResource("SlamP1"), SubResource("SigQuake6")])
 attack_interval = 1.7
 speed_mult = 1.0
 tint = Color(1, 1, 1, 1)
@@ -76,7 +98,7 @@ hit_effects = Array[ExtResource("2_hit")]([SubResource("Slow")])
 script = ExtResource("3_phase")
 hp_threshold = 0.65
 message = "Кристаллы поют!"
-attacks = Array[ExtResource("4_attack")]([SubResource("SpikesP1"), SubResource("BeamP2"), SubResource("SlamP1")])
+attacks = Array[ExtResource("4_attack")]([SubResource("SpikesP1"), SubResource("BeamP2"), SubResource("SlamP1"), SubResource("SigQuake6")])
 attack_interval = 1.3
 speed_mult = 1.15
 tint = Color(0.85, 0.95, 1, 1)
@@ -115,13 +137,16 @@ hit_effects = Array[ExtResource("2_hit")]([SubResource("Slow")])
 script = ExtResource("3_phase")
 hp_threshold = 0.35
 message = "Гора гневается!"
-attacks = Array[ExtResource("4_attack")]([SubResource("SpikesP3"), SubResource("BeamP3"), SubResource("SlamP1")])
+attacks = Array[ExtResource("4_attack")]([SubResource("SpikesP3"), SubResource("BeamP3"), SubResource("SlamP1"), SubResource("SigQuake9")])
 attack_interval = 0.9
 speed_mult = 1.35
 tint = Color(0.7, 0.9, 1, 1)
 
 [resource]
 script = ExtResource("8_boss")
+intro_line = "ГОРА... ПРОСЫПАЕТСЯ."
+defeat_line = "Камень... крошится..."
+arena_style = &"crystal"
 glow_color = Color(0.5, 1, 1, 1)
 glow_scale = 1.2
 title = "Кристальный титан — Сердце глубин"

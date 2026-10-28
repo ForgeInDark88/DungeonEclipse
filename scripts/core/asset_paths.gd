@@ -163,6 +163,9 @@ const SFX := {
 	&"dig": SFX_DIR + "dig.wav",
 	&"explosion": SFX_DIR + "explosion.wav",
 	&"portal": SFX_DIR + "portal.wav",
+	&"boss_gong": SFX_DIR + "boss_gong.wav",
+	&"boss_roar": SFX_DIR + "boss_roar.wav",
+	&"boss_toll": SFX_DIR + "boss_toll.wav",
 	&"skill_cast": SFX_DIR + "skill_cast.wav",
 }
 ## Weapon type (WeaponItemData.WeaponType) -> swing sound id.
