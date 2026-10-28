@@ -24,6 +24,10 @@ var local_damage_only := false
 
 var _hit: Array[Node] = []
 var _finished := false
+## A short glowing trail and a soft halo (magic, fire, ice, poison shots and
+## blasts; plain arrows and knives get only a faint streak).
+var _trail: Line2D
+var _halo: Sprite2D
 
 @onready var sprite: Sprite2D = $Sprite2D
 
@@ -45,6 +49,26 @@ func _ready() -> void:
 	rotation = direction.angle()
 	body_entered.connect(_on_body_entered)
 	sprite.modulate = Color.WHITE.lerp(blast_color, 0.15)  # (no light per shot: cheaper)
+	var magic := damage_type != 0 or blast_radius > 0.0
+	_trail = Line2D.new()
+	_trail.top_level = true
+	_trail.z_index = 18
+	_trail.width = 4.0 if magic else 1.5
+	_trail.default_color = Color(blast_color.r, blast_color.g, blast_color.b, 0.85 if magic else 0.45)
+	Fx._beam(_trail)
+	var taper := Curve.new()  # thin at the tail (point 0), full at the shot
+	taper.add_point(Vector2(0, 0.0))
+	taper.add_point(Vector2(1, 1.0))
+	_trail.width_curve = taper
+	add_child(_trail)
+	if magic:
+		_halo = Sprite2D.new()
+		_halo.texture = AssetPaths.tex(AssetPaths.LIGHT)
+		_halo.modulate = Color(blast_color.r, blast_color.g, blast_color.b, 0.55)
+		_halo.scale = Vector2.ONE * 0.09
+		_halo.material = Fx._glow()
+		_halo.z_index = -1
+		add_child(_halo)
 
 
 func _physics_process(delta: float) -> void:
@@ -59,6 +83,12 @@ func _physics_process(delta: float) -> void:
 		_finish()
 		return
 	position += step
+	if _trail:
+		_trail.add_point(global_position)
+		if _trail.get_point_count() > 9:
+			_trail.remove_point(0)
+	if _halo:
+		_halo.scale = Vector2.ONE * (0.085 + sin(lifetime * 40.0) * 0.012)
 	lifetime -= delta
 	if lifetime <= 0.0:
 		queue_free()
@@ -108,4 +138,12 @@ func _finish() -> void:
 	else:
 		Fx.sparks(get_parent(), global_position, blast_color, 5, 60.0)
 	set_deferred("monitoring", false)
+	# the trail lingers a moment after the shot is gone
+	if _trail and _trail.get_point_count() > 1 and get_parent():
+		var t := _trail
+		remove_child(t)
+		get_parent().add_child(t)
+		var tw := t.create_tween()
+		tw.tween_property(t, "modulate:a", 0.0, 0.18)
+		tw.tween_callback(t.queue_free)
 	queue_free()
