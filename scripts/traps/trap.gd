@@ -169,13 +169,20 @@ func _plate() -> void:
 			_phase = ""
 			_play(&"up")
 		return
-	if _victims().any(func(v: Node) -> bool: return v.is_in_group("player")):
+	var on := _victims()
+	if not on.is_empty():
 		_phase = "down"
 		_play(&"down")
 		AudioManager.play_sfx(&"chest_locked", global_position, -4.0)
-		if _cooldown <= 0.0:
+		# Co-op: each machine springs it only for its own hero (puppet
+		# positions lag); everyone else sees it through spring_shared().
+		var mine: Node = null
+		for v in on:
+			if not v.puppet:
+				mine = v
+		if mine and _cooldown <= 0.0:
 			_cooldown = data.cooldown
-			trigger()
+			spring_shared(mine.global_position)
 
 
 ## Sets the trap off (also called on a failed disarm).
@@ -189,25 +196,60 @@ func trigger() -> void:
 		K.FALLING_ROCK:
 			if _phase == "":
 				_phase = "crack"
-				_phase_time = 0.15
+				_phase_time = 0.3
 		K.PRESSURE_PLATE:
-			if linked and is_instance_valid(linked) and not linked.disarmed:
-				linked.trigger()
-			else:
-				_rock_shower()
+			var p := _player()
+			trigger_at(p.global_position if p else global_position)
 
 
-func _rock_shower() -> void:
-	var p := _player()
-	if p == null or p.level == null:
+## Sets the trap off aimed at `target` (the hero who stepped on the plate).
+func trigger_at(target: Vector2) -> void:
+	if data.kind != K.PRESSURE_PLATE:
+		trigger()
+	elif linked and is_instance_valid(linked) and not linked.disarmed:
+		linked.trigger()
+	else:
+		_rock_shower(target)
+
+
+## Springs the trap here and on every other machine, so the rocks fall
+## (and are seen falling) at the same place for the whole party. The
+## host's copy is the one whose rocks hurt.
+func spring_shared(target: Vector2) -> void:
+	trigger_at(target)
+	if not Net.active:
 		return
-	EventBus.message.emit("Сверху сыплются камни!")
+	var ns = get_tree().get_first_node_in_group("net_game")
+	if ns == null:
+		return
+	if Net.is_host:
+		ns.trap_sprung.rpc(net_seq, target, 1)
+	else:
+		ns.request_trap_spring.rpc_id(1, net_seq, target)
+
+
+## Network: another machine sprang this trap.
+func net_spring(target: Vector2) -> void:
+	if disarmed:
+		return
+	if data.kind == K.PRESSURE_PLATE:
+		_cooldown = data.cooldown
+	trigger_at(target)
+
+
+func _rock_shower(target: Vector2) -> void:
+	var level := get_parent().get_parent() as DungeonLevel
+	if level == null:
+		return
+	var p := _player()
+	if p and p.global_position.distance_to(target) < 120.0:
+		EventBus.message.emit("Сверху сыплются камни!")
 	for i in 3:
 		var rock := RockProjectile.new()
 		rock.texture = AssetPaths.tex(AssetPaths.TRAP_ROCK)
 		rock.damage = data.damage_for_floor(floor_number)
 		rock.velocity = Vector2(randf_range(-20, 20), 0)
-		p.level.add_entity(rock, p.global_position + Vector2(randf_range(-30, 30), -90 - i * 20))
+		level.add_entity(rock, target + Vector2(randf_range(-30, 30), -90 - i * 20))
 
 
 # --------------------------------------------------------------- arrow wall
@@ -249,7 +291,7 @@ func _falling_rock(delta: float) -> void:
 			if p and not p.dead:
 				var rel := p.global_position - global_position
 				if absf(rel.x) < data.trigger_range * 0.25 and rel.y > 0.0 and rel.y < data.trigger_range * 3.0:
-					_phase = "crack"
+					spring_shared(p.global_position)
 					_phase_time = 0.45
 		"crack":
 			_phase_time -= delta
@@ -338,10 +380,8 @@ func interact(player: Node) -> void:
 				ns.request_trap_disarm.rpc_id(1, net_seq)
 		else:
 			# A failed attempt springs the trap: the host's copy decides.
-			var ns2 = get_tree().get_first_node_in_group("net_game")
-			if ns2:
-				ns2.request_trap_spring.rpc_id(1, net_seq)
 			EventBus.message.emit("Не вышло! Ловушка сработала")
+			spring_shared(player.global_position)
 		return
 	if randf() <= disarm_chance(player.hero):
 		_apply_disarmed()
@@ -349,7 +389,7 @@ func interact(player: Node) -> void:
 		_net_disarm_broadcast()
 	else:
 		EventBus.message.emit("Не вышло! Ловушка сработала")
-		trigger()
+		spring_shared(player.global_position)
 
 
 func _apply_disarmed() -> void:
@@ -368,4 +408,3 @@ func _net_disarm_broadcast() -> void:
 		var ns = get_tree().get_first_node_in_group("net_game")
 		if ns:
 			ns.trap_disarmed_net.rpc(net_seq)
-		trigger()
