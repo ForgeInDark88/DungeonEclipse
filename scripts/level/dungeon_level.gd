@@ -364,6 +364,12 @@ func _apply_tile(cell: Vector2i, kind: int) -> void:
 			sh.set_cell(cell, TilesetBuilder.SOURCE_ID, tiles.get_cell_atlas_coords(cell))
 
 
+## Settings → «Тени блоков».
+func set_block_shadows(on: bool) -> void:
+	for sh in _shadows:
+		sh.visible = on
+
+
 ## Fringe and wall marks of a cell, from its neighbours (stable per cell).
 func _apply_detail(cell: Vector2i) -> void:
 	detail.erase_cell(cell)

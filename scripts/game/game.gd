@@ -27,6 +27,7 @@ var _rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
 	get_tree().paused = false
+	add_to_group("graphics_listeners")
 	Input.set_custom_mouse_cursor(AssetPaths.tex(AssetPaths.CROSSHAIR), Input.CURSOR_ARROW, Vector2(10, 10))
 	tree_exiting.connect(func() -> void: Input.set_custom_mouse_cursor(null))
 	if GameState.hero == null and not Net.active:
@@ -186,6 +187,7 @@ func _apply_biome(biome: BiomeData) -> void:
 	m.set_shader_parameter("saturation", biome.saturation)
 	m.set_shader_parameter("contrast", biome.contrast)
 	_apply_brightness()
+	apply_graphics()
 	m.set_shader_parameter("fog_color", biome.fog_color)
 	m.set_shader_parameter("fog_amount", biome.fog_amount)
 
@@ -194,6 +196,14 @@ func _apply_biome(biome: BiomeData) -> void:
 func _apply_brightness() -> void:
 	var m := ($PostFX/Rect as ColorRect).material as ShaderMaterial
 	m.set_shader_parameter("brightness", SaveManager.brightness)
+
+
+## Settings → «Свечение» / «Тени блоков» (weak machines turn them off).
+func apply_graphics() -> void:
+	var m := ($PostFX/Rect as ColorRect).material as ShaderMaterial
+	m.set_shader_parameter("bloom_strength", 0.55 if SaveManager.bloom else 0.0)
+	if level:
+		level.set_block_shadows(SaveManager.block_shadows)
 
 
 func _process(delta: float) -> void:
@@ -223,9 +233,10 @@ func _toggle_pause() -> void:
 		return
 	get_tree().paused = true
 	overlay.clear()
-	overlay.set_panel_size(Vector2(220, 200))
+	overlay.set_panel_size(Vector2(220, 220))
 	overlay.add_text("Пауза", 12)
 	overlay.add_button("Продолжить", _toggle_pause).grab_focus()
+	overlay.add_button("Как играть", func() -> void: add_child(InfoBook.how_to_play()))
 	overlay.add_button("Настройки", open_settings)
 	overlay.add_button("Дерево навыков", func() -> void:
 		_toggle_pause()

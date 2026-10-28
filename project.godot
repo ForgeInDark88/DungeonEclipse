@@ -19,7 +19,8 @@ config/description="2D roguelike platformer in a dark fantasy dungeon."
 config/version="1.0 release"
 run/main_scene="res://scenes/ui/main_menu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
-config/icon="res://assets/sprites/items/eclipse_ring.png"
+config/icon="res://assets/ui/app_icon.png"
+config/windows_native_icon="res://assets/ui/app_icon.ico"
 
 [autoload]
 
