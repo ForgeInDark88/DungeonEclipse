@@ -64,6 +64,17 @@ func _physics_process(delta: float) -> void:
 		sprite.modulate = Color.WHITE.lerp(item.rarity_color() * 1.5, (sin(_bob * 1.7) + 1.0) * 0.2)
 
 
+## Host: however this item leaves the world (picked up, a pet fetched it,
+## burned, dug away), the replicas on the guests go too - else they keep a
+## phantom copy. A floor change frees everything anyway (clear_floor).
+func _exit_tree() -> void:
+	if puppet or net_id <= 0 or not Net.active or not Net.is_host:
+		return
+	var ns := get_tree().get_first_node_in_group("net_game") as NetSync if is_inside_tree() else null
+	if ns and ns.items.get(net_id) == self:
+		ns.forget_item(net_id)
+
+
 ## Host: send the resting place / count to the replicas.
 func _tell_replicas() -> void:
 	_told_pos = global_position
@@ -109,13 +120,6 @@ func collect(hero: Hero) -> void:
 					visible = true
 					add_to_group("interactable"))
 		return
-	# The host collecting its own loot must remove the replicas on clients,
-	# or they keep a phantom copy that vanishes when touched.
-	if Net.active and Net.is_host and net_id > 0:
-		tree_exiting.connect(func() -> void:
-			var ns := get_tree().get_first_node_in_group("net_game") as NetSync
-			if ns:
-				ns.forget_item(net_id))
 	if item.currency_value > 0:
 		var amount := item.currency_value * count
 		hero.add_gold(amount)

@@ -52,6 +52,12 @@ func register_enemy_node(e: Enemy) -> void:
 
 func clear_floor() -> void:
 	enemies.clear()
+	# Replicas of the old floor's loot go with it (a guest would otherwise
+	# keep phantom items floating in the next floor).
+	for id in items:
+		var it: Node = items[id]
+		if is_instance_valid(it) and (it as ItemPickup) and it.puppet:
+			it.queue_free()
 	items.clear()
 	_last_hitter.clear()
 	_hit_budget.clear()
@@ -380,8 +386,14 @@ func spawn_item(net_id: int, item_dict: Dictionary, count: int, pos: Vector2, im
 	# (item_settled corrects what physics still makes differ).
 	pickup.setup(it, count, impulse)
 	items[net_id] = pickup
-	get_parent().add_child(pickup)
-	pickup.global_position = pos
+	# Into the level's entities like the host's copy: it dies with the floor.
+	var game := get_tree().current_scene
+	var lvl: DungeonLevel = game.level if game and "level" in game else null
+	if lvl:
+		lvl.add_entity(pickup, pos)
+	else:
+		get_parent().add_child(pickup)
+		pickup.global_position = pos
 
 
 ## Host: its own player collected this pickup — remove replicas everywhere.
@@ -399,7 +411,9 @@ func take_item(net_id: int) -> void:
 		return
 	var sender := multiplayer.get_remote_sender_id()
 	var pickup: ItemPickup = items.get(net_id)
-	if pickup == null or not is_instance_valid(pickup):
+	if pickup == null or not is_instance_valid(pickup) or pickup.is_queued_for_deletion():
+		# Already gone here: the guest's copy is a phantom - remove it.
+		item_taken.rpc_id(sender, net_id)
 		return
 	if not _sender_near(sender, pickup.global_position, 140.0):
 		return
