@@ -120,11 +120,7 @@ func _physics_process(delta: float) -> void:
 		# Boss shells have no local phase machine; mirror the host's Enemy
 		# state/timers so windup and attack animations are visible to guests.
 		var before := global_position
-		var since := Time.get_ticks_msec() / 1000.0 - _net_last
-		var target := _net_target
-		if since > 0.12 and _net_vel.length() > 1.0:
-			target += _net_vel * minf(since, 0.4)
-		global_position = global_position.lerp(target, minf(1.0, delta * 12.0))
+		global_position = _interp.sample(delta) if _interp.has_data() else _net_target
 		_attack_anim_left = maxf(0.0, _attack_anim_left - delta)
 		var dx: float = (global_position.x - before.x) / maxf(delta, 0.0001)
 		if state == State.HURT:

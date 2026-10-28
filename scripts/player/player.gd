@@ -38,6 +38,8 @@ var _net_timer := 0.0
 ## Shell extrapolation: speed and age of the last snapshot.
 var _net_vel := Vector2.ZERO
 var _net_last := 0.0
+## Co-op copy of someone else's hero: buffered snapshot interpolation.
+var _interp := NetInterp.new()
 ## Co-op: damage variance/crit dice for the host's authoritative recompute.
 var _net_dice := RandomNumberGenerator.new()
 ## Pending guest attacks awaiting the host's confirmed damage.
@@ -742,14 +744,15 @@ func _net_broadcast(delta: float) -> void:
 	if _net_timer <= 0.0:
 		_net_timer = 0.05
 		net_state.rpc(global_position, facing, hero.stats.hp if hero else 0,
-				hero.stats.max_hp() if hero else 0, dead, _net_costume())
+				hero.stats.max_hp() if hero else 0, dead, _net_costume(), NetInterp.now())
 
 
 @rpc("any_peer", "call_remote", "unreliable")
 func net_state(pos: Vector2, p_facing: float, hp: int, max_hp: int, is_dead: bool,
-		costume: Dictionary = {}) -> void:
+		costume: Dictionary = {}, sent_at := -1.0) -> void:
 	if not puppet or multiplayer.get_remote_sender_id() != peer_id:
 		return
+	_interp.push(sent_at if sent_at >= 0.0 else NetInterp.now(), pos)
 	var now := Time.get_ticks_msec() / 1000.0
 	var dt := maxf(0.03, now - _net_last)
 	if pos.distance_to(_net_target) > 160.0:
@@ -791,17 +794,17 @@ func net_place(pos: Vector2) -> void:
 	_net_target = pos
 	_net_vel = Vector2.ZERO
 	_net_last = Time.get_ticks_msec() / 1000.0
+	_interp.reset(pos)
 
 
 func _net_puppet_step(delta: float) -> void:
 	var before := global_position
-	# Extrapolate through lost snapshots: keep gliding along the last known
-	# velocity instead of freezing on a stale target.
-	var since := Time.get_ticks_msec() / 1000.0 - _net_last
-	var target := _net_target
-	if since > 0.15 and _net_vel.length() > 1.0 and not dead:
-		target += _net_vel * minf(since, 0.4)
-	global_position = global_position.lerp(target, minf(1.0, delta * 14.0))
+	# Drawn a moment in the past between two real snapshots (NetInterp):
+	# no overshoot, no snapping back when packets come in bursts.
+	if _interp.has_data():
+		global_position = _interp.sample(delta)
+	else:
+		global_position = global_position.lerp(_net_target, minf(1.0, delta * 14.0))
 	var est := (global_position - before) / maxf(delta, 0.0001)
 	velocity = Vector2(est.x, 0.0)
 	animator.update(delta, true, velocity, false, false)

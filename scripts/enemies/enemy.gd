@@ -65,6 +65,8 @@ var _net_target := Vector2.ZERO
 ## gliding through lost packets instead of stuttering to a stop.
 var _net_vel := Vector2.ZERO
 var _net_last := 0.0
+## Guest shell: buffered snapshot interpolation of the host's positions.
+var _interp := NetInterp.new()
 var state: State = State.PATROL
 var dir: float = 1.0
 
@@ -189,6 +191,7 @@ func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null, p_ch
 	hp = max_hp
 	if puppet:
 		_net_target = global_position
+		_interp.reset(global_position)
 		_play(&"idle")
 
 
@@ -371,11 +374,7 @@ func _physics_process(delta: float) -> void:
 		# moving, idle at rest. Lost snapshots are extrapolated from the
 		# last known speed so the shell does not stutter to a stop.
 		var before := global_position
-		var since := Time.get_ticks_msec() / 1000.0 - _net_last
-		var target := _net_target
-		if since > 0.12 and _net_vel.length() > 1.0:
-			target += _net_vel * minf(since, 0.5)
-		global_position = global_position.lerp(target, minf(1.0, delta * 12.0))
+		global_position = _interp.sample(delta) if _interp.has_data() else _net_target
 		var dx: float = (global_position.x - before.x) / maxf(delta, 0.0001)
 		_attack_anim_left = maxf(0.0, _attack_anim_left - delta)
 		if state == State.ATTACK:
@@ -1891,7 +1890,8 @@ func is_dead() -> bool:
 
 ## Client shell: host says where I am and how hurt.
 func net_apply_state(x: float, y: float, new_hp: int, dead: bool, ai_state: int = -1,
-		attack_left: float = 0.0, new_max_hp: int = -1) -> void:
+		attack_left: float = 0.0, new_max_hp: int = -1, sent_at := -1.0) -> void:
+	_interp.push(sent_at if sent_at >= 0.0 else NetInterp.now(), Vector2(x, y))
 	var now := Time.get_ticks_msec() / 1000.0
 	var dt := maxf(0.03, now - _net_last)
 	# Speed of the last hop: the extrapolation speed on packet loss.
