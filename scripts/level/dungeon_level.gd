@@ -272,6 +272,17 @@ func _on_boss_defeated(_boss: BossData, _pos: Vector2) -> void:
 	if spot.x < 0:
 		spot = layout.start_cell
 	add_entity(chest, cell_bottom(spot))
+	# The relic altar beside the chest: a choice of one relic from three
+	# (personal - every machine builds its own).
+	if not _boss.final:
+		var altar_cell := Vector2i(-1, -1)
+		for dx in [3, -3, 4, -4, 5, -5, 2, -2, 6, -6]:
+			var c := Vector2i(spot.x + dx, spot.y)
+			if layout.get_tile(c.x, c.y) == LevelLayout.Tile.EMPTY and LevelLayout.is_solid(layout.get_tile(c.x, c.y + 1)):
+				altar_cell = c
+				break
+		if altar_cell.x >= 0:
+			add_entity(RelicAltar.new(), cell_bottom(altar_cell))
 	Fx.sparks(entities, cell_bottom(layout.exit_cell) + Vector2(0, -16), Color(0.7, 0.4, 1.0), 30, 120.0)
 	EventBus.message.emit("Затмение рассеяно! Свет возвращается в подземелья." if _boss.final else "Страж повержен! Открылся проход.")
 

@@ -403,7 +403,28 @@ def main():
     for t in ("chest_epic.tres", "boss.tres", "special.tres"):
         add_to_table(os.path.join(LOOT, t), rare, 0.4)
         add_to_table(os.path.join(LOOT, t), epic, 0.5)
+    altar().save(os.path.join(gp.A, "sprites", "props", "relic_altar.png"))
     print("relics:", len(RELICS_LIST))
+
+
+
+def altar():
+    """32x32: the relic altar - a dark stone pedestal with three glowing
+    niches and a violet flame of the Eclipse above (props/relic_altar.png)."""
+    im, g = blank(32, 32), blank(32, 32)
+    m = mask(32, 32, lambda dd: dd.polygon([(6, 31), (8, 16), (24, 16), (26, 31)], fill=FULL))
+    lit(im, m, (88, 80, 100), 12, 20, 10, 9)
+    d = ImageDraw.Draw(im)
+    d.rectangle((5, 13, 27, 16), fill=rgba((120, 110, 132)))
+    d.line((5, 13, 27, 13), fill=rgba((170, 160, 184)))
+    for x, col in ((11, (255, 200, 90)), (16, (190, 120, 255)), (21, (120, 220, 255))):
+        d.rectangle((x - 2, 20, x + 1, 25), fill=rgba((24, 16, 30)))
+        _gem(d, g, x, 22, col, 1)
+    for k, (x, h) in enumerate(((13, 6), (16, 10), (19, 7))):
+        d.polygon([(x - 2, 13), (x, 13 - h), (x + 2, 13)], fill=rgba((170, 100, 255)))
+        d.line((x, 12, x, 13 - h + 2), fill=rgba((235, 210, 255)))
+    glow_dot(g, 16, 7, 9, (170, 110, 255), 0.7)
+    return finish(im, g)
 
 
 if __name__ == "__main__":
