@@ -41,6 +41,8 @@ var _net_last := 0.0
 ## A mini-game holds the hero (fishing): no walking, jumping, attacks or
 ## interactions until it ends. Co-op does not pause the tree, so this does.
 var busy := false
+## Relics that change the fight (local hero only).
+var relic_powers: RelicPowers
 ## Co-op copy of someone else's hero: buffered snapshot interpolation.
 var _interp := NetInterp.new()
 ## Co-op: damage variance/crit dice for the host's authoritative recompute.
@@ -117,6 +119,11 @@ func setup(p_hero: Hero, p_level: DungeonLevel) -> void:
 		hero.leveled_up.connect(_on_leveled_up)
 	if not hero.equipment.changed.is_connected(_on_equipment_changed):
 		hero.equipment.changed.connect(_on_equipment_changed)
+	if not puppet and relic_powers == null:
+		relic_powers = RelicPowers.new()
+		relic_powers.name = "RelicPowers"
+		add_child(relic_powers)
+		relic_powers.setup(self)
 
 
 func apply_biome(biome: BiomeData) -> void:
@@ -337,6 +344,8 @@ func _step_sound() -> StringName:
 
 
 func _on_landed(fall_speed: float) -> void:
+	if relic_powers:
+		relic_powers.on_land(fall_speed)
 	if fall_speed < 60.0:
 		return
 	AudioManager.play_sfx(&"land", global_position, -4.0)
@@ -573,6 +582,8 @@ func _unhandled_input(event: InputEvent) -> void:
 # ------------------------------------------------------------------ combat
 func roll_damage(multiplier := 1.0) -> Dictionary:
 	var dmg := hero.stats.damage() * multiplier * skill_power * _net_dice.randf_range(0.85, 1.15)
+	if relic_powers:
+		dmg *= relic_powers.damage_mult()
 	var crit := _net_dice.randf() < hero.stats.crit_chance()
 	if crit:
 		dmg *= 2.0
@@ -827,6 +838,11 @@ func take_damage(amount: int, from_pos: Vector2 = Vector2.INF, damage_type: int 
 	if _parry_time > 0.0:
 		_parry_success(from_pos)
 		return
+	if relic_powers:
+		if relic_powers.dodge():
+			_invulnerable = 0.25
+			return
+		amount = roundi(amount * relic_powers.hurt_mult())
 	if damage_type > 0:
 		amount = roundi(amount * (1.0 - hero.stats.resistance(damage_type)))
 	if status.has(&"curse"):
@@ -838,6 +854,8 @@ func take_damage(amount: int, from_pos: Vector2 = Vector2.INF, damage_type: int 
 		EventBus.floating_text.emit(global_position + Vector2(0, -26), "Поглощено", Color(0.6, 0.8, 1.0))
 		return
 	var lost := hero.stats.take_damage(amount)
+	if relic_powers and lost > 0:
+		relic_powers.on_hurt(lost, from_pos)
 	hero.wear_armor(1)
 	EventBus.damage_dealt.emit(global_position + Vector2(0, -24), lost, false, true)
 	_invulnerable = INVULNERABLE_TIME
@@ -1019,6 +1037,8 @@ func push(impulse: Vector2) -> void:
 func defend() -> void:
 	if hero == null or _defend_cd > 0.0 or climbing or status.is_stunned():
 		return
+	if relic_powers and hero.class_data.defense_move != &"":
+		relic_powers.on_defend()
 	match hero.class_data.defense_move:
 		&"parry":
 			_parry_time = PARRY_WINDOW
@@ -1119,6 +1139,8 @@ func use_skill(index: int) -> void:
 	if fired:
 		hero.stats.spend_mana(skill.mana_cost)
 		skills.start_cooldown(index)
+		if relic_powers:
+			relic_powers.on_skill()
 		if skill.cast_animation != &"":
 			animator.play_action(skill.cast_animation, 0.4)
 		var snd := skill.cast_sound if skill.cast_sound != &"" else &"skill_cast"

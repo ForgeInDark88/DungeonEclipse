@@ -9,6 +9,12 @@ extends ItemData
 ## On death: the hero comes back with `revive_percent` HP; the relic is spent.
 @export var second_chance: bool = false
 @export_range(0.0, 1.0) var revive_percent: float = 0.5
+## A power that changes how the hero fights (RelicPowers): chain_lightning,
+## blood_pact, phantom_blade, volcano... &"" = stats / the fields above only.
+@export var power: StringName = &""
+## Numbers of the power (meaning per power, 0 = its default).
+@export var power_a: float = 0.0
+@export var power_b: float = 0.0
 
 
 func _init() -> void:

@@ -177,7 +177,15 @@ func weapon() -> WeaponItemData:
 
 
 ## Seconds between attacks with the current weapon (class penalty included).
+## Relics (the war drum): attacks this much faster.
+var attack_speed_mult := 1.0
+
+
 func attack_interval() -> float:
+	return _base_attack_interval() / maxf(0.1, attack_speed_mult)
+
+
+func _base_attack_interval() -> float:
 	var w := weapon()
 	if w == null:
 		return class_data.attack_cooldown
@@ -242,6 +250,10 @@ func apply_passive_hits(attacker: Node, target: Node, damage: int) -> void:
 		var p := s.effect as PassiveSkill
 		if p.hit_effect and randf() < p.chance_for(skills.rank(s), s.power_with(w)):
 			p.hit_effect.on_hit(attacker, target, damage)
+	# Relic powers react to every confirmed hit (melee, shots, the host's ok).
+	var pl := attacker as Player
+	if pl and pl.relic_powers and target is Enemy:
+		pl.relic_powers.on_hit(target, damage)
 
 
 # ------------------------------------------------------------------- sets

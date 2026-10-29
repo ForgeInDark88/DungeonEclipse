@@ -62,6 +62,8 @@ static func item(item: ItemData, hero: Hero, is_equipped := false) -> String:
 		var relic := item as RelicItemData
 		if relic.heal_on_kill > 0:
 			lines.append(_c(UIStyle.GOOD, "• +%d HP за каждое убийство" % relic.heal_on_kill))
+		if relic.power != &"":
+			lines.append(_c(Color(1.0, 0.8, 0.4), "★ Особая сила: меняет ваш бой"))
 		if relic.second_chance:
 			lines.append(_c(UIStyle.GOOD, "• Второй шанс: при гибели вернёт %d%% здоровья и сгорит" % roundi(relic.revive_percent * 100.0)))
 		lines.append(_c(UIStyle.INK_SOFT, "Действует, пока лежит в рюкзаке"))

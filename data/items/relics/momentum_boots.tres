@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="RelicItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/relic_item_data.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/momentum_boots.png" id="e2"]
+
+[resource]
+script = ExtResource("e1")
+heal_on_kill = 0
+second_chance = false
+revive_percent = 0.5
+power = &"momentum_boots"
+power_a = 2.0
+power_b = 0.0
+id = &"momentum_boots"
+display_name = "Сапоги разгона"
+description = "1,5 секунды бега — следующий удар двойной. Скорость +10."
+icon = ExtResource("e2")
+item_type = 3
+rarity = 1
+item_level = 3
+unique = true
+max_stack = 1
+stat_bonuses = {
+"speed": 10
+}
+price = 120
+currency_value = 0

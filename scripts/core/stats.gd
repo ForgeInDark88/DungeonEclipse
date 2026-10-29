@@ -207,7 +207,14 @@ func lose_hp(amount: int) -> int:
 	return amount
 
 
+## Relics (the blood pact) scale every heal; 0 = no healing at all.
+var heal_mult := 1.0
+
+
 func heal(amount: int) -> void:
+	amount = roundi(amount * heal_mult)
+	if amount <= 0:
+		return
 	hp = mini(max_hp(), hp + amount)
 	hp_changed.emit(hp, max_hp())
 
