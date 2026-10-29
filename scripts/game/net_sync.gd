@@ -847,13 +847,20 @@ func puzzle_state(puzzle_seq: int, progress: int, solved: bool) -> void:
 
 
 ## Host: the champion's room sealed or opened → replicate the barrier.
-func broadcast_gate(closed: bool) -> void:
-	gate_state.rpc(closed)
+func broadcast_gate(closed: bool, gate_id := 0) -> void:
+	gate_state.rpc(closed, gate_id)
 
 
+## Every gate of the floor has an id (the order the level builds them in,
+## the same on every machine): only that one closes / opens.
 @rpc("authority", "call_remote", "reliable")
-func gate_state(closed: bool) -> void:
-	get_tree().call_group("miniboss_gates", "net_close" if closed else "net_open")
+func gate_state(closed: bool, gate_id := 0) -> void:
+	for g in get_tree().get_nodes_in_group("miniboss_gates"):
+		if g.gate_id == gate_id:
+			if closed:
+				g.net_close()
+			else:
+				g.net_open()
 
 
 # ------------------------------------------------------------- world events

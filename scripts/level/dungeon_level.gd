@@ -742,6 +742,8 @@ func _spawn_specials() -> void:
 				add_entity(dummy, cell_bottom(info["cell"]))
 			&"miniboss":
 				_spawn_miniboss(info)
+			&"ambush":
+				_spawn_ambush(info)
 
 
 ## The floor guardian: the toughest monster of the floor as a boosted elite
@@ -776,6 +778,8 @@ func _spawn_miniboss(info: Dictionary) -> void:
 		guest_gate.level = self
 		guest_gate.champion = null
 		guest_gate.room_cells = info["room"]
+		guest_gate.gate_id = _gate_seq
+		_gate_seq += 1
 		add_child(guest_gate)
 		return  # RNG already burned; the champion shell arrives via spawn_enemy
 	var champion := (load(ENEMY_SCENE) as PackedScene).instantiate()
@@ -788,7 +792,47 @@ func _spawn_miniboss(info: Dictionary) -> void:
 	gate.level = self
 	gate.champion = champion
 	gate.room_cells = info["room"]
+	gate.gate_id = _gate_seq
+	_gate_seq += 1
 	add_child(gate)
+
+
+## Gates of this floor in build order (the same on every machine): their ids.
+var _gate_seq := 0
+
+
+func _spawn_ambush(info: Dictionary) -> void:
+	var gate := MinibossGate.new()
+	gate.level = self
+	gate.ambush = true
+	gate.networked = Net.active and not Net.is_host
+	gate.champion = null
+	gate.room_cells = info["room"]
+	gate.gate_id = _gate_seq
+	_gate_seq += 1
+	for c in info["cells"]:
+		gate.ambush_cells.append(c)
+	add_child(gate)
+
+
+## Host: one wave of an ambush (the last one brings an elite).
+func spawn_ambush_wave(cells: Array[Vector2i], count: int, with_elite: bool) -> Array[Enemy]:
+	var out: Array[Enemy] = []
+	var pool := ItemDatabase.enemies_for_floor(floor_number, biome.id if biome else &"")
+	if pool.is_empty() or cells.is_empty():
+		return out
+	for k in count:
+		var data: EnemyData = pool[randi() % pool.size()]
+		var elite: EliteAffixData = null
+		if with_elite and k == 0:
+			var ok := ItemDatabase.elites.filter(func(a: EliteAffixData) -> bool: return a.min_floor <= floor_number)
+			if not ok.is_empty():
+				elite = ok[randi() % ok.size()]
+		var e := _spawn_floor_enemy(data, elite, cells[k % cells.size()], null)
+		if e:
+			e.global_position.x += (k / cells.size()) * 6.0
+			out.append(e)
+	return out
 
 
 func _spawn_event(info: Dictionary) -> void:
@@ -1105,7 +1149,7 @@ func _spawn_enemies() -> void:
 			_spawn_floor_enemy(m[0], null, m[1], null)
 
 
-func _spawn_floor_enemy(data: EnemyData, elite: EliteAffixData, cell: Vector2i, role: SquadRoleData) -> void:
+func _spawn_floor_enemy(data: EnemyData, elite: EliteAffixData, cell: Vector2i, role: SquadRoleData) -> Enemy:
 	var enemy := (load(ENEMY_SCENE) as PackedScene).instantiate()
 	enemy.setup(data, floor_number, elite)
 	if role:
@@ -1116,6 +1160,7 @@ func _spawn_floor_enemy(data: EnemyData, elite: EliteAffixData, cell: Vector2i, 
 		pos.y -= TILE * 2
 	add_entity(enemy, pos)
 	_net_broadcast_enemy(enemy, elite, false)
+	return enemy
 
 
 ## A free standable cell next to a squad leader for companion `k` (1-3 cells

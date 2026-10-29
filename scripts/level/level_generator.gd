@@ -26,6 +26,8 @@ const MERCHANT_CHANCE := 0.4
 const SMITH_CHANCE := 0.3
 ## Event rooms per floor: 1, sometimes 2.
 const SECOND_EVENT_CHANCE := 0.4
+## Chance of an ambush room on a floor (from floor 2).
+const AMBUSH_CHANCE := 0.8
 ## Monster places per floor at most (squad companions come on top).
 const MAX_MONSTERS := 30
 
@@ -330,6 +332,7 @@ func _place_lore() -> void:
 
 ## Reserves side rooms for the merchant (and random events, see below).
 func _place_specials(_floor_number: int) -> void:
+	var floor_number_for_specials := _floor_number
 	var rooms: Array[Vector2i] = []
 	for room: Vector2i in _spots:
 		if room != _path[0] and room != _path[_path.size() - 1] and _connected.has(room):
@@ -341,6 +344,17 @@ func _place_specials(_floor_number: int) -> void:
 		var cell: Variant = _take_spot(room, true)
 		if cell != null:
 			layout.specials.append({"type": &"miniboss", "cell": cell, "room": _room_rect(room)})
+			_reserved[room] = true
+	# An ambush room (from floor 2): the doors slam, three waves, a relic altar.
+	if floor_number_for_specials >= 2 and not rooms.is_empty() and rng.randf() < AMBUSH_CHANCE:
+		var room: Vector2i = rooms.pop_back()
+		var cells: Array[Vector2i] = []
+		for k in 6:
+			var c: Variant = _take_spot(room, true)
+			if c != null:
+				cells.append(c)
+		if cells.size() >= 3:
+			layout.specials.append({"type": &"ambush", "cell": cells[0], "room": _room_rect(room), "cells": cells})
 			_reserved[room] = true
 	if not rooms.is_empty() and rng.randf() < MERCHANT_CHANCE:
 		var room: Vector2i = rooms.pop_back()
