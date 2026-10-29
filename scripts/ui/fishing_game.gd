@@ -42,6 +42,7 @@ func _ready() -> void:
 func open(spot: FishingSpot, player: Player) -> void:
 	_spot = spot
 	_player = player
+	_player.busy = true
 	if not Net.active:
 		get_tree().paused = true
 		_paused_here = true
@@ -100,7 +101,9 @@ func _process(delta: float) -> void:
 	_t += delta
 	match _stage:
 		Stage.WAIT:
-			if _t >= _wait:
+			if _player.dead:
+				_end(false, "Не до рыбалки!")
+			elif _t >= _wait:
 				_stage = Stage.BITE
 				_t = 0.0
 				_say("! ! !  Клюёт — подсекай!")
@@ -132,7 +135,11 @@ func _draw_bar() -> void:
 	_bar.draw_rect(Rect2(Vector2.ZERO, _bar.size), Color(0.1, 0.06, 0.03), false, 1.0)
 
 
-func _unhandled_input(event: InputEvent) -> void:
+## _input, not _unhandled_input: the HUD would swallow the mouse click, and
+## in co-op (no pause) the hero would take the key first.
+func _input(event: InputEvent) -> void:
+	if _stage == Stage.DONE:
+		return
 	if event.is_action_pressed("pause"):
 		get_viewport().set_input_as_handled()
 		_end(false, "Ты сматываешь удочку.")
@@ -181,6 +188,16 @@ func _end(ok: bool, text: String) -> void:
 	var tw := create_tween()
 	tw.tween_interval(0.9)
 	tw.tween_callback(func() -> void:
+		if is_instance_valid(_player):
+			_player.busy = false
 		if _paused_here:
 			get_tree().paused = false
 		queue_free())
+
+
+func _exit_tree() -> void:
+	# Whatever ends the game (floor change, the scene freed): free the hero.
+	if is_instance_valid(_player):
+		_player.busy = false
+	if _paused_here and get_tree():
+		get_tree().paused = false

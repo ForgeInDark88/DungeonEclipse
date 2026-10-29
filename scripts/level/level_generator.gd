@@ -372,7 +372,8 @@ func _place_chests(floor_number: int) -> void:
 		if room != _path[0] and not _reserved.has(room):
 			rooms.append(room)
 	_shuffle(rooms)
-	var count := 2 + (cols * rows) / 3
+	# Fewer chests (was 2 + rooms / 3): finds should feel like finds.
+	var count := 1 + (cols * rows) / 6
 	var placed := 0
 	# Sealed (secret) rooms always hide a good chest, often a second one -
 	# and greed is punished: a third of them are mimics.

@@ -38,6 +38,9 @@ var _net_timer := 0.0
 ## Shell extrapolation: speed and age of the last snapshot.
 var _net_vel := Vector2.ZERO
 var _net_last := 0.0
+## A mini-game holds the hero (fishing): no walking, jumping, attacks or
+## interactions until it ends. Co-op does not pause the tree, so this does.
+var busy := false
 ## Co-op copy of someone else's hero: buffered snapshot interpolation.
 var _interp := NetInterp.new()
 ## Co-op: damage variance/crit dice for the host's authoritative recompute.
@@ -269,7 +272,7 @@ func _physics_process(delta: float) -> void:
 		_aura_timer = 0.4
 		_update_synergy_auras()
 	_tick_timers(delta)
-	var input_x := Input.get_axis("move_left", "move_right")
+	var input_x := 0.0 if busy else Input.get_axis("move_left", "move_right")
 	if input_x != 0.0 and not animator.is_busy():
 		facing = signf(input_x)
 		visual.facing = facing
@@ -316,7 +319,7 @@ func _physics_process(delta: float) -> void:
 			Fx.dust(get_parent(), global_position - Vector2(facing * 5.0, 0))
 	animator.update(delta, is_on_floor(), velocity, climbing, false)
 	# Holding the attack button (mouse or key) keeps attacking at the weapon's rate.
-	if Input.is_action_pressed("attack"):
+	if not busy and Input.is_action_pressed("attack"):
 		attack()
 	_net_broadcast(delta)
 	_update_interact_hint()
@@ -435,7 +438,7 @@ func _stop_climbing() -> void:
 func _climb(input_x: float) -> void:
 	var dir_y := Input.get_axis("move_up", "move_down")
 	velocity = Vector2(input_x * CLIMB_SPEED * 0.7, dir_y * CLIMB_SPEED)
-	if Input.is_action_just_pressed("jump") and not Input.is_action_pressed("move_up"):
+	if not busy and Input.is_action_just_pressed("jump") and not Input.is_action_pressed("move_up"):
 		_stop_climbing()
 		velocity.y = JUMP_VELOCITY * 0.8
 	elif dir_y > 0.0 and is_on_floor() and not level.is_ladder_at(global_position + Vector2(0, 4)):
@@ -484,7 +487,7 @@ func _input(event: InputEvent) -> void:
 	# _unhandled_input, so gameplay keys are handled here, before the GUI -
 	# but only while the game is actually running (no book is open).
 	# Puppets never take input: only the local hero owns the keyboard.
-	if puppet or not (event is InputEventKey) or hero == null or dead or status.is_stunned():
+	if busy or puppet or not (event is InputEventKey) or hero == null or dead or status.is_stunned():
 		return
 	if get_tree().paused or get_viewport().gui_is_dragging():
 		return
@@ -537,7 +540,7 @@ func face_aim_to(aim: Vector2) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if puppet or hero == null or dead or status.is_stunned():
+	if busy or puppet or hero == null or dead or status.is_stunned():
 		return
 	if event.is_action_pressed("interact") and try_interact():
 		get_viewport().set_input_as_handled()
