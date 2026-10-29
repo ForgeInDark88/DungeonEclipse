@@ -26,6 +26,8 @@ const MERCHANT_CHANCE := 0.4
 const SMITH_CHANCE := 0.3
 ## Event rooms per floor: 1, sometimes 2.
 const SECOND_EVENT_CHANCE := 0.4
+## Monster places per floor at most (squad companions come on top).
+const MAX_MONSTERS := 30
 
 
 func generate(floor_number: int, seed_value: int) -> LevelLayout:
@@ -435,12 +437,21 @@ func _place_enemies(floor_number: int) -> void:
 			rooms.append(room)
 	if rooms.is_empty():
 		return
-	# Density grows with depth: more monsters per room on deeper floors.
-	var count := 3 + roundi(floor_number * 2.4) + rooms.size() / 2
-	for i in count:
-		var cell: Variant = _take_spot(rooms[rng.randi_range(0, rooms.size() - 1)])
+	# Pacing: fewer, tougher monsters gathered in lairs (packs of 3-5 in
+	# some rooms), quiet rooms in between - fight, breathe, fight - instead
+	# of a carpet of mobs to mow through (it was ~70 places on floor 22).
+	var count := mini(MAX_MONSTERS, 4 + roundi(floor_number * 0.75) + rooms.size() / 4)
+	_shuffle(rooms)
+	var lairs := rooms.slice(0, clampi(ceili(count / 4.0), 1, rooms.size()))
+	var placed := 0
+	var guard := 0
+	while placed < count and guard < count * 6:
+		guard += 1
+		var room: Vector2i = lairs[guard % lairs.size()]
+		var cell: Variant = _take_spot(room)
 		if cell != null:
 			layout.enemy_cells.append(cell)
+			placed += 1
 
 
 func _shuffle(arr: Array) -> void:

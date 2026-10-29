@@ -180,7 +180,9 @@ func _watch_game() -> void:
 				var e: Enemy = ns.enemies[id]
 				# The farthest mob: wounding a nearby one aggro's it onto the
 				# idle test heroes and can end the run mid-check.
-				if is_instance_valid(e) and not e.is_dead() and e.hp > 20:
+				# Plain mobs only: a regenerating elite or a squad healer would
+				# undo the wound before the guest looks.
+				if is_instance_valid(e) and not e.is_dead() and e.hp > 10 and e.elite == null and e.role == null:
 					var d: float = e.global_position.distance_to(origin2)
 					if d > best:
 						best = d

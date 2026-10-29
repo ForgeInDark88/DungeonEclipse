@@ -24,8 +24,14 @@ const STATE_NAMES := ["patrol", "chase", "attack", "hurt", "alert", "search", "r
 const GRAVITY := 900.0
 const PROJECTILE_SCENE := preload("res://scenes/world/projectile.tscn")
 ## Monster strength per floor below the first (see docs/BALANCE.md).
-const HP_SCALE_PER_FLOOR := 0.4
-const DMG_SCALE_PER_FLOOR := 0.22
+const HP_SCALE_PER_FLOOR := 0.46
+const DMG_SCALE_PER_FLOOR := 0.24
+## Pacing: about a third as many monsters per floor as before (lairs, see
+## LevelGenerator._place_enemies) - each one is a bit tougher and pays more,
+## so a floor gives about the same xp, gold and loot in far fewer fights.
+const REWARD_MULT := 2.2
+const GOLD_MULT := 1.8
+const LOOT_MULT := 1.8
 ## Elites drop from this richer table instead of their own.
 const ELITE_LOOT_TABLE := &"enemy_rare"
 const WORLD_MASK := 1
@@ -2016,9 +2022,9 @@ func _exit_tree() -> void:
 ## Co-op: the host keeps the world (loot drops there and is replicated),
 ## the killer gets the xp/gold through the net, everyone counts the kill.
 func _give_rewards() -> void:
-	var xp := roundi((data.xp_reward + floor_number - 1) * (elite.xp_mult if elite else 1.0) * maxf(0.0, 1.0 + GameState.run_effect("xp") + GameState.combo_bonus()))
+	var xp := roundi(REWARD_MULT * (data.xp_reward + floor_number - 1) * (elite.xp_mult if elite else 1.0) * maxf(0.0, 1.0 + GameState.run_effect("xp") + GameState.combo_bonus()))
 	var gold_find := GameState.hero.stats.get_value(StatTypes.GOLD_FIND) if GameState.hero else 0.0
-	var gold := roundi(randi_range(data.gold_min, data.gold_max) * (1.0 + 0.10 * (floor_number - 1)) * (elite.gold_mult if elite else 1.0) * (1.0 + gold_find) * maxf(0.0, 1.0 + GameState.run_effect("gold") + GameState.combo_bonus()))
+	var gold := roundi(GOLD_MULT * randi_range(data.gold_min, data.gold_max) * (1.0 + 0.10 * (floor_number - 1)) * (elite.gold_mult if elite else 1.0) * (1.0 + gold_find) * maxf(0.0, 1.0 + GameState.run_effect("gold") + GameState.combo_bonus()))
 	if Net.active:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
@@ -2042,7 +2048,7 @@ func _give_rewards() -> void:
 		if shard:
 			EventBus.spawn_items.emit(global_position + Vector2(0, -8), [{"item": shard, "count": elite.shard_drop}])
 	var table: LootTable = ItemDatabase.get_loot_table(ELITE_LOOT_TABLE) if elite else data.loot_table
-	if table and (elite != null or randf() < data.loot_chance):
+	if table and (elite != null or randf() < minf(0.9, data.loot_chance * LOOT_MULT)):
 		var loot := table.roll(floor_number)
 		if not loot.is_empty():
 			EventBus.spawn_items.emit(global_position + Vector2(0, -8), loot)
