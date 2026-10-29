@@ -290,6 +290,29 @@ func _watch_game() -> void:
 		if is_instance_valid(trap):
 			trap.spring_shared(mine.global_position if mine else trap.global_position)
 		await get_tree().create_timer(1.0).timeout
+	# --- warnings and defence phase: the host's red circle reaches the guest,
+	# the guest's guard reaches the host.
+	if is_host:
+		Telegraph.circle(level.entities, level.start_position() + Vector2(0, -6), 30.0, 3.0)
+		var seen := false
+		for i in 30:
+			await get_tree().create_timer(0.1).timeout
+			var pz := _their_puppet(multiplayer.get_unique_id())
+			if pz and pz.has_meta("net_defend_seen"):
+				seen = true
+				break
+		check(seen, "host: sees the guest's defence")
+		await get_tree().create_timer(2.4).timeout  # stay in step with the guest's phase
+	else:
+		await get_tree().create_timer(0.8).timeout
+		var circles := 0
+		for n in level.entities.get_children():
+			if n is Telegraph:
+				circles += 1
+		check(circles > 0, "client: sees the host's warning circle (%d)" % circles)
+		if mine:
+			mine.net_defend.rpc(&"roll", 1.0)  # the guest is a mage (no guard): send it as a rogue would
+		await get_tree().create_timer(2.5).timeout
 	# --- phantom loot phase: the host drops an item and it vanishes there
 	# without anyone picking it up; the guest's copy must vanish too.
 	if is_host:

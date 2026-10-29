@@ -149,6 +149,22 @@ func _broadcast_enemy_state() -> void:
 
 
 # --------------------------------------------------------------- combat
+## Host → clients: a red warning (Telegraph) - where an ability will land.
+@rpc("authority", "call_remote", "reliable")
+func telegraph_fx(pos: Vector2, radius: float, line_length: float, duration: float, color: Color) -> void:
+	var game := get_tree().current_scene
+	if game == null or not ("level" in game) or game.level == null or duration <= 0.0:
+		return
+	var t := Telegraph.new()
+	t.net_echo = false
+	t.radius = radius
+	t.line_length = line_length
+	t.duration = duration
+	t.color = color
+	game.level.entities.add_child(t)
+	t.global_position = pos
+
+
 ## Host → clients: a boss ability visual (no damage - the host judged it).
 @rpc("authority", "call_remote", "reliable")
 func boss_fx(kind: StringName, from: Vector2, dir_or_radius: Vector2,

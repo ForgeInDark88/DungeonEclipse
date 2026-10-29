@@ -1043,9 +1043,7 @@ func defend() -> void:
 		&"parry":
 			_parry_time = PARRY_WINDOW
 			_defend_cd = 0.75
-			animator.play_action(&"attack_thrust", 0.25)
-			visual.flash(Color(0.7, 0.85, 1.0), 0.2)
-			AudioManager.play_sfx(&"cast_shield", global_position, -4.0)
+			_defend_visual(&"parry")
 		&"roll":
 			var dir := Input.get_axis("move_left", "move_right")
 			if dir != 0.0:
@@ -1054,8 +1052,35 @@ func defend() -> void:
 			_defend_cd = 0.85
 			status.remove(&"invisible")
 			dash(ROLL_SPEED, ROLL_TIME)
+			_defend_visual(&"roll")
+		_:
+			return
+	# Co-op: the others see the guard / the roll on this hero's copy.
+	if Net.active and not puppet:
+		net_defend.rpc(hero.class_data.defense_move, facing)
+
+
+## The look of the class defence (here and on the teammates' screens).
+func _defend_visual(kind: StringName) -> void:
+	match kind:
+		&"parry":
+			animator.play_action(&"attack_thrust", 0.25)
+			visual.flash(Color(0.7, 0.85, 1.0), 0.2)
+			AudioManager.play_sfx(&"cast_shield", global_position, -4.0)
+		&"roll":
 			visual.squash_to(Vector2(1.3, 0.6), ROLL_TIME)
 			Fx.dust(get_parent(), global_position, false)
+			Fx.afterimage(visual, get_parent())
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func net_defend(kind: StringName, p_facing: float) -> void:
+	if not puppet or multiplayer.get_remote_sender_id() != peer_id:
+		return
+	facing = p_facing
+	visual.facing = p_facing
+	set_meta("net_defend_seen", kind)  # (net test)
+	_defend_visual(kind)
 
 
 ## A hit landed inside the parry window: no damage, the attacker is stunned

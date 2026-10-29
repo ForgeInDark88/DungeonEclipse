@@ -28,11 +28,23 @@ static func line(parent: Node, pos: Vector2, length: float, p_duration: float) -
 	return t
 
 
+## Co-op: the host's warnings are sent to the guests (they only draw them).
+var net_echo := true
+
+
 func _ready() -> void:
 	z_index = 40
+	if net_echo and Net.active and Net.is_host:
+		_send.call_deferred()  # after the caller set the colour
 	var m := CanvasItemMaterial.new()
 	m.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
 	material = m
+
+
+func _send() -> void:
+	var ns := get_tree().get_first_node_in_group("net_game") as NetSync if is_inside_tree() else null
+	if ns:
+		ns.telegraph_fx.rpc(global_position, radius, line_length, duration - _t, color)
 
 
 func _process(delta: float) -> void:
