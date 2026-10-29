@@ -354,7 +354,7 @@ def eyes(d, im, r, skin, sh, eye, look, knit):
         d.line((ex1 - 3, ey - 2, ex1 + 1, ey - 3), fill=lid_c)  # creases
         d.line((ex2 - 2, ey + 1, ex2 + 2, ey - 1), fill=c4(lid))
         return
-    top = {"open": -1, "half": 1, "narrow": 0, "tired": 0, "happy": 0}[eye]
+    top = {"open": -1, "half": 1, "narrow": 0, "tired": 0, "happy": -1}[eye]
     # near eye: white, iris with a dark rim, pupil, glint, lid with a crease
     d.rectangle((ex1 - 3, ey + top, ex1 + 3, ey + 2), fill=(236, 230, 222, 255))
     d.line((ex1 - 3, ey + 2, ex1 + 3, ey + 2), fill=(196, 186, 182, 255))
@@ -364,6 +364,12 @@ def eyes(d, im, r, skin, sh, eye, look, knit):
     d.point((ix - 1, ey + 2), fill=tone(r["eyes"], 0.6))
     d.point((ix + 1, ey + 2), fill=tone(r["eyes"], 1.3))
     d.point((ix, ey + max(top, 0) + 1), fill=(12, 8, 12, 255))
+    # depth: the upper lid shades the top of the iris and the inner white,
+    # a soft lower lash line under the eye
+    d.line((ix - 1, ey + top, ix + 1, ey + top), fill=tone(r["eyes"], 0.55))
+    d.point((ex1 - 3, ey + max(top, 0)), fill=(196, 186, 182, 255))
+    for x in range(ex1 - 2, ex1 + 3):
+        put(im, x, ey + 3, tone(skin, 0.78, sh, True), 0.35)
     if top <= 0:
         d.point((ix, ey), fill=(12, 8, 12, 255))
         d.point((ix + 1, ey - 1 if top < 0 else ey), fill=(255, 255, 255, 255))
@@ -374,15 +380,31 @@ def eyes(d, im, r, skin, sh, eye, look, knit):
     if eye == "tired":
         d.line((ex1 - 3, ey + 3, ex1 + 2, ey + 3), fill=tone(skin, 0.72, sh, True))  # dark circles
     if eye == "happy":
-        # smiling eyes: the cheeks push the lower lids up into a soft arc
-        d.arc((ex1 - 4, ey + 1, ex1 + 3, ey + 5), 200, 340, fill=tone(skin, 0.7, sh, True))
-        d.line((ex1 - 2, ey + 4, ex1 + 1, ey + 4), fill=tone(skin, 1.18))
-        d.point((ex2, ey + 3), fill=tone(skin, 0.72, sh, True))
+        # Smiling eyes: the raised cheek covers the bottom of the eye in a
+        # crescent (skin over the white and the iris, highest in the middle),
+        # a soft lid shadow on its edge, laugh lines at the outer corner.
+        cheek = tone(skin, 1.06, sh, True)
+        edge = tone(skin, 0.74, sh, True)
+        for x in range(ex1 - 3, ex1 + 4):
+            lift = 1 if abs(x - ex1) <= 1 else 0
+            d.point((x, ey + 2), fill=cheek)
+            if lift:
+                d.point((x, ey + 1), fill=cheek)
+        d.line((ex1 - 2, ey + 1, ex1 + 2, ey + 1), fill=edge)
+        for k in range(3):  # laugh lines (crow's feet) at the outer corner
+            d.point((ex1 - 5, ey - 1 + k), fill=tone(skin, 0.72, sh, True))
+        d.point((ex1 - 6, ey), fill=tone(skin, 0.78, sh, True))
+        for x, y in ((ex1 - 2, ey + 4), (ex1 - 1, ey + 4), (ex1, ey + 4), (ex2, ey + 4), (ex2 + 1, ey + 4)):
+            put(im, x, y, tone(skin, 1.15), 0.3)  # the cheek apples catch the light
     # far eye: foreshortened, partly behind the bridge
     d.rectangle((ex2 - 1, ey + top, ex2 + 2, ey + 1), fill=(226, 218, 210, 255))
     d.rectangle((ex2 + 1 + look, ey + top, ex2 + 2 + look, ey + 1), fill=c4(r["eyes"]))
     d.point((ex2 + 1 + look, ey + max(top, 0)), fill=(12, 8, 12, 255))
     d.line((ex2 - 2, ey - 2 + max(top, 0), ex2 + 2, ey - 2 + max(top, 0)), fill=c4(lid))
+    if eye == "happy":  # the far eye smiles too (after it is drawn)
+        for x in range(ex2 - 1, ex2 + 3):
+            d.point((x, ey + 1), fill=tone(skin, 1.06, sh, True))
+        d.line((ex2 - 1, ey + 1, ex2 + 2, ey + 1), fill=tone(skin, 0.74, sh, True))
     if r.get("female") and eye not in ("closed", "squeeze"):
         d.point((ex1 - 5, ey - 2), fill=c4(lid))  # lashes
         d.point((ex1 - 5, ey - 3), fill=c4(lid))
@@ -445,16 +467,29 @@ def nose_and_mouth(d, im, r, skin, sh, mouth):
         d.line((38 + m, 39, 45 + m, 39), fill=(120, 52, 52, 255))
         d.line((39 + m, 43, 44 + m, 43), fill=(196, 104, 100, 255))
     elif mouth == "smile":
-        d.line((36 + m, 38, 38 + m, 40), fill=tone(skin, 0.5, sh, True))  # corners up
-        d.line((38 + m, 40, 45 + m, 40), fill=(120, 52, 52, 255))
-        d.line((45 + m, 40, 47 + m, 38), fill=tone(skin, 0.55, sh, True))
-        d.line((39 + m, 41, 44 + m, 41), fill=(196, 104, 100, 255))
-        d.line((39 + m, 40, 44 + m, 40), fill=(236, 230, 214, 255))  # a glimpse of teeth
-        d.point((35 + m, 37), fill=tone(skin, 0.7, sh, True))  # dimples
-        d.point((48 + m, 37), fill=tone(skin, 0.7, sh, True))
-        if r.get("female"):
-            d.line((39 + m, 39, 44 + m, 39), fill=(186, 92, 96, 255))
-            d.line((40 + m, 42, 43 + m, 42), fill=(206, 110, 112, 255))
+        x0, x1 = 37 + m, 46 + m  # mouth corners
+        dark = tone(skin, 0.48, sh, True)
+        lip = (150, 66, 64, 255) if not r.get("female") else (176, 78, 84, 255)
+        lower = (206, 116, 110, 255) if not r.get("female") else (214, 112, 118, 255)
+        # the curve: corners 2 px higher than the middle
+        curve = {x0: 38, x0 + 1: 39, x1 - 1: 39, x1: 38}
+        for x in range(x0, x1 + 1):
+            y = curve.get(x, 40)
+            d.point((x, y), fill=dark if x in (x0, x1) else lip)
+        for x in range(x0 + 2, x1 - 1):  # open a little: teeth on top, shadow below
+            d.point((x, 41), fill=(240, 234, 220, 255) if x0 + 2 < x < x1 - 2 else (190, 180, 170, 255))
+        d.line((x0 + 2, 42, x1 - 2, 42), fill=(84, 26, 30, 255))
+        d.line((x0 + 2, 43, x1 - 2, 43), fill=lower)  # lower lip
+        d.point(((x0 + x1) // 2, 43), fill=(240, 170, 160, 255))  # its light
+        d.line((x0 + 3, 44, x1 - 3, 44), fill=tone(skin, 0.82, sh, True))  # under the lip
+        # nasolabial folds: nose wing -> mouth corner
+        nx, ny = NOSE
+        for k in range(4):
+            put(im, x0 - 1 + (k // 3), ny + 1 + k, tone(skin, 0.62, sh, True), 0.55)
+            put(im, x1 + 1, ny + 1 + k, tone(skin, 0.7, sh, True), 0.35)
+        put(im, x0 - 1, 38, tone(skin, 0.6, sh, True), 0.6)  # dimple
+        for x, y in ((x0 - 3, 35), (x0 - 2, 34), (x1 + 2, 35)):
+            put(im, x, y, tone(skin, 1.22), 0.6)  # lifted cheeks
     else:
         frown = 1 if mouth == "frown" else 0
         d.line((37 + m, 41 + frown, 38 + m, 40), fill=tone(skin, 0.5, sh, True))
