@@ -1166,6 +1166,7 @@ func use_skill(index: int) -> void:
 		skills.start_cooldown(index)
 		if relic_powers:
 			relic_powers.on_skill()
+		EventBus.hero_cast.emit()
 		if skill.cast_animation != &"":
 			animator.play_action(skill.cast_animation, 0.4)
 		var snd := skill.cast_sound if skill.cast_sound != &"" else &"skill_cast"
@@ -1199,6 +1200,7 @@ func use_item(item: ItemData) -> bool:
 	if not usable.use(self):
 		return false
 	_item_cooldowns[item.id] = usable.cooldown
+	EventBus.hero_used_item.emit(item)
 	AudioManager.play_sfx(usable.use_sound, global_position)
 	if usable.use_animation != &"":
 		animator.play_action(usable.use_animation, 0.45)

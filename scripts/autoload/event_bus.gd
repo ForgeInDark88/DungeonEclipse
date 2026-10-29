@@ -36,6 +36,9 @@ signal combo_changed(combo: int)
 ## A kill credited to THIS machine's hero (co-op: enemy_killed fires on every
 ## machine for every kill; the combo counts only one's own).
 signal own_kill(enemy: EnemyData)
+## The local hero cast a skill / used a consumable (portrait reactions).
+signal hero_cast
+signal hero_used_item(item: ItemData)
 signal boss_spawned(boss: Node)
 signal boss_hp_changed(hp: int, max_hp: int)
 ## Presentation: the intro card when the heroes meet a boss, and the big

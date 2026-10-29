@@ -42,7 +42,8 @@ const BLACKSMITH_SHEET := SPRITES_DIR + "npc/blacksmith_sheet.png"
 const PORTRAITS_DIR := SPRITES_DIR + "portraits/"
 const HERO_PORTRAIT_SIZE := 64
 const HERO_PORTRAIT_FRAMES: Array[StringName] = [&"neutral0", &"neutral1", &"blink_half", &"blink", &"glance",
-		&"hurt0", &"hurt1", &"wounded0", &"wounded1", &"fierce0", &"fierce1"]
+		&"hurt0", &"hurt1", &"wounded0", &"wounded1", &"fierce0", &"fierce1",
+		&"neutral2", &"neutral3", &"smile0", &"smile1", &"cast0", &"cast1", &"drink", &"resolve", &"dead"]
 ## Pets: one sheet per pet (PetData.sheet), shared frame layout.
 const PET_SCENE := "res://scenes/pets/pet.tscn"
 const PET_LAYOUT := "res://data/animations/pet_layout.tres"
