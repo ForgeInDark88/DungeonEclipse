@@ -68,7 +68,11 @@ func _ready() -> void:
 	_detail_text.add_theme_font_size_override("bold_font_size", 7)
 	_detail_text.add_theme_font_size_override("italics_font_size", 7)
 	right_page.add_child(_detail_text)
-	var back := BookPageScreen.button(tr("Назад"), func() -> void: get_tree().change_scene_to_file(GameState.MAIN_MENU))
+	var back := BookPageScreen.button(tr("Назад"), func() -> void:
+		if GameState.expedition and GameState.hero:
+			GameFlow.enter_town()  # opened from a town building
+		else:
+			get_tree().change_scene_to_file(GameState.MAIN_MENU))
 	right_page.add_child(back)
 
 	_tab_buttons[0].button_pressed = true

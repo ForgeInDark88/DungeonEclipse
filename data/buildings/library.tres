@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="BuildingData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/building_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/town/library.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"library"
+display_name = "Библиотека"
+description = "Летописец собирает знания о подземельях."
+order = 5
+slot = 67
+width = 5
+start_level = 0
+max_level = 3
+costs = Array[Dictionary]([{"gold": 70, "wood": 4, "stone": 4}, {"gold": 160, "wood": 6, "stone": 6}, {"gold": 350, "stone": 8, "crystal": 2}])
+requires_resident = &""
+requires_boss = &"illusionist"
+boss_level = 0
+blueprint_level = 3
+level_texts = Array[String](["Бестиарий и энциклопедия находок.", "Каталог чертежей и бесплатное опознание.", "+10% опыта в походах."])
+action = &"library"
+texture = ExtResource("2")
+chimney = Vector2(0, 0)
+prosperity = 3

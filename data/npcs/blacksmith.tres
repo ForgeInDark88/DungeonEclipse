@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="NpcData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/npc_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/npc/blacksmith.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/portraits/npc_blacksmith.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+id = &"blacksmith"
+display_name = "Брам"
+profession = "Кузнец"
+order = 1
+resident_from_start = false
+home = &"smithy"
+sprite = ExtResource("2")
+portrait = ExtResource("3")
+discount = 0.0
+build_discount = 0.0
+depth_min = 1
+rescue_text = "Ты открыл клетку? Я Брам, сын кузнеца Торна. Отец сгинул внизу, у лавовых кузен. Дай мне горн в городе — и я скую тебе клинок не хуже отцовского."
+dialogs = Array[Dictionary]([{"id": "intro", "when": "", "once": true, "text": "Отец писал матери письма, которые так и не отправил. Я нашёл одно в руинах. Он верил, что чародейка зажжёт новое солнце. Я верю в железо.", "options": [{"text": "Построим кузню.", "reply": "Нужны дерево и железо. И немного золота на уголь."}]}, {"id": "forge", "when": "building:smithy:1", "once": false, "text": "Горн горит. Неси руду — и железо станет оружием.", "options": [{"text": "Чем ещё помочь?", "reply": "Больше железа — лучше кузня. На третьем уровне нужен чертёж отца: стражи держат такие у себя."}]}, {"id": "idle", "when": "", "once": false, "text": "Без горна я просто сильный парень с молотом.", "options": []}])

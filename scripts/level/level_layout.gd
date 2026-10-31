@@ -30,6 +30,10 @@ var is_town := false
 var secret_walls: Array = []
 ## Array of {"tex": String, "cell": Vector2i, "z": int, "lamp": bool}.
 var town_props: Array[Dictionary] = []
+## Town of the expedition loop: building foundations {"id", "cell"} and the
+## residents standing in the street {"id", "cell"} (TownBuilder.build_hub).
+var town_buildings: Array[Dictionary] = []
+var town_people: Array[Dictionary] = []
 
 
 func _init(w: int, h: int, fill: int = Tile.BRICK) -> void:

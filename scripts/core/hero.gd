@@ -106,7 +106,7 @@ func xp_to_next() -> int:
 
 
 func add_xp(amount: int) -> void:
-	xp += amount
+	xp += roundi(amount * Buildings.xp_mult())
 	while xp >= xp_to_next():
 		xp -= xp_to_next()
 		level += 1

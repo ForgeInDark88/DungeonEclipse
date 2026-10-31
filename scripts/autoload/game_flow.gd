@@ -86,6 +86,7 @@ func create_hero(race: RaceData, cls: ClassData, female: bool, difficulty_id: St
 	var town := TownState.new()
 	town.difficulty_id = difficulty_id
 	town.eclipse_level = clampi(eclipse, 0, EclipseLevels.MAX)
+	Buildings.init_town(town)
 	GameState.town = town
 	_apply_run_rules(town)
 	var hero := Hero.new(race, cls, ItemDatabase.equipment_layout)
@@ -153,6 +154,7 @@ func enter_town() -> void:
 	GameState.floor_number = GameState.TOWN_FLOOR
 	GameState.run_active = true
 	GameState.town_return_floor = 0
+	Buildings.apply_trophies(GameState.hero)
 	change_scene(GameState.GAME, State.TOWN)
 
 
@@ -173,19 +175,25 @@ func open_map(start_region := -1) -> void:
 		GameState.run_seed = run.seed_value
 		GameState.reset_run_stats()
 		GameState.pacts.clear()
+		# Rumours bought in the tavern: every sign on this map can be read.
+		run.flags["rumours"] = town.flag("rumours", false)
+		town.flags.erase("rumours")
+		Buildings.on_expedition_start(GameState.hero)
 		town.expedition_active = true
 		town.add_stat("expeditions")
 		save_town()  # the hero as they left: a quit mid-expedition loses the rest
 	change_scene(MAP_SCENE, State.EXPEDITION_MAP)
 
 
-## Map generation options the town has unlocked (Buildings / residents).
+## Map generation options the town has unlocked: special places (cache,
+## mine, crypt) once the town has some life (prosperity 4), guardian lairs
+## once a region guardian has fallen. Rescues are always on the road.
 func map_options() -> Dictionary:
 	var town := GameState.town
 	return {
 		"rescue": true,
-		"special": town == null or town.prosperity >= 0,
-		"lair": true,
+		"special": town == null or town.prosperity >= 4,
+		"lair": town == null or not town.bosses_defeated.is_empty(),
 	}
 
 
@@ -261,6 +269,15 @@ func _on_chest_opened(chest: Node) -> void:
 		gain_resource(id, randi_range(1, 2), (chest as Node2D).global_position)
 
 
+## A blueprint the town does not have yet (&"" = none left).
+func _roll_blueprint() -> StringName:
+	var owned: Array = GameState.town.blueprints.duplicate() if GameState.town else []
+	owned.append_array(GameState.run.blueprints)
+	var pool := ItemDatabase.buildings.filter(func(b: BuildingData) -> bool:
+		return b.blueprint_level > 0 and not b.id in owned)
+	return (pool.pick_random() as BuildingData).id if not pool.is_empty() else &""
+
+
 func _shards() -> int:
 	var hero := GameState.hero
 	return hero.inventory.count_of(MetaProgress.SHARD_ITEM) if hero else 0
@@ -282,6 +299,12 @@ func location_summary() -> Dictionary:
 			var amount := randi_range(int(table[id][0]), int(table[id][1]))
 			if amount > 0:
 				gain_resource(id, amount + bonus)
+		# Guardians (and now and then a crypt) keep blueprints of the town.
+		if key in [&"boss", &"lair"] or (key == &"crypt" and randf() < 0.35):
+			var bp := _roll_blueprint()
+			if bp != &"":
+				run.blueprints.append(bp)
+				run.loc["blueprint"] = bp
 	var hero := GameState.hero
 	return {
 		"gold": (hero.gold if hero else 0) - int(run.loc.get("gold", 0)),
@@ -290,6 +313,7 @@ func location_summary() -> Dictionary:
 		"finds": run.loc.get("finds", []),
 		"picked": int(run.loc.get("picked", 0)),
 		"resources": run.loc.get("resources", {}),
+		"blueprint": run.loc.get("blueprint", &""),
 		"type": n.get("type", &"level"),
 	}
 
@@ -369,8 +393,11 @@ func end_expedition(outcome: RunState.Outcome) -> void:
 			if town.add_resident(id):
 				town.prosperity += 2
 		for k in run.flags:
-			if k != "nodes_done":
+			if not k in ["nodes_done", "rumours"]:
 				town.flags[k] = run.flags[k]
+		for bp in run.blueprints:
+			if not bp in town.blueprints:
+				town.blueprints.append(bp)
 		town.add_stat("victories" if outcome == RunState.Outcome.VICTORY else "retreats")
 		if hero:
 			hero.stats.hp = hero.stats.max_hp()
@@ -380,6 +407,8 @@ func end_expedition(outcome: RunState.Outcome) -> void:
 			town.bosses_defeated.append(b)
 			town.prosperity += 5
 	town.add_stat("nodes", run.path.size())
+	Buildings.on_expedition_end(GameState.hero)
+	town.prosperity = Buildings.prosperity(town)
 	town.expedition_active = false
 	GameState.run = null
 	GameState.location = {}

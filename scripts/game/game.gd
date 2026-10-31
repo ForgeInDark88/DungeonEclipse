@@ -111,7 +111,9 @@ func _load_floor() -> void:
 	var seed_value := GameState.floor_seed()
 	var gen := LevelGenerator.new()
 	var layout: LevelLayout
-	if GameState.is_town():
+	if GameState.is_town() and GameState.expedition and GameState.town:
+		layout = TownBuilder.build_hub(GameState.town)
+	elif GameState.is_town():
 		layout = TownBuilder.build()
 	elif GameState.is_boss_floor():
 		layout = gen.generate_arena(floor_number, seed_value)
@@ -129,7 +131,8 @@ func _load_floor() -> void:
 	for b in get_tree().get_nodes_in_group("bosses"):
 		AudioManager.play_music((b as Boss).boss.music)
 	if GameState.is_town() and GameState.expedition:
-		EventBus.message.emit(tr("%s. Ворота похода — в конце улицы.") % biome.display_name)
+		EventBus.message.emit(tr("%s · %s. Ворота похода — в конце улицы.") % [biome.display_name, Buildings.phase_name()])
+		_town_news()
 	elif GameState.expedition:
 		EventBus.message.emit(_location_title())
 	elif GameState.is_town():
@@ -175,12 +178,29 @@ func finish_location() -> void:
 	var res: Dictionary = s.get("resources", {})
 	if not res.is_empty():
 		overlay.add_text(tr("Для города: %s") % TownResources.describe(res), 7)
+	var bp := StringName(s.get("blueprint", &""))
+	if bp != &"":
+		var bd := ItemDatabase.building(bp)
+		overlay.add_text(tr("Чертёж: %s") % (bd.display_name if bd else String(bp)), 7)
 	overlay.add_text(tr("Добыча едет с вами, пока вы живы: дома она станет вашей."), 6)
 	overlay.add_button(tr("На карту похода"), func() -> void:
 		overlay.visible = false
 		GameFlow.location_cleared()).grab_focus()
 	overlay.on_pause_key = Callable()
 	overlay.visible = true
+
+
+## What changed in town while the hero was away (TownState.news).
+func _town_news() -> void:
+	var t := GameState.town
+	if t == null or t.news.is_empty():
+		return
+	var lines := t.news.duplicate()
+	t.news.clear()
+	GameFlow.save_town()
+	await get_tree().create_timer(0.8).timeout
+	for line in lines:
+		EventBus.message.emit(line)
 
 
 ## «Глубина 7 — Логово элиты · Руины» for the location banner.
@@ -218,6 +238,9 @@ func _apply_biome(biome: BiomeData) -> void:
 	# A touch below the biome's ambient: torches, ore and magic make warm
 	# pools of light instead of vanishing in a flat even light.
 	($Ambient as CanvasModulate).color = biome.ambient * Color(0.88, 0.87, 0.86, 1.0)
+	if GameState.expedition and GameState.is_town():
+		# Morning, day, evening or night in the town (Buildings.day_phase).
+		($Ambient as CanvasModulate).color *= Buildings.PHASE_TINT[Buildings.day_phase()]
 	AudioManager.play_music(biome.music)
 	player.apply_biome(biome)
 	var textures := [biome.parallax_far, biome.parallax_mid, biome.parallax_near]

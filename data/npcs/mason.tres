@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="NpcData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/npc_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/npc/mason.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/portraits/npc_mason.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+id = &"mason"
+display_name = "Ульф"
+profession = "Каменщик"
+order = 6
+resident_from_start = false
+home = &"warehouse"
+sprite = ExtResource("2")
+portrait = ExtResource("3")
+discount = 0.0
+build_discount = 0.2
+depth_min = 2
+rescue_text = "Наконец-то! Ульф, каменщик. Меня заставляли таскать камни для их алтарей. Теперь буду таскать для нас — и дешевле, чем кто-либо."
+dialogs = Array[Dictionary]([{"id": "intro", "when": "", "once": true, "text": "Пока я в городе, любая стройка обходится на пятую часть дешевле. Камень я знаю: где класть, где тесать, где не трогать.", "options": [{"text": "Отлично.", "reply": "Неси камень — и город встанет."}]}, {"id": "idle", "when": "", "once": false, "text": "Хороший фундамент — половина дома.", "options": []}])

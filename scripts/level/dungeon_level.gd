@@ -145,7 +145,7 @@ func _spawn_town() -> void:
 			var light := PointLight2D.new()
 			light.texture = AssetPaths.tex(AssetPaths.LIGHT)
 			light.color = Color(1.0, 0.8, 0.5)
-			light.energy = 1.1
+			light.energy = 1.1 * (1.7 if Buildings.is_night() else 1.0)
 			light.texture_scale = 0.7
 			light.position = Vector2(0, -tex.get_height() + 6)
 			s.add_child(light)
@@ -155,6 +155,19 @@ func _spawn_town() -> void:
 				light.energy = fbase + sin(phase) * 0.06 + sin(phase * 2.3) * 0.04,
 				0.0, TAU, randf_range(1.8, 2.6)).set_trans(Tween.TRANS_LINEAR)
 	_spawn_specials()
+	# The expedition loop's town: buildings on their foundations, its people.
+	for info in layout.town_buildings:
+		var bd := ItemDatabase.building(StringName(info["id"]))
+		if bd:
+			var tb := TownBuilding.new()
+			tb.setup(bd)
+			add_entity(tb, cell_bottom(info["cell"]))
+	for info in layout.town_people:
+		var nd: NpcData = ItemDatabase.npcs.get(StringName(info["id"]))
+		if nd:
+			var npc := TownNpc.new()
+			npc.setup(nd)
+			add_entity(npc, cell_bottom(info["cell"]))
 	var gate := DungeonGate.new()
 	add_entity(gate, cell_bottom(layout.exit_cell))
 	for dx in [-28, 28]:
@@ -728,6 +741,8 @@ func _spawn_specials() -> void:
 			&"merchant":
 				var m: Merchant = (load(MERCHANT_SCENE) as PackedScene).instantiate()
 				m.floor_number = maxi(1, floor_number)  # the town shop sells first-floor goods
+				if GameState.expedition and layout.is_town:
+					m.floor_number = Buildings.shop_depth()  # the regions the town has opened
 				_net_seq_node(m)
 				add_entity(m, cell_bottom(info["cell"]))
 			&"smith":

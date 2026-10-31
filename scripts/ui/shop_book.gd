@@ -192,7 +192,7 @@ func buy(index: int) -> void:
 	if index < 0 or index >= merchant.stock.size():
 		return
 	var item := merchant.stock[index]
-	var price := item.buy_price()
+	var price := item.shop_price()
 	if hero.gold < price:
 		EventBus.message.emit(tr("Не хватает золота"))
 		AudioManager.play_ui(&"chest_locked")
@@ -220,14 +220,14 @@ func complete_network_purchase(item_dict: Dictionary) -> void:
 	var item := RunCodec.item_from_dict(item_dict)
 	if item == null or hero == null or merchant == null:
 		return
-	if hero.gold < item.buy_price() or hero.inventory.free_space_for(item) <= 0:
+	if hero.gold < item.shop_price() or hero.inventory.free_space_for(item) <= 0:
 		EventBus.message.emit(tr("Покупка не удалась: изменились условия"))
 		return
 	_complete_purchase(item)
 
 
 func _complete_purchase(item: ItemData) -> void:
-	var price := item.buy_price()
+	var price := item.shop_price()
 	if not hero.spend_gold(price):
 		return
 	hero.inventory.add_item(item if item.is_stackable() else ItemFactory.create(item, merchant.floor_number))

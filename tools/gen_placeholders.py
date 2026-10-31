@@ -974,17 +974,132 @@ def map_hero() -> Image.Image:
     return img
 
 
+def building(w, h, wall, roof, sign=None, tower=False, columns=False) -> Image.Image:
+    """A placeholder house: walls, a roof, a door, windows and a sign."""
+    img = new(w, h)
+    d = ImageDraw.Draw(img)
+    roof_h = h // 3 if not tower else h // 5
+    d.rectangle([2, roof_h, w - 3, h - 1], fill=wall, outline=OUT)
+    for x in range(4, w - 4, 6):  # stone / plank texture
+        d.line([x, roof_h + 2, x, h - 2], fill=shade(wall, 0.85))
+    d.polygon([(0, roof_h + 1), (w // 2, 0), (w - 1, roof_h + 1)], fill=roof, outline=OUT)
+    if columns:
+        for x in range(6, w - 6, 10):
+            d.rectangle([x, roof_h + 3, x + 3, h - 2], fill=(225, 220, 205, 255), outline=OUT)
+    dw = max(8, w // 6)
+    d.rectangle([w // 2 - dw // 2, h - 16, w // 2 + dw // 2, h - 1], fill=(70, 42, 25, 255), outline=OUT)
+    for wx in (w // 4 - 3, 3 * w // 4 - 3):
+        d.rectangle([wx, roof_h + 6, wx + 6, roof_h + 12], fill=(250, 210, 110, 255), outline=OUT)
+    if sign:
+        d.rectangle([w // 2 - 7, roof_h - 1, w // 2 + 7, roof_h + 5], fill=PARCH, outline=OUT)
+        d.point([(w // 2 - 1, roof_h + 2), (w // 2, roof_h + 2), (w // 2 + 1, roof_h + 2)], fill=sign)
+    return img
+
+
+def ruins(w=64, h=26) -> Image.Image:
+    img = new(w, h)
+    d = ImageDraw.Draw(img)
+    stone = (128, 120, 110, 255)
+    d.rectangle([2, h - 6, w - 3, h - 1], fill=shade(stone, 0.8), outline=OUT)
+    d.polygon([(4, h - 6), (6, 4), (14, 8), (16, h - 6)], fill=stone, outline=OUT)
+    d.polygon([(w - 18, h - 6), (w - 15, 10), (w - 8, 14), (w - 5, h - 6)], fill=stone, outline=OUT)
+    for x in range(20, w - 20, 7):
+        d.rectangle([x, h - 10, x + 5, h - 6], fill=shade(stone, 0.9), outline=OUT)
+    d.line([24, h - 12, 40, h - 14], fill=(110, 70, 40, 255), width=2)  # a fallen beam
+    return img
+
+
+def banner(c) -> Image.Image:
+    img = new(8, 16)
+    d = ImageDraw.Draw(img)
+    d.line([0, 0, 0, 15], fill=(90, 60, 35, 255))
+    d.polygon([(1, 1), (7, 1), (7, 9), (4, 7), (1, 9)], fill=c, outline=OUT)
+    return img
+
+
+def townsperson(body, hair, skin=(232, 196, 158, 255), apron=None) -> Image.Image:
+    img = new(20, 30)
+    d = ImageDraw.Draw(img)
+    d.rectangle([6, 13, 13, 25], fill=body, outline=OUT)
+    if apron:
+        d.rectangle([8, 16, 11, 25], fill=apron)
+    d.rectangle([6, 26, 8, 29], fill=(60, 40, 30, 255)); d.rectangle([11, 26, 13, 29], fill=(60, 40, 30, 255))
+    d.ellipse([5, 3, 14, 12], fill=skin, outline=OUT)
+    d.rectangle([5, 2, 14, 5], fill=hair)
+    d.point([(8, 8), (11, 8)], fill=OUT)
+    return img
+
+
+def portrait(body, hair, skin=(232, 196, 158, 255), bg=(70, 50, 40, 255)) -> Image.Image:
+    img = Image.new("RGBA", (48, 48), bg)
+    d = ImageDraw.Draw(img)
+    d.rectangle([0, 0, 47, 47], outline=OUT)
+    d.ellipse([10, 30, 38, 60], fill=body, outline=OUT)
+    d.ellipse([14, 8, 34, 32], fill=skin, outline=OUT)
+    d.rectangle([13, 6, 35, 14], fill=hair)
+    d.rectangle([19, 19, 21, 21], fill=OUT); d.rectangle([27, 19, 29, 21], fill=OUT)
+    d.line([21, 27, 27, 27], fill=(150, 80, 70, 255))
+    return img
+
+
+NPCS = {
+    # id: (body, hair, apron)
+    "elder": ((120, 90, 140, 255), (220, 220, 225, 255), None),
+    "blacksmith": ((110, 75, 50, 255), (60, 40, 30, 255), (70, 60, 55, 255)),
+    "healer": ((90, 140, 90, 255), (170, 110, 60, 255), None),
+    "innkeeper": ((160, 70, 60, 255), (230, 190, 90, 255), (235, 225, 200, 255)),
+    "alchemist": ((80, 110, 150, 255), (90, 90, 95, 255), None),
+    "cartographer": ((150, 130, 80, 255), (120, 70, 40, 255), None),
+    "mason": ((130, 130, 125, 255), (80, 55, 35, 255), (180, 150, 100, 255)),
+    "townsfolk_a": ((100, 120, 160, 255), (90, 60, 40, 255), None),
+    "townsfolk_b": ((170, 140, 90, 255), (40, 30, 25, 255), None),
+}
+
+
 def gen_loop() -> None:
+    town = "sprites/town/"
+    save(building(64, 66, (150, 175, 140, 255), (70, 120, 80, 255), sign=(60, 150, 70, 255)), town + "alchemist.png")
+    save(building(72, 70, (170, 160, 140, 255), (60, 80, 140, 255), sign=(40, 60, 150, 255)), town + "library.png")
+    save(building(64, 80, (120, 100, 140, 255), (60, 40, 80, 255), sign=(150, 80, 230, 255), columns=True), town + "sanctum.png")
+    save(building(76, 58, (140, 100, 65, 255), (100, 60, 40, 255), sign=(200, 150, 60, 255)), town + "warehouse.png")
+    save(building(30, 96, (150, 145, 135, 255), (90, 60, 45, 255), tower=True), town + "scout_tower.png")
+    save(building(80, 72, (200, 190, 165, 255), (150, 50, 40, 255), sign=GOLD, columns=True), town + "hall.png")
+    save(ruins(), town + "ruins.png")
+    save(banner((180, 40, 40, 255)), town + "banner_red.png")
+    save(banner((60, 90, 170, 255)), town + "banner_blue.png")
+    save(banner(GOLD), town + "banner_gold.png")
+    for nid, (body, hair, apron) in NPCS.items():
+        save(townsperson(body, hair, apron=apron), "sprites/npc/%s.png" % nid)
+        save(portrait(body, hair), "sprites/portraits/npc_%s.png" % nid, do_outline=False)
+    save(icon_scroll(), "sprites/items/revive_scroll.png")
+    res = {"wood": (150, 100, 55, 255), "stone": (150, 150, 145, 255), "iron": (120, 130, 150, 255),
+           "herbs": (80, 170, 80, 255), "crystal": (150, 210, 250, 255)}
+    for rid, c in res.items():
+        img = new(10, 10)
+        dd = ImageDraw.Draw(img)
+        if rid == "wood":
+            dd.rectangle([1, 3, 8, 7], fill=c); dd.ellipse([6, 3, 9, 7], fill=shade(c, 1.3))
+        elif rid == "herbs":
+            dd.line([5, 9, 5, 3], fill=c); dd.ellipse([1, 1, 5, 5], fill=c); dd.ellipse([5, 2, 9, 6], fill=c)
+        elif rid == "crystal":
+            dd.polygon([(5, 0), (9, 5), (5, 9), (1, 5)], fill=c)
+        else:
+            dd.ellipse([1, 2, 9, 8], fill=c)
+        save(img, "ui/res/%s.png" % rid)
+
+
+def gen_loop_map() -> None:
     for kind in ["level", "elite", "special", "camp", "rescue", "event", "lair", "boss", "unknown", "cache", "mine", "crypt"]:
         save(map_icon(kind), "ui/map/node_%s.png" % kind, do_outline=False)
     for kind in ["danger", "gold", "blood"]:
         save(map_hint(kind), "ui/map/hint_%s.png" % kind, do_outline=False)
     save(map_hero(), "ui/map/hero_marker.png")
+    gen_loop()  # town pieces
 
 
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1 and sys.argv[1] == "loop":
-        gen_loop()
+        gen_loop_map()
     else:
         main()

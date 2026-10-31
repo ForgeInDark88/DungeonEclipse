@@ -41,7 +41,11 @@ func _ready() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	right_page.add_child(spacer)
-	var back := BookPageScreen.button(tr("Назад"), func() -> void: get_tree().change_scene_to_file(GameState.MAIN_MENU))
+	var back := BookPageScreen.button(tr("Назад"), func() -> void:
+		if GameState.expedition and GameState.hero:
+			GameFlow.enter_town()  # opened from a town building
+		else:
+			get_tree().change_scene_to_file(GameState.MAIN_MENU))
 	right_page.add_child(back)
 
 	MetaProgress.changed.connect(_refresh)

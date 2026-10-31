@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="BuildingData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/building_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/town/sanctum.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"sanctum"
+display_name = "Святилище Затмения"
+description = "Осколки Затмения превращаются здесь в силу."
+order = 9
+slot = 114
+width = 4
+start_level = 1
+max_level = 1
+costs = Array[Dictionary]([{}])
+requires_resident = &""
+requires_boss = &""
+boss_level = 0
+blueprint_level = 0
+level_texts = Array[String](["Постоянные улучшения за осколки Затмения."])
+action = &"sanctum"
+texture = ExtResource("2")
+chimney = Vector2(0, 0)
+prosperity = 3

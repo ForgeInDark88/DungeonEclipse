@@ -20,8 +20,10 @@ var resources: Dictionary = {}
 var flags: Dictionary = {}
 ## Items stored in the warehouse (RunCodec item dictionaries).
 var warehouse: Array = []
-## Trophies on display in the hall of fame (item ids).
-var trophies: Array[StringName] = []
+## Trophies on display in the hall of fame (RunCodec item dictionaries).
+var trophies: Array = []
+## Blueprints found (building ids): they open the levels that need one.
+var blueprints: Array[StringName] = []
 ## Ids of region bosses beaten at least once.
 var bosses_defeated: Array[StringName] = []
 ## Highest region an expedition may start in (0 = the first one).
@@ -94,7 +96,8 @@ func to_dict() -> Dictionary:
 		"resources": resources.duplicate(),
 		"flags": flags.duplicate(),
 		"warehouse": warehouse.duplicate(true),
-		"trophies": trophies.map(func(t: StringName) -> String: return String(t)),
+		"trophies": trophies.duplicate(true),
+		"blueprints": blueprints.map(func(b: StringName) -> String: return String(b)),
 		"bosses": bosses_defeated.map(func(b: StringName) -> String: return String(b)),
 		"region_unlocked": region_unlocked,
 		"prosperity": prosperity,
@@ -117,8 +120,9 @@ static func from_dict(d: Dictionary) -> TownState:
 	t.resources = _dict(d.get("resources"))
 	t.flags = _dict(d.get("flags"))
 	t.warehouse = _arr(d.get("warehouse"))
-	for id in _arr(d.get("trophies")):
-		t.trophies.append(StringName(str(id)))
+	t.trophies = _arr(d.get("trophies"))
+	for id in _arr(d.get("blueprints")):
+		t.blueprints.append(StringName(str(id)))
 	for id in _arr(d.get("bosses")):
 		t.bosses_defeated.append(StringName(str(id)))
 	t.region_unlocked = int(d.get("region_unlocked", 0)) if d.get("region_unlocked") is int else 0

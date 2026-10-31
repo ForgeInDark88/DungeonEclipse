@@ -240,8 +240,11 @@ func _hint_seen(id: int) -> bool:
 	return is_revealed(id) or _has_cartographer()
 
 
+## The cartographer in town (or the tavern's rumours this time) reads
+## every sign on the map and names the rewards exactly.
 func _has_cartographer() -> bool:
-	return GameState.town != null and GameState.town.has_resident(&"cartographer")
+	return (GameState.town != null and GameState.town.has_resident(&"cartographer")) \
+			or _run.flags.get("rumours", false)
 
 
 func _icon_kind(n: Dictionary) -> StringName:

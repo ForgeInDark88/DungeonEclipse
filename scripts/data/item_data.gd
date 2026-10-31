@@ -88,6 +88,11 @@ func buy_price() -> int:
 	return maxi(1, p)
 
 
+## What a shop asks: the buy price with the town's discounts (Buildings).
+func shop_price() -> int:
+	return maxi(1, roundi(buy_price() * Buildings.price_mult()))
+
+
 func sell_price() -> int:
 	var mult := (0.5 if unidentified else 1.0) * (0.5 if cursed else 1.0)
 	return maxi(1, roundi(buy_price() * SELL_FACTOR * mult))

@@ -3,6 +3,8 @@ extends Node
 ## picked up just by dropping a .tres file into the right folder.
 
 const REGION_DIR := "res://data/regions"
+const BUILDING_DIR := "res://data/buildings"
+const NPC_DIR := "res://data/npcs"
 const ITEMS_DIR := "res://data/items"
 const RACES_DIR := "res://data/races"
 const CLASSES_DIR := "res://data/classes"
@@ -44,6 +46,9 @@ var lore: Array[LoreData] = []  # by order
 var equipment_layout: EquipmentLayout
 ## Regions of the expedition map (data/regions), by order.
 var regions: Array[RegionData] = []
+## Town buildings (data/buildings) by order, people of the town (data/npcs).
+var buildings: Array[BuildingData] = []
+var npcs: Dictionary = {}  # StringName -> NpcData
 
 
 func _ready() -> void:
@@ -72,6 +77,15 @@ func reload() -> void:
 		if res is RegionData:
 			regions.append(res)
 	regions.sort_custom(func(a: RegionData, b: RegionData) -> bool: return a.order < b.order)
+	buildings.clear()
+	for res in load_dir(BUILDING_DIR):
+		if res is BuildingData:
+			buildings.append(res)
+	buildings.sort_custom(func(a: BuildingData, b: BuildingData) -> bool: return a.order < b.order)
+	npcs.clear()
+	for res in load_dir(NPC_DIR):
+		if res is NpcData:
+			npcs[res.id] = res
 	for res in load_dir(DIFFICULTY_DIR):
 		if res is DifficultyData:
 			difficulties.append(res)
@@ -209,6 +223,13 @@ func boss_for_floor(floor_number: int) -> BossData:
 ## turn once (6 guardians -> floor 35).
 func boss_by_id(id: StringName) -> BossData:
 	for b in bosses:
+		if b.id == id:
+			return b
+	return null
+
+
+func building(id: StringName) -> BuildingData:
+	for b in buildings:
 		if b.id == id:
 			return b
 	return null

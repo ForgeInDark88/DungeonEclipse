@@ -129,7 +129,7 @@ func _initialize() -> void:
 	check(flow.continue_game(), "continue loads the town")
 	await wait_scene(flow.State.TOWN)
 	check(gs.hero.gold == 0 and not gs.town.expedition_active, "a quit mid-expedition counts as lost")
-	check(gs.town.news.size() > 0, "the town tells about the lost expedition")
+	check(int(gs.town.stats.get("lost", 0)) == 1, "the town remembers the lost expedition")
 
 	# ---------------------------------------------------- the save file
 	gs.town.add_resource(&"iron", 4)

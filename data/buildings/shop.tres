@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="BuildingData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/building_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/town/shop.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"shop"
+display_name = "Лавка"
+description = "Торговец покупает добычу и продаёт снаряжение."
+order = 1
+slot = 22
+width = 6
+start_level = 1
+max_level = 3
+costs = Array[Dictionary]([{}, {"gold": 150, "wood": 6, "stone": 4}, {"gold": 400, "wood": 8, "iron": 6, "crystal": 1}])
+requires_resident = &""
+requires_boss = &""
+boss_level = 0
+blueprint_level = 3
+level_texts = Array[String](["Самое нужное: зелья, бомбы, свитки.", "Товары с глубин открытых регионов.", "Редкие товары и скидка 10%."])
+action = &"shop"
+texture = ExtResource("2")
+chimney = Vector2(0, 0)
+prosperity = 3

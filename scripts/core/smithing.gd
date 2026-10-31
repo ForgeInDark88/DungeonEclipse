@@ -26,17 +26,17 @@ static func upgrade_cost(item: ItemData) -> Dictionary:
 	var mats := {&"iron_ore": n}
 	if n >= 3:
 		mats[&"gold_ore"] = n - 2
-	return {"gold": 40 * n * (1 + item.rarity), "mats": mats}
+	return {"gold": roundi(40 * n * (1 + item.rarity) * Buildings.smith_mult()), "mats": mats}
 
 
 static func enchant_cost(item: ItemData, essence: StringName) -> Dictionary:
-	return {"gold": 100 * (1 + item.rarity), "mats": {essence: 1}}
+	return {"gold": roundi(100 * (1 + item.rarity) * Buildings.smith_mult()), "mats": {essence: 1}}
 
 
 static func repair_cost(item: ItemData) -> Dictionary:
 	if not (item.has_durability and item.is_instance()) or item.durability >= item.max_durability:
 		return {"gold": 0, "mats": {}}
-	return {"gold": ceili((item.max_durability - item.durability) * 0.2 * (1 + item.rarity)), "mats": {}}
+	return {"gold": ceili((item.max_durability - item.durability) * 0.2 * (1 + item.rarity) * Buildings.smith_mult()), "mats": {}}
 
 
 ## Materials (and a little gold) from smelting.
