@@ -36,6 +36,10 @@ func generate(floor_number: int, seed_value: int) -> LevelLayout:
 	rng.seed = seed_value
 	cols = clampi(3 + floor_number / 2, 3, 6)
 	rows = clampi(2 + floor_number / 3, 2, 5)
+	if GameState.expedition:
+		# Expedition locations are short trips: one sweep to the exit.
+		cols = clampi(3 + floor_number / 6, 3, 5)
+		rows = clampi(2 + floor_number / 12, 2, 3)
 	layout = LevelLayout.new(cols * ROOM_W + 1, rows * ROOM_H + 1, T.BRICK)
 	_connected.clear()
 	_path.clear()
@@ -387,7 +391,7 @@ func _place_chests(floor_number: int) -> void:
 			rooms.append(room)
 	_shuffle(rooms)
 	# Fewer chests (was 2 + rooms / 3): finds should feel like finds.
-	var count := 1 + (cols * rows) / 6
+	var count := 1 + (cols * rows) / 6 + int(GameState.location_mod("chests", 0))
 	var placed := 0
 	# Sealed (secret) rooms always hide a good chest, often a second one -
 	# and greed is punished: a third of them are mimics.
@@ -411,11 +415,12 @@ func _place_chests(floor_number: int) -> void:
 		if cell == null:
 			continue
 		var roll := rng.randf()
-		var gold_chance := 0.06 + 0.02 * floor_number
-		var iron_chance := 0.22 + 0.03 * floor_number
+		var gold_chance := 0.06 + 0.02 * floor_number + float(GameState.location_mod("chest_tier", 0.0))
+		var iron_chance := 0.22 + 0.03 * floor_number + float(GameState.location_mod("chest_tier", 0.0))
 		var tier := 2 if roll < gold_chance else (1 if roll < gold_chance + iron_chance else 0)
 		# From floor 3 a few ordinary chests bite back.
-		var mimic_chance := 0.0 if floor_number < 3 else minf(0.04 + 0.01 * floor_number, 0.14)
+		var mimic_chance := (0.0 if floor_number < 3 else minf(0.04 + 0.01 * floor_number, 0.14)) \
+				+ float(GameState.location_mod("mimic", 0.0))
 		layout.chests.append({"cell": cell, "tier": tier, "mimic": rng.randf() < mimic_chance})
 		placed += 1
 
@@ -455,7 +460,8 @@ func _place_enemies(floor_number: int) -> void:
 	# Pacing: fewer, tougher monsters gathered in lairs (packs of 3-5 in
 	# some rooms), quiet rooms in between - fight, breathe, fight - instead
 	# of a carpet of mobs to mow through (it was ~70 places on floor 22).
-	var horde := 1.0 + EclipseLevels.value(GameState.eclipse_level, "monster_count")
+	var horde := (1.0 + EclipseLevels.value(GameState.eclipse_level, "monster_count")) \
+			* float(GameState.location_mod("monsters", 1.0))
 	var count := mini(roundi(MAX_MONSTERS * horde), roundi((4 + roundi(floor_number * 0.75) + rooms.size() / 4) * horde))
 	_shuffle(rooms)
 	var lairs := rooms.slice(0, clampi(ceili(count / 4.0), 1, rooms.size()))

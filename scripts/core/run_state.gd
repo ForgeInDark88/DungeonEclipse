@@ -32,6 +32,10 @@ var bosses: Array[StringName] = []
 ## Event flags set by choices this expedition (copied to the town on return).
 var flags: Dictionary = {}
 var outcome: Outcome = Outcome.NONE
+## The location under way: gold / kills / shards at its start, finds and
+## resources of this location, whether its clear reward was paid
+## (GameFlow fills it, the location summary reads it).
+var loc: Dictionary = {}
 var start_ms: int = 0
 
 

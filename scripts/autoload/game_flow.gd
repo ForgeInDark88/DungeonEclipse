@@ -36,6 +36,8 @@ func _ready() -> void:
 	_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_fade)
+	EventBus.item_collected.connect(_on_item_collected)
+	EventBus.chest_opened.connect(_on_chest_opened)
 
 
 # ================================================================== scenes
@@ -209,7 +211,11 @@ func enter_node(id: int) -> bool:
 		"type": n["type"], "depth": n["depth"], "biome": n["biome"], "seed": n["seed"],
 		"boss": n["boss"], "sub": n["sub"], "node": id, "region": n["region"],
 	}
+	GameState.location["mods"] = ExpeditionMap.MODS.get(StringName(n["sub"]) if StringName(n["sub"]) != &"" else StringName(n["type"]), {})
 	GameState.floor_number = int(n["depth"])
+	var hero := GameState.hero
+	run.loc = {"gold": hero.gold if hero else 0, "kills": GameState.kills, "shards": _shards(),
+			"finds": [], "picked": 0, "resources": {}, "cleared": false}
 	EventBus.floor_changed.emit(GameState.floor_number)
 	var type := StringName(n["type"])
 	if type in PLATFORMER_TYPES:
@@ -221,6 +227,73 @@ func enter_node(id: int) -> bool:
 	return true
 
 
+# ================================================================= rewards
+## A town resource found on the way (carried home on a safe return).
+func gain_resource(id: StringName, amount: int, world_pos := Vector2.INF) -> void:
+	var run := GameState.run
+	if run == null or amount <= 0 or not GameState.expedition:
+		return
+	run.add_resource(id, amount)
+	var lr: Dictionary = run.loc.get("resources", {})
+	lr[String(id)] = int(lr.get(String(id), 0)) + amount
+	run.loc["resources"] = lr
+	if world_pos != Vector2.INF:
+		EventBus.floating_text.emit(world_pos + Vector2(0, -14), "+%d %s" % [amount, TownResources.display_name(id)],
+				Color(0.65, 0.95, 0.6))
+
+
+func _on_item_collected(item: ItemData, _pos: Vector2) -> void:
+	var run := GameState.run
+	if run == null or item == null:
+		return
+	run.loc["picked"] = int(run.loc.get("picked", 0)) + 1
+	if item.rarity >= ItemData.Rarity.RARE:
+		run.finds.append(item.id)
+		(run.loc.get("finds", []) as Array).append(item.display_name)
+
+
+## Chests in an expedition sometimes hold building materials.
+func _on_chest_opened(chest: Node) -> void:
+	if GameState.run == null or not (chest is Node2D):
+		return
+	if randf() < 0.4:
+		var id: StringName = [&"wood", &"stone", &"herbs"].pick_random()
+		gain_resource(id, randi_range(1, 2), (chest as Node2D).global_position)
+
+
+func _shards() -> int:
+	var hero := GameState.hero
+	return hero.inventory.count_of(MetaProgress.SHARD_ITEM) if hero else 0
+
+
+## Pays the clear reward of the location once (resources by node type and
+## depth); returns the location's summary for the exit screen.
+func location_summary() -> Dictionary:
+	var run := GameState.run
+	if run == null:
+		return {}
+	var n := run.current_node()
+	if not run.loc.get("cleared", false):
+		run.loc["cleared"] = true
+		var key := StringName(n.get("sub", &"")) if StringName(n.get("sub", &"")) != &"" else StringName(n.get("type", &"level"))
+		var table: Dictionary = ExpeditionMap.CLEAR_REWARD.get(key, {})
+		var bonus := int(n.get("depth", 1)) / 10
+		for id in table:
+			var amount := randi_range(int(table[id][0]), int(table[id][1]))
+			if amount > 0:
+				gain_resource(id, amount + bonus)
+	var hero := GameState.hero
+	return {
+		"gold": (hero.gold if hero else 0) - int(run.loc.get("gold", 0)),
+		"kills": GameState.kills - int(run.loc.get("kills", 0)),
+		"shards": _shards() - int(run.loc.get("shards", 0)),
+		"finds": run.loc.get("finds", []),
+		"picked": int(run.loc.get("picked", 0)),
+		"resources": run.loc.get("resources", {}),
+		"type": n.get("type", &"level"),
+	}
+
+
 ## The location is done (its exit, a camp left forward, an event closed):
 ## back to the map, or the end of the road after the last guardian.
 func location_cleared() -> void:
@@ -229,6 +302,8 @@ func location_cleared() -> void:
 		return
 	var n := run.current_node()
 	run.flags["nodes_done"] = int(run.flags.get("nodes_done", 0)) + 1
+	if StringName(n.get("type", &"")) == &"lair":
+		run.bosses.append(StringName(n["boss"]))
 	if StringName(n.get("type", &"")) == &"boss":
 		var reg := run.map.region_of(int(n["id"]))
 		run.bosses.append(StringName(n["boss"]))

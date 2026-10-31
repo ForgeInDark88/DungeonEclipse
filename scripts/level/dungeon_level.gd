@@ -318,7 +318,7 @@ func _near_solid(cell: Vector2i) -> bool:
 
 func _place_ore() -> void:
 	ore_cells.clear()
-	var chance := biome.ore_chance if biome else 0.04
+	var chance := (biome.ore_chance if biome else 0.04) * float(GameState.location_mod("ore", 1.0))
 	for y in range(1, layout.height - 1):
 		for x in range(1, layout.width - 1):
 			if layout.get_tile(x, y) != T.BRICK:
@@ -532,6 +532,8 @@ func break_tile(cell: Vector2i, effects := true) -> bool:
 		if ore:
 			EventBus.spawn_items.emit(cell_center(cell), [{"item": ore, "count": rng.randi_range(1, 2)}])
 		Fx.sparks(entities, cell_center(cell), Color(1.0, 0.85, 0.4), 12, 90.0)
+		# An expedition carries the vein's stone and iron home to the town.
+		GameFlow.gain_resource(&"iron" if rng.randf() < 0.45 else &"stone", 1, cell_center(cell))
 	if effects:
 		AudioManager.play_sfx(&"dig", cell_center(cell))
 		_debris(cell_center(cell))

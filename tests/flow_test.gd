@@ -101,6 +101,24 @@ func _initialize() -> void:
 	flow.back_to_town()
 	await wait_scene(flow.State.TOWN)
 
+	# ---------------------------------------------------- guardian arenas
+	flow.open_map()
+	await wait_scene(flow.State.EXPEDITION_MAP)
+	var bid: int = gs.run.next_choices()[0]
+	gs.run.map.nodes[bid]["type"] = &"lair"
+	gs.run.map.nodes[bid]["boss"] = &"illusionist"
+	gs.run.map.nodes[bid]["biome"] = &"mirror_halls"
+	flow.enter_node(bid)
+	await wait_scene(flow.State.LOCATION)
+	var bosses := current_scene.get_tree().get_nodes_in_group("bosses")
+	check(current_scene.level.layout.is_arena, "a lair node is a boss arena")
+	check(bosses.size() == 1 and bosses[0].boss.id == &"illusionist", "the lair's own guardian waits there")
+	check(gs.current_biome().id == &"mirror_halls", "the arena stands in the node's biome")
+	flow.hero_died()
+	await wait_scene(flow.State.RUN_RESULT)
+	flow.back_to_town()
+	await wait_scene(flow.State.TOWN)
+
 	# ---------------------------------------------------- quit mid-expedition
 	gs.hero.add_gold(77)
 	flow.save_town()

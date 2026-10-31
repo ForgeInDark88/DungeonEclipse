@@ -81,7 +81,11 @@ func interact(_player: Node) -> void:
 		return
 	AudioManager.play_sfx(&"portal")
 	if GameState.expedition:
-		GameFlow.location_cleared()
+		var game := get_tree().current_scene
+		if game and game.has_method("finish_location"):
+			game.finish_location()
+		else:
+			GameFlow.location_cleared()
 		return
 	if Net.active and not Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync

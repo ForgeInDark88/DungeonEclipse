@@ -156,7 +156,8 @@ func run_effect(key: String) -> float:
 
 ## Difficulty multipliers that are not run effects (1.0 without a run).
 func elite_chance_mult() -> float:
-	return (difficulty.elite_chance_mult if difficulty else 1.0) * EclipseLevels.value(eclipse_level, "elite_mult")
+	return (difficulty.elite_chance_mult if difficulty else 1.0) * EclipseLevels.value(eclipse_level, "elite_mult") \
+			* float(location_mod("elite", 1.0))
 
 
 func seal_share() -> float:
@@ -190,6 +191,12 @@ func floor_seed() -> int:
 ## table reads it (it is `floor_number`, the expedition sets it per node).
 func depth() -> int:
 	return floor_number
+
+
+## A rule of the current location (ExpeditionMap.MODS): `default` when the
+## location has none (classic runs, the town).
+func location_mod(key: String, default: Variant = 0) -> Variant:
+	return (location.get("mods", {}) as Dictionary).get(key, default)
 
 
 ## Type of the current location (&"" in a classic run).

@@ -152,6 +152,37 @@ func _load_floor() -> void:
 			SaveManager.save_run()
 
 
+## Expedition: the exit of a location shows what it gave (gold, kills,
+## finds, town resources, shards), then back to the map.
+func finish_location() -> void:
+	if overlay.visible or player.dead:
+		return
+	var s := GameFlow.location_summary()
+	book.close()
+	skill_tree.close()
+	get_tree().paused = true
+	overlay.clear()
+	overlay.set_panel_size(Vector2(320, 210))
+	overlay.add_text(tr("Локация пройдена"), 13)
+	overlay.add_text(_location_title(), 7)
+	overlay.add_control(_stats_grid([
+		[tr("Золото"), "%+d" % int(s.get("gold", 0))], [tr("Убито"), str(int(s.get("kills", 0)))],
+		[tr("Подобрано"), str(int(s.get("picked", 0)))], [tr("Осколки"), "%+d" % int(s.get("shards", 0))],
+	]))
+	var finds: Array = s.get("finds", [])
+	if not finds.is_empty():
+		overlay.add_text(tr("Находки: %s") % ", ".join(finds), 7)
+	var res: Dictionary = s.get("resources", {})
+	if not res.is_empty():
+		overlay.add_text(tr("Для города: %s") % TownResources.describe(res), 7)
+	overlay.add_text(tr("Добыча едет с вами, пока вы живы: дома она станет вашей."), 6)
+	overlay.add_button(tr("На карту похода"), func() -> void:
+		overlay.visible = false
+		GameFlow.location_cleared()).grab_focus()
+	overlay.on_pause_key = Callable()
+	overlay.visible = true
+
+
 ## «Глубина 7 — Логово элиты · Руины» for the location banner.
 func _location_title() -> String:
 	var type := GameState.location_type()

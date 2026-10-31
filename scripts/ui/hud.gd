@@ -334,6 +334,10 @@ func _on_seal_changed(kills: int, required: int) -> void:
 func _refresh_floor() -> void:
 	var biome := GameState.current_biome()
 	_floor_label.text = tr("Этаж %d · %s") % [GameState.floor_number, biome.display_name] if biome else tr("Этаж %d") % GameState.floor_number
+	if GameState.expedition and not GameState.is_town():
+		var sub := StringName(GameState.location.get("sub", &""))
+		var kind := tr(ExpeditionMap.SPECIAL_NAMES[sub]) if sub != &"" else ExpeditionMap.type_name(GameState.location_type())
+		_floor_label.text = tr("Глубина %d · %s") % [GameState.depth(), kind]
 	if GameState.eclipse_level > 0:
 		_floor_label.text += tr(" · Затмение %d") % GameState.eclipse_level
 	if GameState.is_town():

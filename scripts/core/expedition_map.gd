@@ -28,6 +28,30 @@ const TYPES := {
 ## Kinds of special places.
 const SPECIALS := [&"cache", &"mine", &"crypt"]
 const SPECIAL_NAMES := {&"cache": "Тайник", &"mine": "Заброшенная шахта", &"crypt": "Склеп"}
+## What a node type does to its location (GameState.location_mod): monster
+## count, elite chance, extra chests, better chests, mimics, ore veins.
+## Specials (cache / mine / crypt) override their type's rules.
+const MODS := {
+	&"level": {},
+	&"elite": {"elite": 3.0, "monsters": 1.0, "chests": 1, "chest_tier": 0.15},
+	&"rescue": {"monsters": 0.8},
+	&"cache": {"monsters": 0.6, "chests": 3, "chest_tier": 0.25},
+	&"mine": {"monsters": 0.7, "ore": 4.0},
+	&"crypt": {"monsters": 1.0, "chests": 2, "chest_tier": 0.3, "mimic": 0.25},
+	&"lair": {},
+	&"boss": {},
+}
+## Town resources for clearing a location: type -> {resource: [min, max]}.
+const CLEAR_REWARD := {
+	&"level": {&"wood": [1, 2], &"stone": [0, 1]},
+	&"elite": {&"iron": [1, 2], &"wood": [1, 2]},
+	&"cache": {&"wood": [2, 3], &"herbs": [1, 2]},
+	&"mine": {&"stone": [2, 4], &"iron": [1, 3]},
+	&"crypt": {&"stone": [1, 2], &"crystal": [0, 1]},
+	&"rescue": {&"herbs": [1, 2]},
+	&"lair": {&"crystal": [1, 2], &"iron": [2, 3]},
+	&"boss": {&"crystal": [2, 3], &"iron": [2, 4], &"stone": [2, 4]},
+}
 ## Signs seen through the fog.
 const HINT_TEXT := {&"danger": "Знаки опасности", &"gold": "Блеск золота", &"blood": "Следы крови"}
 
