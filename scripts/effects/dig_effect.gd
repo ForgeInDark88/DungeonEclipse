@@ -30,5 +30,5 @@ func apply(user: Node) -> bool:
 
 
 func describe() -> String:
-	var what := "кирпич рядом" if bricks_per_use <= 1 else "до %d кирпичей подряд" % bricks_per_use
-	return "Разбивает %s (с S/↓ — под ногами, с W/↑ — над головой)" % what
+	var what := tr("кирпич рядом") if bricks_per_use <= 1 else tr("до %d кирпичей подряд") % bricks_per_use
+	return tr("Разбивает %s (с S/↓ — под ногами, с W/↑ — над головой)") % what

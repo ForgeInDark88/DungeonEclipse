@@ -18,5 +18,5 @@ func apply(user: Node) -> bool:
 
 func describe() -> String:
 	if percent > 0.0:
-		return "Лечит %d + %d%% здоровья" % [amount, roundi(percent * 100)]
-	return "Лечит %d здоровья" % amount
+		return tr("Лечит %d + %d%% здоровья") % [amount, roundi(percent * 100)]
+	return tr("Лечит %d здоровья") % amount

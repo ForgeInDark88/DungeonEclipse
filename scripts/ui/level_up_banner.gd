@@ -9,8 +9,8 @@ var _t := 0.0
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_preset(Control.PRESET_FULL_RECT)
-	var title := UIStyle.outlined_label("НОВЫЙ УРОВЕНЬ!", 16, UIStyle.GOLD)
-	var sub := UIStyle.outlined_label("Уровень %d" % level_number, 10, UIStyle.PARCHMENT)
+	var title := UIStyle.outlined_label(tr("НОВЫЙ УРОВЕНЬ!"), 16, UIStyle.GOLD)
+	var sub := UIStyle.outlined_label(tr("Уровень %d") % level_number, 10, UIStyle.PARCHMENT)
 	for l: Label in [title, sub]:
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		l.anchor_left = 0.0

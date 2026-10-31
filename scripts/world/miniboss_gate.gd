@@ -106,11 +106,11 @@ func _close() -> void:
 	AudioManager.play_sfx(&"dig", at, -4.0)
 	EventBus.screen_shake.emit(4.0)
 	if ambush:
-		EventBus.message.emit("Засада! Двери захлопнулись — отбейте %d волны" % WAVES)
+		EventBus.message.emit(tr("Засада! Двери захлопнулись — отбейте %d волны") % WAVES)
 		AudioManager.play_sfx(&"boss_roar", at, -6.0)
 		_wave_delay = 1.0
 	else:
-		EventBus.message.emit("Двери захлопнулись! Страж этажа преграждает путь")
+		EventBus.message.emit(tr("Двери захлопнулись! Страж этажа преграждает путь"))
 	_net_broadcast(true)
 
 
@@ -135,7 +135,7 @@ func _ambush_step(delta: float) -> void:
 	_wave_delay = 1.4
 	var count := 3 + level.floor_number / 6 + (_wave - 1)
 	_alive = level.spawn_ambush_wave(ambush_cells, count, _wave == WAVES)
-	EventBus.message.emit("Волна %d из %d" % [_wave, WAVES])
+	EventBus.message.emit(tr("Волна %d из %d") % [_wave, WAVES])
 	for c in ambush_cells.slice(0, mini(4, ambush_cells.size())):
 		Fx.sparks(level.entities, level.cell_bottom(c) + Vector2(0, -10), Color(0.75, 0.3, 1.0), 10, 80.0)
 
@@ -152,11 +152,11 @@ func _open() -> void:
 	_bars.clear()
 	AudioManager.play_sfx(&"ui_book_open", Vector2.ZERO, -4.0)
 	if ambush:
-		EventBus.message.emit("Засада отбита! Алтарь реликвий ждёт")
+		EventBus.message.emit(tr("Засада отбита! Алтарь реликвий ждёт"))
 		var altar := RelicAltar.new()
 		level.add_entity(altar, _center())
 	else:
-		EventBus.message.emit("Страж пал — двери открылись")
+		EventBus.message.emit(tr("Страж пал — двери открылись"))
 	set_physics_process(false)
 	_net_broadcast(false)
 	queue_free()

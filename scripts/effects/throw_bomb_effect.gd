@@ -58,13 +58,13 @@ func apply(user: Node) -> bool:
 
 
 func describe() -> String:
-	var text := "Бросок: %d урона по области" % damage
+	var text := tr("Бросок: %d урона по области") % damage
 	if damage_type > 0:
-		text += " (%s)" % WeaponItemData.DAMAGE_TYPE_NAMES[damage_type].to_lower()
+		text += " (%s)" % TranslationServer.translate(WeaponItemData.DAMAGE_TYPE_NAMES[damage_type]).to_lower()
 	if status != &"":
-		text += ", %s на %.0f с" % [StatusEffects.display_name(status).to_lower(), status_duration]
+		text += tr(", %s на %.0f с") % [StatusEffects.display_name(status).to_lower(), status_duration]
 	if sticky:
-		text += ", липнет к поверхности"
+		text += tr(", липнет к поверхности")
 	if breaks_tiles:
-		text += ", ломает кирпич"
+		text += tr(", ломает кирпич")
 	return text

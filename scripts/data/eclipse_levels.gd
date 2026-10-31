@@ -25,7 +25,7 @@ const LEVELS := [
 
 
 static func level_name(level: int) -> String:
-	return LEVELS[level - 1][0] if level >= 1 and level <= MAX else "Без Затмения"
+	return TranslationServer.translate(LEVELS[level - 1][0]) if level >= 1 and level <= MAX else TranslationServer.translate("Без Затмения")
 
 
 ## Sum (or product for *_mult keys) of a key over levels 1..level.
@@ -42,19 +42,19 @@ static func value(level: int, key: String) -> float:
 ## What level N adds up to (for the selector).
 static func describe(level: int) -> String:
 	if level <= 0:
-		return "Обычный забег. Победа над Затмением открывает его уровни."
+		return TranslationServer.translate("Обычный забег. Победа над Затмением открывает его уровни.")
 	var lines: Array[String] = []
 	for i in level:
-		lines.append("%d. %s" % [i + 1, LEVELS[i][1]])
-	lines.append("Осколков Святилища: ×%.1f" % shard_mult(level))
+		lines.append("%d. %s" % [i + 1, TranslationServer.translate(LEVELS[i][1])])
+	lines.append(TranslationServer.translate("Осколков Святилища: ×%.1f") % shard_mult(level))
 	return "\n".join(lines)
 
 
 ## One line: what this level adds (the earlier ones stay) and the reward.
 static func short(level: int) -> String:
 	if level <= 0:
-		return "Без испытаний Затмения."
-	return "+ %s%s · осколков ×%.1f" % [LEVELS[level - 1][1], " (и все прежние)" if level > 1 else "", shard_mult(level)]
+		return TranslationServer.translate("Без испытаний Затмения.")
+	return TranslationServer.translate("+ %s%s · осколков ×%.1f") % [TranslationServer.translate(LEVELS[level - 1][1]), TranslationServer.translate(" (и все прежние)") if level > 1 else "", shard_mult(level)]
 
 
 static func shard_mult(level: int) -> float:

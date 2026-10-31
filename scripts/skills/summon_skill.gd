@@ -41,7 +41,7 @@ func execute(caster: Node, level: int) -> bool:
 
 func describe(level: int) -> String:
 	var n := count + (level - 1) / extra_every_levels if extra_every_levels > 0 else count
-	var names := ["скелета-воина", "скелета-лучника", "костяного голема"]
-	return "Поднимает %d %s на %d с (урон %d%%, не больше %d)" % [n, names[kind],
+	var names := [tr("скелета-воина"), tr("скелета-лучника"), tr("костяного голема")]
+	return tr("Поднимает %d %s на %d с (урон %d%%, не больше %d)") % [n, names[kind],
 		roundi(lifetime + lifetime_per_level * (level - 1)),
 		roundi((damage_multiplier + damage_per_level * (level - 1)) * 100), max_alive + max_alive_per_level * (level - 1)]

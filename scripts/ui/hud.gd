@@ -274,7 +274,7 @@ func _on_combo(combo: int) -> void:
 	_combo.visible = combo >= 2
 	if combo < 2:
 		return
-	_combo.text = "Комбо ×%d  +%d%% опыта и золота" % [combo, roundi(GameState.combo_bonus() * 100.0)]
+	_combo.text = tr("Комбо ×%d  +%d%% опыта и золота") % [combo, roundi(GameState.combo_bonus() * 100.0)]
 	_combo.scale = Vector2(1.3, 1.3)
 	create_tween().tween_property(_combo, "scale", Vector2.ONE, 0.2)
 
@@ -310,12 +310,12 @@ func _refresh_skills() -> void:
 	for s in _skill_slots:
 		s.refresh()
 	var pts := hero.skills.skill_points
-	_points_label.text = ("Очки навыков: %d (K — дерево навыков)" % pts) if pts > 0 else ""
+	_points_label.text = (tr("Очки навыков: %d (K — дерево навыков)") % pts) if pts > 0 else ""
 
 
 func _refresh_xp() -> void:
 	_xp.set_values(hero.xp, hero.xp_to_next(), "XP %d / %d" % [hero.xp, hero.xp_to_next()])
-	_level_label.text = "Ур. %d  %s" % [hero.level, hero.class_data.display_name]
+	_level_label.text = tr("Ур. %d  %s") % [hero.level, hero.class_data.display_name]
 
 
 func _on_seal_changed(kills: int, required: int) -> void:
@@ -324,20 +324,20 @@ func _on_seal_changed(kills: int, required: int) -> void:
 		return
 	_seal_label.visible = true
 	if kills < required:
-		_seal_label.text = "Печать выхода: %d / %d" % [kills, required]
+		_seal_label.text = tr("Печать выхода: %d / %d") % [kills, required]
 		_seal_label.add_theme_color_override("font_color", Color(1.0, 0.55, 0.5))
 	else:
-		_seal_label.text = "Выход открыт"
+		_seal_label.text = tr("Выход открыт")
 		_seal_label.add_theme_color_override("font_color", Color(0.75, 0.6, 1.0))
 
 
 func _refresh_floor() -> void:
 	var biome := GameState.current_biome()
-	_floor_label.text = "Этаж %d · %s" % [GameState.floor_number, biome.display_name] if biome else "Этаж %d" % GameState.floor_number
+	_floor_label.text = tr("Этаж %d · %s") % [GameState.floor_number, biome.display_name] if biome else tr("Этаж %d") % GameState.floor_number
 	if GameState.eclipse_level > 0:
-		_floor_label.text += " · Затмение %d" % GameState.eclipse_level
+		_floor_label.text += tr(" · Затмение %d") % GameState.eclipse_level
 	if GameState.is_town():
-		_floor_label.text = biome.display_name if biome else "Город"
+		_floor_label.text = biome.display_name if biome else tr("Город")
 	var diff := GameState.difficulty
 	if diff and diff.id != &"normal":
 		_floor_label.text += " · " + diff.display_name
@@ -400,7 +400,7 @@ func _update_status_row(buffs: Array[Dictionary]) -> void:
 func _on_level_up(new_level: int) -> void:
 	_refresh_xp()
 	_refresh_skills()
-	show_message("Получено очко навыка — K: дерево навыков, клик по слоту: улучшить.")
+	show_message(tr("Получено очко навыка — K: дерево навыков, клик по слоту: улучшить."))
 	var banner := LevelUpBanner.new()
 	banner.level_number = new_level
 	add_child(banner)

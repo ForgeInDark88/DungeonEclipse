@@ -30,7 +30,7 @@ static func all(hero: Hero) -> Array[String]:
 	var names: Array[String] = []
 	for it in _owned(hero):
 		if it.identify():
-			names.append(it.display_name + (" (проклят)" if it.cursed else ""))
+			names.append(it.display_name + (TranslationServer.translate(" (проклят)") if it.cursed else ""))
 	if not names.is_empty():
 		hero.inventory.changed.emit()
 		hero.equipment.changed.emit()

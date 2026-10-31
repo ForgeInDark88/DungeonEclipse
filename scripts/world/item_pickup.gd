@@ -87,7 +87,7 @@ func get_prompt() -> String:
 	var text := item.display_name
 	if count > 1:
 		text += " x%d" % count
-	return "Подобрать: " + text
+	return tr("Подобрать: ") + text
 
 
 func interact(player: Node) -> void:
@@ -106,7 +106,7 @@ func collect(hero: Hero) -> void:
 		# A full backpack must not destroy the shared item: the host erases
 		# the pickup as soon as the request lands, whatever fits.
 		if item.currency_value <= 0 and hero.inventory.free_space_for(item) <= 0:
-			EventBus.message.emit("Рюкзак полон")
+			EventBus.message.emit(tr("Рюкзак полон"))
 			return
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns and visible:
@@ -123,7 +123,7 @@ func collect(hero: Hero) -> void:
 	if item.currency_value > 0:
 		var amount := item.currency_value * count
 		hero.add_gold(amount)
-		EventBus.floating_text.emit(global_position + Vector2(0, -16), "+%d з." % amount, Color(1.0, 0.85, 0.3))
+		EventBus.floating_text.emit(global_position + Vector2(0, -16), tr("+%d з.") % amount, Color(1.0, 0.85, 0.3))
 		AudioManager.play_sfx(&"coin", global_position)
 		queue_free()
 		return
@@ -140,7 +140,7 @@ func collect(hero: Hero) -> void:
 	if left > 0:
 		count = left
 		count_label.text = str(count) if count > 1 else ""
-		EventBus.message.emit("Рюкзак полон")
+		EventBus.message.emit(tr("Рюкзак полон"))
 		if Net.active and Net.is_host and net_id > 0:
 			_tell_replicas()
 	else:

@@ -75,20 +75,20 @@ func _play() -> void:
 	tw.tween_property(_bg, "color", Color(0.35, 0.22, 0.1), 9.0)
 	var seq := create_tween()
 	for line in LINES:
-		var l := UIStyle.outlined_label(line, 9, Color(1.0, 0.94, 0.8))
+		var l := UIStyle.outlined_label(tr(line), 9, Color(1.0, 0.94, 0.8))
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		l.modulate.a = 0.0
 		_box.add_child(l)
 		seq.tween_property(l, "modulate:a", 1.0, 0.9)
 		seq.tween_interval(clampf(line.length() / 40.0, 1.2, 3.2))
-	var title := UIStyle.outlined_label("Рассвет над Аурелией", 16, UIStyle.GOLD)
+	var title := UIStyle.outlined_label(tr("Рассвет над Аурелией"), 16, UIStyle.GOLD)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.modulate.a = 0.0
 	_box.add_child(title)
 	seq.tween_property(title, "modulate:a", 1.0, 1.2)
 	seq.tween_callback(func() -> void:
-		var b := BookPageScreen.button("Дальше", func() -> void:
+		var b := BookPageScreen.button(tr("Дальше"), func() -> void:
 			finished.emit()
 			queue_free())
 		b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER

@@ -295,7 +295,7 @@ func damage_number(pos: Vector2, amount: int, crit: bool, attacker_peer: int) ->
 ## Host → clients: an enemy's floating text (immunity, DoT ticks, heals).
 @rpc("authority", "call_remote", "unreliable")
 func enemy_float_text(pos: Vector2, text: String, color: Color) -> void:
-	EventBus.floating_text.emit(pos, text, color)
+	EventBus.floating_text.emit(pos, tr(text), color)  # sent as the Russian source
 
 
 ## Host → clients: an enemy flinched — shells replay the hurt reaction.
@@ -358,7 +358,7 @@ func enemy_died(net_id: int, xp: int, gold: int, killer: int) -> void:
 			EventBus.boss_defeated.emit(b.boss, e.global_position)
 			# The +1 skill point the host's boss death grants locally.
 			GameState.hero.skills.add_points(1)
-			EventBus.message.emit("%s повержен: +1 очко навыка" % b.boss.title)
+			EventBus.message.emit(tr("%s повержен: +1 очко навыка") % b.boss.title)
 	if killer == multiplayer.get_unique_id() and e:
 		EventBus.own_kill.emit(e.data)
 	if killer == multiplayer.get_unique_id() and (xp > 0 or gold > 0):
@@ -457,7 +457,7 @@ func item_granted(item_dict: Dictionary, count: int) -> void:
 		return
 	if it.currency_value > 0:
 		hero.add_gold(it.currency_value * count)
-		EventBus.floating_text.emit(_my_pos() + Vector2(0, -16), "+%d з." % (it.currency_value * count), Color(1.0, 0.85, 0.3))
+		EventBus.floating_text.emit(_my_pos() + Vector2(0, -16), tr("+%d з.") % (it.currency_value * count), Color(1.0, 0.85, 0.3))
 	else:
 		var left := hero.inventory.add_item(it, count)
 		if left < count:
@@ -1369,7 +1369,7 @@ func _hero_node(peer_id: int) -> Player:
 
 
 func _peer_name(peer_id: int) -> String:
-	return String(Net.players.get(peer_id, {}).get("name", "Игрок"))
+	return String(Net.players.get(peer_id, {}).get("name", tr("Игрок")))
 
 
 ## Client → host: move the party (`next`, `town`, `resume`).
@@ -1403,7 +1403,7 @@ func host_party_move(peer_id: int, action: StringName) -> void:
 	_pending_pos = p.global_position
 	_pending_left = 90.0
 	if fresh:
-		_announce("%s ждёт у выхода. Подойдите: %s" % [_peer_name(peer_id), ", ".join(_missing_names())])
+		_announce("%s ждёт у выхода. Подойдите: %s", [_peer_name(peer_id), ", ".join(_missing_names())])  # i18n-src
 
 
 func _missing_names() -> Array[String]:
@@ -1421,7 +1421,10 @@ func _check_gathering() -> void:
 	var p := _hero_node(_pending_peer)
 	if p == null or p.dead or p.global_position.distance_to(_pending_pos) > 160.0 or _pending_left <= 0.0:
 		_pending_action = &""
-		_announce("Спуск отменён: %s отошёл от выхода." % _peer_name(_pending_peer) if p != null and not p.dead and _pending_left > 0.0 else "Спуск отменён.")
+		if p != null and not p.dead and _pending_left > 0.0:
+			_announce("Спуск отменён: %s отошёл от выхода.", [_peer_name(_pending_peer)])  # i18n-src
+		else:
+			_announce("Спуск отменён.")  # i18n-src
 		return
 	if party_at(_pending_pos, GATHER_RADIUS):
 		var action := _pending_action
@@ -1444,15 +1447,17 @@ func _do_party_move(action: StringName) -> void:
 			GameState.resume_from_town()
 
 
-## A party-wide message (host → everyone, itself included).
-func _announce(text: String) -> void:
-	EventBus.message.emit(text)
-	party_message.rpc(text)
+## A party-wide message (host → everyone, itself included). The Russian
+## source line and its arguments travel, every machine shows it in its own
+## language.
+func _announce(fmt: String, args: Array = []) -> void:
+	party_message(fmt, args)
+	party_message.rpc(fmt, args)
 
 
 @rpc("authority", "call_remote", "reliable")
-func party_message(text: String) -> void:
-	EventBus.message.emit(text)
+func party_message(fmt: String, args: Array = []) -> void:
+	EventBus.message.emit(tr(fmt) % args if not args.is_empty() else tr(fmt))
 
 
 # A late joiner needs the current floor + world (spawned by game.gd).

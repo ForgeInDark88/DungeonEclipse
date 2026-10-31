@@ -13,12 +13,12 @@ func apply(user: Node) -> bool:
 			item.durability = mini(item.max_durability, item.durability + ceili(item.max_durability * fraction))
 			repaired = true
 	if not repaired:
-		EventBus.message.emit("Снаряжению не нужен ремонт")
+		EventBus.message.emit(tr("Снаряжению не нужен ремонт"))
 		return false
 	hero.equipment.changed.emit()
-	EventBus.message.emit("Снаряжение отремонтировано")
+	EventBus.message.emit(tr("Снаряжение отремонтировано"))
 	return true
 
 
 func describe() -> String:
-	return "Чинит надетое снаряжение на %d%% прочности" % roundi(fraction * 100.0)
+	return tr("Чинит надетое снаряжение на %d%% прочности") % roundi(fraction * 100.0)

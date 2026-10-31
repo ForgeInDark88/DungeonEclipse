@@ -40,7 +40,7 @@ func _ready() -> void:
 
 func get_prompt() -> String:
 	var ready := ChroniclerBook.claimable_count()
-	return "Летописец: награды за главы (%d)" % ready if ready > 0 else "Летописец"
+	return tr("Летописец: награды за главы (%d)") % ready if ready > 0 else tr("Летописец")
 
 
 func interact(_player: Node) -> void:

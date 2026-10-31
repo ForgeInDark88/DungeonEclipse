@@ -129,11 +129,11 @@ func _load_floor() -> void:
 	for b in get_tree().get_nodes_in_group("bosses"):
 		AudioManager.play_music((b as Boss).boss.music)
 	if GameState.is_town():
-		EventBus.message.emit("%s. Вход в подземелье — в конце улицы." % biome.display_name)
+		EventBus.message.emit(tr("%s. Вход в подземелье — в конце улицы.") % biome.display_name)
 	elif GameState.is_boss_floor():
-		EventBus.message.emit("Этаж %d — логово стража!" % floor_number)
+		EventBus.message.emit(tr("Этаж %d — логово стража!") % floor_number)
 	else:
-		EventBus.message.emit("Этаж %d — %s" % [floor_number, biome.display_name] if biome else "Этаж %d" % floor_number)
+		EventBus.message.emit(tr("Этаж %d — %s") % [floor_number, biome.display_name] if biome else tr("Этаж %d") % floor_number)
 	_net_on_floor_loaded()
 
 	# Between-floors save: the snapshot must be taken with the floor freshly
@@ -234,15 +234,15 @@ func _toggle_pause() -> void:
 	get_tree().paused = true
 	overlay.clear()
 	overlay.set_panel_size(Vector2(220, 220))
-	overlay.add_text("Пауза", 12)
-	overlay.add_button("Продолжить", _toggle_pause).grab_focus()
-	overlay.add_button("Как играть", func() -> void: add_child(InfoBook.how_to_play()))
-	overlay.add_button("Настройки", open_settings)
-	overlay.add_button("Дерево навыков", func() -> void:
+	overlay.add_text(tr("Пауза"), 12)
+	overlay.add_button(tr("Продолжить"), _toggle_pause).grab_focus()
+	overlay.add_button(tr("Как играть"), func() -> void: add_child(InfoBook.how_to_play()))
+	overlay.add_button(tr("Настройки"), open_settings)
+	overlay.add_button(tr("Дерево навыков"), func() -> void:
 		_toggle_pause()
 		skill_tree.open())
-	overlay.add_button("В главное меню", func() -> void: GameState.go_to_menu())
-	overlay.add_text("(забег продолжится с начала этажа)", 7)
+	overlay.add_button(tr("В главное меню"), func() -> void: GameState.go_to_menu())
+	overlay.add_text(tr("(забег продолжится с начала этажа)"), 7)
 	# Esc resumes: handled by the overlay (ALWAYS), the game tree itself pauses.
 	overlay.on_pause_key = _toggle_pause
 	overlay.visible = true
@@ -360,21 +360,21 @@ func _on_player_died() -> void:
 	var reward := GameState.end_run()
 	overlay.clear()
 	overlay.set_panel_size(Vector2(340, 236))
-	overlay.add_text("Героиня погибла" if hero.female else "Герой погиб", 14)
-	overlay.add_text("%s %s · уровень %d" % [hero.race.display_name, hero.class_data.display_name, hero.level], 8)
+	overlay.add_text(tr("Героиня погибла") if hero.female else tr("Герой погиб"), 14)
+	overlay.add_text(tr("%s %s · уровень %d") % [hero.race.display_name, hero.class_data.display_name, hero.level], 8)
 	var found: Array = stats.get("found", [0, 0, 0])
 	overlay.add_control(_stats_grid([
-		["Этаж", str(GameState.floor_number)], ["Время", "%d:%02d" % [seconds / 60, seconds % 60]],
-		["Убито врагов", str(GameState.kills)], ["Элиты / стражи", "%d / %d" % [int(stats.get("elites", 0)), int(stats.get("bosses", 0))]],
-		["Золото собрано", str(int(stats.get("gold", 0)))], ["Находки", _found_text(found)],
-		["Лучшее комбо", "×%d" % int(stats.get("best_combo", 0))],
+		[tr("Этаж"), str(GameState.floor_number)], [tr("Время"), "%d:%02d" % [seconds / 60, seconds % 60]],
+		[tr("Убито врагов"), str(GameState.kills)], [tr("Элиты / стражи"), "%d / %d" % [int(stats.get("elites", 0)), int(stats.get("bosses", 0))]],
+		[tr("Золото собрано"), str(int(stats.get("gold", 0)))], [tr("Находки"), _found_text(found)],
+		[tr("Лучшее комбо"), "×%d" % int(stats.get("best_combo", 0))],
 	]))
 	if not reward.is_empty() and (reward["shards"] > 0 or reward["gold"] > 0):
-		var text := "Святилище Затмения: +%d осколков, +%d золота" % [reward["shards"], reward["gold"]]
+		var text := tr("Святилище Затмения: +%d осколков, +%d золота") % [reward["shards"], reward["gold"]]
 		if not reward["parts"].is_empty():
 			text += "\n(" + ", ".join(reward["parts"]) + ")"
 		overlay.add_text(text, 7)
-	overlay.add_button("В главное меню", func() -> void: GameState.go_to_menu()).grab_focus()
+	overlay.add_button(tr("В главное меню"), func() -> void: GameState.go_to_menu()).grab_focus()
 	overlay.visible = true
 
 
@@ -394,32 +394,32 @@ func _on_eclipse_defeated() -> void:
 	get_tree().paused = true
 	overlay.clear()
 	overlay.set_panel_size(Vector2(360, 262))
-	overlay.add_text("Затмение рассеяно", 14)
-	overlay.add_text("Чёрное солнце угасло, и свет вернулся в подземелья.\n%s %s · уровень %d — %s." % [
+	overlay.add_text(tr("Затмение рассеяно"), 14)
+	overlay.add_text(tr("Чёрное солнце угасло, и свет вернулся в подземелья.\n%s %s · уровень %d — %s.") % [
 		hero.race.display_name, hero.class_data.display_name, hero.level,
-		"героиня, разбившая Затмение" if hero.female else "герой, разбивший Затмение"], 7)
+		tr("героиня, разбившая Затмение") if hero.female else tr("герой, разбивший Затмение")], 7)
 	overlay.add_control(_stats_grid([
-		["Этаж", str(GameState.floor_number)], ["Время", "%d:%02d" % [seconds / 60, seconds % 60]],
-		["Убито врагов", str(GameState.kills)], ["Элиты / стражи", "%d / %d" % [int(stats.get("elites", 0)), int(stats.get("bosses", 0))]],
-		["Золото собрано", str(int(stats.get("gold", 0)))], ["Находки", _found_text(stats.get("found", [0, 0, 0]))],
-		["Лучшее комбо", "×%d" % int(stats.get("best_combo", 0))],
+		[tr("Этаж"), str(GameState.floor_number)], [tr("Время"), "%d:%02d" % [seconds / 60, seconds % 60]],
+		[tr("Убито врагов"), str(GameState.kills)], [tr("Элиты / стражи"), "%d / %d" % [int(stats.get("elites", 0)), int(stats.get("bosses", 0))]],
+		[tr("Золото собрано"), str(int(stats.get("gold", 0)))], [tr("Находки"), _found_text(stats.get("found", [0, 0, 0]))],
+		[tr("Лучшее комбо"), "×%d" % int(stats.get("best_combo", 0))],
 	]))
-	overlay.add_text("Награда за победу: +%d осколков Затмения." % MetaProgress.SHARDS_VICTORY, 7)
+	overlay.add_text(tr("Награда за победу: +%d осколков Затмения.") % MetaProgress.SHARDS_VICTORY, 7)
 	# The secret ending: everyone who knows the guardians' stories may let the
 	# sun go instead of breaking it.
 	if Codex.knows_all_guardians() and not stats.get("secret_ending", false):
-		overlay.add_button("Вспомнить их имена и вернуть свет", _secret_ending).grab_focus()
+		overlay.add_button(tr("Вспомнить их имена и вернуть свет"), _secret_ending).grab_focus()
 	else:
 		var gk := Codex.guardians_known()
 		if not stats.get("secret_ending", false):
-			overlay.add_text("Летописец говорил о другом пути... (записи стражей: %d из %d)" % [gk.x, gk.y], 6)
-	var finish := overlay.add_button("Завершить забег", _finish_victory)
+			overlay.add_text(tr("Летописец говорил о другом пути... (записи стражей: %d из %d)") % [gk.x, gk.y], 6)
+	var finish := overlay.add_button(tr("Завершить забег"), _finish_victory)
 	if not Codex.knows_all_guardians():
 		finish.grab_focus()
-	overlay.add_button("Спуститься глубже (бесконечный режим)", func() -> void:
+	overlay.add_button(tr("Спуститься глубже (бесконечный режим)"), func() -> void:
 		get_tree().paused = false
 		overlay.visible = false
-		EventBus.message.emit("Глубины зовут дальше. Награда за победу сохранится."))
+		EventBus.message.emit(tr("Глубины зовут дальше. Награда за победу сохранится.")))
 	overlay.visible = true
 
 
@@ -433,10 +433,10 @@ func _secret_ending() -> void:
 	se.finished.connect(func() -> void:
 		overlay.clear()
 		overlay.set_panel_size(Vector2(340, 150))
-		overlay.add_text("Рассвет над Аурелией", 13)
-		overlay.add_text("Награда за тайную концовку: +%d осколков." % MetaProgress.SHARDS_SECRET, 7)
-		overlay.add_button("Завершить забег", _finish_victory).grab_focus()
-		overlay.add_button("Спуститься глубже (бесконечный режим)", func() -> void:
+		overlay.add_text(tr("Рассвет над Аурелией"), 13)
+		overlay.add_text(tr("Награда за тайную концовку: +%d осколков.") % MetaProgress.SHARDS_SECRET, 7)
+		overlay.add_button(tr("Завершить забег"), _finish_victory).grab_focus()
+		overlay.add_button(tr("Спуститься глубже (бесконечный режим)"), func() -> void:
 			get_tree().paused = false
 			overlay.visible = false)
 		overlay.visible = true)
@@ -446,13 +446,13 @@ func _finish_victory() -> void:
 	var reward := GameState.end_run()
 	overlay.clear()
 	overlay.set_panel_size(Vector2(340, 150))
-	overlay.add_text("Забег завершён победой", 13)
+	overlay.add_text(tr("Забег завершён победой"), 13)
 	if not reward.is_empty():
-		var text := "Святилище Затмения: +%d осколков, +%d золота" % [reward["shards"], reward["gold"]]
+		var text := tr("Святилище Затмения: +%d осколков, +%d золота") % [reward["shards"], reward["gold"]]
 		if not reward["parts"].is_empty():
 			text += "\n(" + ", ".join(reward["parts"]) + ")"
 		overlay.add_text(text, 7)
-	overlay.add_button("В главное меню", func() -> void:
+	overlay.add_button(tr("В главное меню"), func() -> void:
 		if Net.active:
 			Net.leave()
 		GameState.go_to_menu()).grab_focus()
@@ -561,7 +561,7 @@ func party() -> Array[Player]:
 
 
 func _net_player_name(peer_id: int) -> String:
-	return String(Net.players.get(peer_id, {}).get("name", "Игрок"))
+	return String(Net.players.get(peer_id, {}).get("name", tr("Игрок")))
 
 
 ## Spawns the local player and a puppet per other peer (once per session).
@@ -669,9 +669,9 @@ func _on_player_died_coop() -> void:
 		get_tree().paused = true
 		overlay.clear()
 		overlay.set_panel_size(Vector2(340, 150))
-		overlay.add_text("Вы пали", 14)
-		overlay.add_text("Возрождение на следующем этаже...", 9)
-		overlay.add_button("Ждать (наблюдать)", func() -> void:
+		overlay.add_text(tr("Вы пали"), 14)
+		overlay.add_text(tr("Возрождение на следующем этаже..."), 9)
+		overlay.add_button(tr("Ждать (наблюдать)"), func() -> void:
 			get_tree().paused = false
 			overlay.visible = false)
 		overlay.visible = true
@@ -689,8 +689,8 @@ func net_run_ended() -> void:
 	get_tree().paused = true
 	overlay.clear()
 	overlay.set_panel_size(Vector2(340, 150))
-	overlay.add_text("Отряд пал", 14)
-	overlay.add_button("В главное меню", func() -> void:
+	overlay.add_text(tr("Отряд пал"), 14)
+	overlay.add_button(tr("В главное меню"), func() -> void:
 		Net.leave()
 		GameState.go_to_menu())
 	overlay.visible = true
@@ -703,8 +703,8 @@ func _end_run_coop() -> void:
 	get_tree().paused = true
 	overlay.clear()
 	overlay.set_panel_size(Vector2(340, 150))
-	overlay.add_text("Отряд пал", 14)
-	overlay.add_button("В главное меню", func() -> void:
+	overlay.add_text(tr("Отряд пал"), 14)
+	overlay.add_button(tr("В главное меню"), func() -> void:
 		Net.leave()
 		GameState.go_to_menu())
 	overlay.visible = true

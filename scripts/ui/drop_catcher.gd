@@ -33,8 +33,8 @@ func _throw(player: Player, stack: ItemStack) -> void:
 		var ns = get_tree().get_first_node_in_group("net_game")
 		if ns:
 			ns.request_drop.rpc_id(1, RunCodec.item_to_dict(stack.item), stack.count)
-		EventBus.message.emit("Выброшено: %s" % stack.item.display_name)
+		EventBus.message.emit(tr("Выброшено: %s") % stack.item.display_name)
 		return
 	EventBus.spawn_items.emit(player.global_position + Vector2(player.facing * 10.0, -12.0),
 			[{"item": stack.item, "count": stack.count}])
-	EventBus.message.emit("Выброшено: %s" % stack.item.display_name)
+	EventBus.message.emit(tr("Выброшено: %s") % stack.item.display_name)

@@ -95,7 +95,7 @@ func _build() -> void:
 	spine.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(spine)
 
-	var head := UIStyle.outlined_label("Приказы гильдии Затмения", 11, UIStyle.PARCHMENT)
+	var head := UIStyle.outlined_label(tr("Приказы гильдии Затмения"), 11, UIStyle.PARCHMENT)
 	head.position = Vector2(BOOK_MARGIN, 6)
 	head.size = Vector2(BOOK_SIZE.x - BOOK_MARGIN * 2, 16)
 	head.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -149,10 +149,10 @@ func _build() -> void:
 	buttons.size = Vector2(page_w, 26)
 	buttons.add_theme_constant_override("separation", 8)
 	_root.add_child(buttons)
-	_claim = BookPageScreen.button("Сдать задание", _claim_current)
+	_claim = BookPageScreen.button(tr("Сдать задание"), _claim_current)
 	_claim.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	buttons.add_child(_claim)
-	buttons.add_child(BookPageScreen.button("Закрыть", close))
+	buttons.add_child(BookPageScreen.button(tr("Закрыть"), close))
 
 
 func _claim_current() -> void:
@@ -160,8 +160,8 @@ func _claim_current() -> void:
 	if reward.is_empty():
 		AudioManager.play_ui(&"chest_locked")
 		return
-	EventBus.message.emit("Награда получена: %d золота%s" % [reward["gold"],
-			(", %d осколка" % reward["shards"]) if int(reward["shards"]) > 0 else ""])
+	EventBus.message.emit(tr("Награда получена: %d золота%s") % [reward["gold"],
+			(tr(", %d осколка") % reward["shards"]) if int(reward["shards"]) > 0 else ""])
 	Fx.sparks(_root, Vector2(BOOK_SIZE.x / 2.0 + 60, 150), GOLD_COL, 14, 60.0)
 	_refresh()
 
@@ -184,12 +184,12 @@ func _refresh() -> void:
 		elif i == log.index:
 			mark.text = "✦"
 			mark.add_theme_color_override("font_color", GOLD_COL)
-			var suffix := " — готово!" if log.is_done() else ""
+			var suffix := tr(" — готово!") if log.is_done() else ""
 			name_l = UIStyle.label("%s%s" % [q["title"], suffix], 8, UIStyle.PARCHMENT if not log.is_done() else DONE_COL)
 		else:
 			name_l = UIStyle.label("• • •", 7, Color(0.4, 0.34, 0.44))
 			if not shown_hint:
-				name_l.text = "Следующий приказ откроется позже"
+				name_l.text = tr("Следующий приказ откроется позже")
 				shown_hint = true
 		row.add_child(mark)
 		row.add_child(name_l)
@@ -197,8 +197,8 @@ func _refresh() -> void:
 
 	var q2 := log.current()
 	if q2.is_empty():
-		_title.text = "Все приказы исполнены"
-		_story.text = "Глашатай склоняет голову.\n\n«Ты сделал для гильдии больше, чем вся карта затмения. Возвращайся в следующий спуск — бумаги уже пишутся.»"
+		_title.text = tr("Все приказы исполнены")
+		_story.text = tr("Глашатай склоняет голову.\n\n«Ты сделал для гильдии больше, чем вся карта затмения. Возвращайся в следующий спуск — бумаги уже пишутся.»")
 		_progress.text = ""
 		_bar.visible = false
 		_reward.text = ""
@@ -210,19 +210,19 @@ func _refresh() -> void:
 	_title.text = "«%s»" % q2["title"]
 	_story.text = str(q2["desc"])
 	var target := int(q2["target"])
-	_progress.text = "Прогресс: %d / %d" % [mini(log.progress, target), target]
+	_progress.text = tr("Прогресс: %d / %d") % [mini(log.progress, target), target]
 	_bar_fill.size.x = (_page_w - 2) * clampf(float(log.progress) / target, 0.0, 1.0)
 	var parts: Array[String] = []
 	if int(q2["gold"]) > 0:
-		parts.append("%d золота" % int(q2["gold"]))
+		parts.append(tr("%d золота") % int(q2["gold"]))
 	if int(q2["shards"]) > 0:
-		parts.append("%d осколка затмения" % int(q2["shards"]))
+		parts.append(tr("%d осколка затмения") % int(q2["shards"]))
 	if q2["item"] != &"":
 		parts.append("%d× %s" % [maxi(1, int(q2["item_count"])), _item_name(q2["item"])])
-	_reward.text = "Награда: " + ", ".join(parts)
-	_hint.text = "Сдать можно только у глашатая в городе" if not log.is_done() else ""
+	_reward.text = tr("Награда: ") + ", ".join(parts)
+	_hint.text = tr("Сдать можно только у глашатая в городе") if not log.is_done() else ""
 	_claim.disabled = not log.is_done()
-	_claim.text = "Сдать задание" if log.is_done() else "Ещё не готово"
+	_claim.text = tr("Сдать задание") if log.is_done() else tr("Ещё не готово")
 
 
 func _item_name(id: StringName) -> String:

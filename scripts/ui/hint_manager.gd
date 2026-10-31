@@ -75,7 +75,7 @@ func setup(player: Player) -> void:
 		if kills >= 1:
 			show_hint(&"seal"))
 	player.interact_hint_changed.connect(func(t: String) -> void:
-		if t.contains("Обезвредить"):
+		if t.contains(tr("Обезвредить")):
 			show_hint(&"trap"))
 	var picked := [0]
 	EventBus.item_collected.connect(func(_i: ItemData, _p: Vector2) -> void:
@@ -106,7 +106,7 @@ func _next() -> void:
 		return
 	_busy = true
 	var id: StringName = _queue.pop_front()
-	_label.text = format(HINTS[id])
+	_label.text = format(tr(HINTS[id]))
 	_card.size.y = maxf(30.0, _label.get_minimum_size().y + 10.0)
 	var tw := create_tween()
 	tw.tween_property(_card, "modulate:a", 1.0, 0.25)

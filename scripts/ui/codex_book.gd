@@ -27,7 +27,7 @@ func _ready() -> void:
 	tabs.add_theme_constant_override("separation", 3)
 	left_page.add_child(tabs)
 	var group := ButtonGroup.new()
-	for entry in [[Tab.ACHIEVEMENTS, "Достижения"], [Tab.BESTIARY, "Бестиарий"], [Tab.ITEMS, "Предметы"], [Tab.LORE, "Записи"]]:
+	for entry in [[Tab.ACHIEVEMENTS, tr("Достижения")], [Tab.BESTIARY, tr("Бестиарий")], [Tab.ITEMS, tr("Предметы")], [Tab.LORE, tr("Записи")]]:
 		var b := BookPageScreen.button(entry[1], func() -> void: select_tab(entry[0]))
 		b.toggle_mode = true
 		b.button_group = group
@@ -68,7 +68,7 @@ func _ready() -> void:
 	_detail_text.add_theme_font_size_override("bold_font_size", 7)
 	_detail_text.add_theme_font_size_override("italics_font_size", 7)
 	right_page.add_child(_detail_text)
-	var back := BookPageScreen.button("Назад", func() -> void: get_tree().change_scene_to_file(GameState.MAIN_MENU))
+	var back := BookPageScreen.button(tr("Назад"), func() -> void: get_tree().change_scene_to_file(GameState.MAIN_MENU))
 	right_page.add_child(back)
 
 	_tab_buttons[0].button_pressed = true
@@ -96,7 +96,7 @@ func _show_detail(icon: Texture2D, title: String, bbcode: String, dark := false)
 	_detail_icon.texture = icon
 	_detail_icon.modulate = Color(0, 0, 0, 0.6) if dark else Color.WHITE
 	_detail_title.text = title
-	_detail_text.text = bbcode if bbcode != "" else "[color=#%s]Наведите на запись, чтобы прочитать её.[/color]" % UIStyle.INK_SOFT.to_html(false)
+	_detail_text.text = bbcode if bbcode != "" else tr("[color=#%s]Наведите на запись, чтобы прочитать её.[/color]") % UIStyle.INK_SOFT.to_html(false)
 
 
 # --- Achievements -----------------------------------------------------------
@@ -124,28 +124,28 @@ func _build_achievements() -> void:
 		var name_l := UIStyle.label(UNKNOWN if secret else a.display_name, 8, UIStyle.INK if got else UIStyle.INK_SOFT)
 		name_l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(name_l)
-		row.add_child(UIStyle.label("готово" if got else "%d/%d" % [Codex.progress(a), a.target], 7, UIStyle.GOOD if got else UIStyle.INK_SOFT))
+		row.add_child(UIStyle.label(tr("готово") if got else "%d/%d" % [Codex.progress(a), a.target], 7, UIStyle.GOOD if got else UIStyle.INK_SOFT))
 		var gap := Control.new()  # room for the scroll bar
 		gap.custom_minimum_size = Vector2(12, 0)
 		gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		row.add_child(gap)
 		row.mouse_entered.connect(func() -> void: _show_achievement(a))
 		box.add_child(row)
-	_summary.text = "Получено %d из %d" % [done, Codex.achievements.size()]
+	_summary.text = tr("Получено %d из %d") % [done, Codex.achievements.size()]
 
 
 func _show_achievement(a: AchievementData) -> void:
 	var got := Codex.is_achieved(a)
 	if a.hidden and not got:
-		_show_detail(a.icon, UNKNOWN, "Тайное достижение. Продолжайте спускаться.", true)
+		_show_detail(a.icon, UNKNOWN, tr("Тайное достижение. Продолжайте спускаться."), true)
 		return
 	var lines: Array[String] = [a.description, ""]
-	lines.append("Прогресс: %d / %d" % [Codex.progress(a), a.target])
+	lines.append(tr("Прогресс: %d / %d") % [Codex.progress(a), a.target])
 	if a.reward_shards > 0:
-		lines.append("Награда: %d осколков Затмения" % a.reward_shards)
+		lines.append(tr("Награда: %d осколков Затмения") % a.reward_shards)
 	if got:
 		var t := Time.get_datetime_string_from_unix_time(int(Codex.achieved[a.id]), true)
-		lines.append("[color=%s]Получено %s[/color]" % [UIStyle.GOOD_HEX, t.left(16)])
+		lines.append(tr("[color=%s]Получено %s[/color]") % [UIStyle.GOOD_HEX, t.left(16)])
 	_show_detail(a.icon, a.display_name, "\n".join(lines), not got)
 
 
@@ -169,7 +169,7 @@ func _build_bestiary() -> void:
 		if is_known:
 			known += 1
 		grid.add_child(_cell(creature_icon(e), not is_known, func() -> void: _show_creature(e)))
-	_summary.text = "Изучено %d из %d существ" % [known, ItemDatabase.enemies.size() + ItemDatabase.bosses.size()]
+	_summary.text = tr("Изучено %d из %d существ") % [known, ItemDatabase.enemies.size() + ItemDatabase.bosses.size()]
 
 
 ## First idle frame of the creature's sheet (or its static texture).
@@ -186,7 +186,7 @@ static func creature_icon(e: EnemyData) -> Texture2D:
 func _show_creature(e: EnemyData) -> void:
 	var kills := int(Codex.enemy_kills.get(e.id, 0))
 	if kills <= 0:
-		_show_detail(creature_icon(e), UNKNOWN, "Это существо ещё не встречалось вам в бою.\nПобедите его, чтобы узнать больше.", true)
+		_show_detail(creature_icon(e), UNKNOWN, tr("Это существо ещё не встречалось вам в бою.\nПобедите его, чтобы узнать больше."), true)
 		return
 	var lines: Array[String] = []
 	if e is BossData:
@@ -194,20 +194,20 @@ func _show_creature(e: EnemyData) -> void:
 	if e.description != "":
 		lines.append("[i]%s[/i]" % e.description)
 	lines.append("")
-	lines.append("Побеждено: [b]%d[/b]" % kills)
-	lines.append("Здоровье: %d · Урон: %d · Броня: %d" % [e.max_hp, e.damage, e.armor])
-	lines.append("Повадки: %s" % ["ходит по земле", "летает", "атакует издалека"][e.behavior])
+	lines.append(tr("Побеждено: [b]%d[/b]") % kills)
+	lines.append(tr("Здоровье: %d · Урон: %d · Броня: %d") % [e.max_hp, e.damage, e.armor])
+	lines.append(tr("Повадки: %s") % [tr("ходит по земле"), tr("летает"), tr("атакует издалека")][e.behavior])
 	var traits: Array[String] = []
 	if e.phases_through_walls:
-		traits.append("проходит сквозь стены")
+		traits.append(tr("проходит сквозь стены"))
 	if e.ceiling_ambush:
-		traits.append("нападает с потолка")
+		traits.append(tr("нападает с потолка"))
 	if e.aoe_radius > 0.0:
-		traits.append("бьёт по площади")
+		traits.append(tr("бьёт по площади"))
 	if e.summon:
-		traits.append("призывает: %s" % e.summon.display_name)
+		traits.append(tr("призывает: %s") % e.summon.display_name)
 	if not traits.is_empty():
-		lines.append("Особенности: " + ", ".join(traits))
+		lines.append(tr("Особенности: ") + ", ".join(traits))
 	var res: Array[String] = []
 	var weak: Array[String] = []
 	for k in e.resistances:
@@ -217,23 +217,23 @@ func _show_creature(e: EnemyData) -> void:
 		else:
 			res.append("%s %d%%" % [StatTypes.label(k), roundi(v * 100.0)])
 	if not res.is_empty():
-		lines.append("Сопротивления: " + ", ".join(res))
+		lines.append(tr("Сопротивления: ") + ", ".join(res))
 	if not weak.is_empty():
-		lines.append("Уязвим к: " + ", ".join(weak))
+		lines.append(tr("Уязвим к: ") + ", ".join(weak))
 	if not e.status_immunities.is_empty():
 		var names: Array[String] = []
 		for s in e.status_immunities:
 			names.append(StatusEffects.display_name(s))
-		lines.append("Иммунитет: " + ", ".join(names))
+		lines.append(tr("Иммунитет: ") + ", ".join(names))
 	if e is BossData and (e as BossData).final:
-		lines.append("Встречается: %d этаж, после всех стражей" % ItemDatabase.final_floor())
+		lines.append(tr("Встречается: %d этаж, после всех стражей") % ItemDatabase.final_floor())
 	elif e is BossData:
-		lines.append("Встречается: каждый %d-й этаж" % GameState.BOSS_EVERY)
+		lines.append(tr("Встречается: каждый %d-й этаж") % GameState.BOSS_EVERY)
 	else:
 		var where: Array[String] = []
 		for b in e.biomes:
 			where.append(_biome_name(b))
-		lines.append("Встречается: с %d этажа%s" % [e.min_floor, (" (" + ", ".join(where) + ")") if not where.is_empty() else ""])
+		lines.append(tr("Встречается: с %d этажа%s") % [e.min_floor, (" (" + ", ".join(where) + ")") if not where.is_empty() else ""])
 	_show_detail(creature_icon(e), e.display_name, "\n".join(lines))
 
 
@@ -269,16 +269,16 @@ func _build_items() -> void:
 		if is_known:
 			known += 1
 		grid.add_child(_cell(item.icon, not is_known, func() -> void: _show_item(item)))
-	_summary.text = "Найдено %d из %d предметов" % [known, items.size()]
+	_summary.text = tr("Найдено %d из %d предметов") % [known, items.size()]
 
 
 func _show_item(item: ItemData) -> void:
 	var n := int(Codex.items_found.get(item.id, 0))
 	if n <= 0:
-		_show_detail(item.icon, UNKNOWN, "%s\nПредмет ещё не найден." % item.type_name(), true)
+		_show_detail(item.icon, UNKNOWN, tr("%s\nПредмет ещё не найден.") % item.type_name(), true)
 		return
 	var text := TooltipText.item(item, null)
-	text += "\n\n[color=#%s]Найдено раз: %d[/color]" % [UIStyle.INK_SOFT.to_html(false), n]
+	text += tr("\n\n[color=#%s]Найдено раз: %d[/color]") % [UIStyle.INK_SOFT.to_html(false), n]
 	_show_detail(item.icon, "", text)
 
 
@@ -297,7 +297,7 @@ func _build_lore() -> void:
 		var group: StringName = n.biome if n.biome != &"" else &"guardians"
 		if group != chapter:
 			chapter = group
-			var head := UIStyle.label("Стражи" if group == &"guardians" else _biome_name(group), 8, UIStyle.INK_SOFT)
+			var head := UIStyle.label(tr("Стражи") if group == &"guardians" else _biome_name(group), 8, UIStyle.INK_SOFT)
 			box.add_child(head)
 		var known := Codex.is_lore_read(n.id)
 		var row := HBoxContainer.new()
@@ -309,10 +309,10 @@ func _build_lore() -> void:
 			if known:
 				_show_detail(icon, n.title, "[i]%s[/i]\n\n[right]— %s[/right]" % [n.text, n.author])
 			else:
-				_show_detail(icon, UNKNOWN, "[color=#%s]Запись ещё не найдена. Ищите её %s.[/color]" % [UIStyle.INK_SOFT.to_html(false),
-						("на арене стража" if n.boss != &"" else "в локации «%s»" % _biome_name(n.biome))], true))
+				_show_detail(icon, UNKNOWN, tr("[color=#%s]Запись ещё не найдена. Ищите её %s.[/color]") % [UIStyle.INK_SOFT.to_html(false),
+						(tr("на арене стража") if n.boss != &"" else tr("в локации «%s»") % _biome_name(n.biome))], true))
 		box.add_child(row)
-	_summary.text = "Найдено записей: %d из %d" % [Codex.lore_read_count(), ItemDatabase.lore.size()]
+	_summary.text = tr("Найдено записей: %d из %d") % [Codex.lore_read_count(), ItemDatabase.lore.size()]
 
 
 func _set_list(c: Container) -> void:

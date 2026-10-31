@@ -42,7 +42,7 @@ func _build(offers: Array) -> void:
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 6)
 	add_child(box)
-	var title := UIStyle.outlined_label("Алтарь судьбы — до конца забега", 11, UIStyle.GOLD)
+	var title := UIStyle.outlined_label(tr("Алтарь судьбы — до конца забега"), 11, UIStyle.GOLD)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 	var row := HBoxContainer.new()
@@ -55,7 +55,7 @@ func _build(offers: Array) -> void:
 		row.add_child(card)
 		if first == null:
 			first = card.get_meta("button")
-	var refuse := BookPageScreen.button("Отказаться", close)
+	var refuse := BookPageScreen.button(tr("Отказаться"), close)
 	refuse.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	box.add_child(refuse)
 	var sz := box.get_combined_minimum_size()
@@ -86,11 +86,11 @@ func _card(offer: Dictionary) -> Control:
 		text.add_theme_font_size_override(k, 7)
 	text.text = "[color=%s][b]%s[/b]\n%s[/color]" % [UIStyle.GOOD_HEX, b.display_name, b.description]
 	if c:
-		text.text += "\n\n[color=#8a2a1e][b]Проклятие: %s[/b]\n%s[/color]" % [c.display_name, c.description]
+		text.text += tr("\n\n[color=#8a2a1e][b]Проклятие: %s[/b]\n%s[/color]") % [c.display_name, c.description]
 	else:
-		text.text += "\n\n[color=%s]Без проклятия[/color]" % UIStyle.GOOD_HEX
+		text.text += tr("\n\n[color=%s]Без проклятия[/color]") % UIStyle.GOOD_HEX
 	v.add_child(text)
-	var pick := BookPageScreen.button("Принять", func() -> void:
+	var pick := BookPageScreen.button(tr("Принять"), func() -> void:
 		var cb := _on_pick
 		close()
 		cb.call(offer))

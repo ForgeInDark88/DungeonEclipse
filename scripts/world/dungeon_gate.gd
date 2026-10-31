@@ -30,8 +30,8 @@ func _ready() -> void:
 
 func get_prompt() -> String:
 	if GameState.town_return_floor > 0:
-		return "Спуститься на этаж %d" % GameState.town_return_floor
-	return "Спуститься в подземелье"
+		return tr("Спуститься на этаж %d") % GameState.town_return_floor
+	return tr("Спуститься в подземелье")
 
 
 func interact(_player: Node) -> void:

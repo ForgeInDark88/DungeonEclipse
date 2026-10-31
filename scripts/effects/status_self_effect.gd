@@ -15,7 +15,7 @@ func apply(user: Node) -> bool:
 func describe() -> String:
 	match status:
 		&"regen":
-			return "Регенерация: %d HP / 0.5 с на %d сек." % [roundi(power), roundi(duration)]
+			return tr("Регенерация: %d HP / 0.5 с на %d сек.") % [roundi(power), roundi(duration)]
 		&"shield":
-			return "Щит на %d урона, %d сек." % [roundi(power), roundi(duration)]
-	return "%s на %d сек." % [StatusEffects.display_name(status), roundi(duration)]
+			return tr("Щит на %d урона, %d сек.") % [roundi(power), roundi(duration)]
+	return tr("%s на %d сек.") % [StatusEffects.display_name(status), roundi(duration)]

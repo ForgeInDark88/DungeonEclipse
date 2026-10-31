@@ -55,8 +55,8 @@ func _init() -> void:
 
 
 func subtitle() -> String:
-	var t: String = WEAPON_TYPE_NAMES[weapon_type]
-	return t + (" (двуручное)" if two_handed else "")
+	var t: String = TranslationServer.translate(WEAPON_TYPE_NAMES[weapon_type])
+	return t + (tr(" (двуручное)") if two_handed else "")
 
 
 func animation() -> StringName:

@@ -128,7 +128,7 @@ func _build() -> void:
 
 	var page_w := BOOK_SIZE.x / 2.0 - BOOK_MARGIN - 8
 	var page_h := BOOK_SIZE.y - BOOK_MARGIN * 2
-	var head := UIStyle.outlined_label("Навыки: %s" % hero.class_data.display_name, 10, UIStyle.PARCHMENT)
+	var head := UIStyle.outlined_label(tr("Навыки: %s") % hero.class_data.display_name, 10, UIStyle.PARCHMENT)
 	head.position = Vector2(BOOK_MARGIN + 4, BOOK_MARGIN - 6)
 	head.size = Vector2(page_w, 14)
 	head.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -186,10 +186,10 @@ func _build() -> void:
 	var buttons := HBoxContainer.new()
 	buttons.add_theme_constant_override("separation", 6)
 	right.add_child(buttons)
-	_learn = BookPageScreen.button("Изучить", func() -> void: learn(_selected))
+	_learn = BookPageScreen.button(tr("Изучить"), func() -> void: learn(_selected))
 	_learn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	buttons.add_child(_learn)
-	buttons.add_child(BookPageScreen.button("Закрыть", close))
+	buttons.add_child(BookPageScreen.button(tr("Закрыть"), close))
 	_respec = BookPageScreen.button("", respec)
 	_respec.add_theme_font_size_override("font_size", 7)
 	right.add_child(_respec)
@@ -270,7 +270,7 @@ func _refresh() -> void:
 			if sk.chosen_branch == b:
 				head = UIStyle.label("✦ %s · %d" % [sk.branch_names[b], sk.spent_in(b)], 7, branch_color(b))
 			elif sk.chosen_branch >= 0 and b != sk.chosen_branch:
-				head = UIStyle.label("%s · закрыто" % sk.branch_names[b], 7, Color(0.75, 0.72, 0.68))
+				head = UIStyle.label(tr("%s · закрыто") % sk.branch_names[b], 7, Color(0.75, 0.72, 0.68))
 			else:
 				head = UIStyle.label("%s · %d" % [sk.branch_names[b], sk.spent_in(b)], 7, branch_color(b).darkened(0.25))
 			head.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -328,14 +328,14 @@ func _refresh() -> void:
 		node.position = pos[s.id] - _node_size(s) / 2.0
 		_tree_area.add_child(node)
 		_nodes[s.id] = node
-	_points.text = "Очков навыков: %d · уровень героя %d" % [sk.skill_points, hero.level]
+	_points.text = tr("Очков навыков: %d · уровень героя %d") % [sk.skill_points, hero.level]
 	if sk.has_branches():
 		if sk.chosen_branch >= 0:
-			_points.text += " · путь: «%s»" % sk.branch_name_of(sk.chosen_branch)
+			_points.text += tr(" · путь: «%s»") % sk.branch_name_of(sk.chosen_branch)
 		elif sk.skill_points > 0:
-			_points.text += " · выбор пути: первая вложенная ветвь закрепится"
+			_points.text += tr(" · выбор пути: первая вложенная ветвь закрепится")
 	var cost := sk.respec_cost(hero.level)
-	_respec.text = "Сбросить навыки — %d з." % cost
+	_respec.text = tr("Сбросить навыки — %d з.") % cost
 	_respec.disabled = sk.spent_total() <= 0 or hero.gold < cost
 	_show(_selected)
 
@@ -431,41 +431,41 @@ func _show(s: SkillData) -> void:
 	var sk := hero.skills
 	var rank := sk.rank(s)
 	_icon.texture = s.icon
-	_title.text = "Пассивный навык" if s.is_passive() else "Активный навык"
+	_title.text = tr("Пассивный навык") if s.is_passive() else tr("Активный навык")
 	var text := TooltipText.skill(s, rank, 0)
 	var soft := UIStyle.PARCHMENT.darkened(0.35).to_html(false)
 	if sk.required_level(s) > 1:
-		text += "\n[color=#%s]Требуется уровень героя: %d[/color]" % [soft, sk.required_level(s)]
+		text += tr("\n[color=#%s]Требуется уровень героя: %d[/color]") % [soft, sk.required_level(s)]
 	if sk.required_points(s) > 0:
 		var b := sk.branch_of(s)
-		text += "\n[color=#%s]Нужно вложить в ветвь «%s»: %d (сейчас %d)[/color]" % [soft, sk.branch_names[b], sk.required_points(s), sk.spent_in(b)]
+		text += tr("\n[color=#%s]Нужно вложить в ветвь «%s»: %d (сейчас %d)[/color]") % [soft, sk.branch_names[b], sk.required_points(s), sk.spent_in(b)]
 	if sk.choice_of(s) != "":
 		var rivals: Array[String] = []
 		for o in sk.all:
 			if o != s and sk.choice_of(o) == sk.choice_of(s):
 				rivals.append(o.display_name)
-		text += "\n[color=#%s]Выбор пути: или этот навык, или %s (до сброса)[/color]" % [UIStyle.GOLD.darkened(0.4).to_html(false), ", ".join(rivals)]
+		text += tr("\n[color=#%s]Выбор пути: или этот навык, или %s (до сброса)[/color]") % [UIStyle.GOLD.darkened(0.4).to_html(false), ", ".join(rivals)]
 	if sk.chosen_branch >= 0 and sk.branch_of(s) == sk.chosen_branch:
-		text += "\n[color=%s]Ветка вашего пути[/color]"  % "#7ddc7d"
+		text += tr("\n[color=%s]Ветка вашего пути[/color]")  % "#7ddc7d"
 	elif sk.chosen_branch >= 0 and sk.branch_of(s) != sk.chosen_branch and rank == 0:
-		text += "\n[color=#%s]Закрыто: путь выбран — «%s» (сменить можно сбросом навыков)[/color]" % [UIStyle.BAD.darkened(0.2).to_html(false), sk.branch_name_of(sk.chosen_branch)]
+		text += tr("\n[color=#%s]Закрыто: путь выбран — «%s» (сменить можно сбросом навыков)[/color]") % [UIStyle.BAD.darkened(0.2).to_html(false), sk.branch_name_of(sk.chosen_branch)]
 	if not sk.has_branches() and not s.requires.is_empty():
 		var names: Array[String] = []
 		for r in s.requires:
 			if r:
 				names.append(r.display_name)
-		text += "\n[color=#%s]После: %s[/color]" % [UIStyle.PARCHMENT.darkened(0.35).to_html(false), ", ".join(names)]
+		text += tr("\n[color=#%s]После: %s[/color]") % [UIStyle.PARCHMENT.darkened(0.35).to_html(false), ", ".join(names)]
 	var w := hero.weapon()
 	if s.has_synergy(w):
-		text += "\n[color=%s]Синергия активна: %s[/color]" % ["#7ddc7d", w.display_name]
+		text += tr("\n[color=%s]Синергия активна: %s[/color]") % ["#7ddc7d", w.display_name]
 	if not s.is_passive():
 		var slot := sk.skills.find(s)
 		if slot >= 0:
-			text += "\n[color=#%s]Слот HUD: %s[/color]" % [UIStyle.PARCHMENT.darkened(0.35).to_html(false), InputBindings.key_for("skill_%d" % (slot + 1))]
+			text += tr("\n[color=#%s]Слот HUD: %s[/color]") % [UIStyle.PARCHMENT.darkened(0.35).to_html(false), InputBindings.key_for("skill_%d" % (slot + 1))]
 	_text.text = text
 	var reason := sk.block_reason(s, hero.level)
 	_reason.text = reason
-	_learn.text = "Изучить" if rank == 0 else "Улучшить"
+	_learn.text = tr("Изучить") if rank == 0 else tr("Улучшить")
 	_learn.disabled = reason != ""
 
 
@@ -477,7 +477,7 @@ func respec() -> void:
 		AudioManager.play_ui(&"chest_locked")
 		return
 	var back := sk.reset()
-	EventBus.message.emit("Навыки сброшены: возвращено %d очк." % back)
+	EventBus.message.emit(tr("Навыки сброшены: возвращено %d очк.") % back)
 	AudioManager.play_ui(&"ui_equip")
 	_refresh()
 
@@ -508,7 +508,7 @@ func _ceremony(branch: int) -> void:
 	flash.set_anchors_preset(Control.PRESET_FULL_RECT)
 	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(flash)
-	var plaque := UIStyle.outlined_label("Путь избран: «%s»" % hero.skills.branch_name_of(branch), 14, Color.WHITE)
+	var plaque := UIStyle.outlined_label(tr("Путь избран: «%s»") % hero.skills.branch_name_of(branch), 14, Color.WHITE)
 	plaque.set_anchors_preset(Control.PRESET_FULL_RECT)
 	plaque.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	plaque.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

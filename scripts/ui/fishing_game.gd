@@ -50,7 +50,7 @@ func open(spot: FishingSpot, player: Player) -> void:
 	_catch = _roll()
 	_zone_from = randf_range(0.05, 0.95 - _catch[2])
 	_build()
-	_say("Закидываешь удочку... ждём поклёвки")
+	_say(tr("Закидываешь удочку... ждём поклёвки"))
 	AudioManager.play_sfx(&"jump", player.global_position, -10.0)
 
 
@@ -85,7 +85,7 @@ func _build() -> void:
 	_bar.size = Vector2(BAR_W, 14)
 	_bar.draw.connect(_draw_bar)
 	_panel.add_child(_bar)
-	var hint := UIStyle.label("[%s] / ЛКМ — подсечь · Esc — бросить" % InputBindings.key_for("interact"), 6, UIStyle.INK_SOFT)
+	var hint := UIStyle.label(tr("[%s] / ЛКМ — подсечь · Esc — бросить") % InputBindings.key_for("interact"), 6, UIStyle.INK_SOFT)
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.position = Vector2(10, 44)
 	hint.size = Vector2(240, 10)
@@ -102,15 +102,15 @@ func _process(delta: float) -> void:
 	match _stage:
 		Stage.WAIT:
 			if _player.dead:
-				_end(false, "Не до рыбалки!")
+				_end(false, tr("Не до рыбалки!"))
 			elif _t >= _wait:
 				_stage = Stage.BITE
 				_t = 0.0
-				_say("! ! !  Клюёт — подсекай!")
+				_say(tr("! ! !  Клюёт — подсекай!"))
 				AudioManager.play_sfx(&"ui_click", _player.global_position)
 		Stage.BITE:
 			if _t >= BITE_WINDOW:
-				_end(false, "Рыба сорвалась с крючка.")
+				_end(false, tr("Рыба сорвалась с крючка."))
 		Stage.REEL:
 			_needle += _dir * delta * 0.9 * float(_catch[3])
 			if _needle >= 1.0 or _needle <= 0.0:
@@ -142,7 +142,7 @@ func _input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed("pause"):
 		get_viewport().set_input_as_handled()
-		_end(false, "Ты сматываешь удочку.")
+		_end(false, tr("Ты сматываешь удочку."))
 		return
 	var strike := event.is_action_pressed("interact") or event.is_action_pressed("attack") or event.is_action_pressed("ui_accept")
 	if not strike:
@@ -150,33 +150,33 @@ func _input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 	match _stage:
 		Stage.WAIT:
-			_end(false, "Рано! Рыбу спугнул.")
+			_end(false, tr("Рано! Рыбу спугнул."))
 		Stage.BITE:
 			_stage = Stage.REEL
 			_t = 0.0
 			_needle = 0.0
 			_dir = 1.0
-			_say("Тяни! Жми, когда стрелка в зелёной зоне")
+			_say(tr("Тяни! Жми, когда стрелка в зелёной зоне"))
 		Stage.REEL:
 			if _needle >= _zone_from and _needle <= _zone_from + float(_catch[2]):
 				_land()
 			else:
-				_end(false, "Леска лопнула — ушла.")
+				_end(false, tr("Леска лопнула — ушла."))
 
 
 func _land() -> void:
 	var item := ItemDatabase.get_item(_catch[0])
 	if item == null:
-		_end(false, "Пусто.")
+		_end(false, tr("Пусто."))
 		return
 	var left := _player.hero.inventory.add_item(item, 1)
 	_spot.caught()
 	if left > 0:
-		_end(false, "Поймал «%s», но рюкзак полон — пришлось отпустить." % item.display_name)
+		_end(false, tr("Поймал «%s», но рюкзак полон — пришлось отпустить.") % item.display_name)
 		return
 	AudioManager.play_ui(&"pickup_rare" if item.rarity >= ItemData.Rarity.RARE else &"pickup_common")
 	Fx.sparks(_player.get_parent(), _spot.global_position + Vector2(0, -8), Color(0.7, 0.95, 1.0), 12, 70.0)
-	_end(true, "Улов: «%s»!" % item.display_name)
+	_end(true, tr("Улов: «%s»!") % item.display_name)
 
 
 func _end(ok: bool, text: String) -> void:

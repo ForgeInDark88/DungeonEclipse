@@ -33,6 +33,7 @@ GameState="*res://scripts/autoload/game_state.gd"
 Net="*res://scripts/autoload/net.gd"
 Tooltip="*res://scripts/autoload/tooltip_layer.gd"
 AudioManager="*res://scripts/autoload/audio_manager.gd"
+Localizer="*res://scripts/autoload/localizer.gd"
 
 [display]
 
@@ -238,3 +239,8 @@ textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 environment/defaults/default_clear_color=Color(0.05, 0.04, 0.06, 1)
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://locale/en.po")
+locale/fallback="ru"

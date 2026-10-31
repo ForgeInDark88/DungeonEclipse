@@ -243,7 +243,7 @@ func _rock_shower(target: Vector2) -> void:
 		return
 	var p := _player()
 	if p and p.global_position.distance_to(target) < 120.0:
-		EventBus.message.emit("Сверху сыплются камни!")
+		EventBus.message.emit(tr("Сверху сыплются камни!"))
 	for i in 3:
 		var rock := RockProjectile.new()
 		rock.texture = AssetPaths.tex(AssetPaths.TRAP_ROCK)
@@ -365,7 +365,7 @@ func disarm_chance(hero: Hero) -> float:
 func get_prompt() -> String:
 	var p := _player()
 	var chance := disarm_chance(p.hero) if p else 0.5
-	return "Обезвредить: %s (%d%%)" % [data.display_name, roundi(chance * 100.0)]
+	return tr("Обезвредить: %s (%d%%)") % [data.display_name, roundi(chance * 100.0)]
 
 
 func interact(player: Node) -> void:
@@ -380,7 +380,7 @@ func interact(player: Node) -> void:
 				ns.request_trap_disarm.rpc_id(1, net_seq)
 		else:
 			# A failed attempt springs the trap: the host's copy decides.
-			EventBus.message.emit("Не вышло! Ловушка сработала")
+			EventBus.message.emit(tr("Не вышло! Ловушка сработала"))
 			spring_shared(player.global_position)
 		return
 	if randf() <= disarm_chance(player.hero):
@@ -388,7 +388,7 @@ func interact(player: Node) -> void:
 		player.hero.add_xp(data.xp_for_disarm)
 		_net_disarm_broadcast()
 	else:
-		EventBus.message.emit("Не вышло! Ловушка сработала")
+		EventBus.message.emit(tr("Не вышло! Ловушка сработала"))
 		spring_shared(player.global_position)
 
 
@@ -398,7 +398,7 @@ func _apply_disarmed() -> void:
 	remove_from_group("interactable")
 	if _rock:
 		_rock.visible = false
-	EventBus.message.emit("Ловушка обезврежена")
+	EventBus.message.emit(tr("Ловушка обезврежена"))
 	EventBus.trap_disarmed.emit(data)
 	AudioManager.play_sfx(&"ui_equip", global_position)
 

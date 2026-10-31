@@ -62,19 +62,19 @@ func _on_seal_changed(kills: int, required: int, initial := false) -> void:
 
 func get_prompt() -> String:
 	if _sealed:
-		return "Выход запечатан: убито %d из %d" % [_kills, _required]
-	var text := "Спуститься глубже (этаж %d)" % (GameState.floor_number + 1)
+		return tr("Выход запечатан: убито %d из %d") % [_kills, _required]
+	var text := tr("Спуститься глубже (этаж %d)") % (GameState.floor_number + 1)
 	var ns := get_tree().get_first_node_in_group("net_game") as NetSync if Net.active else null
 	if ns:
 		var c := ns.party_count_at(global_position)
 		if c.y > 1:
-			text += " · отряд у выхода: %d из %d" % [c.x, c.y]
+			text += tr(" · отряд у выхода: %d из %d") % [c.x, c.y]
 	return text
 
 
 func interact(_player: Node) -> void:
 	if _sealed:
-		EventBus.message.emit("Печать держится: нужно убить ещё %d врагов" % (_required - _kills))
+		EventBus.message.emit(tr("Печать держится: нужно убить ещё %d врагов") % (_required - _kills))
 		AudioManager.play_sfx(&"dig", global_position, -6.0)
 		return
 	AudioManager.play_sfx(&"portal")

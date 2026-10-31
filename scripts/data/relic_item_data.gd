@@ -23,4 +23,4 @@ func _init() -> void:
 
 
 func subtitle() -> String:
-	return "Реликвия (действует из рюкзака)"
+	return tr("Реликвия (действует из рюкзака)")

@@ -14,4 +14,4 @@ func apply(user: Node) -> bool:
 
 
 func describe() -> String:
-	return "Восстанавливает %d маны" % amount
+	return tr("Восстанавливает %d маны") % amount

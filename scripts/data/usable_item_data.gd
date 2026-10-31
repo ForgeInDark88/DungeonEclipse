@@ -21,7 +21,7 @@ func _init() -> void:
 
 
 func subtitle() -> String:
-	return "Используемое" if consume_on_use else "Инструмент"
+	return tr("Используемое") if consume_on_use else tr("Инструмент")
 
 
 ## Returns true when the item was actually used.

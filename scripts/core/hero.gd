@@ -152,7 +152,7 @@ func unequip_to_inventory(slot_id: StringName, index: int = -1) -> bool:
 		inventory.put_at(index, ItemStack.new(item, 1))
 		return true
 	if inventory.free_space_for(item) <= 0:
-		EventBus.message.emit("Рюкзак полон")
+		EventBus.message.emit(tr("Рюкзак полон"))
 		return false
 	equipment.unequip(slot_id)
 	inventory.add_item(item, 1)
@@ -215,10 +215,10 @@ func _wear(item: EquipmentItemData, amount: int) -> void:
 		return
 	item.durability = maxi(0, item.durability - amount)
 	if item.durability == 0:
-		EventBus.message.emit("%s ломается! Нужен ремонт." % item.display_name)
+		EventBus.message.emit(tr("%s ломается! Нужен ремонт.") % item.display_name)
 		equipment.changed.emit()
 	elif item.durability == item.max_durability / 5:
-		EventBus.message.emit("%s почти сломан(а)" % item.display_name)
+		EventBus.message.emit(tr("%s почти сломан(а)") % item.display_name)
 
 
 func _on_equipment_changed() -> void:
@@ -314,6 +314,6 @@ func try_second_chance() -> bool:
 			inventory.remove_by_id(r.id, 1)
 			stats.hp = maxi(1, roundi(stats.max_hp() * r.revive_percent))
 			stats.hp_changed.emit(stats.hp, stats.max_hp())
-			EventBus.message.emit("%s сгорает — вы снова на ногах!" % r.display_name)
+			EventBus.message.emit(tr("%s сгорает — вы снова на ногах!") % r.display_name)
 			return true
 	return false

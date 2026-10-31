@@ -22,4 +22,4 @@ func apply(user: Node) -> bool:
 
 
 func describe() -> String:
-	return "Верёвка вверх до %d клеток — по ней можно лазать" % max_length
+	return tr("Верёвка вверх до %d клеток — по ней можно лазать") % max_length

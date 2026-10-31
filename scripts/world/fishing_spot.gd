@@ -47,12 +47,12 @@ func can_interact() -> bool:
 
 
 func get_prompt() -> String:
-	return "Рыбачить (ещё %d)" % uses_left if uses_left > 0 else "Рыба ушла из этого омута"
+	return tr("Рыбачить (ещё %d)") % uses_left if uses_left > 0 else tr("Рыба ушла из этого омута")
 
 
 func interact(player: Node) -> void:
 	if uses_left <= 0:
-		EventBus.message.emit("Вода неподвижна: рыба ушла.")
+		EventBus.message.emit(tr("Вода неподвижна: рыба ушла."))
 		return
 	var game := FishingGame.new()
 	get_tree().current_scene.add_child(game)

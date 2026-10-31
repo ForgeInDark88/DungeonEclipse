@@ -855,7 +855,7 @@ func take_damage(amount: int, from_pos: Vector2 = Vector2.INF, damage_type: int 
 	if amount <= 0:
 		visual.flash(Color(0.6, 0.8, 1.0), 0.12)
 		_invulnerable = INVULNERABLE_TIME * 0.5
-		EventBus.floating_text.emit(global_position + Vector2(0, -26), "Поглощено", Color(0.6, 0.8, 1.0))
+		EventBus.floating_text.emit(global_position + Vector2(0, -26), tr("Поглощено"), Color(0.6, 0.8, 1.0))
 		return
 	var lost := hero.stats.take_damage(amount)
 	if relic_powers and lost > 0:
@@ -1110,7 +1110,7 @@ func _parry_success(from_pos: Vector2) -> void:
 	_defend_cd = 0.0
 	_invulnerable = 0.3
 	var at := from_pos if from_pos != Vector2.INF else global_position
-	EventBus.floating_text.emit(global_position + Vector2(0, -30), "Парирование!", Color(0.75, 0.9, 1.0))
+	EventBus.floating_text.emit(global_position + Vector2(0, -30), tr("Парирование!"), Color(0.75, 0.9, 1.0))
 	Fx.sparks(get_parent(), global_position + Vector2(facing * 8.0, -14), Color(1.0, 0.95, 0.7), 14, 120.0)
 	EventBus.screen_shake.emit(2.5)
 	AudioManager.play_sfx(&"hit_crit", global_position)
@@ -1173,7 +1173,7 @@ func use_skill(index: int) -> void:
 	if not skills.is_ready(index):
 		return
 	if hero.stats.mana < skill.mana_cost:
-		EventBus.message.emit("Недостаточно маны")
+		EventBus.message.emit(tr("Недостаточно маны"))
 		return
 	_casting_icon = skill.icon
 	face_aim()  # skills that act in front of the hero turn to the cursor too
@@ -1208,7 +1208,7 @@ func use_item(item: ItemData) -> bool:
 	if dead:
 		return false
 	if hero.inventory.count_of(item.id) <= 0:
-		EventBus.message.emit("Нет предмета: %s" % item.display_name)
+		EventBus.message.emit(tr("Нет предмета: %s") % item.display_name)
 		return false
 	if item is EquipmentItemData:
 		return hero.equip_from_inventory(hero.inventory.find_item(item))

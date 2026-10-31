@@ -160,9 +160,9 @@ func refresh() -> void:
 	if _hovered and item:
 		var text := TooltipText.item(item, hero, kind == Kind.EQUIPMENT)
 		if shop:
-			text += "\n[color=%s]Продать за %d з. (ПКМ)[/color]" % [UIStyle.GOOD_HEX, item.sell_price()]
+			text += tr("\n[color=%s]Продать за %d з. (ПКМ)[/color]") % [UIStyle.GOOD_HEX, item.sell_price()]
 		if kind == Kind.INVENTORY:
-			text += "\n[color=#9a7a5a]Ctrl+ЛКМ — %s[/color]" % ("снять пометку «мусор»" if _junk.visible else "пометить как мусор")
+			text += tr("\n[color=#9a7a5a]Ctrl+ЛКМ — %s[/color]") % (tr("снять пометку «мусор»") if _junk.visible else tr("пометить как мусор"))
 		Tooltip.show_text(text, self)
 
 

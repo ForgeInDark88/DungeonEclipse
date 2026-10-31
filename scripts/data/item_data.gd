@@ -127,11 +127,11 @@ func rarity_color() -> Color:
 
 
 func rarity_name() -> String:
-	return RARITY_NAMES[rarity]
+	return TranslationServer.translate(RARITY_NAMES[rarity])
 
 
 func type_name() -> String:
-	return TYPE_NAMES[item_type]
+	return TranslationServer.translate(TYPE_NAMES[item_type])
 
 
 ## Text shown under the item name in tooltips (overridden by subclasses).

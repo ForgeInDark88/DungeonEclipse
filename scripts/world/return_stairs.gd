@@ -76,7 +76,7 @@ func _breathing_light() -> void:
 
 
 func get_prompt() -> String:
-	return "Вернуться в город"
+	return tr("Вернуться в город")
 
 
 func interact(_player: Node) -> void:
@@ -92,5 +92,5 @@ func interact(_player: Node) -> void:
 		if ns:
 			ns.host_party_move(Net.multiplayer.get_unique_id(), &"town")
 			return
-	EventBus.message.emit("Ты поднимаешься по лестнице на поверхность...")
+	EventBus.message.emit(tr("Ты поднимаешься по лестнице на поверхность..."))
 	GameState.return_to_town()

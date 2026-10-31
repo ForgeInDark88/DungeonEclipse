@@ -70,7 +70,7 @@ static func pay(hero: Hero, cost: Dictionary) -> bool:
 static func cost_text(cost: Dictionary) -> String:
 	var parts: Array[String] = []
 	if int(cost["gold"]) > 0:
-		parts.append("%d з." % cost["gold"])
+		parts.append(TranslationServer.translate("%d з.") % cost["gold"])
 	for id in cost["mats"]:
 		var it := ItemDatabase.get_item(id)
 		parts.append("%s ×%d" % [it.display_name if it else String(id), cost["mats"][id]])

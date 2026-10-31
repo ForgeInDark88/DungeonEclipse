@@ -209,9 +209,9 @@ func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null, p_ch
 func display_name() -> String:
 	var base := data.display_name
 	if elite:
-		base = "%s %s" % [elite.prefix(data.gender), base.left(1).to_lower() + base.substr(1)]
+		base = "%s %s" % [elite.prefix(data.gender), ItemFactory.after_adjective(base)]
 	if champion:
-		return "Страж этажа: %s" % base
+		return tr("Страж этажа: %s") % base
 	if role:
 		return "%s: %s" % [role.title, base]
 	return base
@@ -506,7 +506,7 @@ func _physics_process(delta: float) -> void:
 	if lvl and lvl.nav and lvl.nav.is_forbidden(_feet_cell()) and data.behavior != EnemyData.Behavior.FLYER and is_on_floor():
 		_path.clear()  # landed on a trap cell: plan a way off right now
 		if danger_time == 0.0 or fmod(danger_time, 1.0) < delta:
-			AIDebug.log_event(self, "danger", "%s в клетке ловушки %s (%s, шаг %s, прошлый шаг %s, vel %s, jumping %s)" % [data.id, _feet_cell(), state_name(), _debug_step(), _last_step, velocity, _jumping])
+			AIDebug.log_event(self, "danger", tr("%s в клетке ловушки %s (%s, шаг %s, прошлый шаг %s, vel %s, jumping %s)") % [data.id, _feet_cell(), state_name(), _debug_step(), _last_step, velocity, _jumping])
 		danger_time += delta
 	_attack_anim_left = maxf(0.0, _attack_anim_left - delta)
 	_update_animation()
@@ -1211,7 +1211,7 @@ func _debug_step() -> String:
 	if _path_i < _path.size():
 		var st: Dictionary = _path[_path_i]
 		return "%s→%s" % [LevelNav.EDGE_NAMES[st["kind"]] if st["kind"] >= 0 else "fly", st["cell"]]
-	return "нет"
+	return tr("нет")
 
 
 func state_name() -> String:
@@ -1233,11 +1233,11 @@ func debug_memory_pos() -> Vector2:
 func debug_extra() -> String:
 	var parts: Array[String] = []
 	if _hold:
-		parts.append("ждёт")
+		parts.append(tr("ждёт"))
 	if _flank != 0.0:
-		parts.append("фланг")
+		parts.append(tr("фланг"))
 	if _stuck_level > 0:
-		parts.append("застрял %d" % _stuck_level)
+		parts.append(tr("застрял %d") % _stuck_level)
 	return " ".join(parts)
 
 
@@ -1276,7 +1276,7 @@ func _unstick() -> void:
 		1:
 			_path.clear()
 			_path_goal = Vector2i(-9999, -9999)
-			AIDebug.log_event(self, "repath", "%s: нет движения, новый путь (%s, клетка %s, шаг %s, pos %s, last %s, sees %s)" % [data.id, state_name(), _feet_cell(), _debug_step(), global_position, _last_seen, _sees_player])
+			AIDebug.log_event(self, "repath", tr("%s: нет движения, новый путь (%s, клетка %s, шаг %s, pos %s, last %s, sees %s)") % [data.id, state_name(), _feet_cell(), _debug_step(), global_position, _last_seen, _sees_player])
 		2:
 			dir = -dir
 			_jumping = false
@@ -1286,7 +1286,7 @@ func _unstick() -> void:
 				_stop_climb()
 				velocity = Vector2(dir * data.speed, -260.0)
 			_path.clear()
-			AIDebug.log_event(self, "maneuver", "%s: прыжок и разворот (%s, клетка %s, шаг %s)" % [data.id, state_name(), _feet_cell(), _debug_step()])
+			AIDebug.log_event(self, "maneuver", tr("%s: прыжок и разворот (%s, клетка %s, шаг %s)") % [data.id, state_name(), _feet_cell(), _debug_step()])
 		_:
 			_stuck_level = 0
 			_path.clear()
@@ -1306,7 +1306,7 @@ func _unstick() -> void:
 			global_position = lvl.cell_bottom(target) + (Vector2(0, -4) if data.behavior == EnemyData.Behavior.FLYER else Vector2.ZERO)
 			_stuck_anchor = global_position
 			Fx.sparks(get_parent(), global_position + Vector2(0, -6), Color(0.7, 0.6, 1.0), 8, 40.0)
-			AIDebug.log_event(self, "teleport", "%s: телепорт %s → %s (pos %s, level %s)" % [data.id, here, target, global_position, lvl.global_position])
+			AIDebug.log_event(self, "teleport", tr("%s: телепорт %s → %s (pos %s, level %s)") % [data.id, here, target, global_position, lvl.global_position])
 
 
 func _free_fly_cell(lvl: DungeonLevel, from: Vector2i) -> Vector2i:
@@ -1341,13 +1341,13 @@ func _dummy_step(delta: float) -> void:
 	if _dps_label == null:
 		return
 	if _dummy_log.is_empty():
-		_dps_label.text = "Бей меня!"
+		_dps_label.text = tr("Бей меня!")
 		return
 	var total := 0
 	for h in _dummy_log:
 		total += int(h[1])
 	var span := clampf(now - float(_dummy_log[0][0]), 1.0, 5.0)
-	_dps_label.text = "Урон/с: %d · за 5 с: %d" % [roundi(total / span), total]
+	_dps_label.text = tr("Урон/с: %d · за 5 с: %d") % [roundi(total / span), total]
 
 
 # ------------------------------------------------------------- squads
@@ -1791,7 +1791,7 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 		dealt = maxi(1, roundi(dealt * (1.0 - ward)))
 		Fx.sparks(get_parent(), global_position + Vector2(0, -data.collision_size.y * 0.6), Color(0.5, 0.75, 1.0), 4, 50.0)
 	if dealt <= 0:
-		EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 4), "Иммунитет", Color(0.7, 0.7, 0.7))
+		EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 4), tr("Иммунитет"), Color(0.7, 0.7, 0.7))
 		return
 	if damage_type > 0 and resistance(damage_type) < 0.0:
 		# Weakness: say it (not on every hit) so elemental gear feels right.
@@ -1799,11 +1799,11 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 		if now - _weak_shown > 1.2:
 			_weak_shown = now
 			var spot := global_position + Vector2(0, -data.collision_size.y - 14)
-			EventBus.floating_text.emit(spot, "Уязвим!", Color(1.0, 0.7, 0.2))
+			EventBus.floating_text.emit(spot, tr("Уязвим!"), Color(1.0, 0.7, 0.2))
 			if Net.active and Net.is_host:
 				var nsw := get_tree().get_first_node_in_group("net_game") as NetSync
 				if nsw:
-					nsw.enemy_float_text.rpc(spot, "Уязвим!", Color(1.0, 0.7, 0.2))
+					nsw.enemy_float_text.rpc(spot, "Уязвим!", Color(1.0, 0.7, 0.2))  # i18n-src
 	hp = maxi(hp - dealt, min_hp())
 	_dormant = false
 	hp_bar.visible = true

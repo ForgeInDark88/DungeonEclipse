@@ -10,12 +10,12 @@ static func _c(color: Color, text: String) -> String:
 static func item(item: ItemData, hero: Hero, is_equipped := false) -> String:
 	var lines: Array[String] = []
 	lines.append("[font_size=10][b]%s[/b][/font_size]" % _c(item.rarity_color().darkened(0.35), item.display_name))
-	lines.append(_c(UIStyle.INK_SOFT, "%s · %s · ур. %d" % [item.rarity_name(), item.subtitle(), item.item_level]))
+	lines.append(_c(UIStyle.INK_SOFT, TranslationServer.translate("%s · %s · ур. %d") % [item.rarity_name(), item.subtitle(), item.item_level]))
 	if item.unidentified:
-		lines.append("[i]Свойства неизвестны. Наденьте предмет, прочтите свиток опознания или покажите торговцу. Может оказаться проклятым.[/i]")
+		lines.append(TranslationServer.translate("[i]Свойства неизвестны. Наденьте предмет, прочтите свиток опознания или покажите торговцу. Может оказаться проклятым.[/i]"))
 		return "\n".join(lines)
 	if item.cursed:
-		lines.append(_c(UIStyle.BAD, "Проклят: нельзя снять. Проклятие снимает торговец."))
+		lines.append(_c(UIStyle.BAD, TranslationServer.translate("Проклят: нельзя снять. Проклятие снимает торговец.")))
 	if item.description != "":
 		lines.append("[i]%s[/i]" % item.description)
 
@@ -44,42 +44,42 @@ static func item(item: ItemData, hero: Hero, is_equipped := false) -> String:
 		var ench: Array[String] = []
 		for k in item.enchant_bonuses:
 			ench.append("%s %s" % [StatTypes.label(k), StatTypes.format_value(k, float(item.enchant_bonuses[k]), true)])
-		lines.append(_c(Color(0.35, 0.55, 0.85), "Зачарование: " + ", ".join(ench)))
+		lines.append(_c(Color(0.35, 0.55, 0.85), TranslationServer.translate("Зачарование: ") + ", ".join(ench)))
 	if item.has_durability and item.is_instance():
 		var low := item.durability <= item.max_durability / 5
-		var dur_text := "Прочность: %d / %d" % [item.durability, item.max_durability]
+		var dur_text := TranslationServer.translate("Прочность: %d / %d") % [item.durability, item.max_durability]
 		if item.is_broken():
-			dur_text += " — СЛОМАНО (нужен ремонт)"
+			dur_text += TranslationServer.translate(" — СЛОМАНО (нужен ремонт)")
 		lines.append(_c(UIStyle.BAD if low else UIStyle.INK_SOFT, dur_text))
 	if compare_to:
-		lines.append(_c(UIStyle.INK_SOFT, "Сравнение с: %s" % compare_to.display_name))
+		lines.append(_c(UIStyle.INK_SOFT, TranslationServer.translate("Сравнение с: %s") % compare_to.display_name))
 	elif hero and item is EquipmentItemData and not is_equipped:
-		lines.append(_c(UIStyle.GOOD, "Слот свободен"))
+		lines.append(_c(UIStyle.GOOD, TranslationServer.translate("Слот свободен")))
 
 	if item is EquipmentItemData and (item as EquipmentItemData).set_id != &"":
 		lines.append_array(_set_lines(item as EquipmentItemData, hero))
 	if item is RelicItemData:
 		var relic := item as RelicItemData
 		if relic.heal_on_kill > 0:
-			lines.append(_c(UIStyle.GOOD, "• +%d HP за каждое убийство" % relic.heal_on_kill))
+			lines.append(_c(UIStyle.GOOD, TranslationServer.translate("• +%d HP за каждое убийство") % relic.heal_on_kill))
 		if relic.power != &"":
-			lines.append(_c(Color(1.0, 0.8, 0.4), "★ Особая сила: меняет ваш бой"))
+			lines.append(_c(Color(1.0, 0.8, 0.4), TranslationServer.translate("★ Особая сила: меняет ваш бой")))
 		if relic.second_chance:
-			lines.append(_c(UIStyle.GOOD, "• Второй шанс: при гибели вернёт %d%% здоровья и сгорит" % roundi(relic.revive_percent * 100.0)))
-		lines.append(_c(UIStyle.INK_SOFT, "Действует, пока лежит в рюкзаке"))
+			lines.append(_c(UIStyle.GOOD, TranslationServer.translate("• Второй шанс: при гибели вернёт %d%% здоровья и сгорит") % roundi(relic.revive_percent * 100.0)))
+		lines.append(_c(UIStyle.INK_SOFT, TranslationServer.translate("Действует, пока лежит в рюкзаке")))
 	if item is UsableItemData:
 		for effect in (item as UsableItemData).effects:
 			if effect and effect.describe() != "":
 				lines.append(_c(UIStyle.GOOD, "• " + effect.describe()))
 	if item.max_stack > 1:
-		lines.append(_c(UIStyle.INK_SOFT, "Стак: до %d" % item.max_stack))
+		lines.append(_c(UIStyle.INK_SOFT, TranslationServer.translate("Стак: до %d") % item.max_stack))
 	lines.append("")
 	if is_equipped:
-		lines.append(_c(UIStyle.INK_SOFT, "ПКМ — снять"))
+		lines.append(_c(UIStyle.INK_SOFT, TranslationServer.translate("ПКМ — снять")))
 	elif item is EquipmentItemData:
-		lines.append(_c(UIStyle.INK_SOFT, "ПКМ / двойной клик — надеть"))
+		lines.append(_c(UIStyle.INK_SOFT, TranslationServer.translate("ПКМ / двойной клик — надеть")))
 	elif item is UsableItemData:
-		lines.append(_c(UIStyle.INK_SOFT, "ПКМ / двойной клик — использовать"))
+		lines.append(_c(UIStyle.INK_SOFT, TranslationServer.translate("ПКМ / двойной клик — использовать")))
 	return "\n".join(lines)
 
 
@@ -93,7 +93,7 @@ static func _set_lines(item: EquipmentItemData, hero: Hero) -> Array[String]:
 	var worn: int = hero.worn_sets().get(item.set_id, 0) if hero else 0
 	var gold := Color(0.75, 0.5, 0.05)
 	lines.append("")
-	lines.append(_c(gold, "Комплект «%s» (%d/%d)" % [data.display_name, worn, data.items.size()]))
+	lines.append(_c(gold, TranslationServer.translate("Комплект «%s» (%d/%d)") % [data.display_name, worn, data.items.size()]))
 	for id in data.items:
 		var part := ItemDatabase.items.get(id) as ItemData
 		var has := false
@@ -106,7 +106,7 @@ static func _set_lines(item: EquipmentItemData, hero: Hero) -> Array[String]:
 		var parts: Array[String] = []
 		for k in data.bonuses[need]:
 			parts.append("%s %s" % [StatTypes.label(k), StatTypes.format_value(k, float(data.bonuses[need][k]), true)])
-		lines.append(_c(UIStyle.GOOD if worn >= int(need) else UIStyle.INK_SOFT, "  %d части: %s" % [int(need), ", ".join(parts)]))
+		lines.append(_c(UIStyle.GOOD if worn >= int(need) else UIStyle.INK_SOFT, TranslationServer.translate("  %d части: %s") % [int(need), ", ".join(parts)]))
 	return lines
 
 
@@ -139,27 +139,27 @@ static func _diff(value: float, other: float, fmt: String) -> String:
 static func _weapon_lines(w: WeaponItemData, other: WeaponItemData, hero: Hero) -> Array[String]:
 	var lines: Array[String] = [""]
 	var has_other := other != null
-	lines.append("Урон оружия: [b]%.1f[/b]%s" % [w.effective_damage(),
+	lines.append(TranslationServer.translate("Урон оружия: [b]%.1f[/b]%s") % [w.effective_damage(),
 			_diff(w.effective_damage(), other.effective_damage(), "%.1f") if has_other else ""])
-	lines.append("Скорость: %.2f уд/с%s" % [w.attack_speed, _diff(w.attack_speed, other.attack_speed, "%.2f") if has_other else ""])
+	lines.append(TranslationServer.translate("Скорость: %.2f уд/с%s") % [w.attack_speed, _diff(w.attack_speed, other.attack_speed, "%.2f") if has_other else ""])
 	var dps := weapon_dps(w, hero)
 	lines.append("DPS: [b]%.1f[/b]%s" % [dps, _diff(dps, weapon_dps(other, hero), "%.1f") if has_other else ""])
-	var reach_label := "Дальность" if not w.is_ranged() else "Дальность выстрела"
+	var reach_label := TranslationServer.translate("Дальность") if not w.is_ranged() else TranslationServer.translate("Дальность выстрела")
 	lines.append("%s: %d%s" % [reach_label, roundi(w.reach), _diff(w.reach, other.reach, "%.0f") if has_other else ""])
-	lines.append("Тип урона: %s" % _c(w.damage_color().darkened(0.45), WeaponItemData.DAMAGE_TYPE_NAMES[w.damage_type]))
+	lines.append(TranslationServer.translate("Тип урона: %s") % _c(w.damage_color().darkened(0.45), TranslationServer.translate(WeaponItemData.DAMAGE_TYPE_NAMES[w.damage_type])))
 	if w.knockback >= 180.0:
-		lines.append(_c(UIStyle.INK_SOFT, "Сильный отброс"))
+		lines.append(_c(UIStyle.INK_SOFT, TranslationServer.translate("Сильный отброс")))
 	for a in w.affixes:
 		var label: String = (a.prefix_forms.get(w.gender, a.prefix_forms.get("m", "")) if a.is_prefix() else a.suffix).capitalize()
 		lines.append(_c(Color(0.45, 0.25, 0.65), "◆ %s: %s" % [label, a.description]))
 	for e in w.on_hit_effects:
 		if e and e.describe() != "":
-			lines.append(_c(UIStyle.GOOD, "• При попадании: " + e.describe()))
+			lines.append(_c(UIStyle.GOOD, TranslationServer.translate("• При попадании: ") + e.describe()))
 	if hero and not hero.class_data.allows_weapon(w):
-		lines.append(_c(UIStyle.BAD, "%s плохо владеет этим оружием: −%d%% урона, −%d%% скорости" % [hero.class_data.display_name,
+		lines.append(_c(UIStyle.BAD, TranslationServer.translate("%s плохо владеет этим оружием: −%d%% урона, −%d%% скорости") % [hero.class_data.display_name,
 				roundi((1.0 - ClassData.WRONG_WEAPON_DAMAGE) * 100), roundi((1.0 - ClassData.WRONG_WEAPON_SPEED) * 100)]))
 	elif hero:
-		lines.append(_c(UIStyle.GOOD, "Подходит классу %s" % hero.class_data.display_name))
+		lines.append(_c(UIStyle.GOOD, TranslationServer.translate("Подходит классу %s") % hero.class_data.display_name))
 	return lines
 
 
@@ -167,19 +167,19 @@ static func skill(skill: SkillData, level: int, hero_points: int) -> String:
 	var lines: Array[String] = []
 	lines.append("[font_size=10][b]%s[/b][/font_size]" % skill.display_name)
 	if skill.is_passive():
-		lines.append(_c(UIStyle.INK_SOFT, "Пассивный · Уровень %d/%d" % [level, skill.max_level]))
+		lines.append(_c(UIStyle.INK_SOFT, TranslationServer.translate("Пассивный · Уровень %d/%d") % [level, skill.max_level]))
 	else:
-		lines.append(_c(UIStyle.INK_SOFT, "Уровень %d/%d · Мана %d · Перезарядка %.1f с" % [level, skill.max_level, skill.mana_cost, skill.cooldown]))
+		lines.append(_c(UIStyle.INK_SOFT, TranslationServer.translate("Уровень %d/%d · Мана %d · Перезарядка %.1f с") % [level, skill.max_level, skill.mana_cost, skill.cooldown]))
 	if skill.description != "":
 		lines.append("[i]%s[/i]" % skill.description)
 	if skill.effect:
 		lines.append(_c(UIStyle.GOOD, "• " + skill.effect.describe(maxi(level, 1))))
 		if level > 0 and level < skill.max_level:
-			lines.append(_c(UIStyle.INK_SOFT, "След. ур.: " + skill.effect.describe(level + 1)))
+			lines.append(_c(UIStyle.INK_SOFT, TranslationServer.translate("След. ур.: ") + skill.effect.describe(level + 1)))
 	if skill.synergy_text() != "":
 		lines.append(_c(Color(0.45, 0.25, 0.65), skill.synergy_text()))
 	if hero_points > 0 and level < skill.max_level:
-		lines.append(_c(UIStyle.GOOD, "Клик — улучшить (очков: %d)" % hero_points))
+		lines.append(_c(UIStyle.GOOD, TranslationServer.translate("Клик — улучшить (очков: %d)") % hero_points))
 	return "\n".join(lines)
 
 
@@ -187,13 +187,13 @@ static func hero_stats(hero: Hero) -> String:
 	var s := hero.stats
 	var lines: Array[String] = []
 	lines.append("[font_size=10][b]%s %s[/b][/font_size]" % [hero.race.display_name, hero.class_data.display_name])
-	lines.append(_c(UIStyle.INK_SOFT, "Уровень %d · Опыт %d/%d · Очки навыков: %d" % [hero.level, hero.xp, hero.xp_to_next(), hero.skills.skill_points]))
+	lines.append(_c(UIStyle.INK_SOFT, TranslationServer.translate("Уровень %d · Опыт %d/%d · Очки навыков: %d") % [hero.level, hero.xp, hero.xp_to_next(), hero.skills.skill_points]))
 	lines.append("")
 	for stat in StatTypes.PRIMARY:
 		lines.append("%s: [b]%s[/b]" % [StatTypes.label(stat), StatTypes.format_value(stat, s.get_value(stat))])
 	lines.append("")
-	lines.append("Здоровье: [b]%d / %d[/b]" % [s.hp, s.max_hp()])
-	lines.append("Мана: [b]%d / %d[/b]" % [s.mana, s.max_mana()])
+	lines.append(TranslationServer.translate("Здоровье: [b]%d / %d[/b]") % [s.hp, s.max_hp()])
+	lines.append(TranslationServer.translate("Мана: [b]%d / %d[/b]") % [s.mana, s.max_mana()])
 	for stat in [StatTypes.DAMAGE, StatTypes.ARMOR, StatTypes.SPEED, StatTypes.CRIT_CHANCE]:
 		lines.append("%s: [b]%s[/b]" % [StatTypes.label(stat), StatTypes.format_value(stat, s.get_value(stat))])
 	var res: Array[String] = []
@@ -209,12 +209,12 @@ static func hero_stats(hero: Hero) -> String:
 	for id in worn:
 		var data: ItemSetData = ItemDatabase.sets.get(id)
 		if data:
-			lines.append(_c(Color(0.75, 0.5, 0.05), "Комплект «%s»: %d/%d" % [data.display_name, worn[id], data.items.size()]))
+			lines.append(_c(Color(0.75, 0.5, 0.05), TranslationServer.translate("Комплект «%s»: %d/%d") % [data.display_name, worn[id], data.items.size()]))
 	var relic_names: Array[String] = []
 	for r in hero.relics():
 		relic_names.append(r.display_name)
 	if not relic_names.is_empty():
-		lines.append(_c(UIStyle.INK_SOFT, "Реликвии: " + ", ".join(relic_names)))
+		lines.append(_c(UIStyle.INK_SOFT, TranslationServer.translate("Реликвии: ") + ", ".join(relic_names)))
 	lines.append("")
-	lines.append(_c(UIStyle.INK_SOFT, "Этаж %d · Убито врагов: %d" % [GameState.floor_number, GameState.kills]))
+	lines.append(_c(UIStyle.INK_SOFT, TranslationServer.translate("Этаж %d · Убито врагов: %d") % [GameState.floor_number, GameState.kills]))
 	return "\n".join(lines)

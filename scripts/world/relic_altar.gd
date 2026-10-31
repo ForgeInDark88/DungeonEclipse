@@ -68,7 +68,7 @@ func can_interact() -> bool:
 
 
 func get_prompt() -> String:
-	return "Алтарь реликвий: выбрать одну" if not used else "Алтарь угас"
+	return tr("Алтарь реликвий: выбрать одну") if not used else tr("Алтарь угас")
 
 
 func interact(player: Node) -> void:
@@ -81,12 +81,12 @@ func interact(player: Node) -> void:
 
 func _take(r: RelicItemData, player: Player) -> void:
 	if player == null or player.hero.inventory.add_item(r, 1) > 0:
-		EventBus.message.emit("Рюкзак полон — освободите место для реликвии")
+		EventBus.message.emit(tr("Рюкзак полон — освободите место для реликвии"))
 		return
 	used = true
 	remove_from_group("interactable")
 	EventBus.item_collected.emit(r, global_position + Vector2(0, -20))
-	EventBus.message.emit("Реликвия: «%s»" % r.display_name)
+	EventBus.message.emit(tr("Реликвия: «%s»") % r.display_name)
 	AudioManager.play_ui(&"pickup_epic")
 	Fx.sparks(get_parent(), global_position + Vector2(0, -20), r.rarity_color(), 24, 110.0)
 	var tw := create_tween()

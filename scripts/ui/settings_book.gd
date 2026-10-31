@@ -47,25 +47,25 @@ func _build() -> void:
 	right.add_theme_constant_override("separation", 3)
 	_root.add_child(right)
 
-	left.add_child(UIStyle.label("Настройки", 12))
-	for entry in [["Общая", "master_volume"], ["Музыка", "music_volume"], ["Звуки", "sfx_volume"], ["Интерфейс", "ui_volume"]]:
+	left.add_child(UIStyle.label(tr("Настройки"), 12))
+	for entry in [[tr("Общая"), "master_volume"], [tr("Музыка"), "music_volume"], [tr("Звуки"), "sfx_volume"], [tr("Интерфейс"), "ui_volume"]]:
 		left.add_child(_volume_row(entry[0], entry[1]))
-	left.add_child(_slider_row("Яркость", "brightness", 0.6, 1.5))
-	left.add_child(_slider_row("Размер панели", "hud_scale", 0.6, 1.0))
-	_fullscreen = _check("Полный экран", SaveManager.fullscreen, func(on: bool) -> void:
+	left.add_child(_slider_row(tr("Яркость"), "brightness", 0.6, 1.5))
+	left.add_child(_slider_row(tr("Размер панели"), "hud_scale", 0.6, 1.0))
+	_fullscreen = _check(tr("Полный экран"), SaveManager.fullscreen, func(on: bool) -> void:
 		SaveManager.fullscreen = on
 		SaveManager.apply_settings())
 	left.add_child(_fullscreen)
 	# switches two per row, the page stays inside the book
 	var checks := [
-		_check("Свечение", SaveManager.bloom, func(on: bool) -> void:
+		_check(tr("Свечение"), SaveManager.bloom, func(on: bool) -> void:
 			SaveManager.bloom = on
 			get_tree().call_group("graphics_listeners", "apply_graphics")),
-		_check("Тени блоков", SaveManager.block_shadows, func(on: bool) -> void:
+		_check(tr("Тени блоков"), SaveManager.block_shadows, func(on: bool) -> void:
 			SaveManager.block_shadows = on
 			get_tree().call_group("graphics_listeners", "apply_graphics")),
-		_check("Числа урона", SaveManager.show_damage_numbers, func(on: bool) -> void: SaveManager.show_damage_numbers = on),
-		_check("Подсказки", SaveManager.show_hints, func(on: bool) -> void: SaveManager.show_hints = on),
+		_check(tr("Числа урона"), SaveManager.show_damage_numbers, func(on: bool) -> void: SaveManager.show_damage_numbers = on),
+		_check(tr("Подсказки"), SaveManager.show_hints, func(on: bool) -> void: SaveManager.show_hints = on),
 	]
 	for k in range(0, checks.size(), 2):
 		var row := HBoxContainer.new()
@@ -74,18 +74,26 @@ func _build() -> void:
 			c.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			row.add_child(c)
 		left.add_child(row)
-	left.add_child(BookPageScreen.button("Показать подсказки заново", func() -> void:
+	var extra := HBoxContainer.new()
+	extra.add_theme_constant_override("separation", 3)
+	var hints := BookPageScreen.button(tr("Подсказки заново"), func() -> void:
 		SaveManager.seen_hints.clear()
 		SaveManager.save_settings()
-		_status.text = "Подсказки будут показаны снова"))
+		_status.text = tr("Подсказки будут показаны снова"))
+	hints.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	extra.add_child(hints)
+	var lang := BookPageScreen.button("%s: %s" % [tr("Язык"), Localizer.LANGUAGES[Localizer.lang]], _next_language)
+	lang.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	extra.add_child(lang)
+	left.add_child(extra)
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	left.add_child(spacer)
-	var done := BookPageScreen.button("Готово", close)
+	var done := BookPageScreen.button(tr("Готово"), close)
 	left.add_child(done)
 
-	right.add_child(UIStyle.label("Управление", 12))
-	_status = UIStyle.label("Клик по клавише — переназначить. Геймпад работает всегда.", 6, UIStyle.INK_SOFT)
+	right.add_child(UIStyle.label(tr("Управление"), 12))
+	_status = UIStyle.label(tr("Клик по клавише — переназначить. Геймпад работает всегда."), 6, UIStyle.INK_SOFT)
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_status.custom_minimum_size = Vector2(page.x, 0)
 	right.add_child(_status)
@@ -99,7 +107,7 @@ func _build() -> void:
 	scroll.add_child(list)
 	for entry in InputBindings.REBINDABLE:
 		var row := HBoxContainer.new()
-		var l := UIStyle.label(entry[1], 7)
+		var l := UIStyle.label(tr(entry[1]), 7)
 		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(l)
 		var action: String = entry[0]
@@ -112,13 +120,28 @@ func _build() -> void:
 		row.add_child(gap)
 		list.add_child(row)
 		_bind_buttons[action] = b
-	right.add_child(BookPageScreen.button("Клавиши по умолчанию", func() -> void:
+	right.add_child(BookPageScreen.button(tr("Клавиши по умолчанию"), func() -> void:
 		InputBindings.reset_all()
 		SaveManager.save_settings()
 		_refresh_bindings()
-		_status.text = "Клавиши сброшены"))
+		_status.text = tr("Клавиши сброшены")))
 	_refresh_bindings()
 	done.grab_focus()
+
+
+## Switches to the next language and rebuilds the book in it.
+func _next_language() -> void:
+	var codes: Array = Localizer.LANGUAGES.keys()
+	var code: String = codes[(codes.find(Localizer.lang) + 1) % codes.size()]
+	Localizer.set_language(code)
+	AudioManager.play_ui(&"ui_click")
+	for c in get_children():
+		remove_child(c)
+		c.queue_free()
+	_bind_buttons.clear()
+	_build()
+	if get_tree().current_scene and get_tree().current_scene.scene_file_path != GameState.MAIN_MENU:
+		_status.text = tr("Часть надписей сменит язык после возврата в меню")
 
 
 func _volume_row(text: String, property: String) -> Control:
@@ -173,7 +196,7 @@ func _start_capture(action: String) -> void:
 	_waiting_action = action
 	_refresh_bindings()
 	(_bind_buttons[action] as Button).text = "..."
-	_status.text = "Нажмите клавишу или кнопку мыши (Esc — отмена)"
+	_status.text = tr("Нажмите клавишу или кнопку мыши (Esc — отмена)")
 
 
 func _input(event: InputEvent) -> void:
@@ -188,7 +211,7 @@ func _input(event: InputEvent) -> void:
 		return
 	get_viewport().set_input_as_handled()
 	if key and key.physical_keycode == KEY_ESCAPE:
-		_status.text = "Отменено"
+		_status.text = tr("Отменено")
 	else:
 		var ev: InputEvent
 		if key:
@@ -213,7 +236,7 @@ func rebind(action: String, ev: InputEvent) -> void:
 func _label_of(action: String) -> String:
 	for entry in InputBindings.REBINDABLE:
 		if entry[0] == action:
-			return entry[1]
+			return tr(entry[1])
 	return action
 
 

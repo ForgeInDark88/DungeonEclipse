@@ -61,8 +61,8 @@ func allows_weapon(w: WeaponItemData) -> bool:
 
 func allowed_weapons_text() -> String:
 	if allowed_weapon_types.is_empty():
-		return "любое"
+		return tr("любое")
 	var names: Array[String] = []
 	for t in allowed_weapon_types:
-		names.append(String(WeaponItemData.WEAPON_TYPE_NAMES[t]).to_lower())
+		names.append(TranslationServer.translate(WeaponItemData.WEAPON_TYPE_NAMES[t]).to_lower())
 	return ", ".join(names)

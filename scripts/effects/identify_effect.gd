@@ -7,11 +7,11 @@ func apply(user: Node) -> bool:
 	var hero: Hero = user.hero
 	var names := Identify.all(hero)
 	if names.is_empty():
-		EventBus.message.emit("Опознавать нечего")
+		EventBus.message.emit(tr("Опознавать нечего"))
 		return false
-	EventBus.message.emit("Опознано: %s" % ", ".join(names))
+	EventBus.message.emit(tr("Опознано: %s") % ", ".join(names))
 	return true
 
 
 func describe() -> String:
-	return "Опознаёт все неопознанные предметы в рюкзаке."
+	return tr("Опознаёт все неопознанные предметы в рюкзаке.")

@@ -51,7 +51,7 @@ static func mystify(item: ItemData, floor_number: int, rng: RandomNumberGenerato
 		item = item.make_instance()
 	item.stat_bonuses = item.stat_bonuses.duplicate()
 	item.real_name = item.display_name
-	item.display_name = "Неопознанный предмет (%s)" % item.subtitle()
+	item.display_name = TranslationServer.translate("Неопознанный предмет (%s)") % item.subtitle()
 	item.unidentified = true
 	if rng.randf() < CURSED_CHANCE:
 		var stat: String = StatTypes.PRIMARY[rng.randi() % StatTypes.PRIMARY.size()]
@@ -103,12 +103,19 @@ static func _roll_affixes(w: WeaponItemData, floor_number: int, rng: RandomNumbe
 	w.display_name = compose_name(w.template.display_name if w.template else w.display_name, w.gender, prefix, suffix)
 
 
+## Russian lower-cases the first letter of a name after an adjective
+## («Огненный меч»); English keeps title case ("Fiery Sword").
+static func after_adjective(base: String) -> String:
+	if TranslationServer.get_locale().begins_with("ru"):
+		return base.left(1).to_lower() + base.substr(1)
+	return base
+
+
 static func compose_name(base: String, gender: String, prefix: AffixData, suffix: AffixData) -> String:
 	var name := base
 	if prefix:
 		var adj: String = prefix.prefix_forms.get(gender, prefix.prefix_forms.get("m", ""))
-		# Lower-case the first letter of the base name after an adjective.
-		name = "%s %s" % [adj, base.left(1).to_lower() + base.substr(1)]
+		name = "%s %s" % [adj, after_adjective(base)]
 	if suffix:
 		name += " " + suffix.suffix
 	return name

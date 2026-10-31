@@ -56,9 +56,9 @@ func execute(caster: Node, level: int) -> bool:
 
 func describe(level: int) -> String:
 	var n := count + (int((level - 1) / extra_every_levels) if extra_every_levels > 0 else 0)
-	var text := "%d снаряд(а), урон %d%%" % [n, roundi((damage_multiplier + damage_per_level * (level - 1)) * 100)]
+	var text := tr("%d снаряд(а), урон %d%%") % [n, roundi((damage_multiplier + damage_per_level * (level - 1)) * 100)]
 	if blast_radius > 0.0:
-		text += ", взрыв"
+		text += tr(", взрыв")
 	if pierce > 0:
-		text += ", пробивает %d" % pierce
+		text += tr(", пробивает %d") % pierce
 	return text

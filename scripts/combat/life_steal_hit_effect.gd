@@ -20,4 +20,4 @@ func on_hit(attacker: Node, _target: Node, damage: int) -> void:
 
 
 func describe() -> String:
-	return "Кража жизни %d%%%s" % [roundi(percent * 100.0), _chance_text()]
+	return tr("Кража жизни %d%%%s") % [roundi(percent * 100.0), _chance_text()]

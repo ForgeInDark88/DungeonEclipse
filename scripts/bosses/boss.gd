@@ -232,7 +232,7 @@ func _check_phase() -> void:
 	# Enrage: the last stand - faster cadence, heavier contact, red haze.
 	if not _enraged and ratio <= ENRAGE_THRESHOLD and ratio > 0.0:
 		_enraged = true
-		_banner(display_name(), "в ярости!", Color(1.0, 0.3, 0.2))
+		_banner(display_name(), tr("в ярости!"), Color(1.0, 0.3, 0.2))
 		EventBus.screen_shake.emit(8.0)
 		Fx.sparks(get_parent(), global_position + Vector2(0, -24), Color(1.0, 0.25, 0.15), 40, 180.0)
 		data_tint_override(Color(1.0, 0.55, 0.5))
@@ -744,7 +744,7 @@ func _phase_roar(message: String, tint: Color) -> void:
 	_net_boss_fx(&"shield", global_position, Vector2.ZERO, tint, [PHASE_LOCK])
 	_enter(Act.RECOVER, PHASE_LOCK)
 	_fade_beam()
-	_banner(boss.display_name, message if message != "" else "Новая фаза!", tint)
+	_banner(boss.display_name, message if message != "" else tr("Новая фаза!"), tint)
 	AudioManager.play_sfx(&"boss_roar", global_position)
 	EventBus.screen_shake.emit(9.0)
 	_net_shake(9.0)
@@ -1015,11 +1015,11 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 			_start_intro()
 		if randf() < 0.35:
 			var spot := global_position + Vector2(0, -data.collision_size.y - 6)
-			EventBus.floating_text.emit(spot, "Неуязвим", Color(0.8, 0.85, 1.0))
+			EventBus.floating_text.emit(spot, tr("Неуязвим"), Color(0.8, 0.85, 1.0))
 			if Net.active and Net.is_host:
 				var ns = get_tree().get_first_node_in_group("net_game")
 				if ns:
-					ns.enemy_float_text.rpc(spot, "Неуязвим", Color(0.8, 0.85, 1.0))
+					ns.enemy_float_text.rpc(spot, "Неуязвим", Color(0.8, 0.85, 1.0))  # i18n-src
 		_shield_flash()
 		return
 	# Bosses are not knocked around or interrupted by hits.
@@ -1050,7 +1050,7 @@ func _die() -> void:
 	# Bosses pay a skill point: the risk buys progress in the tree.
 	if GameState.hero and GameState.run_active:
 		GameState.hero.skills.add_points(1)
-		EventBus.message.emit("%s повержен: +1 очко навыка" % boss.title)
+		EventBus.message.emit(tr("%s повержен: +1 очко навыка") % boss.title)
 	EventBus.screen_shake.emit(10.0)
 	Fx.explosion(get_parent(), global_position + Vector2(0, -20), 60.0, Color(1.0, 0.7, 0.3))
 	if boss.defeat_line != "":

@@ -19,26 +19,26 @@ var _find_left := FIND_TIME
 func _ready() -> void:
 	build_book(Vector2(560, 300))
 	AudioManager.play_music(&"menu")
-	left_page.add_child(UIStyle.label("Присоединиться (LAN)", 11))
+	left_page.add_child(UIStyle.label(tr("Присоединиться (LAN)"), 11))
 	var name_row := HBoxContainer.new()
 	name_row.add_theme_constant_override("separation", 6)
-	name_row.add_child(UIStyle.label("Ник:", 8))
+	name_row.add_child(UIStyle.label(tr("Ник:"), 8))
 	_name_edit = LineEdit.new()
 	_name_edit.text = SaveManager.last_name
-	_name_edit.placeholder_text = "Ваш ник"
+	_name_edit.placeholder_text = tr("Ваш ник")
 	_name_edit.custom_minimum_size = Vector2(140, 0)
 	_name_edit.max_length = 16
 	name_row.add_child(_name_edit)
 	left_page.add_child(name_row)
-	left_page.add_child(UIStyle.label("Игры в сети:", 9, UIStyle.INK_SOFT))
+	left_page.add_child(UIStyle.label(tr("Игры в сети:"), 9, UIStyle.INK_SOFT))
 	_servers = ItemList.new()
 	_servers.custom_minimum_size = Vector2(230, 90)
 	_servers.add_theme_font_size_override("font_size", 8)
 	left_page.add_child(_servers)
-	_status = UIStyle.label("Ищем хостов...", 8)
+	_status = UIStyle.label(tr("Ищем хостов..."), 8)
 	left_page.add_child(_status)
 
-	right_page.add_child(UIStyle.label("Ваш герой", 10))
+	right_page.add_child(UIStyle.label(tr("Ваш герой"), 10))
 	var race_row := HBoxContainer.new()
 	right_page.add_child(race_row)
 	var race_group := ButtonGroup.new()
@@ -62,8 +62,8 @@ func _ready() -> void:
 	var sex_row := HBoxContainer.new()
 	right_page.add_child(sex_row)
 	var sex_group := ButtonGroup.new()
-	var male := _toggle("Мужчина", sex_group)
-	var female := _toggle("Женщина", sex_group)
+	var male := _toggle(tr("Мужчина"), sex_group)
+	var female := _toggle(tr("Женщина"), sex_group)
 	male.button_pressed = true
 	female.pressed.connect(func() -> void: _female = true)
 	sex_row.add_child(male)
@@ -75,11 +75,11 @@ func _ready() -> void:
 		_class_buttons[0].button_pressed = true
 		_cls = ItemDatabase.classes[0]
 
-	right_page.add_child(BookPageScreen.button("Подключиться", _join))
-	right_page.add_child(BookPageScreen.button("Обновить список", func() -> void:
+	right_page.add_child(BookPageScreen.button(tr("Подключиться"), _join))
+	right_page.add_child(BookPageScreen.button(tr("Обновить список"), func() -> void:
 		Net.start_discovery(true)
 		_find_left = FIND_TIME))
-	right_page.add_child(BookPageScreen.button("Назад", func() -> void:
+	right_page.add_child(BookPageScreen.button(tr("Назад"), func() -> void:
 		Net.start_discovery(false)
 		Net.leave()
 		get_tree().change_scene_to_file(GameState.MAIN_MENU)))
@@ -101,24 +101,24 @@ func _process(delta: float) -> void:
 func _refresh_servers() -> void:
 	_servers.clear()
 	for s in Net.discovered():
-		_servers.add_item("Хост: %s — игроков: %d" % [s["names"], s["count"]])
+		_servers.add_item(tr("Хост: %s — игроков: %d") % [s["names"], s["count"]])
 	if _servers.item_count == 0:
-		_status.text = "Игр не найдено. Хост должен нажать «Создать игру»."
+		_status.text = tr("Игр не найдено. Хост должен нажать «Создать игру».")
 
 
 func _join() -> void:
 	if _servers.item_count == 0:
-		_status.text = "Сначала найдите игру в списке"
+		_status.text = tr("Сначала найдите игру в списке")
 		return
 	var picked := _servers.get_selected_items()
 	var idx := picked[0] if not picked.is_empty() else 0
 	var ip: String = Net.discovered()[idx]["ip"]
 	SaveManager.last_name = _name_edit.text.strip_edges()
 	SaveManager.save_settings()
-	Net.my_info = {"name": SaveManager.last_name if SaveManager.last_name != "" else "Гость",
+	Net.my_info = {"name": SaveManager.last_name if SaveManager.last_name != "" else tr("Гость"),
 			"race": _race.id, "cls": _cls.id, "female": _female}
 	if not Net.join_game(ip):
-		_status.text = "Не удалось подключиться"
+		_status.text = tr("Не удалось подключиться")
 
 
 func _toggle(text: String, group: ButtonGroup) -> Button:
@@ -136,5 +136,5 @@ func _exit_tree() -> void:
 
 
 func _on_net_connected() -> void:
-	_status.text = "Подключено! Ждём, пока хост начнёт забег..."
+	_status.text = tr("Подключено! Ждём, пока хост начнёт забег...")
 	AudioManager.play_ui(&"ui_book_open")

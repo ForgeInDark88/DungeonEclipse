@@ -98,13 +98,13 @@ func _ring(p: Player, center: Enemy, dmg: int, color: Color, dtype: int, sound: 
 func describe() -> String:
 	match kind:
 		Kind.TOLL:
-			return "Каждый %d-й удар звенит: урон %d%% и оглушение вокруг цели" % [every, roundi(power * 100)]
+			return tr("Каждый %d-й удар звенит: урон %d%% и оглушение вокруг цели") % [every, roundi(power * 100)]
 		Kind.MIRROR:
-			return "Отражение повторяет удар (%d%% урона)%s" % [roundi(power * 100), _chance_text()]
+			return tr("Отражение повторяет удар (%d%% урона)%s") % [roundi(power * 100), _chance_text()]
 		Kind.EMBER:
-			return "Искра: огненное кольцо вокруг цели (%d%% урона, поджог)%s" % [roundi(power * 100), _chance_text()]
+			return tr("Искра: огненное кольцо вокруг цели (%d%% урона, поджог)%s") % [roundi(power * 100), _chance_text()]
 		Kind.HEART:
-			return "Каждый %d-й удар: кристаллы вокруг цели (%d%%) и лечение 6%%" % [every, roundi(power * 100)]
+			return tr("Каждый %d-й удар: кристаллы вокруг цели (%d%%) и лечение 6%%") % [every, roundi(power * 100)]
 		Kind.GRAVE:
-			return "Враг при смерти (≤30%% HP) — из могилы под ним встаёт скелет (до %d)" % cap
+			return tr("Враг при смерти (≤30%% HP) — из могилы под ним встаёт скелет (до %d)") % cap
 	return ""

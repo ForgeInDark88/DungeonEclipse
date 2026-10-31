@@ -113,7 +113,7 @@ func pull(lever: Node, player: Node) -> void:
 		if progress == order.size():
 			_solve()
 	else:
-		EventBus.message.emit("Руны вспыхивают — не тот порядок!")
+		EventBus.message.emit(tr("Руны вспыхивают — не тот порядок!"))
 		AudioManager.play_sfx(&"chest_locked", lever.global_position)
 		player.take_damage(5, lever.global_position, WeaponItemData.DamageType.MAGIC)
 		progress = 0
@@ -137,7 +137,7 @@ func net_apply(prog: int, solved_: bool) -> void:
 func _solve() -> void:
 	solved = true
 	chest.sealed = false
-	EventBus.message.emit("Барьер рассеивается!")
+	EventBus.message.emit(tr("Барьер рассеивается!"))
 	AudioManager.play_sfx(&"portal", global_position)
 	Fx.sparks(get_parent(), global_position + Vector2(0, -16), Color(0.7, 0.5, 1.0), 30, 100.0)
 	var tw := create_tween()

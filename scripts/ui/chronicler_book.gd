@@ -23,7 +23,7 @@ static func chapters() -> Array[Dictionary]:
 		if not notes.is_empty():
 			out.append({"id": b.id, "title": b.display_name, "notes": notes, "reward": BIOME_REWARD})
 	var guards := ItemDatabase.lore.filter(func(n: LoreData) -> bool: return n.boss != &"")
-	out.append({"id": &"guardians", "title": "Стражи Затмения", "notes": guards, "reward": GUARDIAN_REWARD})
+	out.append({"id": &"guardians", "title": TranslationServer.translate("Стражи Затмения"), "notes": guards, "reward": GUARDIAN_REWARD})
 	return out
 
 
@@ -87,7 +87,7 @@ func _build() -> void:
 	box.size = SIZE - Vector2(48, 36)
 	box.add_theme_constant_override("separation", 3)
 	root.add_child(box)
-	var title := UIStyle.label("Летопись Аурелии", 12)
+	var title := UIStyle.label(tr("Летопись Аурелии"), 12)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 	_words = UIStyle.label("", 8, UIStyle.INK_SOFT)
@@ -102,7 +102,7 @@ func _build() -> void:
 	_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_list.add_theme_constant_override("separation", 2)
 	scroll.add_child(_list)
-	var close_b := BookPageScreen.button("Закрыть", close)
+	var close_b := BookPageScreen.button(tr("Закрыть"), close)
 	close_b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	box.add_child(close_b)
 	close_b.grab_focus()
@@ -127,9 +127,9 @@ func _refresh() -> void:
 		row.add_child(UIStyle.label("%d / %d" % [have, need], 8, UIStyle.GOOD if have == need else UIStyle.INK_SOFT))
 		var reward: Dictionary = ch["reward"]
 		if Codex.is_chapter_claimed(ch["id"]):
-			row.add_child(UIStyle.label("получено", 7, UIStyle.GOOD))
+			row.add_child(UIStyle.label(tr("получено"), 7, UIStyle.GOOD))
 		else:
-			var b := BookPageScreen.button("+%d оск., +%d з." % [reward["shards"], reward["gold"]], func() -> void: _claim(ch))
+			var b := BookPageScreen.button(tr("+%d оск., +%d з.") % [reward["shards"], reward["gold"]], func() -> void: _claim(ch))
 			b.add_theme_font_size_override("font_size", 7)
 			b.disabled = have < need
 			row.add_child(b)
@@ -140,12 +140,12 @@ func _refresh() -> void:
 func _speech(total: int, guards_done: bool) -> String:
 	var all := ItemDatabase.lore.size()
 	if total == 0:
-		return "Внизу остались слова тех, кто видел, как падало солнце. Принеси мне их — я соберу историю, пока её не съела тьма."
+		return tr("Внизу остались слова тех, кто видел, как падало солнце. Принеси мне их — я соберу историю, пока её не съела тьма.")
 	if guards_done:
-		return "Ты знаешь, кем были стражи. Могильщик, чародейка, шут, камень, колокол... Когда встанешь перед солнцем — вспомни их. Может быть, свет можно не разбить, а вернуть."
+		return tr("Ты знаешь, кем были стражи. Могильщик, чародейка, шут, камень, колокол... Когда встанешь перед солнцем — вспомни их. Может быть, свет можно не разбить, а вернуть.")
 	if total >= all / 2:
-		return "Половина летописи уже здесь (%d из %d). Ищи записки стражей на их аренах — без них конец этой истории не дописать." % [total, all]
-	return "Записей: %d из %d. Каждая страница — чья-то последняя ночь. Неси ещё." % [total, all]
+		return tr("Половина летописи уже здесь (%d из %d). Ищи записки стражей на их аренах — без них конец этой истории не дописать.") % [total, all]
+	return tr("Записей: %d из %d. Каждая страница — чья-то последняя ночь. Неси ещё.") % [total, all]
 
 
 func _claim(ch: Dictionary) -> void:
@@ -158,5 +158,5 @@ func _claim(ch: Dictionary) -> void:
 	MetaProgress.save_progress()
 	MetaProgress.changed.emit()
 	AudioManager.play_ui(&"coin")
-	EventBus.message.emit("Глава «%s» записана: +%d осколков, +%d золота в Святилище" % [ch["title"], r["shards"], r["gold"]])
+	EventBus.message.emit(tr("Глава «%s» записана: +%d осколков, +%d золота в Святилище") % [ch["title"], r["shards"], r["gold"]])
 	_refresh()

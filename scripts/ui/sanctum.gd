@@ -14,7 +14,7 @@ func _ready() -> void:
 	left_page.add_theme_constant_override("separation", 3)
 	right_page.add_theme_constant_override("separation", 3)
 
-	left_page.add_child(UIStyle.label("Святилище Затмения", 12))
+	left_page.add_child(UIStyle.label(tr("Святилище Затмения"), 12))
 	var cur_row := HBoxContainer.new()
 	cur_row.add_child(_icon(AssetPaths.tex(AssetPaths.ECLIPSE_SHARD_ICON)))
 	_currency = UIStyle.label("", 9)
@@ -29,19 +29,19 @@ func _ready() -> void:
 	_upgrade_list.add_theme_constant_override("separation", 2)
 	scroll.add_child(_upgrade_list)
 
-	right_page.add_child(UIStyle.label("Открытия", 11))
+	right_page.add_child(UIStyle.label(tr("Открытия"), 11))
 	_unlock_list = VBoxContainer.new()
 	_unlock_list.add_theme_constant_override("separation", 2)
 	right_page.add_child(_unlock_list)
 	_info = UIStyle.label("", 7, UIStyle.INK_SOFT)
 	_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_info.custom_minimum_size = Vector2(240, 0)
-	_info.text = "Осколки Затмения падают с элитных монстров и стражей. Печати Стража стоят 5 осколков. После забега осколки из рюкзака, глубина и четверть собранного золота уходят сюда."
+	_info.text = tr("Осколки Затмения падают с элитных монстров и стражей. Печати Стража стоят 5 осколков. После забега осколки из рюкзака, глубина и четверть собранного золота уходят сюда.")
 	right_page.add_child(_info)
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	right_page.add_child(spacer)
-	var back := BookPageScreen.button("Назад", func() -> void: get_tree().change_scene_to_file(GameState.MAIN_MENU))
+	var back := BookPageScreen.button(tr("Назад"), func() -> void: get_tree().change_scene_to_file(GameState.MAIN_MENU))
 	right_page.add_child(back)
 
 	MetaProgress.changed.connect(_refresh)
@@ -50,7 +50,7 @@ func _ready() -> void:
 
 
 func _refresh() -> void:
-	_currency.text = "%d осколков   ·   %d золота в казне" % [MetaProgress.shards, MetaProgress.gold]
+	_currency.text = tr("%d осколков   ·   %d золота в казне") % [MetaProgress.shards, MetaProgress.gold]
 	for c in _upgrade_list.get_children():
 		c.queue_free()
 	for up in MetaProgress.upgrades:
@@ -60,14 +60,14 @@ func _refresh() -> void:
 	var any := false
 	for r in ItemDatabase.races:
 		if r.unlock_shards > 0 or r.unlock_gold > 0:
-			_unlock_list.add_child(_unlock_row(r, "Раса"))
+			_unlock_list.add_child(_unlock_row(r, tr("Раса")))
 			any = true
 	for c in ItemDatabase.classes:
 		if c.unlock_shards > 0 or c.unlock_gold > 0:
-			_unlock_list.add_child(_unlock_row(c, "Класс"))
+			_unlock_list.add_child(_unlock_row(c, tr("Класс")))
 			any = true
 	if not any:
-		_unlock_list.add_child(UIStyle.label("Всё уже доступно", 7, UIStyle.INK_SOFT))
+		_unlock_list.add_child(UIStyle.label(tr("Всё уже доступно"), 7, UIStyle.INK_SOFT))
 
 
 func _upgrade_row(up: MetaUpgradeData) -> Control:
@@ -80,11 +80,11 @@ func _upgrade_row(up: MetaUpgradeData) -> Control:
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	text.add_child(UIStyle.label("%s  %d/%d" % [up.display_name, lv, up.max_level], 8))
 	var eff := up.describe(maxi(lv, 1))
-	text.add_child(UIStyle.label(("Сейчас: " if lv > 0 else "Ур.1: ") + eff, 6, UIStyle.INK_SOFT))
+	text.add_child(UIStyle.label((tr("Сейчас: ") if lv > 0 else tr("Ур.1: ")) + eff, 6, UIStyle.INK_SOFT))
 	row.add_child(text)
 	var b: Button
 	if lv >= up.max_level:
-		b = BookPageScreen.button("Макс.", func() -> void: pass)
+		b = BookPageScreen.button(tr("Макс."), func() -> void: pass)
 		b.disabled = true
 	else:
 		var sc := up.shard_cost(lv + 1)
@@ -93,7 +93,7 @@ func _upgrade_row(up: MetaUpgradeData) -> Control:
 		b.disabled = not MetaProgress.can_afford(sc, gc)
 	b.add_theme_font_size_override("font_size", 7)
 	b.custom_minimum_size = Vector2(62, 0)
-	b.mouse_entered.connect(func() -> void: _info.text = "%s\n%s\nСледующий уровень: %s" % [
+	b.mouse_entered.connect(func() -> void: _info.text = tr("%s\n%s\nСледующий уровень: %s") % [
 		up.display_name, up.description, up.describe(mini(lv + 1, up.max_level))])
 	row.add_child(b)
 	return row
@@ -109,7 +109,7 @@ func _unlock_row(what: Resource, kind: String) -> Control:
 	row.add_child(l)
 	var b: Button
 	if done:
-		b = BookPageScreen.button("Открыто", func() -> void: pass)
+		b = BookPageScreen.button(tr("Открыто"), func() -> void: pass)
 		b.disabled = true
 	else:
 		b = BookPageScreen.button(_price(what.unlock_shards, what.unlock_gold), func() -> void: _buy(MetaProgress.unlock(what)))
@@ -128,10 +128,10 @@ func _buy(ok: bool) -> void:
 func _price(shards: int, gold: int) -> String:
 	var parts: Array[String] = []
 	if shards > 0:
-		parts.append("%d оск." % shards)
+		parts.append(tr("%d оск.") % shards)
 	if gold > 0:
-		parts.append("%d з." % gold)
-	return " + ".join(parts) if not parts.is_empty() else "Даром"
+		parts.append(tr("%d з.") % gold)
+	return " + ".join(parts) if not parts.is_empty() else tr("Даром")
 
 
 func _icon(tex: Texture2D) -> TextureRect:

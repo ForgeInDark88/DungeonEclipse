@@ -24,7 +24,7 @@ var active := false            # a network session exists (host or client)
 var is_host := false
 var players := {}              # peer_id -> {"name", "race", "cls", "female"}
 ## Race/class ids each peer picked, stored until the run starts.
-var my_info := {"name": "Игрок", "race": &"human", "cls": &"warrior", "female": false}
+var my_info := {"name": tr("Игрок"), "race": &"human", "cls": &"warrior", "female": false}
 
 var _udp := PacketPeerUDP.new()
 var _udp_open := false
@@ -132,7 +132,7 @@ func register_player(info: Dictionary) -> void:
 	players[id] = info
 	broadcast_players()
 	player_joined.emit(info)
-	EventBus.message.emit("%s присоединился" % info.get("name", "Игрок"))
+	EventBus.message.emit(tr("%s присоединился") % info.get("name", tr("Игрок")))
 
 
 ## Host: keep everyone's player list in sync.
@@ -242,7 +242,7 @@ func _on_peer_connected(id: int) -> void:
 
 func _on_peer_disconnected(id: int) -> void:
 	if is_host and players.has(id):
-		EventBus.message.emit("%s вышел" % players[id].get("name", "Игрок"))
+		EventBus.message.emit(tr("%s вышел") % players[id].get("name", tr("Игрок")))
 		players.erase(id)
 		broadcast_players()
 		player_left.emit(id)
@@ -256,10 +256,10 @@ func _on_connected() -> void:
 
 func _on_connect_failed() -> void:
 	leave()
-	EventBus.message.emit("Не удалось подключиться")
+	EventBus.message.emit(tr("Не удалось подключиться"))
 
 
 func _on_server_disconnected() -> void:
-	leave("Хост покинул игру")
+	leave(tr("Хост покинул игру"))
 	get_tree().paused = false
 	get_tree().change_scene_to_file(GameState.MAIN_MENU)

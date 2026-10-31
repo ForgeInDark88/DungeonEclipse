@@ -41,14 +41,14 @@ func _ready() -> void:
 
 func refresh() -> void:
 	var p := item.buy_price()
-	_price.text = "%d з." % p
+	_price.text = tr("%d з.") % p
 	_price.add_theme_color_override("font_color", UIStyle.INK if hero.gold >= p else UIStyle.BAD)
 
 
 func _tip() -> void:
 	var p := item.buy_price()
 	var col := UIStyle.GOOD_HEX if hero.gold >= p else UIStyle.BAD_HEX
-	Tooltip.show_text(TooltipText.item(item, hero) + "\n[color=%s]Купить за %d з. (клик)[/color]" % [col, p], self)
+	Tooltip.show_text(TooltipText.item(item, hero) + tr("\n[color=%s]Купить за %d з. (клик)[/color]") % [col, p], self)
 
 
 func _gui_input(event: InputEvent) -> void:

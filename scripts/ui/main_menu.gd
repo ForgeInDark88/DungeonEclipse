@@ -35,17 +35,17 @@ func _ready() -> void:
 	tw.parallel().tween_property(title, "modulate", Color(1.12, 1.05, 1.25), 1.6).set_trans(Tween.TRANS_SINE)
 	tw.tween_property(glow, "modulate:a", 0.35, 1.6).set_trans(Tween.TRANS_SINE)
 	tw.parallel().tween_property(title, "modulate", Color.WHITE, 1.6).set_trans(Tween.TRANS_SINE)
-	var sub := UIStyle.label("Рогалик в тёмном подземелье", 8, UIStyle.INK_SOFT)
+	var sub := UIStyle.label(tr("Рогалик в тёмном подземелье"), 8, UIStyle.INK_SOFT)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	left_page.add_child(sub)
 	left_page.add_child(_spacer(14))
-	var meta := UIStyle.label("Лучший этаж: %d\nЗабегов: %d\nВсего убито: %d" % [SaveManager.best_floor, SaveManager.total_runs, SaveManager.total_kills], 8)
+	var meta := UIStyle.label(tr("Лучший этаж: %d\nЗабегов: %d\nВсего убито: %d") % [SaveManager.best_floor, SaveManager.total_runs, SaveManager.total_kills], 8)
 	meta.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	left_page.add_child(meta)
 	var fill := Control.new()
 	fill.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	left_page.add_child(fill)
-	var version := UIStyle.label("Версия %s" % ProjectSettings.get_setting("application/config/version", "1.0 release"), 7, UIStyle.INK_SOFT)
+	var version := UIStyle.label(tr("Версия %s") % ProjectSettings.get_setting("application/config/version", "1.0 release"), 7, UIStyle.INK_SOFT)
 	version.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	left_page.add_child(version)
 
@@ -54,30 +54,30 @@ func _ready() -> void:
 	var cont: Button = null
 	if SaveManager.has_run():
 		var d := SaveManager.run_data()
-		cont = BookPageScreen.button("Продолжить — %s, ур. %d, этаж %d" % [d.get("class_name", "?"), int(d.get("hero_level", 1)), int(d.get("floor", 1))],
+		cont = BookPageScreen.button(tr("Продолжить — %s, ур. %d, этаж %d") % [d.get("class_name", "?"), int(d.get("hero_level", 1)), int(d.get("floor", 1))],
 			func() -> void:
 				if not GameState.continue_run():
 					get_tree().change_scene_to_file(GameState.CHARACTER_CREATION))
 		right_page.add_child(cont)
-	var start := BookPageScreen.button("Новый забег", func() -> void: get_tree().change_scene_to_file(GameState.CHARACTER_CREATION))
+	var start := BookPageScreen.button(tr("Новый забег"), func() -> void: get_tree().change_scene_to_file(GameState.CHARACTER_CREATION))
 	right_page.add_child(start)
-	right_page.add_child(BookPageScreen.button("Игра по сети (хост)", func() -> void: get_tree().change_scene_to_file("res://scenes/ui/net_host.tscn")))
-	right_page.add_child(BookPageScreen.button("Присоединиться (LAN)", func() -> void: get_tree().change_scene_to_file("res://scenes/ui/net_join.tscn")))
-	right_page.add_child(BookPageScreen.button("Святилище Затмения (%d оск.)" % MetaProgress.shards,
+	right_page.add_child(BookPageScreen.button(tr("Игра по сети (хост)"), func() -> void: get_tree().change_scene_to_file("res://scenes/ui/net_host.tscn")))
+	right_page.add_child(BookPageScreen.button(tr("Присоединиться (LAN)"), func() -> void: get_tree().change_scene_to_file("res://scenes/ui/net_join.tscn")))
+	right_page.add_child(BookPageScreen.button(tr("Святилище Затмения (%d оск.)") % MetaProgress.shards,
 		func() -> void: get_tree().change_scene_to_file(GameState.SANCTUM)))
-	right_page.add_child(BookPageScreen.button("Летопись (%d/%d)" % [Codex.achieved.size(), Codex.achievements.size()],
+	right_page.add_child(BookPageScreen.button(tr("Летопись (%d/%d)") % [Codex.achieved.size(), Codex.achievements.size()],
 		func() -> void: get_tree().change_scene_to_file(GameState.CODEX)))
-	right_page.add_child(BookPageScreen.button("Настройки", open_settings))
+	right_page.add_child(BookPageScreen.button(tr("Настройки"), open_settings))
 	# two small buttons on one row: the page holds a «Continue» line too
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 4)
-	for entry in [["Как играть", func() -> void: add_child(InfoBook.how_to_play())],
-			["Авторы", func() -> void: add_child(InfoBook.credits())]]:
+	for entry in [[tr("Как играть"), func() -> void: add_child(InfoBook.how_to_play())],
+			[tr("Авторы"), func() -> void: add_child(InfoBook.credits())]]:
 		var b := BookPageScreen.button(entry[0], entry[1])
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(b)
 	right_page.add_child(row)
-	right_page.add_child(BookPageScreen.button("Выход", func() -> void: get_tree().quit()))
+	right_page.add_child(BookPageScreen.button(tr("Выход"), func() -> void: get_tree().quit()))
 	if cont:
 		cont.grab_focus()
 	else:
@@ -87,6 +87,11 @@ func _ready() -> void:
 func open_settings() -> SettingsBook:
 	var sb := SettingsBook.new()
 	add_child(sb)
+	var lang := Localizer.lang
+	# a new language: the menu is rebuilt in it
+	sb.closed.connect(func() -> void:
+		if Localizer.lang != lang:
+			get_tree().reload_current_scene.call_deferred())
 	return sb
 
 

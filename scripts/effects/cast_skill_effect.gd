@@ -12,4 +12,4 @@ func apply(user: Node) -> bool:
 
 
 func describe() -> String:
-	return "Заклинание: " + (skill_effect.describe(level) if skill_effect else "")
+	return tr("Заклинание: ") + (skill_effect.describe(level) if skill_effect else "")

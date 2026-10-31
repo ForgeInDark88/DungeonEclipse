@@ -211,7 +211,7 @@ func set_seal_kills(kills: int) -> void:
 func _seal_progress() -> void:
 	_emit_seal()
 	if not is_sealed():
-		EventBus.message.emit("Печать снята! Выход открыт.")
+		EventBus.message.emit(tr("Печать снята! Выход открыт."))
 		AudioManager.play_sfx(&"portal")
 
 
@@ -284,7 +284,7 @@ func _on_boss_defeated(_boss: BossData, _pos: Vector2) -> void:
 		if altar_cell.x >= 0:
 			add_entity(RelicAltar.new(), cell_bottom(altar_cell))
 	Fx.sparks(entities, cell_bottom(layout.exit_cell) + Vector2(0, -16), Color(0.7, 0.4, 1.0), 30, 120.0)
-	EventBus.message.emit("Затмение рассеяно! Свет возвращается в подземелья." if _boss.final else "Страж повержен! Открылся проход.")
+	EventBus.message.emit(tr("Затмение рассеяно! Свет возвращается в подземелья.") if _boss.final else tr("Страж повержен! Открылся проход."))
 
 
 ## Deterministic 0..3 variant per cell.
@@ -421,7 +421,7 @@ func _physics_process(delta: float) -> void:
 	if _nav_timer <= 0.0:
 		_nav_dirty = false
 		nav.update_area(_nav_area)
-		AIDebug.log_event(self, "nav", "граф навигации обновлён (v%d)" % nav.version)
+		AIDebug.log_event(self, "nav", tr("граф навигации обновлён (v%d)") % nav.version)
 
 
 func _mark_nav_dirty(cell: Vector2i) -> void:
@@ -1205,7 +1205,7 @@ class SecretCrack extends Node2D:
 		_t += delta
 		if level == null or level.layout.get_tile(cell.x, cell.y) != LevelLayout.Tile.BRICK:
 			if first and level != null:
-				EventBus.message.emit("Открыт тайный проход!")
+				EventBus.message.emit(tr("Открыт тайный проход!"))
 				AudioManager.play_sfx(&"chest_open", global_position)
 			queue_free()
 			return

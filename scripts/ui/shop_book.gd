@@ -74,7 +74,7 @@ func _build() -> void:
 	_left.size = Vector2(page_w, BOOK_SIZE.y - MARGIN * 2)
 	_left.add_theme_constant_override("separation", 3)
 	root.add_child(_left)
-	var title := UIStyle.label("Лавка странствующего торговца", 10)
+	var title := UIStyle.label(tr("Лавка странствующего торговца"), 10)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_left.add_child(title)
 	_gold = UIStyle.label("", 8, UIStyle.INK)
@@ -104,7 +104,7 @@ func _build() -> void:
 	_sell_junk = BookPageScreen.button("", _sell_all_junk)
 	_sell_junk.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_left.add_child(_sell_junk)
-	var close_btn := BookPageScreen.button("Уйти", close)
+	var close_btn := BookPageScreen.button(tr("Уйти"), close)
 	close_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_left.add_child(close_btn)
 
@@ -112,7 +112,7 @@ func _build() -> void:
 	right.position = Vector2(BOOK_SIZE.x / 2.0 + 6, MARGIN)
 	right.size = Vector2(page_w, BOOK_SIZE.y - MARGIN * 2)
 	root.add_child(right)
-	var rt := UIStyle.label("Рюкзак — ПКМ: продать", 10)
+	var rt := UIStyle.label(tr("Рюкзак — ПКМ: продать"), 10)
 	rt.size = Vector2(page_w, 14)
 	rt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	right.add_child(rt)
@@ -154,7 +154,7 @@ func _refresh_inventory() -> void:
 			var st := hero.inventory.stack_at(i)
 			n += st.count
 			total += st.item.sell_price() * st.count
-		_sell_junk.text = "Продать мусор: %d шт. (+%d з.)" % [n, total] if n > 0 else "Мусор: Ctrl+ЛКМ по предмету"
+		_sell_junk.text = tr("Продать мусор: %d шт. (+%d з.)") % [n, total] if n > 0 else tr("Мусор: Ctrl+ЛКМ по предмету")
 		_sell_junk.disabled = n == 0
 
 
@@ -170,21 +170,21 @@ func _sell_all_junk() -> void:
 
 
 func _on_gold(gold: int) -> void:
-	_gold.text = "Ваше золото: %d" % gold
+	_gold.text = tr("Ваше золото: %d") % gold
 	for s in _goods.get_children():
 		if s is ShopSlot and not s.is_queued_for_deletion():
 			s.refresh()
 	var rc := Merchant.repair_cost(hero)
-	_repair.text = "Починить всё — %d з." % rc if rc > 0 else "Ремонт не нужен"
+	_repair.text = tr("Починить всё — %d з.") % rc if rc > 0 else tr("Ремонт не нужен")
 	_repair.disabled = rc <= 0 or hero.gold < rc
 	var hc := Merchant.heal_cost(hero)
-	_heal.text = "Вылечить — %d з." % hc if hc > 0 else "Вы здоровы"
+	_heal.text = tr("Вылечить — %d з.") % hc if hc > 0 else tr("Вы здоровы")
 	_heal.disabled = hc <= 0 or hero.gold < hc
 	var ic := Identify.unidentified_count(hero) * Identify.IDENTIFY_PRICE
-	_identify.text = "Опознать всё — %d з." % ic if ic > 0 else "Опознавать нечего"
+	_identify.text = tr("Опознать всё — %d з.") % ic if ic > 0 else tr("Опознавать нечего")
 	_identify.disabled = ic <= 0 or hero.gold < ic
 	var uc := Identify.cursed_count(hero) * Identify.UNCURSE_PRICE
-	_uncurse.text = "Снять проклятия — %d з." % uc if uc > 0 else "Проклятий нет"
+	_uncurse.text = tr("Снять проклятия — %d з.") % uc if uc > 0 else tr("Проклятий нет")
 	_uncurse.disabled = uc <= 0 or hero.gold < uc
 
 
@@ -194,11 +194,11 @@ func buy(index: int) -> void:
 	var item := merchant.stock[index]
 	var price := item.buy_price()
 	if hero.gold < price:
-		EventBus.message.emit("Не хватает золота")
+		EventBus.message.emit(tr("Не хватает золота"))
 		AudioManager.play_ui(&"chest_locked")
 		return
 	if hero.inventory.free_space_for(item) <= 0:
-		EventBus.message.emit("Рюкзак полон")
+		EventBus.message.emit(tr("Рюкзак полон"))
 		return
 	if Net.active and not Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
@@ -221,7 +221,7 @@ func complete_network_purchase(item_dict: Dictionary) -> void:
 	if item == null or hero == null or merchant == null:
 		return
 	if hero.gold < item.buy_price() or hero.inventory.free_space_for(item) <= 0:
-		EventBus.message.emit("Покупка не удалась: изменились условия")
+		EventBus.message.emit(tr("Покупка не удалась: изменились условия"))
 		return
 	_complete_purchase(item)
 
@@ -265,7 +265,7 @@ func sell(index: int) -> void:
 	if not echoes_back:
 		_refresh_goods()
 	AudioManager.play_ui(&"coin")
-	EventBus.message.emit("Продано: %s (+%d з.)" % [item.display_name, price])
+	EventBus.message.emit(tr("Продано: %s (+%d з.)") % [item.display_name, price])
 
 
 func _do_repair() -> void:
@@ -283,7 +283,7 @@ func _do_identify() -> void:
 	var cost := Identify.unidentified_count(hero) * Identify.IDENTIFY_PRICE
 	if cost <= 0 or not hero.spend_gold(cost):
 		return
-	EventBus.message.emit("Опознано: %s" % ", ".join(Identify.all(hero)))
+	EventBus.message.emit(tr("Опознано: %s") % ", ".join(Identify.all(hero)))
 	_on_gold(hero.gold)
 
 
@@ -291,7 +291,7 @@ func _do_uncurse() -> void:
 	var cost := Identify.cursed_count(hero) * Identify.UNCURSE_PRICE
 	if cost <= 0 or not hero.spend_gold(cost):
 		return
-	EventBus.message.emit("Проклятия сняты: %d" % Identify.lift_curses(hero))
+	EventBus.message.emit(tr("Проклятия сняты: %d") % Identify.lift_curses(hero))
 	_on_gold(hero.gold)
 
 

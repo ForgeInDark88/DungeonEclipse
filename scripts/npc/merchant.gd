@@ -86,7 +86,7 @@ func offer_key_at(index: int) -> String:
 
 
 func get_prompt() -> String:
-	return "Торговать"
+	return tr("Торговать")
 
 
 func interact(player: Node) -> void:

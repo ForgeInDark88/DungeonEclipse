@@ -56,7 +56,7 @@ func _build(offers: Array[RelicItemData]) -> void:
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 6)
 	add_child(box)
-	var title := UIStyle.outlined_label("Алтарь реликвий — возьмите одну", 11, UIStyle.GOLD)
+	var title := UIStyle.outlined_label(tr("Алтарь реликвий — возьмите одну"), 11, UIStyle.GOLD)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 	var row := HBoxContainer.new()
@@ -69,7 +69,7 @@ func _build(offers: Array[RelicItemData]) -> void:
 		row.add_child(card)
 		if first == null:
 			first = card.get_meta("button")
-	var later := BookPageScreen.button("Позже", close)
+	var later := BookPageScreen.button(tr("Позже"), close)
 	later.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	box.add_child(later)
 	var sz := box.get_combined_minimum_size()
@@ -107,7 +107,7 @@ func _card(r: RelicItemData) -> Control:
 	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	text.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	v.add_child(text)
-	var pick := BookPageScreen.button("Взять", func() -> void:
+	var pick := BookPageScreen.button(tr("Взять"), func() -> void:
 		var cb := _on_pick
 		close()
 		cb.call(r))

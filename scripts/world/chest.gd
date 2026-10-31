@@ -60,8 +60,8 @@ func can_interact() -> bool:
 
 func get_prompt() -> String:
 	if locked:
-		return "Открыть ключом (%s)" % TIER_NAMES[tier]
-	return "Открыть: %s" % TIER_NAMES[tier]
+		return tr("Открыть ключом (%s)") % tr(TIER_NAMES[tier])
+	return tr("Открыть: %s") % tr(TIER_NAMES[tier])
 
 
 func interact(player: Node) -> void:
@@ -70,7 +70,7 @@ func interact(player: Node) -> void:
 	if Net.active and not Net.is_host:
 		var has_key: bool = not locked or player.hero.inventory.count_of(&"key") > 0
 		if locked and not has_key:
-			EventBus.message.emit("Сундук заперт. Нужен ключ.")
+			EventBus.message.emit(tr("Сундук заперт. Нужен ключ."))
 			AudioManager.play_sfx(&"chest_locked", global_position)
 			_shake()
 			return
@@ -81,7 +81,7 @@ func interact(player: Node) -> void:
 	if locked:
 		var hero: Hero = player.hero
 		if hero.inventory.remove_by_id(&"key", 1) == 0:
-			EventBus.message.emit("Сундук заперт. Нужен ключ.")
+			EventBus.message.emit(tr("Сундук заперт. Нужен ключ."))
 			AudioManager.play_sfx(&"chest_locked", global_position)
 			_shake()
 			return
@@ -91,7 +91,7 @@ func interact(player: Node) -> void:
 
 func unlock() -> void:
 	locked = false
-	EventBus.message.emit("Замок открыт")
+	EventBus.message.emit(tr("Замок открыт"))
 
 
 func open(opener_peer: int = 1, consume_key := false) -> void:
@@ -119,7 +119,7 @@ func open(opener_peer: int = 1, consume_key := false) -> void:
 
 func _wake_mimic(opener_peer: int, consume_key: bool) -> void:
 	opened = true
-	EventBus.message.emit("Это мимик!")
+	EventBus.message.emit(tr("Это мимик!"))
 	AudioManager.play_sfx(&"chest_locked", global_position)
 	EventBus.screen_shake.emit(3.0)
 	Fx.sparks(get_parent(), global_position + Vector2(0, -8), Color(0.9, 0.3, 0.3), 12, 90.0)

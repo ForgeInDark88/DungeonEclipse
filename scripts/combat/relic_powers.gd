@@ -80,15 +80,15 @@ func damage_mult() -> float:
 	if _echo_ready:
 		_echo_ready = false
 		m *= 2.0
-		_pop("Эхо!", Color(0.7, 0.85, 1.0))
+		_pop(tr("Эхо!"), Color(0.7, 0.85, 1.0))
 	if _momentum:
 		_momentum = false
 		_run_time = 0.0
 		m *= _a(&"momentum_boots", 2.0)
-		_pop("Разгон!", Color(1.0, 0.8, 0.4))
+		_pop(tr("Разгон!"), Color(1.0, 0.8, 0.4))
 	if has(&"lucky_clover") and randf() < _a(&"lucky_clover", 0.1):
 		m *= 3.0
-		_pop("Удача!", Color(0.5, 1.0, 0.5))
+		_pop(tr("Удача!"), Color(0.5, 1.0, 0.5))
 	return m
 
 
@@ -104,7 +104,7 @@ func on_hit(enemy: Enemy, dmg: int) -> void:
 		_heal(maxi(1, roundi(dmg * _a(&"vampire_fang", 0.08))), false)
 	if has(&"executioner_mark") and not enemy.is_dead() and float(enemy.hp) / maxf(1.0, enemy.max_hp) <= _a(&"executioner_mark", 0.25):
 		Fx.sparks(enemy.get_parent(), pos, Color(1.0, 0.25, 0.25), 10, 90.0)
-		_pop("Казнь!", Color(1.0, 0.3, 0.3), enemy.global_position)
+		_pop(tr("Казнь!"), Color(1.0, 0.3, 0.3), enemy.global_position)
 		enemy.take_damage(dmg, true, player.global_position, 0)
 	if has(&"frost_core") and not enemy.is_dead():
 		if _hits % 6 == 0:
@@ -166,7 +166,7 @@ func on_skill() -> void:
 ## True: this hit misses the hero completely (mirror shard).
 func dodge() -> bool:
 	if has(&"mirror_shard") and randf() < _a(&"mirror_shard", 0.15):
-		_pop("Мимо!", Color(0.8, 0.85, 1.0))
+		_pop(tr("Мимо!"), Color(0.8, 0.85, 1.0))
 		Fx.sparks(player.get_parent(), player.global_position + Vector2(0, -14), Color(0.85, 0.9, 1.0), 8, 70.0)
 		return true
 	return false
@@ -223,7 +223,7 @@ func _process(delta: float) -> void:
 			_aegis_t = _a(&"holy_aegis", 12.0)
 			if not player.status.has(&"shield"):
 				player.status.apply(&"shield", 30.0, roundi(player.hero.stats.max_hp() * _b(&"holy_aegis", 0.15)))
-				_pop("Эгида", Color(1.0, 0.95, 0.6))
+				_pop(tr("Эгида"), Color(1.0, 0.95, 0.6))
 	if _trail_t > 0.0:
 		_trail_t -= delta
 		_trail_tick -= delta
@@ -309,7 +309,7 @@ func _phantom() -> void:
 func _apply_drum() -> void:
 	player.hero.attack_speed_mult = 1.0 + 0.08 * _drum
 	if _drum > 0:
-		_pop("Барабан ×%d" % _drum, Color(1.0, 0.6, 0.3))
+		_pop(tr("Барабан ×%d") % _drum, Color(1.0, 0.6, 0.3))
 
 
 func _status(e: Enemy, id: StringName, dur: float, power: float) -> void:

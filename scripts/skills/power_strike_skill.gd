@@ -26,4 +26,4 @@ func execute(caster: Node, level: int) -> bool:
 
 
 func describe(level: int) -> String:
-	return "Сокрушающий удар: урон %d%%, ломает кирпич перед героем" % roundi((damage_multiplier + damage_per_level * (level - 1)) * 100)
+	return tr("Сокрушающий удар: урон %d%%, ломает кирпич перед героем") % roundi((damage_multiplier + damage_per_level * (level - 1)) * 100)

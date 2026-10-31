@@ -28,7 +28,7 @@ func _ready() -> void:
 	left_page.add_theme_constant_override("separation", 3)
 	right_page.add_theme_constant_override("separation", 3)
 
-	left_page.add_child(UIStyle.label("Раса", 11))
+	left_page.add_child(UIStyle.label(tr("Раса"), 11))
 	var race_row := HFlowContainer.new()
 	race_row.add_theme_constant_override("v_separation", 2)
 	left_page.add_child(race_row)
@@ -42,7 +42,7 @@ func _ready() -> void:
 	_race_desc.custom_minimum_size = Vector2(0, 58)
 	left_page.add_child(_race_desc)
 
-	left_page.add_child(UIStyle.label("Класс", 11))
+	left_page.add_child(UIStyle.label(tr("Класс"), 11))
 	var class_row := HFlowContainer.new()
 	class_row.add_theme_constant_override("v_separation", 2)
 	left_page.add_child(class_row)
@@ -72,8 +72,8 @@ func _ready() -> void:
 	sex_row.add_theme_constant_override("separation", 4)
 	head_text.add_child(sex_row)
 	var sex_group := ButtonGroup.new()
-	var male := _toggle("Мужчина", sex_group, func() -> void: _select_sex(false))
-	var female := _toggle("Женщина", sex_group, func() -> void: _select_sex(true))
+	var male := _toggle(tr("Мужчина"), sex_group, func() -> void: _select_sex(false))
+	var female := _toggle(tr("Женщина"), sex_group, func() -> void: _select_sex(true))
 	for b in [male, female]:
 		b.add_theme_font_size_override("font_size", 8)
 		sex_row.add_child(b)
@@ -81,10 +81,10 @@ func _ready() -> void:
 	_stats_label = UIStyle.label("", 7)
 	head_text.add_child(_stats_label)
 
-	right_page.add_child(UIStyle.label("Навыки", 9, UIStyle.INK_SOFT))
+	right_page.add_child(UIStyle.label(tr("Навыки"), 9, UIStyle.INK_SOFT))
 	_skills_row = HBoxContainer.new()
 	right_page.add_child(_skills_row)
-	right_page.add_child(UIStyle.label("Стартовые предметы", 9, UIStyle.INK_SOFT))
+	right_page.add_child(UIStyle.label(tr("Стартовые предметы"), 9, UIStyle.INK_SOFT))
 	_items_row = HFlowContainer.new()
 	_items_row.add_theme_constant_override("h_separation", 1)
 	_items_row.add_theme_constant_override("v_separation", 1)
@@ -99,8 +99,8 @@ func _ready() -> void:
 	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
 	buttons.add_theme_constant_override("separation", 8)
 	right_page.add_child(buttons)
-	buttons.add_child(BookPageScreen.button("Назад", func() -> void: get_tree().change_scene_to_file(GameState.MAIN_MENU)))
-	var go := BookPageScreen.button("В подземелье!", func() -> void:
+	buttons.add_child(BookPageScreen.button(tr("Назад"), func() -> void: get_tree().change_scene_to_file(GameState.MAIN_MENU)))
+	var go := BookPageScreen.button(tr("В подземелье!"), func() -> void:
 		SaveManager.last_difficulty = String(_difficulty.id) if _difficulty else "normal"
 		SaveManager.save_settings()
 		# Co-op: puppets build this hero from Net.my_info.
@@ -132,7 +132,7 @@ func _build_difficulty_row() -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 3)
 	right_page.add_child(row)
-	row.add_child(UIStyle.label("Сложность", 9, UIStyle.INK_SOFT))
+	row.add_child(UIStyle.label(tr("Сложность"), 9, UIStyle.INK_SOFT))
 	var group := ButtonGroup.new()
 	var last := ItemDatabase.difficulty(StringName(SaveManager.last_difficulty))
 	for d in ItemDatabase.difficulties:
@@ -157,7 +157,7 @@ func _build_eclipse_row() -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 3)
 	right_page.add_child(row)
-	row.add_child(UIStyle.label("Затмение", 9, UIStyle.INK_SOFT))
+	row.add_child(UIStyle.label(tr("Затмение"), 9, UIStyle.INK_SOFT))
 	var minus := BookPageScreen.button("−", func() -> void: _set_eclipse(_eclipse - 1))
 	minus.add_theme_font_size_override("font_size", 8)
 	row.add_child(minus)
@@ -173,7 +173,7 @@ func _build_eclipse_row() -> void:
 
 func _set_eclipse(level: int) -> void:
 	_eclipse = clampi(level, 0, MetaProgress.eclipse_unlocked)
-	_eclipse_label.text = "%d · %s" % [_eclipse, EclipseLevels.level_name(_eclipse)] if _eclipse > 0 else "нет"
+	_eclipse_label.text = "%d · %s" % [_eclipse, EclipseLevels.level_name(_eclipse)] if _eclipse > 0 else tr("нет")
 	# the whole list of trials in the tooltip; the page keeps the reward
 	_eclipse_label.tooltip_text = EclipseLevels.describe(_eclipse)
 	_eclipse_label.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -192,7 +192,7 @@ func _lock_if_needed(b: Button, what: Resource) -> void:
 	if MetaProgress.is_unlocked(what):
 		return
 	b.disabled = true
-	b.tooltip_text = "Открывается в Святилище Затмения"
+	b.tooltip_text = tr("Открывается в Святилище Затмения")
 	b.modulate = Color(1, 1, 1, 0.55)
 
 
@@ -222,7 +222,7 @@ func _bonus_text(bonuses: Dictionary) -> String:
 
 func _select_race(r: RaceData) -> void:
 	_race = r
-	_race_desc.text = "%s\nБонусы: %s" % [r.description, _bonus_text(r.stat_bonuses)]
+	_race_desc.text = tr("%s\nБонусы: %s") % [r.description, _bonus_text(r.stat_bonuses)]
 	_refresh_preview()
 
 
@@ -254,7 +254,7 @@ func _refresh_preview() -> void:
 	var lines: Array[String] = []
 	for stat in StatTypes.PRIMARY:
 		lines.append("%s: %s" % [StatTypes.label(stat), StatTypes.format_value(stat, s.get_value(stat))])
-	lines.append("HP %d · Мана %d · Урон %d" % [s.max_hp(), s.max_mana(), roundi(s.damage())])
+	lines.append(tr("HP %d · Мана %d · Урон %d") % [s.max_hp(), s.max_mana(), roundi(s.damage())])
 	_stats_label.text = "\n".join(lines)
 
 	for child in _skills_row.get_children():
@@ -268,7 +268,7 @@ func _refresh_preview() -> void:
 		_skills_row.add_child(_icon_with_tip(skill.icon, TooltipText.skill(skill, 1, 0), 20))
 		shown += 1
 	if not _class.branch_names.is_empty():
-		_skills_row.add_child(UIStyle.label("+%d в ветвях: %s" % [_class.skills.size() - shown, ", ".join(_class.branch_names)], 6, UIStyle.INK_SOFT))
+		_skills_row.add_child(UIStyle.label(tr("+%d в ветвях: %s") % [_class.skills.size() - shown, ", ".join(_class.branch_names)], 6, UIStyle.INK_SOFT))
 	for child in _items_row.get_children():
 		child.queue_free()
 	for id: StringName in _class.starting_items:

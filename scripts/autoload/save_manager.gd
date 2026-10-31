@@ -26,6 +26,8 @@ var hud_scale: float = 1.0
 ## Graphics (Settings): bloom glow of bright pixels, block shadows on the back wall.
 var bloom: bool = true
 var block_shadows: bool = true
+## Language (Localizer): "ru", "en"; "" = pick by the system language.
+var language: String = ""
 var show_damage_numbers: bool = true
 var show_hints: bool = true
 ## Difficulty picked last time in hero creation (DifficultyData.id).
@@ -63,6 +65,7 @@ func load_settings() -> void:
 	bloom = cfg.get_value("video", "bloom", bloom)
 	block_shadows = cfg.get_value("video", "block_shadows", block_shadows)
 	show_damage_numbers = cfg.get_value("game", "damage_numbers", show_damage_numbers)
+	language = cfg.get_value("game", "language", language)
 	show_hints = cfg.get_value("game", "hints", show_hints)
 	seen_hints = cfg.get_value("game", "seen_hints", [])
 	last_difficulty = cfg.get_value("game", "difficulty", last_difficulty)
@@ -83,6 +86,7 @@ func save_settings() -> void:
 	cfg.set_value("video", "bloom", bloom)
 	cfg.set_value("video", "block_shadows", block_shadows)
 	cfg.set_value("game", "damage_numbers", show_damage_numbers)
+	cfg.set_value("game", "language", language)
 	cfg.set_value("game", "hints", show_hints)
 	cfg.set_value("game", "seen_hints", seen_hints)
 	cfg.set_value("game", "difficulty", last_difficulty)
