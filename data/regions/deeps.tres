@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RegionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/region_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"deeps"
+display_name = "Затопленные глубины"
+description = "Пепел, кристаллы и чёрная вода, в которой звонит колокол."
+order = 2
+biomes = Array[StringName]([&"ashen_halls", &"crystal_depths", &"drowned_vaults"])
+depth_from = 16
+depth_to = 25
+steps_min = 7
+steps_max = 8
+boss = &"drowned_bell"
+lair_bosses = Array[StringName]([&"crystal_titan"])
+color = Color(0.2, 0.35, 0.55, 1)

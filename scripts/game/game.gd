@@ -128,7 +128,11 @@ func _load_floor() -> void:
 	_sync_pet()
 	for b in get_tree().get_nodes_in_group("bosses"):
 		AudioManager.play_music((b as Boss).boss.music)
-	if GameState.is_town():
+	if GameState.is_town() and GameState.expedition:
+		EventBus.message.emit(tr("%s. Ворота похода — в конце улицы.") % biome.display_name)
+	elif GameState.expedition:
+		EventBus.message.emit(_location_title())
+	elif GameState.is_town():
 		EventBus.message.emit(tr("%s. Вход в подземелье — в конце улицы.") % biome.display_name)
 	elif GameState.is_boss_floor():
 		EventBus.message.emit(tr("Этаж %d — логово стража!") % floor_number)
@@ -138,7 +142,7 @@ func _load_floor() -> void:
 
 	# Between-floors save: the snapshot must be taken with the floor freshly
 	# built (it regenerates from the seed on continue, loot included).
-	if GameState.run_active and not player.dead \
+	if GameState.run_active and not player.dead and not GameState.expedition \
 			and not (GameState.floor_number == GameState.TOWN_FLOOR and GameState.town_return_floor > 0) \
 			and not Net.active:
 		# A mid-run visit to town keeps the snapshot of the floor the hero
@@ -146,6 +150,17 @@ func _load_floor() -> void:
 		# (In co-op the host's save is the only one; taken outside this branch.)
 		if Net.is_host:
 			SaveManager.save_run()
+
+
+## «Глубина 7 — Логово элиты · Руины» for the location banner.
+func _location_title() -> String:
+	var type := GameState.location_type()
+	var name := ExpeditionMap.type_name(type)
+	var sub := StringName(GameState.location.get("sub", &""))
+	if sub != &"":
+		name = tr(ExpeditionMap.SPECIAL_NAMES.get(sub, String(sub)))
+	var biome := GameState.current_biome()
+	return tr("Глубина %d — %s · %s") % [GameState.depth(), name, biome.display_name if biome else ""]
 
 
 ## The pet of the run follows the hero (one at a time, re-placed every floor).
@@ -242,7 +257,12 @@ func _toggle_pause() -> void:
 		_toggle_pause()
 		skill_tree.open())
 	overlay.add_button(tr("В главное меню"), func() -> void: GameState.go_to_menu())
-	overlay.add_text(tr("(забег продолжится с начала этажа)"), 7)
+	if GameState.expedition and not GameState.is_town():
+		overlay.add_text(tr("(выход посреди похода — поход провален)"), 7)
+	elif GameState.expedition:
+		overlay.add_text(tr("(город сохраняется)"), 7)
+	else:
+		overlay.add_text(tr("(забег продолжится с начала этажа)"), 7)
 	# Esc resumes: handled by the overlay (ALWAYS), the game tree itself pauses.
 	overlay.on_pause_key = _toggle_pause
 	overlay.visible = true
@@ -353,6 +373,9 @@ func _on_player_died() -> void:
 	book.close()
 	skill_tree.close()
 	await get_tree().create_timer(1.2).timeout
+	if GameState.expedition:
+		GameFlow.hero_died()  # the result screen tells what was lost
+		return
 	var hero := GameState.hero
 	get_tree().paused = true
 	var stats := GameState.run_stats.duplicate()
@@ -413,13 +436,14 @@ func _on_eclipse_defeated() -> void:
 		var gk := Codex.guardians_known()
 		if not stats.get("secret_ending", false):
 			overlay.add_text(tr("Летописец говорил о другом пути... (записи стражей: %d из %d)") % [gk.x, gk.y], 6)
-	var finish := overlay.add_button(tr("Завершить забег"), _finish_victory)
+	var finish := overlay.add_button(tr("Завершить поход") if GameState.expedition else tr("Завершить забег"), _finish_victory)
 	if not Codex.knows_all_guardians():
 		finish.grab_focus()
-	overlay.add_button(tr("Спуститься глубже (бесконечный режим)"), func() -> void:
-		get_tree().paused = false
-		overlay.visible = false
-		EventBus.message.emit(tr("Глубины зовут дальше. Награда за победу сохранится.")))
+	if not GameState.expedition:
+		overlay.add_button(tr("Спуститься глубже (бесконечный режим)"), func() -> void:
+			get_tree().paused = false
+			overlay.visible = false
+			EventBus.message.emit(tr("Глубины зовут дальше. Награда за победу сохранится.")))
 	overlay.visible = true
 
 
@@ -435,14 +459,18 @@ func _secret_ending() -> void:
 		overlay.set_panel_size(Vector2(340, 150))
 		overlay.add_text(tr("Рассвет над Аурелией"), 13)
 		overlay.add_text(tr("Награда за тайную концовку: +%d осколков.") % MetaProgress.SHARDS_SECRET, 7)
-		overlay.add_button(tr("Завершить забег"), _finish_victory).grab_focus()
-		overlay.add_button(tr("Спуститься глубже (бесконечный режим)"), func() -> void:
-			get_tree().paused = false
-			overlay.visible = false)
+		overlay.add_button(tr("Завершить поход") if GameState.expedition else tr("Завершить забег"), _finish_victory).grab_focus()
+		if not GameState.expedition:
+			overlay.add_button(tr("Спуститься глубже (бесконечный режим)"), func() -> void:
+				get_tree().paused = false
+				overlay.visible = false)
 		overlay.visible = true)
 
 
 func _finish_victory() -> void:
+	if GameState.expedition:
+		GameFlow.location_cleared()  # the last guardian: the road ends in victory
+		return
 	var reward := GameState.end_run()
 	overlay.clear()
 	overlay.set_panel_size(Vector2(340, 150))

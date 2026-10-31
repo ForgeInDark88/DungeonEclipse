@@ -29,6 +29,8 @@ func _ready() -> void:
 
 
 func get_prompt() -> String:
+	if GameState.expedition:
+		return tr("Городские ворота: отправиться в поход")
 	if GameState.town_return_floor > 0:
 		return tr("Спуститься на этаж %d") % GameState.town_return_floor
 	return tr("Спуститься в подземелье")
@@ -36,6 +38,9 @@ func get_prompt() -> String:
 
 func interact(_player: Node) -> void:
 	AudioManager.play_sfx(&"portal")
+	if GameState.expedition:
+		GameFlow.open_map()
+		return
 	if Net.active and not Net.is_host:
 		# Co-op: only the host moves the party.
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync

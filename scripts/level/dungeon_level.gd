@@ -699,6 +699,8 @@ func _spawn_lore() -> void:
 
 ## Stairs back to town near the floor entrance (every normal floor).
 func _spawn_return_stairs() -> void:
+	if GameState.expedition:
+		return  # an expedition goes home through a camp or after a guardian
 	var cell := _free_cell_near(layout.start_cell)
 	if cell.x < 0:
 		return

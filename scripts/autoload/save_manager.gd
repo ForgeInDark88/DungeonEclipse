@@ -9,6 +9,13 @@ signal settings_changed
 const SETTINGS_PATH := "user://settings.cfg"
 const META_PATH := "user://meta.cfg"
 const RUN_PATH := "user://run.cfg"
+## The town between expeditions (TownState + the hero): GameFlow.
+const TOWN_PATH := "user://town.save"
+## Format of the town save. Bump it when TownState changes shape and add the
+## step to migrate_town(); a save of a newer game is never half-loaded.
+const TOWN_FORMAT := 1
+## Where the town is saved (tests point it at a scratch file).
+var town_path := TOWN_PATH
 ## Format of the meta save (sanctum, codex, records). Bump it when a section
 ## changes shape and add the step to migrate_meta(); older files are
 ## upgraded on load, files of a newer game are left untouched.
@@ -176,6 +183,57 @@ func migrate_meta(cfg: ConfigFile) -> void:
 		if not cfg.has_section_key("sanctum", "eclipse_unlocked"):
 			cfg.set_value("sanctum", "eclipse_unlocked", 0)
 	cfg.set_value("save", "format", META_FORMAT)
+
+
+# -------------------------------------------------------------- town save
+func has_town() -> bool:
+	return FileAccess.file_exists(town_path) or FileAccess.file_exists(town_path + ".bak")
+
+
+## Writes the town (a ConfigFile: types of every value survive the trip).
+func save_town(town: TownState) -> Error:
+	if town == null:
+		return ERR_INVALID_PARAMETER
+	var cfg := ConfigFile.new()
+	cfg.set_value("save", "format", TOWN_FORMAT)
+	cfg.set_value("save", "version", ProjectSettings.get_setting("application/config/version", ""))
+	cfg.set_value("town", "data", town.to_dict())
+	return write_cfg(cfg, town_path)
+
+
+## The saved town, or null when there is none, it cannot be read (the
+## backup copy is tried first) or it comes from a newer game.
+func load_town() -> TownState:
+	# The main file first, then its backup: each must parse AND carry a
+	# known format (ConfigFile can "load" garbage as an empty file).
+	for path in [town_path, town_path + ".bak"]:
+		if not FileAccess.file_exists(path):
+			continue
+		var cfg := ConfigFile.new()
+		if cfg.load(path) != OK:
+			continue
+		var fmt: Variant = cfg.get_value("save", "format", 0)
+		var d: Variant = cfg.get_value("town", "data", null)
+		if not (fmt is int) or fmt <= 0 or not (d is Dictionary):
+			push_warning("%s is damaged, trying the backup" % path)
+			continue
+		if fmt > TOWN_FORMAT:
+			push_warning("%s comes from a newer game (format %d)" % [path, fmt])
+			return null
+		return TownState.from_dict(migrate_town(d, fmt))
+	return null
+
+
+## Upgrades an older town save one format step at a time.
+func migrate_town(d: Dictionary, _from: int) -> Dictionary:
+	return d
+
+
+## A new game: the town and its hero are gone.
+func clear_town() -> void:
+	for p in [town_path, town_path + ".bak", town_path + ".tmp"]:
+		if FileAccess.file_exists(p):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(p))
 
 
 func has_run() -> bool:

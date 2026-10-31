@@ -34,6 +34,7 @@ Net="*res://scripts/autoload/net.gd"
 Tooltip="*res://scripts/autoload/tooltip_layer.gd"
 AudioManager="*res://scripts/autoload/audio_manager.gd"
 Localizer="*res://scripts/autoload/localizer.gd"
+GameFlow="*res://scripts/autoload/game_flow.gd"
 
 [display]
 

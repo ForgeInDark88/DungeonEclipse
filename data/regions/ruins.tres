@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RegionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/region_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"ruins"
+display_name = "Руины и пламя"
+description = "Развалины Аурелии, лавовые кузни и зеркальные залы шута."
+order = 1
+biomes = Array[StringName]([&"ruins", &"lava", &"mirror_halls"])
+depth_from = 6
+depth_to = 15
+steps_min = 7
+steps_max = 8
+boss = &"illusionist"
+lair_bosses = Array[StringName]([&"flame_witch"])
+color = Color(0.6, 0.25, 0.15, 1)

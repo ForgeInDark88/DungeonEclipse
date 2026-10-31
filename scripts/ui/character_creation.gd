@@ -112,6 +112,10 @@ func _ready() -> void:
 				Net.players[1] = Net.my_info.duplicate(true)
 				Net.broadcast_players()
 		SaveManager.last_eclipse = _eclipse
+		if not Net.active:
+			# Single player: the hero settles in a new town (GameFlow).
+			GameFlow.create_hero(_race, _class, _female, _difficulty.id if _difficulty else &"normal", _eclipse)
+			return
 		GameState.start_new_run(_race, _class, -1, _female, _difficulty.id if _difficulty else &"normal", _eclipse)
 		if Net.active and Net.is_host:
 			Net.rpc_start_run(GameState.run_seed, GameState.difficulty.id if GameState.difficulty else &"normal"))

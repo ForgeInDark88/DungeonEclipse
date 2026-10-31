@@ -63,6 +63,8 @@ func _on_seal_changed(kills: int, required: int, initial := false) -> void:
 func get_prompt() -> String:
 	if _sealed:
 		return tr("Выход запечатан: убито %d из %d") % [_kills, _required]
+	if GameState.expedition:
+		return tr("Выход: вернуться на карту похода")
 	var text := tr("Спуститься глубже (этаж %d)") % (GameState.floor_number + 1)
 	var ns := get_tree().get_first_node_in_group("net_game") as NetSync if Net.active else null
 	if ns:
@@ -78,6 +80,9 @@ func interact(_player: Node) -> void:
 		AudioManager.play_sfx(&"dig", global_position, -6.0)
 		return
 	AudioManager.play_sfx(&"portal")
+	if GameState.expedition:
+		GameFlow.location_cleared()
+		return
 	if Net.active and not Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:

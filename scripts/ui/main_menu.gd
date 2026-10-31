@@ -52,14 +52,26 @@ func _ready() -> void:
 	right_page.add_theme_constant_override("separation", 4)
 	right_page.add_child(_spacer(4))
 	var cont: Button = null
-	if SaveManager.has_run():
-		var d := SaveManager.run_data()
-		cont = BookPageScreen.button(tr("Продолжить — %s, ур. %d, этаж %d") % [d.get("class_name", "?"), int(d.get("hero_level", 1)), int(d.get("floor", 1))],
+	var town := SaveManager.load_town() if SaveManager.has_town() else null
+	var hero_d: Dictionary = town.hero if town else {}
+	if town and not hero_d.is_empty():
+		var cls := String(hero_d.get("class", "?"))
+		for c in ItemDatabase.classes:
+			if String(c.id) == cls:
+				cls = c.display_name
+		cont = BookPageScreen.button(tr("Продолжить — %s, ур. %d") % [cls, int(hero_d.get("level", 1))],
 			func() -> void:
-				if not GameState.continue_run():
-					get_tree().change_scene_to_file(GameState.CHARACTER_CREATION))
+				if not GameFlow.continue_game():
+					GameFlow.new_game())
 		right_page.add_child(cont)
-	var start := BookPageScreen.button(tr("Новый забег"), func() -> void: get_tree().change_scene_to_file(GameState.CHARACTER_CREATION))
+	# «Новая игра» wipes the town: a second press confirms it.
+	var start := BookPageScreen.button(tr("Новая игра"), func() -> void: pass)
+	start.pressed.connect(func() -> void:
+		if cont == null or start.has_meta("armed"):
+			GameFlow.new_game()
+		else:
+			start.set_meta("armed", true)
+			start.text = tr("Стереть город и начать заново?"))
 	right_page.add_child(start)
 	right_page.add_child(BookPageScreen.button(tr("Игра по сети (хост)"), func() -> void: get_tree().change_scene_to_file("res://scenes/ui/net_host.tscn")))
 	right_page.add_child(BookPageScreen.button(tr("Присоединиться (LAN)"), func() -> void: get_tree().change_scene_to_file("res://scenes/ui/net_join.tscn")))

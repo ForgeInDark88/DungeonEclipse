@@ -2,6 +2,7 @@ extends Node
 ## Loads every data resource from res://data at startup, so new content is
 ## picked up just by dropping a .tres file into the right folder.
 
+const REGION_DIR := "res://data/regions"
 const ITEMS_DIR := "res://data/items"
 const RACES_DIR := "res://data/races"
 const CLASSES_DIR := "res://data/classes"
@@ -41,6 +42,8 @@ var pets: Dictionary = {}  # StringName -> PetData
 var difficulties: Array[DifficultyData] = []  # by order
 var lore: Array[LoreData] = []  # by order
 var equipment_layout: EquipmentLayout
+## Regions of the expedition map (data/regions), by order.
+var regions: Array[RegionData] = []
 
 
 func _ready() -> void:
@@ -64,6 +67,11 @@ func reload() -> void:
 	pacts.clear()
 	pets.clear()
 	difficulties.clear()
+	regions.clear()
+	for res in load_dir(REGION_DIR):
+		if res is RegionData:
+			regions.append(res)
+	regions.sort_custom(func(a: RegionData, b: RegionData) -> bool: return a.order < b.order)
 	for res in load_dir(DIFFICULTY_DIR):
 		if res is DifficultyData:
 			difficulties.append(res)
@@ -181,6 +189,12 @@ func traps_for_floor(floor_number: int, biome_id: StringName) -> Array[TrapData]
 func boss_for_floor(floor_number: int) -> BossData:
 	if bosses.is_empty():
 		return null
+	# An expedition node names its own guardian (region boss or lair).
+	var loc_boss := StringName(GameState.location.get("boss", ""))
+	if loc_boss != &"" and floor_number == GameState.floor_number:
+		var b := boss_by_id(loc_boss)
+		if b:
+			return b
 	var rotation := bosses.filter(func(b: BossData) -> bool: return not b.final)
 	if floor_number == final_floor():
 		for b in bosses:
@@ -193,6 +207,20 @@ func boss_for_floor(floor_number: int) -> BossData:
 
 ## The Eclipse's floor: the boss floor right after every guardian has had its
 ## turn once (6 guardians -> floor 35).
+func boss_by_id(id: StringName) -> BossData:
+	for b in bosses:
+		if b.id == id:
+			return b
+	return null
+
+
+func biome_by_id(id: StringName) -> BiomeData:
+	for b in biomes:
+		if b.id == id:
+			return b
+	return null
+
+
 func final_floor() -> int:
 	var guardians := 0
 	for b in bosses:
