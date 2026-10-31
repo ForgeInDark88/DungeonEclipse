@@ -422,6 +422,12 @@ func end_expedition(outcome: RunState.Outcome) -> void:
 		return
 	run.outcome = outcome
 	var hero := GameState.hero
+	var prosperity_before := Buildings.prosperity(town)
+	var region_before := town.region_unlocked
+	var path_types: Array = []
+	for id in run.path:
+		var pn := run.map.node(id)
+		path_types.append(StringName(pn["sub"]) if StringName(pn["sub"]) != &"" else StringName(pn["type"]))
 	var r := {
 		"outcome": outcome,
 		"nodes": run.path.size(),
@@ -434,6 +440,7 @@ func end_expedition(outcome: RunState.Outcome) -> void:
 		"rescued": run.rescued.duplicate(),
 		"bosses": run.bosses.duplicate(),
 		"blueprints": run.blueprints.duplicate(),
+		"path": path_types,
 		"lost": [],
 	}
 	# The Sanctum's shards (depth, guardians, shard items) - as before.
@@ -470,8 +477,23 @@ func end_expedition(outcome: RunState.Outcome) -> void:
 			town.bosses_defeated.append(b)
 			town.prosperity += 5
 	town.add_stat("nodes", run.path.size())
+	# The journal remembers every road event met (whatever the outcome).
+	var known: Array = town.flags.get("events_known", [])
+	for e in run.flags.get("events_seen", []):
+		if not e in known:
+			known.append(e)
+	town.flags["events_known"] = known
+	if outcome != RunState.Outcome.DEATH:
+		var arrived: Array = town.flags.get("arrived", [])
+		for id in run.rescued:
+			if id != RescueCage.REFUGEE and not id in arrived:
+				arrived.append(String(id))
+		town.flags["arrived"] = arrived
 	Buildings.on_expedition_end(GameState.hero)
 	town.prosperity = Buildings.prosperity(town)
+	r["prosperity"] = [prosperity_before, town.prosperity]
+	r["region_opened"] = town.region_unlocked > region_before
+	r["region"] = ItemDatabase.regions[town.region_unlocked].display_name if town.region_unlocked < ItemDatabase.regions.size() else ""
 	town.expedition_active = false
 	GameState.run = null
 	GameState.location = {}

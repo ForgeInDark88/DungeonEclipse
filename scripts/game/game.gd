@@ -194,17 +194,50 @@ func finish_location() -> void:
 	overlay.visible = true
 
 
-## What changed in town while the hero was away (TownState.news).
+## What changed in town while the hero was away (TownState.news): a page
+## of news with the portraits of the people who moved in; the newcomers
+## shine in the street.
 func _town_news() -> void:
 	var t := GameState.town
-	if t == null or t.news.is_empty():
+	if t == null or (t.news.is_empty() and (t.flags.get("arrived", []) as Array).is_empty()):
 		return
 	var lines := t.news.duplicate()
+	var arrived: Array = t.flags.get("arrived", [])
 	t.news.clear()
+	t.flags.erase("arrived")
 	GameFlow.save_town()
-	await get_tree().create_timer(0.8).timeout
-	for line in lines:
-		EventBus.message.emit(line)
+	await get_tree().create_timer(0.9).timeout
+	if not is_inside_tree() or overlay.visible:
+		return
+	get_tree().paused = true
+	overlay.clear()
+	overlay.set_panel_size(Vector2(340, 190 + 14 * mini(lines.size(), 6)))
+	overlay.add_text(tr("Новости города"), 12)
+	if not arrived.is_empty():
+		var row := HBoxContainer.new()
+		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		row.add_theme_constant_override("separation", 6)
+		for id in arrived:
+			var n: NpcData = ItemDatabase.npcs.get(StringName(id))
+			if n == null:
+				continue
+			var pic := TextureRect.new()
+			pic.texture = n.portrait
+			pic.custom_minimum_size = Vector2(40, 40)
+			pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			pic.tooltip_text = n.display_name
+			row.add_child(pic)
+		overlay.add_control(row)
+	for line in lines.slice(0, 6):
+		overlay.add_text(line, 7)
+	overlay.add_button(tr("Пройтись по городу"), func() -> void:
+		overlay.visible = false
+		get_tree().paused = false
+		for n in get_tree().get_nodes_in_group("town_npcs"):
+			if String((n as TownNpc).data.id) in arrived:
+				Fx.sparks(n.get_parent(), (n as Node2D).global_position + Vector2(0, -16), Color(1.0, 0.9, 0.5), 24, 90.0)).grab_focus()
+	overlay.on_pause_key = Callable()
+	overlay.visible = true
 
 
 ## «Глубина 7 — Логово элиты · Руины» for the location banner.
@@ -311,6 +344,12 @@ func _toggle_pause() -> void:
 	overlay.add_button(tr("Продолжить"), _toggle_pause).grab_focus()
 	overlay.add_button(tr("Как играть"), func() -> void: add_child(InfoBook.how_to_play()))
 	overlay.add_button(tr("Настройки"), open_settings)
+	if GameState.expedition:
+		overlay.add_button(tr("Журнал"), func() -> void:
+			_toggle_pause()
+			var j := JournalBook.new()
+			add_child(j)
+			j.open())
 	overlay.add_button(tr("Дерево навыков"), func() -> void:
 		_toggle_pause()
 		skill_tree.open())

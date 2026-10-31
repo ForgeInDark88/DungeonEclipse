@@ -375,6 +375,10 @@ func _toggle_menu() -> void:
 	_menu.position = Vector2(470, 40)
 	var box := VBoxContainer.new()
 	_menu.add_child(box)
+	box.add_child(BookPageScreen.button(tr("Журнал"), func() -> void:
+		var j := JournalBook.new()
+		add_child(j)
+		j.open()))
 	box.add_child(BookPageScreen.button(tr("Настройки"), func() -> void: add_child(SettingsBook.new())))
 	box.add_child(BookPageScreen.button(tr("Как играть"), func() -> void: add_child(InfoBook.how_to_play())))
 	box.add_child(BookPageScreen.button(tr("В главное меню"), func() -> void: GameFlow.quit_to_menu()))
