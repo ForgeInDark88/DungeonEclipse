@@ -8,7 +8,9 @@ var hero: Hero
 
 
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
-	return data is Dictionary and data.get("type") == "item_slot"
+	# Off the dungeon (the expedition map, a camp) there is no floor to throw on.
+	return data is Dictionary and data.get("type") == "item_slot" \
+			and get_tree().get_first_node_in_group("player") != null
 
 
 func _drop_data(_at_position: Vector2, data: Variant) -> void:

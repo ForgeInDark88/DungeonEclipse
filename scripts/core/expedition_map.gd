@@ -6,7 +6,8 @@ extends RefCounted
 ## the same seed and options always give the same map.
 ##
 ## A node is a Dictionary:
-##   id, region (index into `regions`), step, lane (0..LANES-1),
+##   id, region (index into `regions`), step, col (step counted from the
+##   start of the map), lane (0..LANES-1),
 ##   type (TYPES key), sub (special kind: cache / mine / crypt),
 ##   depth (difficulty and loot of the location), biome (BiomeData id),
 ##   boss (BossData id for boss / lair), seed, links (ids of the next step),
@@ -39,6 +40,9 @@ var nodes: Array[Dictionary] = []
 ## Ids of the first step's nodes.
 var _starts: Array[int] = []
 var _rng := RandomNumberGenerator.new()
+## Columns so far (a node's "col" counts steps from the start of the map).
+var _cols := 0
+var _col0 := 0
 
 
 ## `options`: "allowed" = node types the town has unlocked (default all but
@@ -58,6 +62,10 @@ static func generate(seed_value: int, start_region := 0, options := {}) -> Exped
 
 func node(id: int) -> Dictionary:
 	return nodes[id] if id >= 0 and id < nodes.size() else {}
+
+
+func columns() -> int:
+	return _cols
 
 
 func links_of(id: int) -> Array[int]:
@@ -104,6 +112,8 @@ static func type_description(type: StringName) -> String:
 func _build_region(ri: int, prev_boss: int, options: Dictionary) -> int:
 	var reg := regions[ri]
 	var steps := _rng.randi_range(reg.steps_min, reg.steps_max)
+	_col0 = _cols
+	_cols += steps
 	var layers: Array = []  # step -> Array[int] of node ids
 	for s in steps:
 		var ids: Array[int] = []
@@ -133,7 +143,7 @@ func _build_region(ri: int, prev_boss: int, options: Dictionary) -> int:
 func _add(ri: int, step: int, lane: int, type: StringName) -> int:
 	var id := nodes.size()
 	nodes.append({
-		"id": id, "region": ri, "step": step, "lane": lane, "type": type, "sub": &"",
+		"id": id, "region": ri, "step": step, "col": _col0 + step, "lane": lane, "type": type, "sub": &"",
 		"depth": 1, "biome": &"", "boss": &"", "seed": hash([seed_value, id]),
 		"links": [], "hint": &"",
 	})
