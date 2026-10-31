@@ -12,6 +12,8 @@ const STOCK_CAP := 18
 const EGG_CHANCE := 0.35
 
 var floor_number: int = 1
+## More rolls of the stock table (the town's shop level, a camp's trader).
+var extra_rolls := 0
 ## Array of ItemData (instances for gear) — removed when bought.
 var stock: Array[ItemData] = []
 ## LAN co-op: deterministic shop identity across machines.
@@ -42,9 +44,9 @@ func _roll_stock() -> void:
 		roll_rng.randomize()
 	var table := ItemDatabase.get_loot_table(STOCK_TABLE)
 	if table:
-		for i in STOCK_ROLLS:
+		for i in STOCK_ROLLS + extra_rolls:
 			for e: Dictionary in table.roll(floor_number, roll_rng):
-				if e["item"].currency_value <= 0 and stock.size() < 12:
+				if e["item"].currency_value <= 0 and stock.size() < 12 + extra_rolls:
 					stock.append(e["item"])
 	# Sometimes a pet egg.
 	if roll_rng.randf() < EGG_CHANCE:

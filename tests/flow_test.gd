@@ -75,6 +75,15 @@ func _initialize() -> void:
 	flow.enter_node(camp)
 	await wait_scene(flow.State.LOCATION)
 	check(current_scene.name == "CampScreen", "a camp node opens the camp")
+	gs.hero.stats.hp = 10
+	var g0: int = gs.hero.gold
+	current_scene._rest()
+	check(gs.hero.stats.hp > 10 and gs.hero.gold == g0, "the first rest at the fire is free and heals")
+	var hp1: int = gs.hero.stats.hp
+	gs.hero.add_gold(500)
+	current_scene._rest()
+	check(gs.hero.gold == g0 + 500 - current_scene.rest_price(), "the next rest costs gold")
+	check(current_scene._merchant != null and not current_scene._merchant.stock.is_empty(), "the camp has a trader with goods")
 	flow.retreat()
 	await wait_scene(flow.State.RUN_RESULT)
 	check(flow.last_result["outcome"] == 2 and flow.last_result["gold"] >= 40, "retreat: the result screen counts the gold")

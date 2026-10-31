@@ -132,6 +132,17 @@ func play_ui(id: StringName, volume_db := 0.0) -> void:
 
 
 ## Cross-fades to another music track (same id = keep playing).
+## Quitting: every player lets go of its stream first, so the audio thread
+## holds no playback while the engine frees resources (no leaks at exit).
+func _exit_tree() -> void:
+	for p in find_children("*", "AudioStreamPlayer", true, false):
+		(p as AudioStreamPlayer).stop()
+		(p as AudioStreamPlayer).stream = null
+	for p in find_children("*", "AudioStreamPlayer2D", true, false):
+		(p as AudioStreamPlayer2D).stop()
+		(p as AudioStreamPlayer2D).stream = null
+
+
 func play_music(id: StringName) -> void:
 	_after_sting = &""
 	_switch_music(id)
