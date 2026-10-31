@@ -18,7 +18,8 @@ const HINTS := {
 	&"merchant": "Торговец: покупайте за золото, продавайте вещи из рюкзака.",
 	&"defend_parry": "{defend} — поднять щит: удар в этот миг парируется, враг оглушён.",
 	&"defend_roll": "{defend} — перекат: пока катитесь, вас не задеть.",
-	&"defend_none": "{defend} — защитный приём вашего класса (у мага и некроманта его нет — держите дистанцию).",
+	&"defend_none": "{defend} — защитный приём вашего класса.",
+	&"defend_blink": "{defend} — скачок: короткий рывок, во время которого вас не задеть. Перезарядка 1,6 с.",
 	&"skill_use": "Навыки — на клавишах {skill_1}–{skill_4} (панель внизу). Тратят ману, у каждого своя перезарядка.",
 	&"seal": "Печать выхода: дверь на следующий этаж откроется, когда убьёте нужное число монстров (счётчик слева вверху).",
 	&"trap": "Ловушка! Подойдите и нажмите {interact}, чтобы обезвредить. Неудача — сработает. Шанс выше с ловкостью.",
@@ -68,7 +69,7 @@ func setup(player: Player) -> void:
 	EventBus.shop_requested.connect(func(_m: Node, _p: Node) -> void: show_hint(&"merchant"))
 	# First floor basics, one after another after «move».
 	var move: StringName = hero.class_data.defense_move if hero.class_data else &""
-	show_hint.call_deferred({&"parry": &"defend_parry", &"roll": &"defend_roll"}.get(move, &"defend_none"))
+	show_hint.call_deferred({&"parry": &"defend_parry", &"roll": &"defend_roll", &"blink": &"defend_blink"}.get(move, &"defend_none"))
 	show_hint.call_deferred(&"skill_use")
 	EventBus.seal_changed.connect(func(kills: int, _req: int) -> void:
 		if kills >= 1:

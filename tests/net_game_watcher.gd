@@ -311,7 +311,8 @@ func _watch_game() -> void:
 				circles += 1
 		check(circles > 0, "client: sees the host's warning circle (%d)" % circles)
 		if mine:
-			mine.net_defend.rpc(&"roll", 1.0)  # the guest is a mage (no guard): send it as a rogue would
+			mine._defend_cd = 0.0
+			mine.defend()  # the guest is a mage: a blink
 		await get_tree().create_timer(2.5).timeout
 	# --- phantom loot phase: the host drops an item and it vanishes there
 	# without anyone picking it up; the guest's copy must vanish too.

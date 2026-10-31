@@ -75,6 +75,10 @@ const PARRY_WINDOW := 0.22
 const PARRY_STUN := 1.6
 const ROLL_SPEED := 250.0
 const ROLL_TIME := 0.3
+## Mage / necromancer «blink»: a short magic dash.
+const BLINK_SPEED := 300.0
+const BLINK_TIME := 0.18
+const BLINK_COOLDOWN := 1.6
 var _parry_time := 0.0
 var _defend_cd := 0.0
 var _afterimage_timer := 0.0
@@ -1053,6 +1057,17 @@ func defend() -> void:
 			status.remove(&"invisible")
 			dash(ROLL_SPEED, ROLL_TIME)
 			_defend_visual(&"roll")
+		&"blink":
+			# Mage / necromancer: a short magic dash (untouchable while it
+			# lasts), shorter than the rogue's roll and slower to recharge.
+			var dirb := Input.get_axis("move_left", "move_right")
+			if dirb != 0.0:
+				facing = signf(dirb)
+				visual.facing = facing
+			_defend_cd = BLINK_COOLDOWN
+			status.remove(&"invisible")
+			dash(BLINK_SPEED, BLINK_TIME)
+			_defend_visual(&"blink")
 		_:
 			return
 	# Co-op: the others see the guard / the roll on this hero's copy.
@@ -1071,6 +1086,11 @@ func _defend_visual(kind: StringName) -> void:
 			visual.squash_to(Vector2(1.3, 0.6), ROLL_TIME)
 			Fx.dust(get_parent(), global_position, false)
 			Fx.afterimage(visual, get_parent())
+		&"blink":
+			var col := Color(0.55, 1.0, 0.65) if hero and hero.class_data and hero.class_data.id == &"necromancer" else Color(0.7, 0.55, 1.0)
+			Fx.afterimage(visual, get_parent())
+			Fx.sparks(get_parent(), global_position + Vector2(0, -12), col, 12, 80.0)
+			AudioManager.play_sfx(&"cast_bolt", global_position, -8.0)
 
 
 @rpc("any_peer", "call_remote", "reliable")
