@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"jester_mirror"
+title = "Зеркало шута"
+text = "Высокое зеркало в золочёной раме. Ваше отражение подмигивает вам на мгновение раньше, чем вы моргнули."
+regions = Array[StringName]([&"ruins"])
+min_depth = 10
+max_depth = 20
+weight = 1.0
+options = Array[Dictionary]([{"text": "Посмотреть в глаза отражению.", "requires": "", "hint": "", "outcomes": [{"chance": 0.5, "text": "Отражение кивает и отдаёт вам частицу себя: взгляд становится острее.", "effects": {"pact": "b_eagle"}}, {"chance": 0.5, "text": "Отражение выходит из рамы. И оно вооружено.", "effects": {"fight": "elite"}}]}, {"text": "Разбить зеркало.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Осколки звенят. Среди них — тёмные кристаллы.", "effects": {"shards": 3, "pact": "c_frail"}}]}, {"text": "Пройти мимо.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы идёте дальше, ничего не потеряв и ничего не найдя.", "effects": {}}]}])

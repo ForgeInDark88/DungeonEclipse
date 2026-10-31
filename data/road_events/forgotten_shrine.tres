@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"forgotten_shrine"
+title = "Забытое святилище"
+text = "Ниша в стене, свечи давно погасли. На алтаре — чаша для подношений и выцветший знак солнца."
+regions = Array[StringName]([])
+min_depth = 1
+max_depth = 99
+weight = 1.0
+options = Array[Dictionary]([{"text": "Помолиться.", "requires": "", "hint": "", "outcomes": [{"chance": 0.6, "text": "Тёплый свет касается плеч. Вы чувствуете силу старых богов.", "effects": {"pact": "blessing"}}, {"chance": 0.4, "text": "Из чаши тянет холодом: здесь молились не солнцу. На вас ложится тень.", "effects": {"pact": "curse"}}]}, {"text": "Оставить 50 золота в чаше.", "requires": "gold:50", "hint": "50 золота", "outcomes": [{"chance": 1.0, "text": "Монеты исчезают без звука, а свечи вспыхивают. Благословение принято.", "effects": {"gold": -50, "pact": "blessing"}}]}, {"text": "Пройти мимо.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы идёте дальше, ничего не потеряв и ничего не найдя.", "effects": {}}]}])

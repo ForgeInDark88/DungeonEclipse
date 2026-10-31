@@ -101,6 +101,51 @@ func _initialize() -> void:
 	flow.back_to_town()
 	await wait_scene(flow.State.TOWN)
 
+	# ---------------------------------------------------- a rescue
+	flow.open_map()
+	await wait_scene(flow.State.EXPEDITION_MAP)
+	var rid: int = gs.run.next_choices()[0]
+	gs.run.map.nodes[rid]["type"] = &"rescue"
+	gs.run.map.nodes[rid]["npc"] = &"blacksmith"
+	flow.enter_node(rid)
+	await wait_scene(flow.State.LOCATION)
+	var cages := current_scene.get_tree().get_nodes_in_group("rescue_cages")
+	check(cages.size() == 1, "a rescue node has the prisoner's cage")
+	if cages.size() == 1:
+		var cage = cages[0]
+		check(cage.guards_left() > 0, "the cage is guarded")
+		cage.interact(current_scene.player)
+		check(gs.run.rescued.is_empty(), "the lock holds while the guards live")
+		for g in cage._guards:
+			g.queue_free()
+		await process_frame
+		cage.interact(current_scene.player)
+		check(&"blacksmith" in gs.run.rescued, "the guards are down: the blacksmith is freed")
+		for b in current_scene.get_children():
+			if b is DialogBook:
+				b.close()
+	current_scene.finish_location()
+	await process_frame
+	flow.location_cleared()
+	await wait_scene(flow.State.EXPEDITION_MAP)
+
+	# ---------------------------------------------------- an event
+	var eid: int = gs.run.next_choices()[0]
+	gs.run.map.nodes[eid]["type"] = &"event"
+	flow.enter_node(eid)
+	await wait_scene(flow.State.LOCATION)
+	check(current_scene.name == "EventScreen" and current_scene.event != null, "an event node opens a choice on the road")
+	var gold_e: int = gs.hero.gold
+	current_scene._choose({"outcomes": [{"chance": 1.0, "text": "t", "effects": {"gold": 10, "resource": {"herbs": 2}}}]})
+	check(gs.hero.gold > gold_e and int(gs.run.resources.get("herbs", 0)) >= 2, "the choice's outcome is applied")
+	flow.retreat()
+	await wait_scene(flow.State.RUN_RESULT)
+	check(gs.town.has_resident(&"blacksmith"), "home alive: the freed blacksmith moves into the town")
+	flow.back_to_town()
+	await wait_scene(flow.State.TOWN)
+	var people := current_scene.get_tree().get_nodes_in_group("town_npcs")
+	check(people.any(func(n): return n.data.id == &"blacksmith"), "the blacksmith walks the street")
+
 	# ---------------------------------------------------- guardian arenas
 	flow.open_map()
 	await wait_scene(flow.State.EXPEDITION_MAP)

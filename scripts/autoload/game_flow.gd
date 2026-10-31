@@ -168,6 +168,7 @@ func open_map(start_region := -1) -> void:
 		run.seed_value = randi()
 		run.start_region = clampi(start_region if start_region >= 0 else 0, 0, town.region_unlocked)
 		run.map = ExpeditionMap.generate(run.seed_value, run.start_region, map_options())
+		_assign_prisoners(run)
 		run.gold_at_start = GameState.hero.gold
 		run.kills_at_start = GameState.kills
 		run.start_ms = Time.get_ticks_msec()
@@ -204,7 +205,52 @@ func reroll_map(seed_value := -1) -> void:
 		return
 	run.seed_value = randi() if seed_value < 0 else seed_value
 	run.map = ExpeditionMap.generate(run.seed_value, run.start_region, map_options())
+	_assign_prisoners(run)
 	GameState.run_seed = run.seed_value
+
+
+## Who waits in each rescue node: people of the town not living there yet
+## (data/npcs, by order, from their depth), else a nameless townsman.
+func _assign_prisoners(run: RunState) -> void:
+	var town := GameState.town
+	var taken := {}
+	var people: Array = ItemDatabase.npcs.values().filter(func(n: NpcData) -> bool:
+		return not n.resident_from_start and (town == null or not town.has_resident(n.id)))
+	people.sort_custom(func(a: NpcData, b: NpcData) -> bool: return a.order < b.order)
+	var rescues := run.map.nodes.filter(func(n: Dictionary) -> bool: return n["type"] == &"rescue")
+	rescues.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a["col"]) < int(b["col"]))
+	for node: Dictionary in rescues:
+		node["npc"] = RescueCage.REFUGEE
+		for p: NpcData in people:
+			if not taken.has(p.id) and p.depth_min <= int(node["depth"]):
+				node["npc"] = p.id
+				taken[p.id] = true
+				break
+
+
+## An event turned into a fight: the node becomes a short fight location
+## of `kind` (level / elite) at the same depth; its exit leads to the map.
+func event_fight(kind: StringName) -> void:
+	var run := GameState.run
+	if run == null:
+		return
+	var n := run.current_node()
+	GameState.location["type"] = kind
+	GameState.location["mods"] = ExpeditionMap.MODS.get(kind, {})
+	GameState.location["seed"] = hash([int(n.get("seed", 0)), 77])
+	var hero := GameState.hero
+	run.loc = {"gold": hero.gold if hero else 0, "kills": GameState.kills, "shards": _shards(),
+			"finds": [], "picked": 0, "resources": run.loc.get("resources", {}), "cleared": false}
+	change_scene(GameState.GAME, State.LOCATION)
+
+
+## A prisoner freed: they come to town if the hero comes home alive.
+func rescue(npc_id: StringName) -> void:
+	var run := GameState.run
+	if run == null:
+		return
+	run.rescued.append(npc_id)
+	run.loc["rescued"] = npc_id
 
 
 ## Steps onto a node next to the hero; returns false when it is not one.
@@ -218,9 +264,18 @@ func enter_node(id: int) -> bool:
 	GameState.location = {
 		"type": n["type"], "depth": n["depth"], "biome": n["biome"], "seed": n["seed"],
 		"boss": n["boss"], "sub": n["sub"], "node": id, "region": n["region"],
+		"npc": n.get("npc", &""),
 	}
 	GameState.location["mods"] = ExpeditionMap.MODS.get(StringName(n["sub"]) if StringName(n["sub"]) != &"" else StringName(n["type"]), {})
 	GameState.floor_number = int(n["depth"])
+	if StringName(n["type"]) == &"event":
+		var reg := run.map.region_of(id)
+		var ev := EventRunner.pick(reg.id if reg else &"", int(n["depth"]), int(n["seed"]))
+		GameState.location["event"] = ev.id if ev else &""
+		if ev:
+			var seen: Array = run.flags.get("events_seen", [])
+			seen.append(String(ev.id))
+			run.flags["events_seen"] = seen
 	var hero := GameState.hero
 	run.loc = {"gold": hero.gold if hero else 0, "kills": GameState.kills, "shards": _shards(),
 			"finds": [], "picked": 0, "resources": {}, "cleared": false}
@@ -292,6 +347,9 @@ func location_summary() -> Dictionary:
 	var n := run.current_node()
 	if not run.loc.get("cleared", false):
 		run.loc["cleared"] = true
+		if run.flags.has("after_fight_rescue"):
+			rescue(StringName(run.flags["after_fight_rescue"]))
+			run.flags.erase("after_fight_rescue")
 		var key := StringName(n.get("sub", &"")) if StringName(n.get("sub", &"")) != &"" else StringName(n.get("type", &"level"))
 		var table: Dictionary = ExpeditionMap.CLEAR_REWARD.get(key, {})
 		var bonus := int(n.get("depth", 1)) / 10
@@ -314,6 +372,7 @@ func location_summary() -> Dictionary:
 		"picked": int(run.loc.get("picked", 0)),
 		"resources": run.loc.get("resources", {}),
 		"blueprint": run.loc.get("blueprint", &""),
+		"rescued": run.loc.get("rescued", &""),
 		"type": n.get("type", &"level"),
 	}
 
@@ -390,10 +449,14 @@ func end_expedition(outcome: RunState.Outcome) -> void:
 		for k in run.resources:
 			town.add_resource(StringName(k), int(run.resources[k]))
 		for id in run.rescued:
-			if town.add_resident(id):
-				town.prosperity += 2
+			if id == RescueCage.REFUGEE:
+				town.add_stat("refugees")
+				town.news.append(tr("В город пришёл спасённый горожанин."))
+			elif town.add_resident(id):
+				var npc: NpcData = ItemDatabase.npcs.get(id)
+				town.news.append(tr("В город переехал(а) %s.") % (npc.display_name if npc else String(id)))
 		for k in run.flags:
-			if not k in ["nodes_done", "rumours"]:
+			if not k in ["nodes_done", "rumours", "events_seen", "after_fight_rescue"]:
 				town.flags[k] = run.flags[k]
 		for bp in run.blueprints:
 			if not bp in town.blueprints:

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"fallen_statue"
+title = "Статуя короля"
+text = "Поверженная статуя короля Аурелии. В глазницах — рубины, на постаменте — надпись: «Свет вернётся к тем, кто помнит»."
+regions = Array[StringName]([&"ruins"])
+min_depth = 6
+max_depth = 20
+weight = 1.0
+options = Array[Dictionary]([{"text": "Выковырять рубины.", "requires": "", "hint": "", "outcomes": [{"chance": 0.6, "text": "Камни поддаются. Королю они больше ни к чему.", "effects": {"gold": 140}}, {"chance": 0.4, "text": "Рубины выпадают — и вместе с ними что-то тёмное из глазниц. Проклятие ложится на вас.", "effects": {"gold": 90, "pact": "curse"}}]}, {"text": "Почтить память короля.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы стоите у статуи. Где-то глубоко внутри откликается тепло.", "effects": {"xp": 50, "flag": "king_honoured"}}]}, {"text": "Пройти мимо.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы идёте дальше, ничего не потеряв и ничего не найдя.", "effects": {}}]}])

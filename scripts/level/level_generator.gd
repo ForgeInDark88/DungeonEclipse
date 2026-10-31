@@ -342,6 +342,20 @@ func _place_specials(_floor_number: int) -> void:
 		if room != _path[0] and room != _path[_path.size() - 1] and _connected.has(room):
 			rooms.append(room)
 	_shuffle(rooms)
+	# A rescue node: the prisoner's cage in the room before the exit, its
+	# guards around it (DungeonLevel spawns them, RescueCage opens after).
+	if GameState.location_type() == &"rescue":
+		var room: Vector2i = _path[maxi(1, _path.size() - 2)]
+		var cell: Variant = _take_spot(room, true)
+		if cell != null:
+			var guards: Array[Vector2i] = []
+			for k in 4:
+				var gc: Variant = _take_spot(room, true)
+				if gc != null:
+					guards.append(gc)
+			layout.specials.append({"type": &"rescue", "cell": cell, "cells": guards})
+			_reserved[room] = true
+			rooms.erase(room)
 	# The floor guardian: a champion in a room whose doors slam shut on entry.
 	if not rooms.is_empty():
 		var room: Vector2i = rooms.pop_back()

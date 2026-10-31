@@ -5,6 +5,7 @@ extends Node
 const REGION_DIR := "res://data/regions"
 const BUILDING_DIR := "res://data/buildings"
 const NPC_DIR := "res://data/npcs"
+const ROAD_EVENT_DIR := "res://data/road_events"
 const ITEMS_DIR := "res://data/items"
 const RACES_DIR := "res://data/races"
 const CLASSES_DIR := "res://data/classes"
@@ -49,6 +50,8 @@ var regions: Array[RegionData] = []
 ## Town buildings (data/buildings) by order, people of the town (data/npcs).
 var buildings: Array[BuildingData] = []
 var npcs: Dictionary = {}  # StringName -> NpcData
+## Choices on the road (data/road_events): the «event» nodes of the map.
+var road_events: Array[EventData] = []
 
 
 func _ready() -> void:
@@ -82,6 +85,11 @@ func reload() -> void:
 		if res is BuildingData:
 			buildings.append(res)
 	buildings.sort_custom(func(a: BuildingData, b: BuildingData) -> bool: return a.order < b.order)
+	road_events.clear()
+	for res in load_dir(ROAD_EVENT_DIR):
+		if res is EventData:
+			road_events.append(res)
+	road_events.sort_custom(func(a: EventData, b: EventData) -> bool: return a.id < b.id)
 	npcs.clear()
 	for res in load_dir(NPC_DIR):
 		if res is NpcData:

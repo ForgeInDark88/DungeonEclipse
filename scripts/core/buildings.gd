@@ -115,6 +115,7 @@ static func prosperity(t: TownState) -> int:
 	for b in ItemDatabase.buildings:
 		p += maxi(0, t.building_level(b.id) - b.start_level) * b.prosperity
 	p += t.residents.size() * RESIDENT_PROSPERITY + t.bosses_defeated.size() * BOSS_PROSPERITY + t.trophies.size()
+	p += int(t.stats.get("refugees", 0))
 	return p
 
 

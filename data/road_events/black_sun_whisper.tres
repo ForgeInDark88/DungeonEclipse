@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"black_sun_whisper"
+title = "Шёпот чёрного солнца"
+text = "Свет здесь течёт вниз, как вода. Голос внутри головы: «Возьми мою силу. Мне не жалко. Мне так одиноко»."
+regions = Array[StringName]([&"eclipse"])
+min_depth = 26
+max_depth = 99
+weight = 1.0
+options = Array[Dictionary]([{"text": "Принять дар.", "requires": "", "hint": "", "outcomes": [{"chance": 0.5, "text": "Сила бьёт в виски — чистая, без примеси. Солнце и правда было щедрым.", "effects": {"pact": "b_titan"}}, {"chance": 0.5, "text": "Сила бьёт в виски — и вместе с ней что-то холодное.", "effects": {"pact": "b_titan", "pact2": "c_drain"}}]}, {"text": "Отказаться и слушать дальше.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Голос замолкает обиженно. Но вы узнали о нём что-то важное.", "effects": {"xp": 120, "flag": "sun_refused"}}]}, {"text": "Медитировать (интеллект).", "requires": "stat:intellect>=10", "hint": "интеллект 10", "outcomes": [{"chance": 1.0, "text": "Вы не отвечаете — вы слушаете. Мана наполняет вас до краёв.", "effects": {"mana_pct": 100, "pact": "b_mind"}}]}])

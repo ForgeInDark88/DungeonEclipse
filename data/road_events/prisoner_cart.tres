@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"prisoner_cart"
+title = "Повозка с пленниками"
+text = "Слуги Затмения гонят повозку с клеткой. Внутри — люди из города. Охраны немного, но она настороже."
+regions = Array[StringName]([])
+min_depth = 2
+max_depth = 99
+weight = 0.9
+options = Array[Dictionary]([{"text": "Напасть на охрану.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы бросаетесь в бой. Победите — и пленники свободны!", "effects": {"fight": "elite", "rescue": "any"}}]}, {"text": "Тихо открыть замок (ловкость).", "requires": "class:rogue", "hint": "разбойник", "outcomes": [{"chance": 1.0, "text": "Щелчок — и пленник бесшумно уходит за вами.", "effects": {"rescue": "any", "xp": 20}}]}, {"text": "Отпустить повозку.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Колёса скрипят во тьме. Вы запоминаете этот звук.", "effects": {}}]}])

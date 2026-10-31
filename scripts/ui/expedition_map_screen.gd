@@ -321,6 +321,9 @@ func _reward_text(n: Dictionary) -> String:
 		&"camp":
 			return tr("отдых, торговля, дорога домой")
 		&"rescue":
+			var who: NpcData = ItemDatabase.npcs.get(StringName(n.get("npc", &"")))
+			if exact and who:
+				return tr("новый житель: %s, %s") % [who.display_name, who.profession]
 			return tr("новый житель города")
 		&"event":
 			return tr("зависит от выбора")

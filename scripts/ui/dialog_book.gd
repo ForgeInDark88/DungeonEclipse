@@ -30,6 +30,18 @@ func open(p_npc: NpcData) -> void:
 	_show_dialog()
 
 
+## Plain words without a talk entry (a freed prisoner, an event).
+func open_text(p_npc: NpcData, text: String, answer: String) -> void:
+	npc = p_npc
+	if not get_tree().paused:
+		get_tree().paused = true
+		_paused_here = true
+	_build()
+	_text.text = tr(text)
+	_add_option(answer, close)
+	_focus_first()
+
+
 func close() -> void:
 	if _paused_here:
 		get_tree().paused = false

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"gravedigger_ghost"
+title = "Призрак могильщика"
+text = "Сгорбленная тень с лопатой копает яму, которой нет конца. «Ещё одна... ещё одна...» — бормочет она и не замечает вас."
+regions = Array[StringName]([&"gates"])
+min_depth = 2
+max_depth = 10
+weight = 0.8
+options = Array[Dictionary]([{"text": "Выслушать его.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Он рассказывает о третьем дне без солнца и о тёплой земле. Вы узнаёте больше, чем хотели бы.", "effects": {"xp": 40, "flag": "oldric_heard"}}]}, {"text": "Забрать его лопату.", "requires": "", "hint": "", "outcomes": [{"chance": 0.5, "text": "Тень не замечает пропажи. Лопата старая, но под ней — тайник могильщика.", "effects": {"loot": "special"}}, {"chance": 0.5, "text": "Тень оборачивается. Земля под ногами шевелится: мёртвые встают за своего могильщика.", "effects": {"fight": "level"}}]}, {"text": "Отдать ему монеты на погребение (40).", "requires": "gold:40", "hint": "40 золота", "outcomes": [{"chance": 1.0, "text": "Тень впервые поднимает голову. «Спасибо...» — и рассыпается пылью. На её месте — свет.", "effects": {"gold": -40, "pact": "blessing", "flag": "oldric_rest"}}]}, {"text": "Пройти мимо.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы идёте дальше, ничего не потеряв и ничего не найдя.", "effects": {}}]}])

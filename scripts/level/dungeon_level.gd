@@ -759,6 +759,17 @@ func _spawn_specials() -> void:
 				var dummy: Enemy = (load(ENEMY_SCENE) as PackedScene).instantiate()
 				dummy.setup(load(AssetPaths.TRAINING_DUMMY) as EnemyData, maxi(1, floor_number))
 				add_entity(dummy, cell_bottom(info["cell"]))
+			&"rescue":
+				var cage := RescueCage.new()
+				cage.level = self
+				cage.npc_id = StringName(GameState.location.get("npc", &"refugee"))
+				add_entity(cage, cell_bottom(info["cell"]))
+				var cells: Array[Vector2i] = []
+				for c in info["cells"]:
+					cells.append(c)
+				if cells.is_empty():
+					cells.append(info["cell"])
+				cage.guard(spawn_ambush_wave(cells, 3 + floor_number / 8, true))
 			&"miniboss":
 				_spawn_miniboss(info)
 			&"ambush":

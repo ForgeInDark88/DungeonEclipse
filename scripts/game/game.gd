@@ -178,6 +178,10 @@ func finish_location() -> void:
 	var res: Dictionary = s.get("resources", {})
 	if not res.is_empty():
 		overlay.add_text(tr("Для города: %s") % TownResources.describe(res), 7)
+	var saved := StringName(s.get("rescued", &""))
+	if saved != &"":
+		var nd: NpcData = ItemDatabase.npcs.get(saved)
+		overlay.add_text(tr("Спасён: %s — придёт в город, если вы вернётесь живым.") % (nd.display_name if nd else tr("горожанин")), 7)
 	var bp := StringName(s.get("blueprint", &""))
 	if bp != &"":
 		var bd := ItemDatabase.building(bp)

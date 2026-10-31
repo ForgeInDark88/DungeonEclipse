@@ -1072,6 +1072,16 @@ def gen_loop() -> None:
         save(townsperson(body, hair, apron=apron), "sprites/npc/%s.png" % nid)
         save(portrait(body, hair), "sprites/portraits/npc_%s.png" % nid, do_outline=False)
     save(icon_scroll(), "sprites/items/revive_scroll.png")
+    # the prisoner's cage (rescue nodes): bars, a roof, a padlock
+    cage = new(28, 36)
+    dc = ImageDraw.Draw(cage)
+    iron = (70, 70, 80, 255)
+    dc.rectangle([1, 2, 26, 5], fill=iron, outline=OUT)
+    dc.rectangle([1, 32, 26, 35], fill=iron, outline=OUT)
+    for x in range(3, 26, 4):
+        dc.line([x, 5, x, 32], fill=(120, 120, 130, 255))
+    dc.rectangle([11, 18, 16, 23], fill=GOLD_D, outline=OUT)
+    save(cage, "sprites/world/cage.png")
     res = {"wood": (150, 100, 55, 255), "stone": (150, 150, 145, 255), "iron": (120, 130, 150, 255),
            "herbs": (80, 170, 80, 255), "crystal": (150, 210, 250, 255)}
     for rid, c in res.items():
