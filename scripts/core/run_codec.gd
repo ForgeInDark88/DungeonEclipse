@@ -26,6 +26,7 @@ static func save_run() -> Dictionary:
 		"floor": GameState.floor_number,
 		"kills": GameState.kills,
 		"difficulty": String(GameState.difficulty.id) if GameState.difficulty else "normal",
+		"eclipse": GameState.eclipse_level,
 		"pet": String(GameState.pet.id) if GameState.pet else "",
 		"pacts": pact_ids,
 		"stats": stats,
@@ -48,6 +49,7 @@ static func load_run(d: Dictionary) -> bool:
 	GameState.run_seed = int(d.get("seed", 0))
 	GameState.kills = int(d.get("kills", 0))
 	GameState.difficulty = ItemDatabase.difficulty(StringName(d.get("difficulty", "normal")))
+	GameState.eclipse_level = int(d.get("eclipse", 0))
 	GameState.pacts.clear()
 	for pid in d.get("pacts", []):
 		for p in ItemDatabase.pacts:

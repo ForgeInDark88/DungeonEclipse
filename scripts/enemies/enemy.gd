@@ -193,6 +193,8 @@ func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null, p_ch
 	# Difficulty and curses of the altars of fate.
 	max_hp = maxi(1, roundi(max_hp * (1.0 + GameState.run_effect("enemy_hp"))))
 	damage = maxi(1, roundi(damage * (1.0 + GameState.run_effect("enemy_damage"))))
+	if self is Boss:  # levels of the Eclipse: angrier guardians
+		max_hp = maxi(1, roundi(max_hp * (1.0 + GameState.run_effect("boss_hp"))))
 	# Co-op: the party makes the dungeon meaner.
 	if Net.active:
 		max_hp = maxi(1, roundi(max_hp * Net.enemy_hp_mult()))

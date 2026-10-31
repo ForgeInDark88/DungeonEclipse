@@ -25,6 +25,8 @@ var run_stats: Dictionary = {}
 var pacts: Array[RunPactData] = []
 ## Difficulty of this run (data/difficulties).
 var difficulty: DifficultyData
+## Level of the Eclipse of this run (0 = none, see EclipseLevels).
+var eclipse_level := 0
 ## Pet of this run (null = none).
 var pet: PetData
 ## Combo: kills in a row, each within COMBO_WINDOW of the previous one,
@@ -55,12 +57,14 @@ func _ready() -> void:
 
 ## `seed_value` >= 0 makes the whole run reproducible (tests, network runs).
 func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, female := false,
-		difficulty_id: StringName = &"normal") -> void:
+		difficulty_id: StringName = &"normal", eclipse := 0) -> void:
 	SaveManager.clear_run()  # a new run replaces any saved one
 	difficulty = ItemDatabase.difficulty(difficulty_id)
+	eclipse_level = clampi(eclipse, 0, EclipseLevels.MAX)
 	hero = Hero.new(race, class_data, ItemDatabase.equipment_layout)
 	hero.female = female
 	hero.give_starting_kit()
+	apply_eclipse(hero)
 	hero.skills.add_points(1)  # the run opens with a choice: the first learned skill commits the branch
 	MetaProgress.apply_to(hero, true)
 	floor_number = TOWN_FLOOR
@@ -129,6 +133,8 @@ func add_pact(pact: RunPactData) -> void:
 ## the difficulty (DifficultyData.effects).
 func run_effect(key: String) -> float:
 	var v := float(difficulty.effects.get(key, 0.0)) if difficulty else 0.0
+	if eclipse_level > 0 and key in ["enemy_hp", "enemy_damage", "boss_hp"]:
+		v += EclipseLevels.value(eclipse_level, key)
 	for p in pacts:
 		v += float(p.effects.get(key, 0.0))
 	return v
@@ -136,15 +142,27 @@ func run_effect(key: String) -> float:
 
 ## Difficulty multipliers that are not run effects (1.0 without a run).
 func elite_chance_mult() -> float:
-	return difficulty.elite_chance_mult if difficulty else 1.0
+	return (difficulty.elite_chance_mult if difficulty else 1.0) * EclipseLevels.value(eclipse_level, "elite_mult")
 
 
 func seal_share() -> float:
-	return difficulty.seal_share if difficulty else 0.6
+	return minf(0.95, (difficulty.seal_share if difficulty else 0.6) + EclipseLevels.value(eclipse_level, "seal_add"))
 
 
 func trap_damage_mult() -> float:
-	return difficulty.trap_damage_mult if difficulty else 1.0
+	return (difficulty.trap_damage_mult if difficulty else 1.0) * EclipseLevels.value(eclipse_level, "trap_mult")
+
+
+## The Eclipse's trials that live on the hero: weaker healing, no potions.
+func apply_eclipse(h: Hero) -> void:
+	if h == null:
+		return
+	h.stats.eclipse_heal = EclipseLevels.value(eclipse_level, "heal_mult")
+	if EclipseLevels.value(eclipse_level, "no_potions") > 0.0:
+		for id in [&"health_potion", &"mana_crystal", &"mana_potion"]:
+			var n: int = h.inventory.count_of(id)
+			if n > 0:
+				h.inventory.remove_by_id(id, n)
 
 
 ## Seed of the current floor: each run and each floor is different.
@@ -154,9 +172,10 @@ func floor_seed() -> int:
 
 ## Network: a client entering a hosted run. The hero is built per player
 ## inside the game scene from the race/class each peer registered with Net.
-func begin_network_run(seed_value: int, difficulty_id: StringName, start_floor := TOWN_FLOOR) -> void:
+func begin_network_run(seed_value: int, difficulty_id: StringName, start_floor := TOWN_FLOOR, eclipse := 0) -> void:
 	SaveManager.clear_run()
 	difficulty = ItemDatabase.difficulty(difficulty_id)
+	eclipse_level = clampi(eclipse, 0, EclipseLevels.MAX)
 	hero = null
 	floor_number = start_floor
 	kills = 0

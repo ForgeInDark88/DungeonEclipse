@@ -209,10 +209,12 @@ func lose_hp(amount: int) -> int:
 
 ## Relics (the blood pact) scale every heal; 0 = no healing at all.
 var heal_mult := 1.0
+## Levels of the Eclipse («Голод»): every heal weaker, for the whole run.
+var eclipse_heal := 1.0
 
 
 func heal(amount: int) -> void:
-	amount = roundi(amount * heal_mult)
+	amount = roundi(amount * heal_mult * eclipse_heal)
 	if amount <= 0:
 		return
 	hp = mini(max_hp(), hp + amount)

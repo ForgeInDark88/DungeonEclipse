@@ -156,13 +156,13 @@ func send_full_state(peer_id: int) -> void:
 # ------------------------------------------------------------------ run
 ## Host presses "start": every client enters the game with the same seed.
 @rpc("authority", "call_remote", "reliable")
-func start_run(seed_value: int, difficulty_id: StringName) -> void:
-	GameState.begin_network_run(seed_value, difficulty_id)
+func start_run(seed_value: int, difficulty_id: StringName, eclipse := 0) -> void:
+	GameState.begin_network_run(seed_value, difficulty_id, GameState.TOWN_FLOOR, eclipse)
 
 
 func rpc_start_run(seed_value: int, difficulty_id: StringName) -> void:
 	if is_host:
-		start_run.rpc(seed_value, difficulty_id)
+		start_run.rpc(seed_value, difficulty_id, GameState.eclipse_level)
 
 
 ## Host moved everyone to another floor (or the town).
@@ -178,14 +178,14 @@ func rpc_set_floor(floor_number: int, town_return: int = -1) -> void:
 
 ## Host pushes its run state to a peer that joined mid-run.
 @rpc("authority", "call_remote", "reliable")
-func late_join(floor_number: int, seed_value: int, difficulty_id: StringName) -> void:
-	GameState.begin_network_run(seed_value, difficulty_id, floor_number)
+func late_join(floor_number: int, seed_value: int, difficulty_id: StringName, eclipse := 0) -> void:
+	GameState.begin_network_run(seed_value, difficulty_id, floor_number, eclipse)
 
 
 func rpc_late_join(peer_id: int) -> void:
 	if is_host:
 		late_join.rpc_id(peer_id, GameState.floor_number, GameState.run_seed,
-				GameState.difficulty.id if GameState.difficulty else &"normal")
+				GameState.difficulty.id if GameState.difficulty else &"normal", GameState.eclipse_level)
 
 
 # ------------------------------------------------------------ difficulty
@@ -237,7 +237,7 @@ func _on_peer_connected(id: int) -> void:
 		if GameState.run_active:
 			# A friend arrived mid-run: pull them straight into the dungeon.
 			late_join.rpc_id(id, GameState.floor_number, GameState.run_seed,
-					GameState.difficulty.id if GameState.difficulty else &"normal")
+					GameState.difficulty.id if GameState.difficulty else &"normal", GameState.eclipse_level)
 
 
 func _on_peer_disconnected(id: int) -> void:

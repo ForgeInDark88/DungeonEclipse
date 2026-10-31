@@ -17,6 +17,9 @@ var _skills_row: HBoxContainer
 var _items_row: HFlowContainer
 var _difficulty: DifficultyData
 var _difficulty_desc: Label
+## Level of the Eclipse (after the first victory).
+var _eclipse := 0
+var _eclipse_label: Label
 
 
 func _ready() -> void:
@@ -91,6 +94,7 @@ func _ready() -> void:
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	right_page.add_child(spacer)
 	_build_difficulty_row()
+	_build_eclipse_row()
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
 	buttons.add_theme_constant_override("separation", 8)
@@ -107,7 +111,8 @@ func _ready() -> void:
 			if Net.is_host:
 				Net.players[1] = Net.my_info.duplicate(true)
 				Net.broadcast_players()
-		GameState.start_new_run(_race, _class, -1, _female, _difficulty.id if _difficulty else &"normal")
+		SaveManager.last_eclipse = _eclipse
+		GameState.start_new_run(_race, _class, -1, _female, _difficulty.id if _difficulty else &"normal", _eclipse)
 		if Net.active and Net.is_host:
 			Net.rpc_start_run(GameState.run_seed, GameState.difficulty.id if GameState.difficulty else &"normal"))
 	buttons.add_child(go)
@@ -141,6 +146,39 @@ func _build_difficulty_row() -> void:
 	right_page.add_child(_difficulty_desc)
 	if last:
 		_select_difficulty(last)
+
+
+## Levels of the Eclipse: «−  N «name»  +» and what the level adds up to.
+## Hidden until the first victory opens level 1.
+func _build_eclipse_row() -> void:
+	if MetaProgress.eclipse_unlocked <= 0:
+		return
+	_eclipse = clampi(SaveManager.last_eclipse, 0, MetaProgress.eclipse_unlocked)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 3)
+	right_page.add_child(row)
+	row.add_child(UIStyle.label("Затмение", 9, UIStyle.INK_SOFT))
+	var minus := BookPageScreen.button("−", func() -> void: _set_eclipse(_eclipse - 1))
+	minus.add_theme_font_size_override("font_size", 8)
+	row.add_child(minus)
+	_eclipse_label = UIStyle.label("", 8, Color(0.45, 0.2, 0.55))
+	_eclipse_label.custom_minimum_size = Vector2(150, 0)
+	_eclipse_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	row.add_child(_eclipse_label)
+	var plus := BookPageScreen.button("+", func() -> void: _set_eclipse(_eclipse + 1))
+	plus.add_theme_font_size_override("font_size", 8)
+	row.add_child(plus)
+	_set_eclipse(_eclipse)
+
+
+func _set_eclipse(level: int) -> void:
+	_eclipse = clampi(level, 0, MetaProgress.eclipse_unlocked)
+	_eclipse_label.text = "%d · %s" % [_eclipse, EclipseLevels.level_name(_eclipse)] if _eclipse > 0 else "нет"
+	# the whole list of trials in the tooltip; the page keeps the reward
+	_eclipse_label.tooltip_text = EclipseLevels.describe(_eclipse)
+	_eclipse_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	if _eclipse > 0:
+		_eclipse_label.text += "  ×%.1f" % EclipseLevels.shard_mult(_eclipse)
 
 
 func _select_difficulty(d: DifficultyData) -> void:

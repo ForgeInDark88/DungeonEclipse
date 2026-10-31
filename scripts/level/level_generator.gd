@@ -455,7 +455,8 @@ func _place_enemies(floor_number: int) -> void:
 	# Pacing: fewer, tougher monsters gathered in lairs (packs of 3-5 in
 	# some rooms), quiet rooms in between - fight, breathe, fight - instead
 	# of a carpet of mobs to mow through (it was ~70 places on floor 22).
-	var count := mini(MAX_MONSTERS, 4 + roundi(floor_number * 0.75) + rooms.size() / 4)
+	var horde := 1.0 + EclipseLevels.value(GameState.eclipse_level, "monster_count")
+	var count := mini(roundi(MAX_MONSTERS * horde), roundi((4 + roundi(floor_number * 0.75) + rooms.size() / 4) * horde))
 	_shuffle(rooms)
 	var lairs := rooms.slice(0, clampi(ceili(count / 4.0), 1, rooms.size()))
 	var placed := 0

@@ -26,6 +26,8 @@ var show_damage_numbers: bool = true
 var show_hints: bool = true
 ## Difficulty picked last time in hero creation (DifficultyData.id).
 var last_difficulty: String = "normal"
+## Level of the Eclipse picked last time.
+var last_eclipse: int = 0
 ## Network nickname (persisted between sessions).
 var last_name: String = ""
 ## Ids of beginner hints already shown (HintManager).
@@ -60,6 +62,7 @@ func load_settings() -> void:
 	show_hints = cfg.get_value("game", "hints", show_hints)
 	seen_hints = cfg.get_value("game", "seen_hints", [])
 	last_difficulty = cfg.get_value("game", "difficulty", last_difficulty)
+	last_eclipse = cfg.get_value("game", "eclipse", last_eclipse)
 	last_name = cfg.get_value("game", "name", last_name)
 	InputBindings.apply_overrides(cfg.get_value("input", "bindings", {}))
 
@@ -79,6 +82,7 @@ func save_settings() -> void:
 	cfg.set_value("game", "hints", show_hints)
 	cfg.set_value("game", "seen_hints", seen_hints)
 	cfg.set_value("game", "difficulty", last_difficulty)
+	cfg.set_value("game", "eclipse", last_eclipse)
 	cfg.set_value("game", "name", last_name)
 	cfg.set_value("input", "bindings", InputBindings.overrides())
 	cfg.save(SETTINGS_PATH)

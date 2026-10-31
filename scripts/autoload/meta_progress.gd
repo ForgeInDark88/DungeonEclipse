@@ -21,6 +21,9 @@ const SHARDS_SECRET := 25
 const SHARD_ITEM := &"eclipse_shard"
 
 var shards: int = 0
+## Highest level of the Eclipse open for a new run (a victory on level N
+## opens N + 1; 0 = none yet - the first victory opens level 1).
+var eclipse_unlocked: int = 0
 var gold: int = 0
 ## upgrade id -> level
 var levels: Dictionary = {}
@@ -47,6 +50,7 @@ func load_progress() -> void:
 	gold = cfg.get_value(SECTION, "gold", 0)
 	levels = cfg.get_value(SECTION, "levels", {})
 	unlocked.assign(cfg.get_value(SECTION, "unlocked", []))
+	eclipse_unlocked = cfg.get_value(SECTION, "eclipse_unlocked", 0)
 
 
 func save_progress() -> void:
@@ -57,6 +61,7 @@ func save_progress() -> void:
 	cfg.set_value(SECTION, "gold", gold)
 	cfg.set_value(SECTION, "levels", levels)
 	cfg.set_value(SECTION, "unlocked", Array(unlocked))
+	cfg.set_value(SECTION, "eclipse_unlocked", eclipse_unlocked)
 	cfg.save(SaveManager.META_PATH)
 
 
@@ -173,6 +178,14 @@ func finish_run(hero: Hero, floor_reached: int, stats: Dictionary) -> Dictionary
 		var total := roundi(s * diff.shard_mult)
 		parts.append("сложность «%s»: %+d" % [diff.display_name, total - s])
 		s = total
+	var lvl := GameState.eclipse_level
+	if lvl > 0 and s > 0:
+		var total2 := roundi(s * EclipseLevels.shard_mult(lvl))
+		parts.append("Затмение %d «%s»: %+d" % [lvl, EclipseLevels.level_name(lvl), total2 - s])
+		s = total2
+	if stats.get("victory", false) and lvl >= eclipse_unlocked and lvl < EclipseLevels.MAX:
+		eclipse_unlocked = lvl + 1
+		parts.append("открыт уровень Затмения %d «%s»" % [eclipse_unlocked, EclipseLevels.level_name(eclipse_unlocked)])
 	var g := roundi(int(stats.get("gold", 0)) * GOLD_BANK_SHARE)
 	shards += s
 	gold += g

@@ -546,6 +546,7 @@ func _make_hero_from(info: Dictionary) -> Hero:
 	h.female = bool(info.get("female", false))
 	h.give_starting_kit()
 	h.skills.add_points(1)
+	GameState.apply_eclipse(h)
 	return h
 
 
