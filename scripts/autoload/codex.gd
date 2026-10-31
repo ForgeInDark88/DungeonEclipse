@@ -58,7 +58,7 @@ func _notification(what: int) -> void:
 
 func load_progress() -> void:
 	var cfg := ConfigFile.new()
-	if not FileAccess.file_exists(SaveManager.META_PATH) or cfg.load(SaveManager.META_PATH) != OK:
+	if SaveManager.read_cfg(cfg, SaveManager.META_PATH) != OK:
 		return
 	counters = cfg.get_value(SECTION, "counters", {})
 	enemy_kills = cfg.get_value(SECTION, "enemy_kills", {})
@@ -70,15 +70,15 @@ func load_progress() -> void:
 
 func save_progress() -> void:
 	var cfg := ConfigFile.new()
-	if FileAccess.file_exists(SaveManager.META_PATH):
-		cfg.load(SaveManager.META_PATH)  # keep the other sections
+	SaveManager.read_cfg(cfg, SaveManager.META_PATH)  # keep the other sections
+	SaveManager.migrate_meta(cfg)
 	cfg.set_value(SECTION, "counters", counters)
 	cfg.set_value(SECTION, "enemy_kills", enemy_kills)
 	cfg.set_value(SECTION, "items_found", items_found)
 	cfg.set_value(SECTION, "achieved", achieved)
 	cfg.set_value(SECTION, "lore_read", lore_read)
 	cfg.set_value(SECTION, "lore_claimed", lore_claimed)
-	cfg.save(SaveManager.META_PATH)
+	SaveManager.write_cfg(cfg, SaveManager.META_PATH)
 	_dirty = false
 
 

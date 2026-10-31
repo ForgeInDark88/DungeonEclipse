@@ -9,6 +9,10 @@ signal settings_changed
 const SETTINGS_PATH := "user://settings.cfg"
 const META_PATH := "user://meta.cfg"
 const RUN_PATH := "user://run.cfg"
+## Format of the meta save (sanctum, codex, records). Bump it when a section
+## changes shape and add the step to migrate_meta(); older files are
+## upgraded on load, files of a newer game are left untouched.
+const META_FORMAT := 2
 
 var master_volume: float = 0.8
 var music_volume: float = 0.6
@@ -47,7 +51,7 @@ func _ready() -> void:
 
 func load_settings() -> void:
 	var cfg := ConfigFile.new()
-	if cfg.load(SETTINGS_PATH) != OK:
+	if read_cfg(cfg, SETTINGS_PATH) != OK:
 		return
 	master_volume = cfg.get_value("audio", "master_volume", master_volume)
 	music_volume = cfg.get_value("audio", "music_volume", music_volume)
@@ -85,7 +89,7 @@ func save_settings() -> void:
 	cfg.set_value("game", "eclipse", last_eclipse)
 	cfg.set_value("game", "name", last_name)
 	cfg.set_value("input", "bindings", InputBindings.overrides())
-	cfg.save(SETTINGS_PATH)
+	write_cfg(cfg, SETTINGS_PATH)
 	settings_changed.emit()
 
 
@@ -103,7 +107,7 @@ func apply_settings() -> void:
 
 func load_meta() -> void:
 	var cfg := ConfigFile.new()
-	if cfg.load(META_PATH) != OK:
+	if read_cfg(cfg, META_PATH) != OK:
 		return
 	best_floor = cfg.get_value("meta", "best_floor", 0)
 	total_runs = cfg.get_value("meta", "total_runs", 0)
@@ -112,12 +116,12 @@ func load_meta() -> void:
 
 func save_meta() -> void:
 	var cfg := ConfigFile.new()
-	if FileAccess.file_exists(META_PATH):
-		cfg.load(META_PATH)  # keep the other sections (sanctum, achievements...)
+	read_cfg(cfg, META_PATH)  # keep the other sections (sanctum, achievements...)
+	migrate_meta(cfg)
 	cfg.set_value("meta", "best_floor", best_floor)
 	cfg.set_value("meta", "total_runs", total_runs)
 	cfg.set_value("meta", "total_kills", total_kills)
-	cfg.save(META_PATH)
+	write_cfg(cfg, META_PATH)
 
 
 func record_run(floor_reached: int, kills: int) -> void:
@@ -129,6 +133,47 @@ func record_run(floor_reached: int, kills: int) -> void:
 
 # --------------------------------------------------------------- run save
 ## A between-floors snapshot exists (main menu shows «Продолжить»).
+# ------------------------------------------------------- safe file access
+## Writes `cfg` so that a crash mid-write never breaks the save: into a
+## temporary file first, the previous version kept as `.bak`, then swapped.
+func write_cfg(cfg: ConfigFile, path: String) -> Error:
+	var tmp := path + ".tmp"
+	var err := cfg.save(tmp)
+	if err != OK:
+		return err
+	var abs_path := ProjectSettings.globalize_path(path)
+	if FileAccess.file_exists(path):
+		# Only a readable file becomes the backup (never back up garbage).
+		if ConfigFile.new().load(path) == OK:
+			DirAccess.copy_absolute(abs_path, abs_path + ".bak")
+		DirAccess.remove_absolute(abs_path)
+	return DirAccess.rename_absolute(ProjectSettings.globalize_path(tmp), abs_path)
+
+
+## Loads `path` into `cfg`; a broken or missing file falls back to the
+## `.bak` copy written by write_cfg. OK when either one loaded.
+func read_cfg(cfg: ConfigFile, path: String) -> Error:
+	if FileAccess.file_exists(path) and cfg.load(path) == OK:
+		return OK
+	if FileAccess.file_exists(path + ".bak") and cfg.load(path + ".bak") == OK:
+		push_warning("Save %s was unreadable: restored the backup copy" % path)
+		return OK
+	return ERR_FILE_NOT_FOUND
+
+
+## The meta save of an older game is upgraded step by step (format 1 had
+## no «save» section; format 2 added the levels of the Eclipse - defaults).
+func migrate_meta(cfg: ConfigFile) -> void:
+	var fmt: int = cfg.get_value("save", "format", 1)
+	if fmt > META_FORMAT:
+		push_warning("meta.cfg comes from a newer game (format %d)" % fmt)
+		return
+	if fmt < 2:
+		if not cfg.has_section_key("sanctum", "eclipse_unlocked"):
+			cfg.set_value("sanctum", "eclipse_unlocked", 0)
+	cfg.set_value("save", "format", META_FORMAT)
+
+
 func has_run() -> bool:
 	return FileAccess.file_exists(RUN_PATH)
 
@@ -141,7 +186,7 @@ func save_run() -> void:
 		return
 	var cfg := ConfigFile.new()
 	cfg.set_value("run", "data", RunCodec.save_run())
-	cfg.save(RUN_PATH)
+	write_cfg(cfg, RUN_PATH)
 
 
 ## The saved run data ({} = no save).
@@ -149,12 +194,13 @@ func run_data() -> Dictionary:
 	if not has_run():
 		return {}
 	var cfg := ConfigFile.new()
-	if cfg.load(RUN_PATH) != OK:
+	if read_cfg(cfg, RUN_PATH) != OK:
 		return {}
 	return cfg.get_value("run", "data", {})
 
 
 ## Death or a brand new run: the snapshot is gone (permadeath).
 func clear_run() -> void:
-	if has_run():
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(RUN_PATH))
+	for p in [RUN_PATH, RUN_PATH + ".bak", RUN_PATH + ".tmp"]:
+		if FileAccess.file_exists(p):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(p))

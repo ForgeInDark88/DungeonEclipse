@@ -6,10 +6,20 @@ extends RefCounted
 ## (weapon copies with affixes, durability, upgrades) are stored field by
 ## field on top of their template id.
 
-const VERSION := 1
+## Format of the run save. Bump it when the dictionary changes shape and add
+## the step to _migrate(): a run saved by an older game still continues.
+const VERSION := 2
 
 
 # ------------------------------------------------------------- whole run
+## Upgrades a run saved by an older game, one format step at a time.
+static func _migrate(d: Dictionary, from: int) -> Dictionary:
+	if from < 2:
+		d["eclipse"] = int(d.get("eclipse", 0))  # v2: the levels of the Eclipse
+	d["version"] = VERSION
+	return d
+
+
 static func save_run() -> Dictionary:
 	var hero := GameState.hero
 	if hero == null:
@@ -39,8 +49,10 @@ static func save_run() -> Dictionary:
 
 ## Rebuilds the run state from `d` (true = GameState is ready, switch scenes).
 static func load_run(d: Dictionary) -> bool:
-	if int(d.get("version", 0)) != VERSION:
-		return false
+	var v := int(d.get("version", 0))
+	if v <= 0 or v > VERSION:
+		return false  # unknown or from a newer game: never half-load it
+	d = _migrate(d.duplicate(true), v)
 	var hero := load_hero(d.get("hero", {}))
 	if hero == null:
 		return false

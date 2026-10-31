@@ -44,8 +44,9 @@ func _ready() -> void:
 
 func load_progress() -> void:
 	var cfg := ConfigFile.new()
-	if cfg.load(SaveManager.META_PATH) != OK:
+	if SaveManager.read_cfg(cfg, SaveManager.META_PATH) != OK:
 		return
+	SaveManager.migrate_meta(cfg)
 	shards = cfg.get_value(SECTION, "shards", 0)
 	gold = cfg.get_value(SECTION, "gold", 0)
 	levels = cfg.get_value(SECTION, "levels", {})
@@ -55,14 +56,14 @@ func load_progress() -> void:
 
 func save_progress() -> void:
 	var cfg := ConfigFile.new()
-	if FileAccess.file_exists(SaveManager.META_PATH):
-		cfg.load(SaveManager.META_PATH)  # keep the other sections
+	SaveManager.read_cfg(cfg, SaveManager.META_PATH)  # keep the other sections
+	SaveManager.migrate_meta(cfg)
 	cfg.set_value(SECTION, "shards", shards)
 	cfg.set_value(SECTION, "gold", gold)
 	cfg.set_value(SECTION, "levels", levels)
 	cfg.set_value(SECTION, "unlocked", Array(unlocked))
 	cfg.set_value(SECTION, "eclipse_unlocked", eclipse_unlocked)
-	cfg.save(SaveManager.META_PATH)
+	SaveManager.write_cfg(cfg, SaveManager.META_PATH)
 
 
 ## Wipes the Sanctum (tests).
