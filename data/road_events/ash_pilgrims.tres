@@ -11,4 +11,5 @@ regions = Array[StringName]([&"deeps"])
 min_depth = 16
 max_depth = 30
 weight = 0.9
+prop = &"pilgrims"
 options = Array[Dictionary]([{"text": "Присоединиться к пению.", "requires": "", "hint": "", "outcomes": [{"chance": 0.7, "text": "Песня успокаивает: силы возвращаются.", "effects": {"hp_pct": 50, "mana_pct": 50}}, {"chance": 0.3, "text": "Песня проникает слишком глубоко. Что-то в вас поёт до сих пор.", "effects": {"hp_pct": 50, "pact": "curse"}}]}, {"text": "Выменять зелье (40 золота).", "requires": "gold:40", "hint": "40 золота", "outcomes": [{"chance": 1.0, "text": "Паломник протягивает пузырёк и не берёт сдачи.", "effects": {"gold": -40, "item": "health_potion"}}]}, {"text": "Пройти мимо.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы идёте дальше, ничего не потеряв и ничего не найдя.", "effects": {}}]}])

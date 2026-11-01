@@ -288,3 +288,15 @@ static func map_icon(kind: StringName) -> Texture2D:
 
 static func map_hint(kind: StringName) -> Texture2D:
 	return tex(MAP_DIR + "hint_%s.png" % kind)
+
+
+## Icon of a town building (tools/gen_town_loop_art.py): ui/buildings/<id>.png.
+static func building_icon(id: StringName) -> Texture2D:
+	var path := UI_DIR + "buildings/%s.png" % id
+	return tex(path) if ResourceLoader.exists(path) else null
+
+
+## Two idle frames of a townsperson (npc/<id>_idle.png), null when none.
+static func npc_sheet(id: StringName) -> Texture2D:
+	var path := SPRITES_DIR + "npc/%s_idle.png" % id
+	return tex(path) if ResourceLoader.exists(path) else null

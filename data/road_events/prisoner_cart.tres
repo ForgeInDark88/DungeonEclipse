@@ -11,4 +11,5 @@ regions = Array[StringName]([])
 min_depth = 2
 max_depth = 99
 weight = 0.9
+prop = &"cart"
 options = Array[Dictionary]([{"text": "Напасть на охрану.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы бросаетесь в бой. Победите — и пленники свободны!", "effects": {"fight": "elite", "rescue": "any"}}]}, {"text": "Тихо открыть замок (ловкость).", "requires": "class:rogue", "hint": "разбойник", "outcomes": [{"chance": 1.0, "text": "Щелчок — и пленник бесшумно уходит за вами.", "effects": {"rescue": "any", "xp": 20}}]}, {"text": "Отпустить повозку.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Колёса скрипят во тьме. Вы запоминаете этот звук.", "effects": {}}]}])

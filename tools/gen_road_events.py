@@ -20,6 +20,14 @@ def r(chance, text, **effects):
     return {"chance": chance, "text": text, "effects": effects}
 
 
+PROPS = {
+    "wounded_scout": "scout", "forgotten_shrine": "shrine", "broken_caravan": "caravan", "dice_player": "gambler",
+    "collapsed_tunnel": "rubble", "prisoner_cart": "cart", "ossuary": "ossuary", "glowing_mushrooms": "mushrooms",
+    "gravedigger_ghost": "ghost", "fallen_statue": "statue", "lava_bridge": "lava_chest", "jester_mirror": "mirror",
+    "drowned_echo": "bell", "crystal_vein": "crystal", "ash_pilgrims": "pilgrims", "black_sun_whisper": "black_sun",
+    "last_survivors": "survivors",
+}
+
 LEAVE = o("Пройти мимо.", [r(1.0, "Вы идёте дальше, ничего не потеряв и ничего не найдя.")])
 
 EVENTS = [
@@ -167,6 +175,7 @@ regions = Array[StringName]([{regs}])
 min_depth = {dmin}
 max_depth = {dmax}
 weight = {weight}
+prop = &"{PROPS.get(eid, 'shrine')}"
 options = {opts}
 ''')
     print("events: %d" % len(EVENTS))

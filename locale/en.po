@@ -939,7 +939,7 @@ msgstr "Fast and deadly, relies on crits. Damage depends on Agility. Roll (RMB /
 msgid "Бьёт туда, где больнее всего."
 msgstr "It strikes where it hurts most."
 
-#: scripts/ui/event_screen.gd
+#: scripts/ui/event_dialog.gd
 msgid "В бой!"
 msgstr "To battle!"
 
@@ -983,7 +983,7 @@ msgstr "In the bag:"
 msgid "Ваш адрес: %s (порт %d)"
 msgstr "Your address: %s (port %d)"
 
-#: scripts/ui/event_screen.gd
+#: scripts/ui/event_dialog.gd
 msgid "Ваш выбор"
 msgstr "Your choice"
 
@@ -1683,10 +1683,6 @@ msgstr "Range"
 msgid "Дальше"
 msgstr "Next"
 
-#: scripts/ui/event_screen.gd
-msgid "Дальше по дороге"
-msgstr "On down the road"
-
 #: scripts/events/event_altar.gd
 msgid "Дар алтаря: %s +2 до конца забега"
 msgstr "The altar's gift: %s +2 until the end of the run"
@@ -2283,7 +2279,7 @@ msgstr "Health"
 msgid "Здоровье %d / %d · Мана %d / %d"
 msgstr "Health %d / %d · Mana %d / %d"
 
-#: scripts/ui/event_screen.gd
+#: scripts/ui/event_dialog.gd
 msgid "Здоровье %d/%d · Золото %d"
 msgstr "Health %d/%d · Gold %d"
 
@@ -2506,6 +2502,10 @@ msgstr "Come, the town is waiting."
 #: data
 msgid "Из земли встаёт скелет-воин и бьётся за вас."
 msgstr "A skeleton warrior rises from the ground and fights for you."
+
+#: scripts/world/event_spot.gd
+msgid "Из темноты выходят враги! Выход запечатан, пока они живы."
+msgstr "Enemies step out of the dark! The exit is sealed while they live."
 
 #: data
 msgid "Из темноты выходят хозяева этих мест. Придётся драться!"
@@ -5415,6 +5415,10 @@ msgstr "Picked up"
 msgid "Подобрать: "
 msgstr "Pick up: "
 
+#: scripts/world/event_spot.gd
+msgid "Подойти: %s"
+msgstr "Approach: %s"
+
 #: data
 msgid "Подорвать бомбой."
 msgstr "Blow it up with a bomb."
@@ -7387,10 +7391,6 @@ msgstr "Node types are visible 1 step further."
 msgid "Титан затопленных сводов. Его звон глушит героев, а вода кипит от ярости."
 msgstr "Titan of the flooded vaults. Its toll deafens heroes, and the water boils with fury."
 
-#: scripts/ui/event_screen.gd
-msgid "Тихая дорога"
-msgstr "A quiet road"
-
 #: data
 msgid "Тихо открыть замок (ловкость)."
 msgstr "Quietly pick the lock (agility)."
@@ -8119,7 +8119,7 @@ msgstr "Repairs worn equipment by %d%% durability"
 msgid "Числа урона"
 msgstr "Damage numbers"
 
-#: scripts/ui/event_screen.gd
+#: scripts/ui/event_dialog.gd
 msgid "Что вышло"
 msgstr "What happened"
 

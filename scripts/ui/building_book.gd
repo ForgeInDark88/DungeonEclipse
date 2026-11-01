@@ -115,7 +115,15 @@ func _focus_first() -> void:
 # ------------------------------------------------------------- left page
 func _fill_left() -> void:
 	var lvl := Buildings.level(data.id)
-	_left.add_child(UIStyle.label(data.display_name, 12))
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 4)
+	var icon := TextureRect.new()
+	icon.texture = AssetPaths.building_icon(data.id)
+	icon.custom_minimum_size = Vector2(16, 16)
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	head.add_child(icon)
+	head.add_child(UIStyle.label(data.display_name, 12))
+	_left.add_child(head)
 	var stars := "★".repeat(lvl) + "☆".repeat(data.max_level - lvl)
 	_left.add_child(UIStyle.label(stars if lvl > 0 else tr("Руины"), 9, UIStyle.INK_SOFT))
 	_left.add_child(_wrap(data.description, 7))

@@ -109,6 +109,12 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	if layout.is_town:
 		_spawn_town()
 		return
+	if layout.is_event_room:
+		_spawn_door()
+		_spawn_specials()
+		_spawn_ambience()
+		_spawn_decorations()
+		return
 	if layout.is_arena:
 		_spawn_boss()
 		_spawn_lore()
@@ -212,6 +218,16 @@ func _on_seal_kill(_d: EnemyData, _p: Vector2) -> void:
 		if ns:
 			ns.seal_state.rpc(seal_kills)
 	_seal_progress()
+
+
+## A fight started on purpose (a road event): the exit stays sealed until
+## these `count` monsters are dead.
+func seal_for_fight(count: int) -> void:
+	seal_required = count
+	seal_kills = 0
+	if not EventBus.enemy_killed.is_connected(_on_seal_kill):
+		EventBus.enemy_killed.connect(_on_seal_kill)
+	_emit_seal()
 
 
 ## Clients: the host's count (late join, kills the client did not see).
@@ -759,6 +775,12 @@ func _spawn_specials() -> void:
 				var dummy: Enemy = (load(ENEMY_SCENE) as PackedScene).instantiate()
 				dummy.setup(load(AssetPaths.TRAINING_DUMMY) as EnemyData, maxi(1, floor_number))
 				add_entity(dummy, cell_bottom(info["cell"]))
+			&"road_event":
+				var spot := EventSpot.new()
+				spot.level = self
+				for c in info["cells"]:
+					spot.fight_cells.append(c)
+				add_entity(spot, cell_bottom(info["cell"]))
 			&"rescue":
 				var cage := RescueCage.new()
 				cage.level = self

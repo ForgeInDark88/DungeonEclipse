@@ -14,9 +14,8 @@ enum State { MAIN_MENU, HERO_CREATE, TOWN, EXPEDITION_MAP, LOCATION, RUN_RESULT 
 const MAP_SCENE := "res://scenes/ui/expedition_map.tscn"
 const RESULT_SCENE := "res://scenes/ui/run_result.tscn"
 const CAMP_SCENE := "res://scenes/ui/camp.tscn"
-const EVENT_SCENE := "res://scenes/ui/event_scene.tscn"
 ## Node types played as a platformer location in the game scene.
-const PLATFORMER_TYPES := [&"level", &"elite", &"special", &"rescue", &"lair", &"boss"]
+const PLATFORMER_TYPES := [&"level", &"elite", &"special", &"rescue", &"lair", &"boss", &"event"]
 const FADE_TIME := 0.25
 
 var state: State = State.MAIN_MENU
@@ -228,22 +227,6 @@ func _assign_prisoners(run: RunState) -> void:
 				break
 
 
-## An event turned into a fight: the node becomes a short fight location
-## of `kind` (level / elite) at the same depth; its exit leads to the map.
-func event_fight(kind: StringName) -> void:
-	var run := GameState.run
-	if run == null:
-		return
-	var n := run.current_node()
-	GameState.location["type"] = kind
-	GameState.location["mods"] = ExpeditionMap.MODS.get(kind, {})
-	GameState.location["seed"] = hash([int(n.get("seed", 0)), 77])
-	var hero := GameState.hero
-	run.loc = {"gold": hero.gold if hero else 0, "kills": GameState.kills, "shards": _shards(),
-			"finds": [], "picked": 0, "resources": run.loc.get("resources", {}), "cleared": false}
-	change_scene(GameState.GAME, State.LOCATION)
-
-
 ## A prisoner freed: they come to town if the hero comes home alive.
 func rescue(npc_id: StringName) -> void:
 	var run := GameState.run
@@ -283,10 +266,8 @@ func enter_node(id: int) -> bool:
 	var type := StringName(n["type"])
 	if type in PLATFORMER_TYPES:
 		change_scene(GameState.GAME, State.LOCATION)
-	elif type == &"camp":
-		change_scene(CAMP_SCENE, State.LOCATION)
 	else:
-		change_scene(EVENT_SCENE, State.LOCATION)
+		change_scene(CAMP_SCENE, State.LOCATION)
 	return true
 
 

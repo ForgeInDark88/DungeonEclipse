@@ -11,4 +11,5 @@ regions = Array[StringName]([&"ruins"])
 min_depth = 6
 max_depth = 20
 weight = 1.0
+prop = &"statue"
 options = Array[Dictionary]([{"text": "Выковырять рубины.", "requires": "", "hint": "", "outcomes": [{"chance": 0.6, "text": "Камни поддаются. Королю они больше ни к чему.", "effects": {"gold": 140}}, {"chance": 0.4, "text": "Рубины выпадают — и вместе с ними что-то тёмное из глазниц. Проклятие ложится на вас.", "effects": {"gold": 90, "pact": "curse"}}]}, {"text": "Почтить память короля.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы стоите у статуи. Где-то глубоко внутри откликается тепло.", "effects": {"xp": 50, "flag": "king_honoured"}}]}, {"text": "Пройти мимо.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы идёте дальше, ничего не потеряв и ничего не найдя.", "effects": {}}]}])

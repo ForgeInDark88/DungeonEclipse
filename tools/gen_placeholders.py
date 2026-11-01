@@ -1057,20 +1057,7 @@ NPCS = {
 
 
 def gen_loop() -> None:
-    town = "sprites/town/"
-    save(building(64, 66, (150, 175, 140, 255), (70, 120, 80, 255), sign=(60, 150, 70, 255)), town + "alchemist.png")
-    save(building(72, 70, (170, 160, 140, 255), (60, 80, 140, 255), sign=(40, 60, 150, 255)), town + "library.png")
-    save(building(64, 80, (120, 100, 140, 255), (60, 40, 80, 255), sign=(150, 80, 230, 255), columns=True), town + "sanctum.png")
-    save(building(76, 58, (140, 100, 65, 255), (100, 60, 40, 255), sign=(200, 150, 60, 255)), town + "warehouse.png")
-    save(building(30, 96, (150, 145, 135, 255), (90, 60, 45, 255), tower=True), town + "scout_tower.png")
-    save(building(80, 72, (200, 190, 165, 255), (150, 50, 40, 255), sign=GOLD, columns=True), town + "hall.png")
-    save(ruins(), town + "ruins.png")
-    save(banner((180, 40, 40, 255)), town + "banner_red.png")
-    save(banner((60, 90, 170, 255)), town + "banner_blue.png")
-    save(banner(GOLD), town + "banner_gold.png")
-    for nid, (body, hair, apron) in NPCS.items():
-        save(townsperson(body, hair, apron=apron), "sprites/npc/%s.png" % nid)
-        save(portrait(body, hair), "sprites/portraits/npc_%s.png" % nid, do_outline=False)
+    # Buildings, banners, ruins, people and portraits: tools/gen_town_loop_art.py.
     save(icon_scroll(), "sprites/items/revive_scroll.png")
     # the prisoner's cage (rescue nodes): bars, a roof, a padlock
     cage = new(28, 36)

@@ -11,4 +11,5 @@ regions = Array[StringName]([&"gates"])
 min_depth = 1
 max_depth = 10
 weight = 1.0
+prop = &"ossuary"
 options = Array[Dictionary]([{"text": "Оставить в чаше кость.", "requires": "item:bone", "hint": "кость", "outcomes": [{"chance": 1.0, "text": "Стук стихает. Мёртвые признают вас своим и делятся тем, что хранили.", "effects": {"take_item": "bone", "shards": 2}}]}, {"text": "Разбить черепа и забрать украшения.", "requires": "", "hint": "", "outcomes": [{"chance": 0.5, "text": "Золотые зубы и кольца — неплохая добыча.", "effects": {"gold": 70}}, {"chance": 0.5, "text": "Кости поднимаются. Вы разбудили стражей склепа!", "effects": {"fight": "level", "gold": 40}}]}, {"text": "Пройти мимо.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы идёте дальше, ничего не потеряв и ничего не найдя.", "effects": {}}]}])

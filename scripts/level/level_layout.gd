@@ -19,6 +19,9 @@ var specials: Array[Dictionary] = []
 ## Where the floor's note lies (Vector2i(-1, -1) = none).
 var lore_cell := Vector2i(-1, -1)
 var is_arena := false
+## A road event's room (LevelGenerator.generate_event_room): the scenery of
+## the event in the middle, the way in on the left, the exit on the right.
+var is_event_room := false
 ## Boss arenas: lasting hazards {"style": BossHazard.Style, "x0", "x1" (cells),
 ## "row" (the cell row they lie on), "h" (px), "damage" (true/false)}.
 var arena_hazards: Array[Dictionary] = []

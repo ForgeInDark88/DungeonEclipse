@@ -11,4 +11,5 @@ regions = Array[StringName]([])
 min_depth = 1
 max_depth = 99
 weight = 1.0
+prop = &"scout"
 options = Array[Dictionary]([{"text": "Отдать зелье здоровья.", "requires": "item:health_potion", "hint": "нужно зелье здоровья", "outcomes": [{"chance": 1.0, "text": "Разведчик оживает и в благодарность отмечает на вашей карте все знаки: теперь вы читаете дорогу, как он.", "effects": {"take_item": "health_potion", "rumours": true, "xp": 15}}]}, {"text": "Обыскать его сумку, пока он слаб.", "requires": "", "hint": "", "outcomes": [{"chance": 0.7, "text": "В сумке золото и пара полезных мелочей. Разведчик смотрит вам вслед — молча.", "effects": {"gold": 60, "loot": "chest_common"}}, {"chance": 0.3, "text": "Он оказался не так уж слаб: удар кинжалом, и он ковыляет прочь. Удача отвернулась от вас.", "effects": {"hp_pct": -15, "pact": "curse"}}]}, {"text": "Пройти мимо.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы идёте дальше, ничего не потеряв и ничего не найдя.", "effects": {}}]}])

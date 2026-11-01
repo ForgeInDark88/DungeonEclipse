@@ -32,6 +32,10 @@ func _ready() -> void:
 	add_child(shape)
 	_sprite = Sprite2D.new()
 	_sprite.texture = data.sprite
+	var sheet := AssetPaths.npc_sheet(data.id)
+	if sheet:
+		_sprite.texture = sheet
+		_sprite.hframes = 2
 	_sprite.centered = false
 	_sprite.offset = Vector2(-10, -30)
 	add_child(_sprite)
@@ -49,6 +53,8 @@ func refresh_mark() -> void:
 
 
 func _process(delta: float) -> void:
+	if _sprite.hframes > 1:
+		_sprite.frame = int(Time.get_ticks_msec() / 700 + get_instance_id()) % 2
 	if _mark.visible:
 		_mark.position.y = -46 + sin(Time.get_ticks_msec() / 200.0) * 1.5
 	if _wait > 0.0:

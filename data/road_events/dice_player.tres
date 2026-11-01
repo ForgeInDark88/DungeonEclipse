@@ -11,4 +11,5 @@ regions = Array[StringName]([])
 min_depth = 1
 max_depth = 99
 weight = 0.8
+prop = &"gambler"
 options = Array[Dictionary]([{"text": "Поставить 50 золота.", "requires": "gold:50", "hint": "50 золота", "outcomes": [{"chance": 0.45, "text": "Шестёрки! Он ругается и отсчитывает выигрыш.", "effects": {"gold": 100}}, {"chance": 0.55, "text": "Кости ложатся не в вашу пользу. Игрок довольно щурится.", "effects": {"gold": -50}}]}, {"text": "Подменить кости (ловкость рук).", "requires": "class:rogue", "hint": "разбойник", "outcomes": [{"chance": 1.0, "text": "Он даже не заметил подмены. Кошель сам прыгает к вам в руки.", "effects": {"gold": 120}}]}, {"text": "Пройти мимо.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы идёте дальше, ничего не потеряв и ничего не найдя.", "effects": {}}]}])

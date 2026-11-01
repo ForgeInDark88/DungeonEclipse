@@ -117,6 +117,8 @@ func _load_floor() -> void:
 		layout = TownBuilder.build()
 	elif GameState.is_boss_floor():
 		layout = gen.generate_arena(floor_number, seed_value)
+	elif GameState.location_type() == &"event":
+		layout = gen.generate_event_room(floor_number, seed_value)
 	else:
 		layout = gen.generate(floor_number, seed_value)
 	var biome := GameState.current_biome()

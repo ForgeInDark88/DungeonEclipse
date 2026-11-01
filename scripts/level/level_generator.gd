@@ -68,6 +68,35 @@ func generate(floor_number: int, seed_value: int) -> LevelLayout:
 	return layout
 
 
+## A road event's room: a short hall with a few ledges, the event's scenery
+## in the middle (special "road_event" with the cells a fight would come
+## from), in on the left, out on the right.
+func generate_event_room(_floor_number: int, seed_value: int) -> LevelLayout:
+	rng.seed = seed_value
+	var w := 40
+	var h := 14
+	layout = LevelLayout.new(w, h, T.BRICK)
+	_make_border()
+	for y in range(1, h - 2):
+		for x in range(1, w - 1):
+			layout.set_tile(x, y, T.EMPTY)
+	var fy := h - 2
+	for seg in [[6, 10, fy - 4], [w - 11, w - 7, fy - 4], [w / 2 - 3, w / 2 + 2, fy - 7]]:
+		for x in range(seg[0], seg[1] + 1):
+			layout.set_tile(x, seg[2], T.PLATFORM)
+	# a little unevenness of the floor
+	for x in [3 + rng.randi() % 3, w - 5 - rng.randi() % 3]:
+		layout.set_tile(x, fy - 1, T.BRICK)
+	layout.start_cell = Vector2i(2, fy - 1)
+	layout.exit_cell = Vector2i(w - 3, fy - 1)
+	var cells: Array[Vector2i] = []
+	for dx in [-9, 9, -12, 12, -6, 6]:
+		cells.append(Vector2i(w / 2 + dx, fy - 1))
+	layout.specials.append({"type": &"road_event", "cell": Vector2i(w / 2, fy - 1), "cells": cells})
+	layout.is_event_room = true
+	return layout
+
+
 ## Boss arena: one wide hall with platforms on two tiers.
 func generate_arena(floor_number: int, seed_value: int) -> LevelLayout:
 	rng.seed = seed_value

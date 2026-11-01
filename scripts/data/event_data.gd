@@ -24,4 +24,7 @@ extends Resource
 @export var min_depth: int = 1
 @export var max_depth: int = 99
 @export var weight: float = 1.0
+## The scenery of the event in its room (assets/sprites/road_events/<prop>.png,
+## tools/gen_town_loop_art.py): the hero walks up to it to choose.
+@export var prop: StringName = &"shrine"
 @export var options: Array[Dictionary] = []

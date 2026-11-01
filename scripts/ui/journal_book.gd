@@ -161,7 +161,18 @@ func _buildings() -> void:
 		if lvl < b.max_level:
 			var miss := Buildings.requirement_missing(b, lvl + 1)
 			text += " — " + (miss if miss != "" else tr("следующий уровень: %s") % (b.level_texts[lvl] if lvl < b.level_texts.size() else ""))
-		_line(text, 7, UIStyle.INK if lvl > 0 else UIStyle.INK_SOFT)
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 4)
+		var ic := TextureRect.new()
+		ic.texture = AssetPaths.building_icon(b.id)
+		ic.custom_minimum_size = Vector2(16, 16)
+		ic.modulate = Color.WHITE if lvl > 0 else Color(1, 1, 1, 0.45)
+		row.add_child(ic)
+		var l := UIStyle.label(text, 7, UIStyle.INK if lvl > 0 else UIStyle.INK_SOFT)
+		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(l)
+		_list.add_child(row)
 
 
 func _events() -> void:

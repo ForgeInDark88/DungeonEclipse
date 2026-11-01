@@ -55,6 +55,15 @@ func refresh() -> void:
 		# A notice on the lot when it can be built right now.
 		if Buildings.block_reason(data) == "":
 			_add_sprite("signpost", Vector2(half - 6, 0))
+		var icon := AssetPaths.building_icon(data.id)
+		if icon:
+			var post := Sprite2D.new()
+			post.texture = icon
+			post.position = Vector2(0, top - 10)
+			_decor.add_child(post)
+			var tw := post.create_tween().set_loops()
+			tw.tween_property(post, "position:y", top - 12.0, 0.9).set_trans(Tween.TRANS_SINE)
+			tw.tween_property(post, "position:y", top - 10.0, 0.9).set_trans(Tween.TRANS_SINE)
 		return
 	if lvl >= 2:
 		_add_sprite("banner_red", Vector2(-half + 4, top + 2))

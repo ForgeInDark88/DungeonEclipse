@@ -143,10 +143,24 @@ func _initialize() -> void:
 	gs.run.map.nodes[eid]["type"] = &"event"
 	flow.enter_node(eid)
 	await wait_scene(flow.State.LOCATION)
-	check(current_scene.name == "EventScreen" and current_scene.event != null, "an event node opens a choice on the road")
+	check(current_scene.scene_file_path == gs.GAME and current_scene.level.layout.is_event_room, "an event node is a room on the road")
+	var spots := current_scene.get_tree().get_nodes_in_group("event_spots")
+	check(spots.size() == 1 and spots[0].event != null, "the event's scenery waits in the room")
 	var gold_e: int = gs.hero.gold
-	current_scene._choose({"outcomes": [{"chance": 1.0, "text": "t", "effects": {"gold": 10, "resource": {"herbs": 2}}}]})
+	spots[0].interact(current_scene.player)
+	var dlg: EventDialog = null
+	for c in current_scene.get_children():
+		if c is EventDialog:
+			dlg = c
+	check(dlg != null, "walking up to it opens the choice")
+	if dlg:
+		dlg.choose({"outcomes": [{"chance": 1.0, "text": "t", "effects": {"gold": 10, "resource": {"herbs": 2}, "fight": "level"}}]})
+		dlg.close()
+	await process_frame
 	check(gs.hero.gold > gold_e and int(gs.run.resources.get("herbs", 0)) >= 2, "the choice's outcome is applied")
+	check(current_scene.level.is_sealed() and current_scene.get_tree().get_nodes_in_group("enemies").size() > 0,
+		"a fight answer brings monsters into the room and seals the exit")
+	check(not spots[0].can_interact(), "the event is spent once answered")
 	flow.retreat()
 	await wait_scene(flow.State.RUN_RESULT)
 	check(gs.town.has_resident(&"blacksmith"), "home alive: the freed blacksmith moves into the town")
