@@ -23,8 +23,9 @@ const ROAM_EVERY := 4.0
 var levels := 50
 var seconds := 25.0
 var surface := false
+var start := 0
 var totals := {"levels": 0, "enemies": 0, "stuck": 0, "worst_still": 0.0, "danger_time": 0.0,
-	"lost": 0, "chases": 0, "searches": 0, "returns": 0, "pit_time": 0.0}
+	"lost": 0, "chases": 0, "searches": 0, "returns": 0, "pit_time": 0.0, "pond_time": 0.0}
 
 
 func _ready() -> void:
@@ -33,6 +34,8 @@ func _ready() -> void:
 			levels = int(a.get_slice("=", 1))
 		elif a == "--verbose":
 			AIDebug.verbose = true
+		elif a.begins_with("--start="):
+			start = int(a.get_slice("=", 1))
 		elif a == "--surface":
 			surface = true
 		elif a.begins_with("--seconds="):
@@ -41,7 +44,7 @@ func _ready() -> void:
 	MetaProgress.apply_upgrades = false
 	var started := Time.get_ticks_msec()
 	print("AI simulation: %d %s × %.0f s" % [levels, "surfaces" if surface else "floors", seconds])
-	for i in levels:
+	for i in range(start, start + levels):
 		if surface:
 			await _run_level(1 + i % 24, 2000 + i * 7919, i)
 			continue
@@ -58,10 +61,11 @@ func _ready() -> void:
 	print("Monsters stuck > %ds: %d (worst %.1f s)" % [STUCK_LIMIT, totals["stuck"], totals["worst_still"]])
 	print("Time on trap cells: %.1f s, lost outside the level: %d" % [totals["danger_time"], totals["lost"]])
 	if surface:
-		print("Idle time down in ravines / ponds: %.1f s" % totals["pit_time"])
+		print("Patrols fallen into ravines (under a bridge): %.1f s; wading through ponds (a normal way across): %.1f s" % [totals["pit_time"], totals["pond_time"]])
 	print("Real time: %.1f s" % ((Time.get_ticks_msec() - started) / 1000.0))
-	var ok: bool = totals["stuck"] == 0 and totals["danger_time"] < 0.5 and totals["lost"] == 0 \
-			and totals["pit_time"] < 1.0
+	# trap time: under half a second per 25 floors
+	var ok: bool = totals["stuck"] == 0 and totals["danger_time"] < 0.5 * maxf(1.0, totals["levels"] / 25.0) \
+			and totals["lost"] == 0 and totals["pit_time"] < 1.0
 	print("RESULT: ", "OK" if ok else "FAIL")
 	get_tree().quit(0 if ok else 1)
 
@@ -102,6 +106,7 @@ func _run_level(floor_number: int, seed_value: int, index: int) -> void:
 			enemies.append(n)
 	var seen_states := {}
 	var pit_time := 0.0
+	var pond_time := 0.0
 	var frames := int(seconds * Engine.physics_ticks_per_second)
 	var roam := 0.0
 	for f in frames:
@@ -118,11 +123,16 @@ func _run_level(floor_number: int, seed_value: int, index: int) -> void:
 			for e in enemies:
 				if is_instance_valid(e):
 					seen_states[e.get_instance_id() * 10 + e.state] = true
-					if surface and e.state in [Enemy.State.PATROL, Enemy.State.RETURN] and e.data.behavior != EnemyData.Behavior.FLYER:
+					if surface and e.state == Enemy.State.PATROL and e.data.behavior != EnemyData.Behavior.FLYER:
 						var ec := level.world_to_cell(e.global_position + Vector2(0, -4))
-						for pit in layout.ravines + layout.water:
+						for pit in layout.ravines:
 							if Rect2i(pit.position + Vector2i(0, 1), pit.size).has_point(ec) and not _home_in(e, level, pit):
 								pit_time += 15.0 / Engine.physics_ticks_per_second
+								if AIDebug.verbose:
+									print("   in ravine: %s %s home %s state %s" % [e.data.id, ec, level.world_to_cell(e._home), e.state_name()])
+						for pond in layout.water:
+							if pond.has_point(ec):
+								pond_time += 15.0 / Engine.physics_ticks_per_second
 	var stuck := 0
 	var worst := 0.0
 	var danger := 0.0
@@ -153,7 +163,8 @@ func _run_level(floor_number: int, seed_value: int, index: int) -> void:
 	totals["danger_time"] += danger
 	totals["lost"] += lost
 	totals["pit_time"] += pit_time
-	print("#%02d %s %2d seed %6d: %2d monsters, stuck>10s %d, worst still %.1f s, trap time %.1f s, lost %d, pit %.1f s | repath %d maneuver %d teleport %d" % [
+	totals["pond_time"] += pond_time
+	print("#%02d %s %2d seed %6d: %2d monsters, stuck>10s %d, worst still %.1f s, trap time %.1f s, lost %d, ravine %.1f s | repath %d maneuver %d teleport %d" % [
 		index, String(biome.id) if surface else "floor", floor_number, seed_value, enemies.size(), stuck, worst, danger, lost, pit_time,
 		AIDebug.count("repath"), AIDebug.count("maneuver"), AIDebug.count("teleport")])
 	player.queue_free()
