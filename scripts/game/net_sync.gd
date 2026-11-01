@@ -351,6 +351,8 @@ func enemy_died(net_id: int, xp: int, gold: int, killer: int) -> void:
 	# Every player counts the kill locally (quests, codex, combo).
 	if e:
 		EventBus.enemy_killed.emit(e.data, e.global_position)
+		if Net.world_session:
+			e.personal_drop()  # personal loot: the guest rolls its own
 		var b := e as Boss
 		if b and b.boss:
 			if b.boss.final:
@@ -736,6 +738,8 @@ func chest_opened_remote(seq: int, opener_peer: int, consume_key: bool) -> void:
 		c.locked = false
 		c.sprite.play(&"opening")
 		c.sprite.animation_finished.connect(func() -> void: c.sprite.play(&"open"), CONNECT_ONE_SHOT)
+		if Net.world_session:
+			c.personal_loot()  # every player finds their own things inside
 
 
 ## Client → host: buy an offer; host checks that the offer still exists.
@@ -928,8 +932,9 @@ func request_drop(item_dict: Dictionary, count: int) -> void:
 	var p: Player = game.net_players.get_node_or_null("Player_%d" % sender) if game != null and "net_players" in game else null
 	if p == null:
 		return
-	EventBus.spawn_items.emit(p.global_position + Vector2(p.facing * 10.0, -12.0),
-			[{"item": item, "count": count}])
+	var game2 := get_tree().current_scene
+	if game2 and game2.has_method("spawn_shared"):
+		game2.spawn_shared(p.global_position + Vector2(p.facing * 10.0, -12.0), [{"item": item, "count": count}])
 
 
 ## Client → host: I used a one-shot event.

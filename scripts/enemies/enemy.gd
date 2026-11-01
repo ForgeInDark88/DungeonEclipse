@@ -2023,6 +2023,15 @@ func _exit_tree() -> void:
 		_net_vanish(false)
 
 
+## A guest's own drop of this (dead) enemy in a world session.
+func personal_drop() -> void:
+	if data == null or data.no_rewards:
+		return
+	var gold_find := GameState.hero.stats.get_value(StatTypes.GOLD_FIND) if GameState.hero else 0.0
+	drop_loot(roundi(GOLD_MULT * randi_range(data.gold_min, data.gold_max) * (1.0 + 0.10 * (floor_number - 1))
+			* (elite.gold_mult if elite else 1.0) * (1.0 + gold_find)))
+
+
 ## XP, gold, loot and kill events (not for illusions and other fakes).
 ## Co-op: the host keeps the world (loot drops there and is replicated),
 ## the killer gets the xp/gold through the net, everyone counts the kill.
@@ -2044,6 +2053,13 @@ func _give_rewards() -> void:
 		EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 12), "+%d XP" % xp, Color(1.0, 0.85, 0.3))
 		if elite:
 			EventBus.elite_killed.emit(data)
+	drop_loot(gold)
+
+
+## What the enemy drops: coins, an elite's shards, its loot table. In a
+## world session every machine rolls its own (personal loot, see
+## NetSync.enemy_died), here on the host for the host's hero.
+func drop_loot(gold: int) -> void:
 	if gold > 0:
 		var coin := ItemDatabase.get_item(&"gold_coin")
 		if coin:

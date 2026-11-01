@@ -55,6 +55,8 @@ func _host() -> void:
 		var town := TownState.new()
 		Buildings.init_town(town)
 		town.world_seed = 777
+		if OS.get_environment("WAREHOUSE") == "1":
+			town.set_building_level(&"warehouse", 1)
 		var hero := Hero.new(idb.races[0], idb.classes[0], idb.equipment_layout)
 		hero.give_starting_kit()
 		town.hero = RunCodec.save_hero(hero)
@@ -65,6 +67,14 @@ func _host() -> void:
 	check(err == "", "the world is hosted (%s)" % err)
 	if OS.get_environment("SCENARIO") == "flow":
 		await _host_flow()
+		return
+	if OS.get_environment("SCENARIO") == "verify":
+		check(gs.town.players.has("alice") and pp.hero_of("Alice").gold == 123, "after a restart the host still has Alice's profile")
+		await create_timer(float(env_int("STAY", 12))).timeout
+		wn.close_session()
+		return
+	if OS.get_environment("SCENARIO") == "trade":
+		await _host_trade()
 		return
 	var kicked := false
 	var t := 0.0
@@ -122,6 +132,36 @@ func _host_flow() -> void:
 	wn.close_session()
 
 
+## Host side of the trade scenario: accept the guest's invite, offer 5 gold,
+## confirm; then check what came over, and the guest's safe.
+func _host_trade() -> void:
+	var gs = root.get_node("GameState")
+	var tr_ = wn.trade
+	gs.hero.gold = 100
+	var st := {"id": 0}
+	tr_.invited.connect(func(id: int, _n: String) -> void: st["id"] = id)
+	var t := 0.0
+	while st["id"] == 0 and t < 25.0:
+		await create_timer(0.25).timeout
+		t += 0.25
+	check(st["id"] != 0, "the host got the guest's trade invite")
+	tr_.accept(st["id"])
+	await create_timer(1.0).timeout
+	tr_.set_offer([], 5)
+	await create_timer(1.0).timeout
+	tr_.confirm()
+	t = 0.0
+	while tr_.current != 0 and t < 10.0:
+		await create_timer(0.25).timeout
+		t += 0.25
+	check(gs.hero.gold == 100 - 5 + 10, "the host paid 5 and got 10 gold (%d)" % gs.hero.gold)
+	check(gs.hero.inventory.count_of(&"rope") >= 1, "the host got the guest's rope")
+	await create_timer(6.0).timeout
+	var safe: Array = gs.town.players.get("trader", {}).get("safe", [])
+	check(safe.size() == 1, "the guest's personal safe is kept in its profile (%d)" % safe.size())
+	wn.close_session()
+
+
 func _client() -> void:
 	var expect := OS.get_environment("EXPECT")
 	var st := {"done": false, "result": "", "kicked": false}
@@ -150,6 +190,42 @@ func _client() -> void:
 		return
 	await create_timer(1.5).timeout
 	var gs = root.get_node("GameState")
+	if OS.get_environment("SCENARIO") == "trade":
+		var idb = root.get_node("ItemDatabase")
+		gs.hero.gold = 50
+		gs.hero.inventory.add_item(idb.get_item(&"rope"), 1)
+		var ri: int = -1
+		for i in gs.hero.inventory.slots.size():
+			var s = gs.hero.inventory.slots[i]
+			if s and s.item.id == &"rope":
+				ri = i
+		await create_timer(1.0).timeout
+		wn.trade.invite(1)
+		var tt := 0.0
+		while wn.trade.current == 0 and tt < 10.0:
+			await create_timer(0.25).timeout
+			tt += 0.25
+		check(wn.trade.current != 0, "the trade window opened")
+		wn.trade.set_offer([ri], 10)
+		await create_timer(1.5).timeout
+		wn.trade.confirm()
+		tt = 0.0
+		while wn.trade.current != 0 and tt < 10.0:
+			await create_timer(0.25).timeout
+			tt += 0.25
+		check(gs.hero.gold == 50 - 10 + 5, "the guest paid 10 and got 5 gold (%d)" % gs.hero.gold)
+		check(gs.hero.inventory.count_of(&"rope") == 0, "the rope went to the host")
+		# the personal safe: put a bomb in it (the host keeps it in my profile)
+		gs.hero.inventory.add_item(idb.get_item(&"bomb"), 1)
+		for i in gs.hero.inventory.slots.size():
+			var s2 = gs.hero.inventory.slots[i]
+			if s2 and s2.item.id == &"bomb":
+				wn.town_net.put(gs.hero.inventory.take_at(i))
+				break
+		await create_timer(3.0).timeout
+		check(wn.town_net.safe_cache.size() == 1, "my safe holds the bomb")
+		wn.close_session()
+		return
 	if OS.get_environment("SCENARIO") == "flow":
 		var seen: Array = []
 		flow.state_changed.connect(func(s: int) -> void: seen.append(s))
@@ -169,9 +245,12 @@ func _client() -> void:
 	var want := env_int("CHECK_GOLD", -1)
 	if want >= 0:
 		check(gs.hero.gold == want, "the profile brought the gear back (gold %d)" % gs.hero.gold)
+		check(gs.hero.inventory.count_of(&"map_scroll") >= 4, "the backpack came back too (map scrolls %d)" % gs.hero.inventory.count_of(&"map_scroll"))
+		check(gs.hero.equipment.items.values().any(func(i): return i != null), "the worn gear came back")
 	var mark := env_int("GOLD_MARK", -1)
 	if mark >= 0:
 		gs.hero.gold = mark
+		gs.hero.inventory.add_item(root.get_node("ItemDatabase").get_item(&"map_scroll"), 4)
 		pp.push_now()
 	wn.say("hi from %s" % nick)
 	var stay := float(env_int("STAY", 3))

@@ -52,8 +52,19 @@ var _accepted := {}  # host: peer id -> true once the handshake passed
 var protocol_override := 0
 
 
+## The town of the session (guests building, personal safes) and trading.
+var town_net: Node
+var trade: Node
+
+
 func _ready() -> void:
-	add_child(SessionHud.new())
+	town_net = load("res://scripts/autoload/town_net.gd").new()
+	town_net.name = "Town"
+	add_child(town_net)
+	trade = load("res://scripts/autoload/trade_net.gd").new()
+	trade.name = "Trade"
+	add_child(trade)
+	add_child(SessionHud.new())  # after the trade node: it listens to it
 
 
 # ================================================================== host
@@ -331,6 +342,8 @@ func kick(peer: int) -> void:
 ## and the gear stay in the profile; the same nick comes back to them).
 func on_peer_left(peer: int) -> void:
 	_accepted.erase(peer)
+	if Net.is_host and trade:
+		trade.on_peer_left(peer)
 	if not Net.is_host:
 		return
 	if roster.has(peer):

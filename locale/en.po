@@ -127,6 +127,10 @@ msgstr "! ! !  A bite — strike!"
 msgid "%+d маны"
 msgstr "%+d mana"
 
+#: scripts/ui/trade_book.gd
+msgid "%d вещей, %d золота"
+msgstr "%d items, %d gold"
+
 #: scripts/core/smithing.gd
 msgid "%d з."
 msgstr "%d g"
@@ -203,6 +207,10 @@ msgstr "%s left"
 msgid "%s ждёт у выхода. Подойдите: %s"
 msgstr "%s is waiting at the exit. Come over: %s"
 
+#: scripts/autoload/trade_net.gd
+msgid "%s и %s обменялись."
+msgstr "%s and %s traded."
+
 #: scripts/autoload/world_net.gd
 msgid "%s исключён из сессии."
 msgstr "%s was removed from the session."
@@ -222,6 +230,10 @@ msgstr "%s for %d s"
 #: scripts/combat/status_hit_effect.gd
 msgid "%s на %d%% на %.1f с%s"
 msgstr "%s by %d%% for %.1f s%s"
+
+#: scripts/ui/trade_book.gd
+msgid "%s отдаёт:"
+msgstr "%s gives:"
 
 #: scripts/autoload/world_net.gd
 msgid "%s отключился."
@@ -247,6 +259,10 @@ msgstr "%s will join you on the expedition."
 msgid "%s почти сломан(а)"
 msgstr "%s is almost broken"
 
+#: scripts/ui/session_hud.gd
+msgid "%s предлагает обмен"
+msgstr "%s offers a trade"
+
 #: scripts/autoload/net.gd
 msgid "%s присоединился"
 msgstr "%s joined"
@@ -262,6 +278,10 @@ msgstr "%s asks to join from a new device: the host must confirm."
 #: scripts/core/hero.gd
 msgid "%s сгорает — вы снова на ногах!"
 msgstr "%s burns away — you're back on your feet!"
+
+#: scripts/autoload/town_net.gd
+msgid "%s строит: %s, уровень %d."
+msgstr "%s builds: %s, level %d."
 
 #: scripts/effects/hatch_pet_effect.gd
 msgid "%s уже с вами"
@@ -1003,6 +1023,10 @@ msgstr "People are hiding in the cave: a woman, an old man, two children. They h
 msgid "В подземелье!"
 msgstr "Into the dungeon!"
 
+#: scripts/ui/building_book.gd
+msgid "В сейф"
+msgstr "To the safe"
+
 #: data
 msgid "В сумке золото и пара полезных мелочей. Разведчик смотрит вам вслед — молча."
 msgstr "The bag holds gold and a couple of useful trinkets. The scout watches you go — in silence."
@@ -1367,6 +1391,10 @@ msgstr "You walk on, having lost nothing and found nothing."
 msgid "Вы не отвечаете — вы слушаете. Мана наполняет вас до краёв."
 msgstr "You don't answer — you listen. Mana fills you to the brim."
 
+#: scripts/ui/trade_book.gd
+msgid "Вы отдаёте:"
+msgstr "You give:"
+
 #: scripts/game/game.gd
 msgid "Вы пали"
 msgstr "You have fallen"
@@ -1382,6 +1410,10 @@ msgstr "You cut the caps without breathing."
 #: data
 msgid "Вы стоите у статуи. Где-то глубоко внутри откликается тепло."
 msgstr "You stand by the statue. Somewhere deep inside, warmth answers."
+
+#: scripts/ui/trade_book.gd
+msgid "Вы: %s · %s: %s"
+msgstr "You: %s · %s: %s"
 
 #: scripts/ui/smith_book.gd
 msgid "Выберите предмет справа.\n\nУлучшение: +15% к бонусам и +12% к урону оружия за уровень (до +5).\nЗачарование: случайный бонус, по одному на предмет.\nПереплавка: руда и немного золота."
@@ -2454,6 +2486,10 @@ msgstr "Gold +60%, but enemies hit 25% harder."
 #: scripts/game/game.gd
 msgid "Золото собрано"
 msgstr "Gold collected"
+
+#: scripts/ui/trade_book.gd
+msgid "Золото:"
+msgstr "Gold:"
 
 #: scripts/ui/expedition_map_screen.gd
 msgid "Золото: %d"
@@ -3943,6 +3979,14 @@ msgstr "Can pick a locked chest — with some luck."
 msgid "Можно оттолкнуться от воздуха ещё раз."
 msgstr "You can push off the air once more."
 
+#: scripts/ui/building_book.gd
+msgid "Мой сейф"
+msgstr "My safe"
+
+#: scripts/ui/building_book.gd
+msgid "Мой сейф: %d / %d"
+msgstr "My safe: %d / %d"
+
 #: data
 msgid "Молитва храма: при гибели вы встанете с 40% здоровья, а свиток рассыплется пеплом. Продаётся в храме города."
 msgstr "A temple prayer: on death you rise with 40% health, and the scroll crumbles to ash. Sold at the town's temple."
@@ -4339,6 +4383,10 @@ msgstr "No time for fishing!"
 msgid "Не нюхайте синюю колбу. Просто не нюхайте."
 msgstr "Don't sniff the blue flask. Just don't."
 
+#: scripts/autoload/town_net.gd
+msgid "Не получилось построить."
+msgstr "Could not build."
+
 #: scripts/autoload/net.gd
 msgid "Не удалось подключиться"
 msgstr "Could not connect"
@@ -4594,6 +4642,34 @@ msgstr "A poison cloud eats enemies from within."
 #: data
 msgid "Облик лича"
 msgstr "Lich Form"
+
+#: scripts/ui/session_hud.gd
+msgid "Обмен"
+msgstr "Trade"
+
+#: scripts/ui/trade_book.gd
+msgid "Обмен закрыт."
+msgstr "The trade is closed."
+
+#: scripts/ui/trade_book.gd
+msgid "Обмен отменён."
+msgstr "The trade was cancelled."
+
+#: scripts/ui/trade_book.gd
+msgid "Обмен с %s"
+msgstr "Trade with %s"
+
+#: scripts/ui/trade_book.gd
+msgid "Обмен сорван: вещи изменились, всё вернулось."
+msgstr "The trade failed: the items changed, everything went back."
+
+#: scripts/ui/trade_book.gd
+msgid "Обмен сорван: игрок вышел."
+msgstr "The trade failed: the player left."
+
+#: scripts/ui/trade_book.gd
+msgid "Обмен состоялся."
+msgstr "The trade is done."
 
 #: data
 msgid "Обожжённое на огне остриё."
@@ -4951,6 +5027,10 @@ msgstr "Father wrote letters to mother that he never sent. I found one in the ru
 msgid "Отказались от дара чёрного солнца"
 msgstr "Refused the black sun's gift"
 
+#: scripts/ui/session_hud.gd
+msgid "Отказать"
+msgstr "Decline"
+
 #: scripts/ui/pact_book.gd
 msgid "Отказаться"
 msgstr "Refuse"
@@ -5026,6 +5106,10 @@ msgstr "Cast from the clapper of the Sun Temple's bell. Brother Ostwin rang it u
 #: data
 msgid "Отлично."
 msgstr "Excellent."
+
+#: scripts/ui/trade_book.gd
+msgid "Отмена"
+msgstr "Cancel"
 
 #: scripts/ui/settings_book.gd
 msgid "Отменено"
@@ -5546,6 +5630,10 @@ msgstr "Hints will be shown again"
 #: scripts/ui/settings_book.gd
 msgid "Подсказки заново"
 msgstr "Reset hints"
+
+#: scripts/ui/trade_book.gd
+msgid "Подтвердить"
+msgstr "Confirm"
 
 #: scripts/ui/tooltip_text.gd
 msgid "Подходит классу %s"
@@ -6423,6 +6511,10 @@ msgstr "Backpack full"
 msgid "Рюкзак полон — освободите место для реликвии"
 msgstr "The backpack is full — make room for the relic"
 
+#: scripts/autoload/town_net.gd
+msgid "Рюкзак полон: вещь осталась в сейфе."
+msgstr "The backpack is full: the item stayed in the safe."
+
 #: scripts/ui/shop_book.gd
 msgid "Рюкзак — ПКМ: продать"
 msgstr "Backpack — RMB: sell"
@@ -6690,6 +6782,10 @@ msgstr "A safe for 4 items: they survive the hero's death."
 #: data
 msgid "Сейф на 8 предметов."
 msgstr "A safe for 8 items."
+
+#: scripts/autoload/town_net.gd
+msgid "Сейф полон."
+msgstr "The safe is full."
 
 #: scripts/ui/sanctum.gd
 msgid "Сейчас: "
@@ -7347,6 +7443,10 @@ msgstr "Arrow Wall"
 msgid "Стремительный рывок сквозь врагов."
 msgstr "A swift dash through enemies."
 
+#: scripts/autoload/town_net.gd
+msgid "Строить может только хост."
+msgstr "Only the host may build."
+
 #: data
 msgid "Студень, растворяющий всё на своём пути. Прыгает на добычу."
 msgstr "A jelly that dissolves everything in its path. Leaps at its prey."
@@ -7378,6 +7478,10 @@ msgstr "Twilight hides and quickens you."
 #: scripts/ui/expedition_map_screen.gd
 msgid "Сумка (I)"
 msgstr "Bag (I)"
+
+#: scripts/ui/trade_book.gd
+msgid "Сумка (нажмите, чтобы предложить):"
+msgstr "Bag (click to offer):"
 
 #: scripts/ui/camp_screen.gd
 msgid "Сумка и ремесло (I)"
@@ -8579,6 +8683,10 @@ msgstr "The floor and all its traps are revealed"
 msgid "Этажи"
 msgstr "Floors"
 
+#: scripts/ui/building_book.gd
+msgid "Этим зданием мира распоряжается хост."
+msgstr "The host manages this building of the world."
+
 #: data
 msgid "Это всё ещё Олдрик. Король костей пал, но Затмение не отпустило его: ему было мало, оно хотело выжать из могильщика остаток сил. Его кости сожгли — и тьма раздула пепел в огненного короля. Его клинок раскалён его же болью. Если он падёт во второй раз — Затмению нечем будет закрываться. Путь к нему откроется."
 msgstr "It's still Oldric. The Bone King fell, but the Eclipse did not let him go: it wanted more, it wanted to wring the last of the gravedigger's strength. His bones were burned — and the dark fanned the ashes into a fiery king. His blade glows hot with his own pain. If he falls a second time, the Eclipse will have nothing left to shield itself with. The way to it will open."
@@ -8779,6 +8887,10 @@ msgstr "depth: %d"
 msgid "горожанин"
 msgstr "a townsman"
 
+#: scripts/ui/trade_book.gd
+msgid "готов"
+msgstr "ready"
+
 #: scripts/ui/codex_book.gd
 msgid "готово"
 msgstr "ready"
@@ -8790,6 +8902,10 @@ msgstr "navigation graph updated (v%d)"
 #: scripts/effects/dig_effect.gd
 msgid "до %d кирпичей подряд"
 msgstr "up to %d bricks in a row"
+
+#: scripts/ui/trade_book.gd
+msgid "думает"
+msgstr "thinking"
 
 #: scripts/ui/net_join_screen.gd
 msgid "если есть"

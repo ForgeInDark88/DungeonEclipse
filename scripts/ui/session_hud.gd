@@ -15,6 +15,7 @@ var _log: VBoxContainer
 var _input: LineEdit
 var _lobby: PanelContainer
 var _lines: Array = []  # [Label, time left]
+var _invite_box: VBoxContainer
 
 
 func _ready() -> void:
@@ -47,6 +48,14 @@ func _ready() -> void:
 	WorldNet.roster_changed.connect(_refresh)
 	WorldNet.chat_received.connect(_on_chat)
 	PlayerProfiles.approval_needed.connect(func(_p: int, _n: String) -> void: _refresh_lobby())
+	_invite_box = VBoxContainer.new()
+	_invite_box.position = Vector2(220, 44)
+	add_child(_invite_box)
+	WorldNet.trade.invited.connect(_on_invite)
+	WorldNet.trade.opened.connect(func(_id: int, nick: String) -> void:
+		var tb := TradeBook.new()
+		get_tree().current_scene.add_child(tb)
+		tb.open(nick))
 	_refresh()
 
 
@@ -113,6 +122,25 @@ func _on_chat(nick: String, text: String) -> void:
 		_lines.pop_front()
 
 
+## «X предлагает обмен»: accept or refuse.
+func _on_invite(trade_id: int, from_nick: String) -> void:
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", UIStyle.texture_box(AssetPaths.TOOLTIP, 4))
+	var box := VBoxContainer.new()
+	panel.add_child(box)
+	box.add_child(UIStyle.label(tr("%s предлагает обмен") % from_nick, 8))
+	var row := HBoxContainer.new()
+	row.add_child(BookPageScreen.button(tr("Принять"), func() -> void:
+		WorldNet.trade.accept(trade_id)
+		panel.queue_free()))
+	row.add_child(BookPageScreen.button(tr("Отказать"), func() -> void: panel.queue_free()))
+	box.add_child(row)
+	_invite_box.add_child(panel)
+	get_tree().create_timer(20.0).timeout.connect(func() -> void:
+		if is_instance_valid(panel):
+			panel.queue_free())
+
+
 # ------------------------------------------------------------------ lobby
 func _toggle_lobby() -> void:
 	if _lobby:
@@ -142,6 +170,10 @@ func _refresh_lobby() -> void:
 				tr(" · готов") if r.get("ready", false) else ""], 7)
 		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(l)
+		if int(id) != multiplayer.get_unique_id() and r["status"] == "online":
+			var tr_b := BookPageScreen.button(tr("Обмен"), func() -> void: WorldNet.trade.invite(int(id)))
+			tr_b.add_theme_font_size_override("font_size", 7)
+			row.add_child(tr_b)
 		if Net.is_host and int(id) != 1 and r["status"] == "online":
 			var kick := BookPageScreen.button(tr("Исключить"), func() -> void: WorldNet.kick(int(id)))
 			kick.add_theme_font_size_override("font_size", 7)

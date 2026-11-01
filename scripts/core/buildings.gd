@@ -55,7 +55,7 @@ static func build_discount() -> float:
 
 
 ## "" when the next level of `b` can be built now, else why not.
-static func block_reason(b: BuildingData) -> String:
+static func block_reason(b: BuildingData, gold_paid := false) -> String:
 	var t := town()
 	var next := t.building_level(b.id) + 1
 	if next > b.max_level:
@@ -66,7 +66,7 @@ static func block_reason(b: BuildingData) -> String:
 	var c := cost(b, next)
 	var lack: Array[String] = []
 	var hero := GameState.hero
-	if int(c.get("gold", 0)) > (hero.gold if hero else 0):
+	if not gold_paid and int(c.get("gold", 0)) > (hero.gold if hero else 0):
 		lack.append(TranslationServer.translate("золото %d") % (int(c["gold"]) - (hero.gold if hero else 0)))
 	for k in c:
 		if k != "gold" and t.resource(StringName(k)) < int(c[k]):
@@ -93,14 +93,16 @@ static func requirement_missing(b: BuildingData, lvl: int) -> String:
 
 
 ## Builds / upgrades `b` one level: pays, levels up, saves. False if blocked.
-static func build(b: BuildingData) -> bool:
-	if block_reason(b) != "":
+## `gold_paid`: a guest of a world session paid the gold on its side.
+static func build(b: BuildingData, gold_paid := false) -> bool:
+	if block_reason(b, gold_paid) != "":
 		return false
 	var t := town()
 	var next := t.building_level(b.id) + 1
 	var c := cost(b, next)
-	GameState.hero.gold -= int(c.get("gold", 0))
-	GameState.hero.gold_changed.emit(GameState.hero.gold)
+	if not gold_paid:
+		GameState.hero.gold -= int(c.get("gold", 0))
+		GameState.hero.gold_changed.emit(GameState.hero.gold)
 	for k in c:
 		if k != "gold":
 			t.add_resource(StringName(k), -int(c[k]))
@@ -117,6 +119,14 @@ static func prosperity(t: TownState) -> int:
 	p += t.residents.size() * RESIDENT_PROSPERITY + t.bosses_defeated.size() * BOSS_PROSPERITY + t.trophies.size()
 	p += int(t.stats.get("refugees", 0))
 	return p
+
+
+## World sessions: who may build and spend the town's resources -
+## "all" (default) or "host" (TownState.flags["build_rule"]).
+static func may_build() -> bool:
+	if not WorldNet.session or Net.is_host:
+		return true
+	return String(town().flag("build_rule", "all")) != "host"
 
 
 # ------------------------------------------------------------- effects

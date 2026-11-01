@@ -95,6 +95,8 @@ func _refresh() -> void:
 	match _view:
 		&"warehouse":
 			_fill_warehouse()
+		&"guest_safe":
+			_fill_guest_safe()
 		&"hall":
 			_fill_hall()
 		&"companions":
@@ -161,8 +163,17 @@ func _cost_text(c: Dictionary) -> String:
 
 
 func _on_build() -> void:
+	if GameFlow.is_guest():
+		# the town is the world's: the host builds it (the guest pays its gold)
+		if not Buildings.may_build():
+			_say(tr("Строить может только хост."))
+			return
+		WorldNet.town_net.request_build(data.id)
+		close()
+		return
 	if not Buildings.build(data):
 		return
+	WorldNet.town_net.push_town()
 	GameFlow.save_town()
 	building.play_built()
 	for b in get_tree().get_nodes_in_group("town_buildings"):
@@ -190,6 +201,9 @@ func _fill_actions() -> void:
 		_right.add_child(_wrap(tr("Здесь пока руины. Постройте здание, чтобы им пользоваться."), 7, UIStyle.INK_SOFT))
 		return
 	var hero := GameState.hero
+	if GameFlow.is_guest() and data.action in [&"sanctum", &"hall", &"quests"]:
+		_right.add_child(_wrap(tr("Этим зданием мира распоряжается хост."), 7, UIStyle.INK_SOFT))
+		return
 	match data.action:
 		&"shop":
 			_action(tr("Торговать"), func() -> void: _open_merchant(_town_merchant()))
@@ -264,9 +278,14 @@ func _fill_actions() -> void:
 				close()
 				GameFlow.change_scene(GameState.SANCTUM, GameFlow.State.TOWN))
 		&"warehouse":
-			_action(tr("Открыть склад (%d / %d)") % [GameState.town.warehouse.size(), Buildings.warehouse_slots()], func() -> void:
-				_view = &"warehouse"
-				_refresh())
+			if GameFlow.is_guest():
+				_action(tr("Мой сейф"), func() -> void:
+					_view = &"guest_safe"
+					WorldNet.town_net.request_safe())
+			else:
+				_action(tr("Открыть склад (%d / %d)") % [GameState.town.warehouse.size(), Buildings.warehouse_slots()], func() -> void:
+					_view = &"warehouse"
+					_refresh())
 		&"hall":
 			_action(tr("Трофеи (%d / %d)") % [GameState.town.trophies.size(), Buildings.trophy_slots()], func() -> void:
 				_view = &"hall"
@@ -382,6 +401,38 @@ func _fill_warehouse() -> void:
 	_right.add_child(BookPageScreen.button(tr("Назад"), func() -> void:
 		_view = &"main"
 		_refresh()))
+
+
+## A guest's personal safe (kept by the host in the guest's profile).
+func _fill_guest_safe() -> void:
+	var hero := GameState.hero
+	var tn: Node = WorldNet.town_net
+	if not tn.safe_changed.is_connected(_on_safe):
+		tn.safe_changed.connect(_on_safe)
+	var items: Array = tn.safe_cache
+	_right.add_child(UIStyle.label(tr("Мой сейф: %d / %d") % [items.size(), Buildings.warehouse_slots()], 9))
+	for i in items.size():
+		var st := RunCodec._item_from_dict(items[i])
+		if st:
+			_item_row(st, tr("Взять"), func() -> void: tn.take(i))
+	_right.add_child(UIStyle.label(tr("В сумке:"), 8, UIStyle.INK_SOFT))
+	for idx in hero.inventory.slots.size():
+		var st2: ItemStack = hero.inventory.slots[idx]
+		if st2 == null or st2.item == null:
+			continue
+		var b := _item_row(st2, tr("В сейф"), func() -> void:
+			var taken := hero.inventory.take_at(idx)
+			if taken:
+				tn.put(taken))
+		b.disabled = items.size() >= Buildings.warehouse_slots()
+	_right.add_child(BookPageScreen.button(tr("Назад"), func() -> void:
+		_view = &"main"
+		_refresh()))
+
+
+func _on_safe(_items: Array, _cap: int) -> void:
+	if is_inside_tree() and _view == &"guest_safe":
+		_refresh()
 
 
 ## The hall of fame: rare finds on display strengthen every expedition.

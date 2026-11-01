@@ -37,6 +37,11 @@ func _throw(player: Player, stack: ItemStack) -> void:
 			ns.request_drop.rpc_id(1, RunCodec.item_to_dict(stack.item), stack.count)
 		EventBus.message.emit(tr("Выброшено: %s") % stack.item.display_name)
 		return
-	EventBus.spawn_items.emit(player.global_position + Vector2(player.facing * 10.0, -12.0),
-			[{"item": stack.item, "count": stack.count}])
+	var game := get_tree().current_scene
+	if Net.world_session and game and game.has_method("spawn_shared"):
+		# thrown items are shared: anyone in the party may pick them up
+		game.spawn_shared(player.global_position + Vector2(player.facing * 10.0, -12.0), [{"item": stack.item, "count": stack.count}])
+	else:
+		EventBus.spawn_items.emit(player.global_position + Vector2(player.facing * 10.0, -12.0),
+				[{"item": stack.item, "count": stack.count}])
 	EventBus.message.emit(tr("Выброшено: %s") % stack.item.display_name)

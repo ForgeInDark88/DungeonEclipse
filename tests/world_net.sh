@@ -36,4 +36,18 @@ sleep 3
 ROLE=client PORT=$P PASS=pw NICK=Kickme EXPECT=ok STAY=8 TOKEN_FILE=$L/kick.cfg run kickme &
 wait $HP
 wait
+# the host restarts from the same save: the profiles are still there
+ROLE=host PORT=$P PASS=pw SEATS=3 STAY=12 FRESH=0 SCENARIO=verify run host_restart &
+HP=$!
+sleep 3
+ROLE=client PORT=$P PASS=pw NICK=Alice EXPECT=ok CHECK_GOLD=123 STAY=3 TOKEN_FILE=$L/alice.cfg run alice3 &
+wait $HP
+wait
+# trading and the personal safe (the warehouse is built in the test world)
+SCENARIO=trade ROLE=host PORT=$((P+1)) SEATS=2 STAY=30 SAVES=user://test_trade_saves/ WAREHOUSE=1 run host_trade &
+HP=$!
+sleep 3
+SCENARIO=trade ROLE=client PORT=$((P+1)) NICK=Trader EXPECT=ok TOKEN_FILE=$L/trader.cfg run trader &
+wait $HP
+wait
 grep -h "FAIL\|RESULT\|ROSTER\|PROFILES" $L/*.log

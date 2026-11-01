@@ -117,6 +117,17 @@ func open(opener_peer: int = 1, consume_key := false) -> void:
 			ns.broadcast_chest(net_seq, opener_peer, consume_key)
 
 
+## A guest's own loot of a chest someone opened (world sessions).
+func personal_loot() -> void:
+	var table := ItemDatabase.get_loot_table(table_override if table_override != &"" else TIER_TABLES[tier])
+	var loot: Array = table.roll(floor_number) if table else []
+	if not loot.is_empty():
+		Fx.loot_popup(get_parent(), global_position + Vector2(0, -12), loot)
+		var pos := global_position + Vector2(0, -10)
+		get_tree().create_timer(0.25).timeout.connect(func() -> void: EventBus.spawn_items.emit(pos, loot))
+	EventBus.chest_opened.emit(self)
+
+
 func _wake_mimic(opener_peer: int, consume_key: bool) -> void:
 	opened = true
 	EventBus.message.emit(tr("Это мимик!"))

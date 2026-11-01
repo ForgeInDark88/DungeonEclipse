@@ -388,6 +388,14 @@ func _toggle_pause() -> void:
 func _on_spawn_items(pos: Vector2, stacks: Array) -> void:
 	if level == null:
 		return
+	# A world session: loot is personal - every machine spawns its own drops
+	# for its own hero, nobody else sees them (nothing to fight over).
+	if Net.world_session:
+		for entry: Dictionary in stacks:
+			var lp: ItemPickup = PICKUP_SCENE.instantiate()
+			lp.setup(entry["item"], entry["count"], Vector2(randf_range(-70.0, 70.0), randf_range(-170.0, -110.0)))
+			level.add_entity(lp, pos)
+		return
 	# Co-op: loot is the host's (spawned there and broadcast to everyone). A
 	# guest's own copy would be a phantom nobody else sees or can share.
 	if Net.active and not Net.is_host:
@@ -395,6 +403,18 @@ func _on_spawn_items(pos: Vector2, stacks: Array) -> void:
 	for entry: Dictionary in stacks:
 		var p: ItemPickup = PICKUP_SCENE.instantiate()
 		p.setup(entry["item"], entry["count"], Vector2(randf_range(-70.0, 70.0), randf_range(-170.0, -110.0)))
+		level.add_entity(p, pos)
+		if Net.active and Net.is_host and net_sync:
+			net_sync.broadcast_item(p)
+
+
+## Host: an item everyone sees and anyone may take (thrown on the floor).
+func spawn_shared(pos: Vector2, stacks: Array) -> void:
+	if level == null:
+		return
+	for entry: Dictionary in stacks:
+		var p: ItemPickup = PICKUP_SCENE.instantiate()
+		p.setup(entry["item"], entry["count"], Vector2(randf_range(-40.0, 40.0), -120.0))
 		level.add_entity(p, pos)
 		if Net.active and Net.is_host and net_sync:
 			net_sync.broadcast_item(p)
