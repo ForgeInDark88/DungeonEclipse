@@ -122,7 +122,7 @@ func pull(lever: Node, player: Node) -> void:
 	if Net.active and Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.puzzle_state.rpc(net_seq, progress, solved)
+			Net.send(ns, &"puzzle_state", [net_seq, progress, solved])
 
 
 ## Host's verdict applied on guests (and in the late-join snapshot).

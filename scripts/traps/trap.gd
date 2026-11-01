@@ -223,7 +223,7 @@ func spring_shared(target: Vector2) -> void:
 	if ns == null:
 		return
 	if Net.is_host:
-		ns.trap_sprung.rpc(net_seq, target, 1)
+		Net.send(ns, &"trap_sprung", [net_seq, target, 1])
 	else:
 		ns.request_trap_spring.rpc_id(1, net_seq, target)
 
@@ -407,4 +407,4 @@ func _net_disarm_broadcast() -> void:
 	if Net.active and Net.is_host:
 		var ns = get_tree().get_first_node_in_group("net_game")
 		if ns:
-			ns.trap_disarmed_net.rpc(net_seq)
+			Net.send(ns, &"trap_disarmed_net", [net_seq])

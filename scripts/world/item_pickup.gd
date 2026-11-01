@@ -80,7 +80,7 @@ func _tell_replicas() -> void:
 	_told_pos = global_position
 	var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 	if ns:
-		ns.item_settled.rpc(net_id, global_position, count)
+		Net.send(ns, &"item_settled", [net_id, global_position, count])
 
 
 func get_prompt() -> String:

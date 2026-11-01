@@ -480,6 +480,8 @@ func _flash_screen(color: Color) -> void:
 
 func _exit_tree() -> void:
 	Engine.time_scale = 1.0
+	if Net.world_session:
+		Net.set_scene_token("")
 
 
 func _on_player_died() -> void:
@@ -664,7 +666,7 @@ func _net_bootstrap() -> void:
 	# The host is the clock: every floor move of the party goes through it.
 	# town_return rides along so the guests' city gate knows the resume floor.
 	EventBus.floor_changed.connect(func(f: int) -> void:
-		if Net.is_host:
+		if Net.is_host and not Net.world_session:  # a world session moves by WorldNet.flow
 			Net.rpc_set_floor(f, GameState.town_return_floor))
 	# Late roster updates must not leave puppets missing on clients.
 	Net.players_changed.connect(func() -> void:
@@ -753,7 +755,7 @@ func _spawn_net_puppet(peer_id: int) -> void:
 	hud.add_ally(_net_player_name(peer_id), mirror)
 	# Everyone (except the puppet's owner) learns about it from the host.
 	if Net.is_host:
-		spawn_ally.rpc(peer_id, info)
+		Net.send(self, &"spawn_ally", [peer_id, info])
 
 
 ## Host → clients: a new ally's puppet exists, here is who they are.
@@ -780,9 +782,20 @@ func _net_on_floor_loaded() -> void:
 	if not Net.active:
 		return
 	_net_spawn_players()
+	if Net.world_session:
+		# A world session: this machine stands here now (Net.send routes by it).
+		Net.set_scene_token("%d:%d:%s" % [GameFlow.state, int(GameState.location.get("seed", 0)), GameState.location_type()])
 	# Every floor: the guest asks the host for a fresh world snapshot —
 	# spawn descriptors broadcast mid-transition may have been dropped.
 	if not Net.is_host:
+		if Net.world_session:
+			# the host must stand here too before it can answer
+			for i in 60:
+				if Net.peer_in_scene(1) or not is_inside_tree():
+					break
+				await get_tree().create_timer(0.1).timeout
+			if not is_inside_tree():
+				return
 		net_sync.net_hello.rpc_id(1)
 	var sp := level.start_position()
 	player.global_position = sp
@@ -842,6 +855,9 @@ func net_run_ended() -> void:
 
 
 func _end_run_coop() -> void:
+	if Net.world_session:
+		GameFlow.hero_died()  # the whole party fell: the expedition is lost for everyone
+		return
 	GameState.end_run()
 	net_run_ended.rpc()
 	var hero := GameState.hero

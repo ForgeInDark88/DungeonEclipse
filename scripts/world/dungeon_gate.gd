@@ -38,6 +38,16 @@ func get_prompt() -> String:
 
 func interact(_player: Node) -> void:
 	AudioManager.play_sfx(&"portal")
+	if GameState.expedition and Net.world_session:
+		if not Net.is_host:
+			EventBus.message.emit(tr("Поход начинает хост. Нажмите «Готов» (F4), когда соберётесь."))
+			return
+		if not WorldNet.everyone_ready() and not has_meta("forced"):
+			set_meta("forced", true)
+			EventBus.message.emit(tr("Не все готовы. Нажмите ещё раз, чтобы выступить без них."))
+			return
+		GameFlow.open_map()
+		return
 	if GameState.expedition:
 		GameFlow.open_map()
 		return

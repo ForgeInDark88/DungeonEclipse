@@ -92,6 +92,10 @@ func _refresh() -> void:
 	home.tooltip_text = tr("Поход закончится: всё найденное и спасённые доберутся до города.")
 	var on := _action(tr("Идти дальше"), func() -> void: GameFlow.location_cleared())
 	_action(tr("Сохранить и выйти"), func() -> void: GameFlow.save_and_quit())
+	if GameFlow.is_guest():
+		home.disabled = true
+		on.disabled = true
+		right_page.add_child(UIStyle.label(tr("Куда идти дальше, решает хост."), 7, UIStyle.INK_SOFT))
 	on.grab_focus()
 
 

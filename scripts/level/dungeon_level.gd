@@ -216,7 +216,7 @@ func _on_seal_kill(_d: EnemyData, _p: Vector2) -> void:
 	if Net.active and Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.seal_state.rpc(seal_kills)
+			Net.send(ns, &"seal_state", [seal_kills])
 	_seal_progress()
 
 
@@ -555,7 +555,7 @@ func break_tile(cell: Vector2i, effects := true) -> bool:
 	if Net.active and Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.tile_broken.rpc(cell)
+			Net.send(ns, &"tile_broken", [cell])
 	if was_ore:
 		var ore := ItemDatabase.get_item(biome.ore_item if biome else &"iron_ore")
 		if ore:
@@ -629,7 +629,7 @@ func place_rope(cell: Vector2i, max_length: int) -> int:
 	if count > 0 and Net.active and Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.ropes_placed.rpc(placed)
+			Net.send(ns, &"ropes_placed", [placed])
 	return count
 
 
@@ -1236,8 +1236,8 @@ func _net_broadcast_enemy(e: Enemy, elite: EliteAffixData, champion: bool, held 
 		return
 	var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 	if ns:
-		ns.spawn_enemy.rpc(e.net_id, String(e.data.id), e.global_position,
-				elite.id if elite else StringName(), champion, held, e.hp, e.role.id if e.role else StringName())
+		Net.send(ns, &"spawn_enemy", [e.net_id, String(e.data.id), e.global_position,
+				elite.id if elite else StringName(), champion, held, e.hp, e.role.id if e.role else StringName()])
 
 
 ## Cracks over a secret wall cell: a jagged dark crack, a faint draft of light

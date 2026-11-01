@@ -51,6 +51,9 @@ func change_scene(path: String, new_state: State) -> void:
 	if _busy:
 		return
 	_busy = true
+	# A world session: everyone follows the host's move (WorldNet.flow).
+	if new_state != State.MAIN_MENU:
+		WorldNet.broadcast_flow(new_state)
 	_fade.mouse_filter = Control.MOUSE_FILTER_STOP
 	var tw := create_tween()
 	tw.tween_property(_fade, "color:a", 1.0, FADE_TIME)
@@ -71,6 +74,83 @@ func change_scene(path: String, new_state: State) -> void:
 
 func is_busy() -> bool:
 	return _busy
+
+
+## A guest of a world session: the host decides everything about the world.
+func is_guest() -> bool:
+	return WorldNet.session and Net.active and not Net.is_host
+
+
+## The loop as the host sees it now, for the guests (WorldNet.flow): the
+## state entered, the town (without the players' private profiles), the
+## expedition, the location, the result.
+func flow_payload(new_state: State = state) -> Dictionary:
+	var town: Dictionary = GameState.town.to_dict() if GameState.town else {}
+	town.erase("players")
+	town.erase("hero")
+	town.erase("warehouse")
+	return {
+		"state": new_state, "town": town, "run": GameState.run.to_dict() if GameState.run else {},
+		"location": GameState.location.duplicate(true), "floor": GameState.floor_number,
+		"result": last_result.duplicate(true) if new_state == State.RUN_RESULT else {},
+	}
+
+
+## A guest follows the host: the same town, map, location; the guest's own
+## hero. An expedition lost by the party costs the guest its own gear.
+func apply_remote_flow(p: Dictionary) -> void:
+	var town := TownState.from_dict(p.get("town", {}))
+	var had_run := GameState.run != null
+	GameState.town = town
+	GameState.expedition = true
+	GameState.difficulty = ItemDatabase.difficulty(town.difficulty_id)
+	GameState.eclipse_level = town.eclipse_level
+	var run_d: Dictionary = p.get("run", {})
+	GameState.run = RunState.from_dict(run_d) if not run_d.is_empty() else null
+	if GameState.run:
+		GameState.run_seed = GameState.run.seed_value
+		if not had_run:
+			GameState.pacts.clear()
+			GameState.reset_run_stats()
+	GameState.location = p.get("location", {})
+	GameState.floor_number = int(p.get("floor", 0))
+	GameState.run_active = true
+	var st: State = int(p.get("state", State.TOWN))
+	match st:
+		State.TOWN:
+			change_scene(GameState.GAME, State.TOWN)
+		State.EXPEDITION_MAP:
+			change_scene(MAP_SCENE, State.EXPEDITION_MAP)
+		State.LOCATION:
+			change_scene(CAMP_SCENE if GameState.location_type() == &"camp" else GameState.GAME, State.LOCATION)
+		State.RUN_RESULT:
+			last_result = p.get("result", {})
+			if int(last_result.get("outcome", 0)) == RunState.Outcome.DEATH:
+				last_result["lost"] = _strip_hero()  # the guest's own gear is lost too
+				PlayerProfiles.push_now()
+			change_scene(RESULT_SCENE, State.RUN_RESULT)
+
+
+## A guest is out of the session (kicked, the host left): back to the menu.
+func client_left_session(reason: String) -> void:
+	GameState.town = null
+	GameState.run = null
+	GameState.hero = null
+	GameState.location = {}
+	GameState.expedition = false
+	change_scene(GameState.MAIN_MENU, State.MAIN_MENU)
+	EventBus.message.emit.call_deferred(reason)
+	_menu_notice = reason
+
+
+## The reason the last session ended (the main menu shows it once).
+var _menu_notice := ""
+
+
+func take_menu_notice() -> String:
+	var n := _menu_notice
+	_menu_notice = ""
+	return n
 
 
 func _process(delta: float) -> void:
@@ -181,6 +261,12 @@ func save_town() -> void:
 	var town := GameState.town
 	if town == null:
 		return
+	if is_guest():
+		PlayerProfiles.push_now()  # the host's save is the truth
+		return
+	if WorldNet.session:
+		PlayerProfiles.save_host()
+		PlayerProfiles.request_all()
 	if GameState.hero and GameState.run == null:
 		town.hero = RunCodec.save_hero(GameState.hero)
 	SaveManager.save_town(town, {"name": world_name, "created": world_created, "playtime": int(playtime)})
@@ -192,7 +278,7 @@ func save_town() -> void:
 func save_expedition(at := "map") -> void:
 	var run := GameState.run
 	var hero := GameState.hero
-	if run == null or hero == null:
+	if run == null or hero == null or is_guest():
 		return
 	var pact_ids: Array = []
 	for p in GameState.pacts:
@@ -256,6 +342,11 @@ func _resume_expedition() -> bool:
 ## «Сохранить и выйти» (town, map, camp): the world and the expedition are
 ## saved where they stand, then the main menu.
 func save_and_quit() -> void:
+	if is_guest():
+		PlayerProfiles.push_now()
+		WorldNet.close_session()
+		_leave_to_menu()
+		return
 	if GameState.run != null:
 		save_expedition("camp" if GameState.location_type() == &"camp" else "map")
 	else:
@@ -280,6 +371,9 @@ func enter_town() -> void:
 ## The town gate: a new expedition (map from a fresh seed) or back to the
 ## map of the one under way.
 func open_map(start_region := -1) -> void:
+	if is_guest():
+		EventBus.message.emit(tr("Это решает хост."))
+		return
 	var town := GameState.town
 	if GameState.run == null:
 		var run := RunState.new()
@@ -361,6 +455,8 @@ func rescue(npc_id: StringName) -> void:
 
 ## Steps onto a node next to the hero; returns false when it is not one.
 func enter_node(id: int) -> bool:
+	if is_guest():
+		return false
 	var run := GameState.run
 	if run == null or not id in run.next_choices():
 		return false
@@ -486,6 +582,8 @@ func location_summary() -> Dictionary:
 ## The location is done (its exit, a camp left forward, an event closed):
 ## back to the map, or the end of the road after the last guardian.
 func location_cleared() -> void:
+	if is_guest():
+		return
 	var run := GameState.run
 	if run == null:
 		return
@@ -512,6 +610,9 @@ func location_cleared() -> void:
 
 ## Home with the loot (from a camp, or the map right after a region boss).
 func retreat() -> void:
+	if is_guest():
+		EventBus.message.emit(tr("Это решает хост."))
+		return
 	end_expedition(RunState.Outcome.RETREAT)
 
 
@@ -612,6 +713,9 @@ func end_expedition(outcome: RunState.Outcome) -> void:
 
 ## The result screen's «В город».
 func back_to_town() -> void:
+	if is_guest():
+		EventBus.message.emit(tr("Это решает хост."))
+		return
 	GameState.run_active = true
 	GameState.reset_run_stats()
 	enter_town()
@@ -620,6 +724,9 @@ func back_to_town() -> void:
 ## Pause → main menu. In town the game is saved; mid-expedition the
 ## expedition is lost (the save still says it was under way).
 func quit_to_menu() -> void:
+	if is_guest():
+		save_and_quit()
+		return
 	if GameState.run == null:
 		save_town()
 	elif GameState.location.is_empty() or GameState.location_type() == &"camp":
@@ -628,6 +735,8 @@ func quit_to_menu() -> void:
 
 
 func _leave_to_menu() -> void:
+	if WorldNet.session:
+		WorldNet.close_session()
 	GameState.hero = null
 	GameState.run = null
 	GameState.location = {}

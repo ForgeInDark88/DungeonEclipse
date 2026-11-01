@@ -36,7 +36,8 @@ func _ready() -> void:
 	var fill := Control.new()
 	fill.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	left_page.add_child(fill)
-	var go := BookPageScreen.button(tr("В город"), func() -> void: GameFlow.back_to_town())
+	var go := BookPageScreen.button(tr("В город") if not GameFlow.is_guest() else tr("Ждём хоста…"), func() -> void: GameFlow.back_to_town())
+	go.disabled = GameFlow.is_guest()
 	left_page.add_child(go)
 	go.grab_focus()
 	# right page: what it brought (or cost)

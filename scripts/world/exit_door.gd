@@ -63,6 +63,10 @@ func _on_seal_changed(kills: int, required: int, initial := false) -> void:
 func get_prompt() -> String:
 	if _sealed:
 		return tr("Выход запечатан: убито %d из %d") % [_kills, _required]
+	if GameState.expedition and Net.world_session:
+		var nsp := get_tree().get_first_node_in_group("net_game") as NetSync
+		var cp := nsp.party_count_at(global_position) if nsp else Vector2i(1, 1)
+		return tr("Выход на карту · отряд у выхода: %d из %d") % [cp.x, cp.y]
 	if GameState.expedition:
 		return tr("Выход: вернуться на карту похода")
 	var text := tr("Спуститься глубже (этаж %d)") % (GameState.floor_number + 1)
@@ -80,6 +84,15 @@ func interact(_player: Node) -> void:
 		AudioManager.play_sfx(&"dig", global_position, -6.0)
 		return
 	AudioManager.play_sfx(&"portal")
+	if GameState.expedition and Net.world_session:
+		# Co-op: the party leaves together, the host moves everyone on.
+		var nsx := get_tree().get_first_node_in_group("net_game") as NetSync
+		if nsx:
+			if Net.is_host:
+				nsx.host_party_move(Net.multiplayer.get_unique_id(), &"exit")
+			else:
+				nsx.request_floor.rpc_id(1, &"exit")
+		return
 	if GameState.expedition:
 		var game := get_tree().current_scene
 		if game and game.has_method("finish_location"):

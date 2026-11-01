@@ -747,9 +747,9 @@ func _shoot(w: WeaponItemData, dir: float) -> void:
 	if Net.active and w.projectile_texture:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns and w.projectile_texture.resource_path != "":
-			ns.projectile_fx.rpc(w.projectile_texture.resource_path, origin, aim,
+			Net.send(ns, &"projectile_fx", [w.projectile_texture.resource_path, origin, aim,
 					w.projectile_speed, w.reach / maxf(1.0, w.projectile_speed) + 0.4,
-					w.damage_color())
+					w.damage_color()])
 
 
 ## Called by enemies, enemy projectiles and traps. Elemental damage
@@ -761,14 +761,14 @@ func _net_broadcast(delta: float) -> void:
 	_net_timer -= delta
 	if _net_timer <= 0.0:
 		_net_timer = 0.05
-		net_state.rpc(global_position, facing, hero.stats.hp if hero else 0,
-				hero.stats.max_hp() if hero else 0, dead, _net_costume(), NetInterp.now())
+		Net.send(self, &"net_state", [global_position, facing, hero.stats.hp if hero else 0,
+				hero.stats.max_hp() if hero else 0, dead, _net_costume(), NetInterp.now()])
 
 
 @rpc("any_peer", "call_remote", "unreliable")
 func net_state(pos: Vector2, p_facing: float, hp: int, max_hp: int, is_dead: bool,
 		costume: Dictionary = {}, sent_at := -1.0) -> void:
-	if not puppet or multiplayer.get_remote_sender_id() != peer_id:
+	if not is_inside_tree() or not puppet or multiplayer.get_remote_sender_id() != peer_id:
 		return
 	_interp.push(sent_at if sent_at >= 0.0 else NetInterp.now(), pos)
 	var now := Time.get_ticks_msec() / 1000.0
@@ -1072,7 +1072,7 @@ func defend() -> void:
 			return
 	# Co-op: the others see the guard / the roll on this hero's copy.
 	if Net.active and not puppet:
-		net_defend.rpc(hero.class_data.defense_move, facing)
+		Net.send(self, &"net_defend", [hero.class_data.defense_move, facing])
 
 
 ## The look of the class defence (here and on the teammates' screens).
@@ -1095,7 +1095,7 @@ func _defend_visual(kind: StringName) -> void:
 
 @rpc("any_peer", "call_remote", "reliable")
 func net_defend(kind: StringName, p_facing: float) -> void:
-	if not puppet or multiplayer.get_remote_sender_id() != peer_id:
+	if not is_inside_tree() or not puppet or multiplayer.get_remote_sender_id() != peer_id:
 		return
 	facing = p_facing
 	visual.facing = p_facing

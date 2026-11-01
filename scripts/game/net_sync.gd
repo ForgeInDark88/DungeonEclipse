@@ -145,7 +145,7 @@ func _broadcast_enemy_state() -> void:
 			states.append([id, e.global_position.x, e.global_position.y, e.hp,
 					e.is_dead(), ai_state, e._attack_anim_left, e.max_hp])
 	if not states.is_empty():
-		enemy_state.rpc(states, NetInterp.now())
+		Net.send(self, &"enemy_state", [states, NetInterp.now()])
 
 
 # --------------------------------------------------------------- combat
@@ -375,7 +375,7 @@ func request_hit(e: Enemy, amount: int, crit: bool, damage_type: int,
 # Host side: an enemy actually died → tell everyone, credit the killer.
 func broadcast_death(e: Enemy, xp: int, gold: int) -> void:
 	var killer := int(_last_hitter.get(e.net_id, 1))
-	enemy_died.rpc(e.net_id, xp, gold, killer)
+	Net.send(self, &"enemy_died", [e.net_id, xp, gold, killer])
 	# The host's own kill event (clients got theirs through the rpc).
 	enemies.erase(e.net_id)
 	_last_hitter.erase(e.net_id)
@@ -417,7 +417,7 @@ func forget_item(net_id: int) -> void:
 	if not Net.is_host or net_id <= 0 or not items.has(net_id):
 		return
 	items.erase(net_id)
-	item_taken.rpc(net_id)
+	Net.send(self, &"item_taken", [net_id])
 
 
 ## Client → host: I touched a pickup.
@@ -435,7 +435,7 @@ func take_item(net_id: int) -> void:
 		return
 	items.erase(net_id)
 	item_granted.rpc_id(sender, RunCodec.item_to_dict(pickup.item), pickup.count)
-	item_taken.rpc(net_id)
+	Net.send(self, &"item_taken", [net_id])
 	pickup.queue_free()
 
 
@@ -476,7 +476,7 @@ func broadcast_item(pickup: ItemPickup) -> void:
 	next_net_id += 1
 	pickup.net_id = id
 	items[id] = pickup
-	spawn_item.rpc(id, RunCodec.item_to_dict(pickup.item), pickup.count, pickup.global_position, pickup.velocity)
+	Net.send(self, &"spawn_item", [id, RunCodec.item_to_dict(pickup.item), pickup.count, pickup.global_position, pickup.velocity])
 
 
 ## Host → all: the item came to rest here (replicas snap to it, so nobody
@@ -594,7 +594,7 @@ func player_hp(peer_id: int, hp: int, max_hp: int, dead: bool) -> void:
 
 
 func broadcast_player_hp(peer_id: int, hp: int, max_hp: int, dead: bool) -> void:
-	player_hp.rpc(peer_id, hp, max_hp, dead)
+	Net.send(self, &"player_hp", [peer_id, hp, max_hp, dead])
 
 
 ## Client → host: my game scene is up, spawn my puppet and tell the others.
@@ -719,7 +719,7 @@ func request_chest_open(seq: int, has_key: bool) -> void:
 
 
 func broadcast_chest(seq: int, opener_peer: int = 1, consume_key: bool = false) -> void:
-	chest_opened_remote.rpc(seq, opener_peer, consume_key)
+	Net.send(self, &"chest_opened_remote", [seq, opener_peer, consume_key])
 
 
 @rpc("authority", "call_remote", "reliable")
@@ -755,11 +755,11 @@ func request_purchase(merchant_seq: int, offer_key: String) -> void:
 	var remove_offer := not item.is_stackable()
 	if remove_offer:
 		merchant.stock.remove_at(slot)
-	purchase_remote.rpc(merchant_seq, offer_key, sender, item_dict, remove_offer)
+	Net.send(self, &"purchase_remote", [merchant_seq, offer_key, sender, item_dict, remove_offer])
 
 
 func broadcast_purchase(merchant: Merchant, offer_key: String, item: ItemData, remove_offer: bool) -> void:
-	purchase_remote.rpc(merchant.net_seq, offer_key, 1, RunCodec.item_to_dict(item), remove_offer)
+	Net.send(self, &"purchase_remote", [merchant.net_seq, offer_key, 1, RunCodec.item_to_dict(item), remove_offer])
 
 
 @rpc("authority", "call_remote", "reliable")
@@ -795,7 +795,7 @@ func request_sell(merchant_seq: int, item_dict: Dictionary) -> void:
 	if item == null or item.is_stackable():
 		return
 	merchant.stock.append(item)
-	stock_added.rpc(merchant_seq, item_dict)
+	Net.send(self, &"stock_added", [merchant_seq, item_dict])
 
 
 ## Host → all: the merchant bought a unique item, it is now in the stock.
@@ -848,7 +848,7 @@ func puzzle_state(puzzle_seq: int, progress: int, solved: bool) -> void:
 
 ## Host: the champion's room sealed or opened → replicate the barrier.
 func broadcast_gate(closed: bool, gate_id := 0) -> void:
-	gate_state.rpc(closed, gate_id)
+	Net.send(self, &"gate_state", [closed, gate_id])
 
 
 ## Every gate of the floor has an id (the order the level builds them in,
@@ -891,7 +891,7 @@ func request_trap_spring(seq: int, target: Vector2) -> void:
 		if t.net_seq == seq and not t.disarmed:
 			if _sender_near(sender, t.global_position, 160.0) and _sender_near(sender, target, 160.0):
 				t.net_spring(target)
-				trap_sprung.rpc(seq, target, sender)
+				Net.send(self, &"trap_sprung", [seq, target, sender])
 			return
 
 
@@ -1047,8 +1047,8 @@ func spawn_net_bomb(pos: Vector2, dir: float, damage: int, radius: float, fuse_t
 	bomb.breaks_tiles = breaks_tiles
 	bomb.color = color
 	level.add_entity(bomb, pos)
-	bomb_spawned.rpc(pos, dir, fuse_time, damage_type, status_id, status_duration,
-			status_power, breaks_tiles, color)
+	Net.send(self, &"bomb_spawned", [pos, dir, fuse_time, damage_type, status_id, status_duration,
+			status_power, breaks_tiles, color])
 
 
 ## Client → host: I threw a bomb; validate, spawn, mirror to everyone.
@@ -1190,7 +1190,7 @@ func _sender_near(peer_id: int, pos: Vector2, max_distance: float) -> bool:
 ## Any player attack → the others see the swing animation and slash trail.
 func broadcast_attack(caster_peer: int, anim: StringName, aim: Vector2, reach: float,
 		thrust: bool, color: Color) -> void:
-	attack_fx.rpc(caster_peer, anim, aim, reach, thrust, color)
+	Net.send(self, &"attack_fx", [caster_peer, anim, aim, reach, thrust, color])
 
 
 @rpc("any_peer", "call_remote", "unreliable")
@@ -1220,7 +1220,7 @@ func attack_fx(caster_peer: int, anim: StringName, aim: Vector2, reach: float,
 
 ## Any player cast → everyone sees the animation, sound and the visuals.
 func broadcast_cast(caster_peer: int, skill_id: StringName, aim: Vector2) -> void:
-	cast_fx.rpc(caster_peer, skill_id, aim)
+	Net.send(self, &"cast_fx", [caster_peer, skill_id, aim])
 
 
 @rpc("any_peer", "call_remote", "unreliable")
@@ -1377,6 +1377,10 @@ func _peer_name(peer_id: int) -> String:
 func request_floor(action: StringName) -> void:
 	if not Net.is_host:
 		return
+	# Only moves of this kind of session (a guest sends an intention).
+	var allowed := [&"exit"] if Net.world_session else [&"next", &"town", &"resume"]
+	if not action in allowed:
+		return
 	host_party_move(multiplayer.get_remote_sender_id(), action)
 
 
@@ -1388,7 +1392,7 @@ func host_party_move(peer_id: int, action: StringName) -> void:
 	var p := _hero_node(peer_id)
 	if p == null or p.dead:
 		return
-	if action == &"next" and GameState.town_return_floor <= 0 and not GameState.is_town():
+	if action in [&"next", &"exit"] and GameState.town_return_floor <= 0 and not GameState.is_town():
 		var game := get_tree().current_scene
 		var lvl: DungeonLevel = game.level if game != null and "level" in game else null
 		if lvl != null and lvl.is_sealed():
@@ -1434,6 +1438,10 @@ func _check_gathering() -> void:
 
 func _do_party_move(action: StringName) -> void:
 	match action:
+		&"exit":
+			# A world session: the location is done (its reward, then the map).
+			GameFlow.location_summary()
+			GameFlow.location_cleared()
 		&"next":
 			# A guest's town gate: while a return floor is pending, "next"
 			# means resume the descent (the guest does not know the state).
@@ -1452,7 +1460,7 @@ func _do_party_move(action: StringName) -> void:
 ## language.
 func _announce(fmt: String, args: Array = []) -> void:
 	party_message(fmt, args)
-	party_message.rpc(fmt, args)
+	Net.send(self, &"party_message", [fmt, args])
 
 
 @rpc("authority", "call_remote", "reliable")

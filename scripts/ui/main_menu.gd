@@ -51,6 +51,12 @@ func _ready() -> void:
 
 	right_page.add_theme_constant_override("separation", 4)
 	right_page.add_child(_spacer(4))
+	var notice := GameFlow.take_menu_notice()
+	if notice != "":
+		var nl := UIStyle.label(notice, 7, Color(0.55, 0.15, 0.1))
+		nl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		nl.custom_minimum_size = Vector2(200, 0)
+		right_page.add_child(nl)
 	var cont: Button = null
 	# The worlds (save slots): continue the last one, load any, make a new one.
 	if GameFlow.has_save():
@@ -66,7 +72,7 @@ func _ready() -> void:
 	# multiplayer on one row: host / join
 	var net := HBoxContainer.new()
 	net.add_theme_constant_override("separation", 4)
-	for entry in [[tr("Хостить"), func() -> void: get_tree().change_scene_to_file("res://scenes/ui/net_host.tscn")],
+	for entry in [[tr("Хостить"), func() -> void: _open_slots("host")],
 			[tr("Присоединиться"), func() -> void: get_tree().change_scene_to_file("res://scenes/ui/net_join.tscn")]]:
 		var nb := BookPageScreen.button(entry[0], entry[1])
 		nb.size_flags_horizontal = Control.SIZE_EXPAND_FILL

@@ -69,7 +69,7 @@ func _take(offer: Dictionary, player: Node) -> void:
 	if Net.active and Net.is_host:
 		var ns = get_tree().get_first_node_in_group("net_game")
 		if ns:
-			ns.pact_taken.rpc(net_seq, _offers.find(offer))
+			Net.send(ns, &"pact_taken", [net_seq, _offers.find(offer)])
 	finish()
 
 

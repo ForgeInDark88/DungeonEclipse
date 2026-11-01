@@ -338,6 +338,9 @@ func _reward_text(n: Dictionary) -> String:
 func _walk_to(id: int) -> void:
 	if _moving or not id in _run.next_choices():
 		return
+	if GameFlow.is_guest():
+		EventBus.message.emit(tr("Путь выбирает хост."))
+		return
 	_moving = true
 	Tooltip.hide_tip()
 	AudioManager.play_ui(&"ui_click")

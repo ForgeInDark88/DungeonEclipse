@@ -44,7 +44,7 @@ func _ready() -> void:
 func _send() -> void:
 	var ns := get_tree().get_first_node_in_group("net_game") as NetSync if is_inside_tree() else null
 	if ns:
-		ns.telegraph_fx.rpc(global_position, radius, line_length, duration - _t, color)
+		Net.send(ns, &"telegraph_fx", [global_position, radius, line_length, duration - _t, color])
 
 
 func _process(delta: float) -> void:

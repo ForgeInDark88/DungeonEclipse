@@ -136,7 +136,7 @@ func _ready() -> void:
 	if ns:
 		net_uid = Net.multiplayer.get_unique_id() * 100000 + _next_uid
 		_next_uid += 1
-		ns.minion_spawn.rpc(net_uid, kind, global_position)
+		Net.send(ns, &"minion_spawn", [net_uid, kind, global_position])
 
 
 func _exit_tree() -> void:
@@ -144,7 +144,7 @@ func _exit_tree() -> void:
 		return
 	var ns := _net()
 	if ns:
-		ns.minion_gone.rpc(net_uid)
+		Net.send(ns, &"minion_gone", [net_uid])
 
 
 func _net() -> NetSync:
@@ -218,7 +218,7 @@ func _physics_process(delta: float) -> void:
 		_net_timer = 0.1
 		var ns := _net()
 		if ns:
-			ns.minion_state.rpc(net_uid, global_position, sprite.flip_h)
+			Net.send(ns, &"minion_state", [net_uid, global_position, sprite.flip_h])
 
 
 func _animate() -> void:
@@ -304,7 +304,7 @@ func _attack() -> void:
 	_attack_fx(at, d, true)
 	var ns := _net()
 	if ns:
-		ns.minion_attack.rpc(net_uid, at)
+		Net.send(ns, &"minion_attack", [net_uid, at])
 
 
 ## `real`: the owner's servant (deals damage); remote copies only show it.

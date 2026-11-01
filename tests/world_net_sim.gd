@@ -1,0 +1,191 @@
+extends SceneTree
+## One "machine" of the world session test (tests/world_net.sh starts a host
+## and several clients). Env: ROLE host|client, PORT, NICK, PASS, EXPECT
+## (ok | a WorldNet fail reason), TOKEN_FILE, PROTOCOL_LIE=1, GOLD_MARK,
+## STAY (seconds online), CHECK_GOLD (gold the profile must bring back),
+## DENY_PENDING=1 (host refuses new devices), SAVES (host saves dir).
+
+var fails := 0
+var pp: Node
+var wn: Node
+var net: Node
+var flow: Node
+var role := OS.get_environment("ROLE")
+var nick := OS.get_environment("NICK")
+
+
+func check(c: bool, what: String) -> void:
+	print(("PASS: " if c else "FAIL: ") + "[%s] %s" % [nick if role == "client" else "host", what])
+	if not c:
+		fails += 1
+
+
+func env_int(k: String, d: int) -> int:
+	var v := OS.get_environment(k)
+	return int(v) if v != "" else d
+
+
+func _initialize() -> void:
+	await process_frame
+	pp = root.get_node("PlayerProfiles")
+	wn = root.get_node("WorldNet")
+	net = root.get_node("Net")
+	flow = root.get_node("GameFlow")
+	var sm = root.get_node("SaveManager")
+	sm.remember_slot = false
+	var tf := OS.get_environment("TOKEN_FILE")
+	if tf != "":
+		pp.identity_path = tf
+	if role == "host":
+		await _host()
+	else:
+		await _client()
+	print("RESULT: %s" % ("OK" if fails == 0 else "%d FAILURES" % fails))
+	quit(1 if fails > 0 else 0)
+
+
+func _host() -> void:
+	var sm = root.get_node("SaveManager")
+	var idb = root.get_node("ItemDatabase")
+	var gs = root.get_node("GameState")
+	sm.saves_dir = OS.get_environment("SAVES") if OS.get_environment("SAVES") != "" else "user://test_net_saves/"
+	if env_int("FRESH", 1) == 1:
+		sm.delete_slot(1)
+		sm.use_slot(1)
+		var town := TownState.new()
+		Buildings.init_town(town)
+		town.world_seed = 777
+		var hero := Hero.new(idb.races[0], idb.classes[0], idb.equipment_layout)
+		hero.give_starting_kit()
+		town.hero = RunCodec.save_hero(hero)
+		gs.town = town
+		sm.save_town(town, {"name": "Сетевой мир"})
+	sm.last_name = "Хозяин"
+	var err: String = wn.host_world(1, env_int("PORT", 7790), OS.get_environment("PASS"), env_int("SEATS", 3), false)
+	check(err == "", "the world is hosted (%s)" % err)
+	if OS.get_environment("SCENARIO") == "flow":
+		await _host_flow()
+		return
+	var kicked := false
+	var t := 0.0
+	var stay := float(env_int("STAY", 40))
+	while t < stay:
+		await create_timer(0.25).timeout
+		t += 0.25
+		if OS.get_environment("DENY_PENDING") == "1":
+			for peer in pp.pending.keys():
+				pp.deny(peer)
+		# kick whoever is called Kickme
+		for id in wn.roster.keys():
+			if not kicked and wn.roster[id]["nick"] == "Kickme" and wn.roster[id]["status"] == "online":
+				await create_timer(4.0).timeout
+				wn.kick(id)
+				kicked = true
+	print("ROSTER: %s" % str(wn.roster.values().map(func(r): return "%s:%s" % [r["nick"], r["status"]])))
+	var profiles: Dictionary = gs.town.players
+	print("PROFILES: %s" % str(profiles.keys()))
+	check(profiles.has("alice") and profiles.has("bob"), "profiles were made for Alice and Bob")
+	check(not profiles.has("carl"), "no profile for a refused player")
+	var alice: Hero = pp.hero_of("Alice")
+	check(alice != null and alice.gold == 123, "Alice's last pushed hero is kept (gold %d)" % (alice.gold if alice else -1))
+	check(wn.chat_log.any(func(l): return l[0] == "Alice" and l[1] == "hi from Alice"), "the host got Alice's chat")
+	check(kicked, "the host kicked Kickme")
+	flow.save_town()
+	var back = sm.load_town()
+	check(back != null and back.players.has("alice") and RunCodec.load_hero(back.players["alice"]["hero"]).gold == 123,
+		"profiles survive the save (restart of the host)")
+	wn.close_session()
+
+
+## Host side of the flow scenario: once a guest is in, lead the party out
+## of town, into a node, back to the map, home.
+func _host_flow() -> void:
+	var gs = root.get_node("GameState")
+	var t := 0.0
+	while wn.roster.size() < 2 and t < 20.0:
+		await create_timer(0.25).timeout
+		t += 0.25
+	check(wn.roster.size() == 2, "a guest joined")
+	await create_timer(2.0).timeout
+	flow.open_map()
+	await create_timer(2.0).timeout
+	var id: int = gs.run.next_choices()[0]
+	flow.enter_node(id)
+	await create_timer(4.0).timeout
+	flow.location_cleared()
+	await create_timer(2.5).timeout
+	flow.retreat()
+	await create_timer(2.5).timeout
+	flow.back_to_town()
+	await create_timer(3.0).timeout
+	check(flow.state == flow.State.TOWN, "the host is back in town")
+	wn.close_session()
+
+
+func _client() -> void:
+	var expect := OS.get_environment("EXPECT")
+	var st := {"done": false, "result": "", "kicked": false}
+	wn.join_result.connect(func(okk: bool, reason: String) -> void:
+		if reason == "pending":
+			return
+		if reason == "kicked":
+			st["kicked"] = true
+		if not st["done"]:
+			st["done"] = true
+			st["result"] = "ok" if okk else reason)
+	wn.hero_needed.connect(func() -> void:
+		pp.create_hero(&"human", &"rogue", false))
+	if OS.get_environment("PROTOCOL_LIE") == "1":
+		wn.protocol_override = 1
+	await create_timer(0.2).timeout
+	var ok: bool = wn.join_world("127.0.0.1", env_int("PORT", 7790), nick, OS.get_environment("PASS"))
+	var t := 0.0
+	while not st["done"] and t < 15.0:
+		await create_timer(0.2).timeout
+		t += 0.2
+	check(ok or expect != "ok", "the join started")
+	var result: String = st["result"]
+	check(result == expect, "join result is '%s' (expected '%s')" % [result, expect])
+	if result != "ok":
+		return
+	await create_timer(1.5).timeout
+	var gs = root.get_node("GameState")
+	if OS.get_environment("SCENARIO") == "flow":
+		var seen: Array = []
+		flow.state_changed.connect(func(s: int) -> void: seen.append(s))
+		var tt := 0.0
+		while tt < 24.0:
+			await create_timer(0.25).timeout
+			tt += 0.25
+		var S = flow.State
+		print("STATES: %s" % str(seen))
+		check(seen.slice(0, 5) == [S.EXPEDITION_MAP, S.LOCATION, S.EXPEDITION_MAP, S.RUN_RESULT, S.TOWN],
+			"the guest followed the host: map, location, map, result, town")
+		check(gs.run == null and gs.is_town(), "the guest is back in town with the party")
+		wn.close_session()
+		return
+	check(gs.hero != null and gs.town != null, "the guest has its hero and the host's town")
+	check(current_scene != null and current_scene.scene_file_path == gs.GAME and gs.is_town(), "the guest walks the host's town")
+	var want := env_int("CHECK_GOLD", -1)
+	if want >= 0:
+		check(gs.hero.gold == want, "the profile brought the gear back (gold %d)" % gs.hero.gold)
+	var mark := env_int("GOLD_MARK", -1)
+	if mark >= 0:
+		gs.hero.gold = mark
+		pp.push_now()
+	wn.say("hi from %s" % nick)
+	var stay := float(env_int("STAY", 3))
+	t = 0.0
+	var chat_ok := false
+	while t < stay:
+		await create_timer(0.25).timeout
+		t += 0.25
+		if wn.chat_log.any(func(l): return l[1] == "hi from %s" % nick):
+			chat_ok = true
+		if st["kicked"]:
+			break
+	if nick == "Kickme":
+		check(st["kicked"], "Kickme was kicked by the host")
+	check(chat_ok, "my chat line came back from the host")
+	if not st["kicked"]:
+		wn.close_session()

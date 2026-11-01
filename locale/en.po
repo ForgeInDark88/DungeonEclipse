@@ -75,6 +75,10 @@ msgstr " (two-handed)"
 msgid " (и все прежние)"
 msgstr " (and all before it)"
 
+#: scripts/ui/session_hud.gd
+msgid " (отключён)"
+msgstr " (offline)"
+
 #: scripts/core/identify.gd
 msgid " (проклят)"
 msgstr " (cursed)"
@@ -86,6 +90,10 @@ msgstr " · Eclipse %d"
 #: scripts/ui/skill_tree_book.gd
 msgid " · выбор пути: первая вложенная ветвь закрепится"
 msgstr " · choice of path: the first branch you invest in becomes yours"
+
+#: scripts/ui/session_hud.gd
+msgid " · готов"
+msgstr " · ready"
 
 #: scripts/world/exit_door.gd
 msgid " · отряд у выхода: %d из %d"
@@ -183,6 +191,10 @@ msgstr "%s · closed"
 msgid "%s в клетке ловушки %s (%s, шаг %s, прошлый шаг %s, vel %s, jumping %s)"
 msgstr "%s in a trap cell %s (%s, step %s, last step %s, vel %s, jumping %s)"
 
+#: scripts/autoload/world_net.gd
+msgid "%s входит в мир."
+msgstr "%s enters the world."
+
 #: scripts/autoload/net.gd
 msgid "%s вышел"
 msgstr "%s left"
@@ -190,6 +202,10 @@ msgstr "%s left"
 #: scripts/game/net_sync.gd
 msgid "%s ждёт у выхода. Подойдите: %s"
 msgstr "%s is waiting at the exit. Come over: %s"
+
+#: scripts/autoload/world_net.gd
+msgid "%s исключён из сессии."
+msgstr "%s was removed from the session."
 
 #: scripts/core/hero.gd
 msgid "%s ломается! Нужен ремонт."
@@ -206,6 +222,10 @@ msgstr "%s for %d s"
 #: scripts/combat/status_hit_effect.gd
 msgid "%s на %d%% на %.1f с%s"
 msgstr "%s by %d%% for %.1f s%s"
+
+#: scripts/autoload/world_net.gd
+msgid "%s отключился."
+msgstr "%s disconnected."
 
 #: scripts/ui/tooltip_text.gd
 msgid "%s плохо владеет этим оружием: −%d%% урона, −%d%% скорости"
@@ -234,6 +254,10 @@ msgstr "%s joined"
 #: scripts/core/equipment.gd
 msgid "%s проклят — его не снять"
 msgstr "%s is cursed — it can't be removed"
+
+#: scripts/autoload/player_profiles.gd
+msgid "%s просит войти с нового устройства: хост должен подтвердить."
+msgstr "%s asks to join from a new device: the host must confirm."
 
 #: scripts/core/hero.gd
 msgid "%s сгорает — вы снова на ногах!"
@@ -290,10 +314,6 @@ msgstr "(a location is only saved at its exit: leave now and you flee it without
 #: scripts/game/game.gd
 msgid "(забег продолжится с начала этажа)"
 msgstr "(the run will continue from the start of the floor)"
-
-#: scripts/ui/net_host_screen.gd
-msgid "(пока никто)"
-msgstr "(nobody yet)"
 
 #: scripts/data/eclipse_levels.gd
 msgid "+ %s%s · осколков ×%.1f"
@@ -503,9 +523,17 @@ msgstr "??? — %s. Held captive somewhere at depth %d+."
 msgid "DungeonEclipse — версия %s.\n\nИдея, дизайн и тестирование — команда DungeonEclipse и друзья, "
 msgstr "DungeonEclipse — version %s.\n\nIdea, design and testing — the DungeonEclipse team and friends "
 
+#: scripts/ui/session_hud.gd
+msgid "Enter — чат · F1 — закрыть"
+msgstr "Enter — chat · F1 — close"
+
 #: scripts/ui/character_creation.gd
 msgid "HP %d · Мана %d · Урон %d"
 msgstr "HP %d · Mana %d · Damage %d"
+
+#: scripts/ui/net_join_screen.gd
+msgid "IP или домен хоста"
+msgstr "Host IP or domain"
 
 #: scripts/ui/fishing_game.gd
 msgid "[%s] / ЛКМ — подсечь · Esc — бросить"
@@ -606,6 +634,10 @@ msgstr "Absolute Zero"
 #: scripts/ui/info_book.gd
 msgid "Авторы"
 msgstr "Credits"
+
+#: scripts/ui/net_join_screen.gd
+msgid "Адрес:"
+msgstr "Address:"
 
 #: scripts/ui/skill_tree_book.gd
 msgid "Активный навык"
@@ -955,6 +987,10 @@ msgstr "%s moved into the town."
 msgid "В город пришёл спасённый горожанин."
 msgstr "A rescued townsman came to the town."
 
+#: scripts/ui/net_join_screen.gd
+msgid "В локальной сети миров не найдено. Введите адрес хоста вручную."
+msgstr "No worlds found on the local network. Enter the host's address by hand."
+
 #: data
 msgid "В навершии пульсирует фиолетовый огонь."
 msgstr "A violet fire pulses in the pommel."
@@ -975,19 +1011,11 @@ msgstr "The bag holds gold and a couple of useful trinkets. The scout watches yo
 msgid "В сумке:"
 msgstr "In the bag:"
 
-#: scripts/ui/net_host_screen.gd
-msgid "Ваш адрес: %s (порт %d)"
-msgstr "Your address: %s (port %d)"
-
 #: scripts/ui/event_dialog.gd
 msgid "Ваш выбор"
 msgstr "Your choice"
 
 #: scripts/ui/net_join_screen.gd
-msgid "Ваш герой"
-msgstr "Your hero"
-
-#: scripts/ui/net_host_screen.gd
 msgid "Ваш ник"
 msgstr "Your nickname"
 
@@ -1110,6 +1138,10 @@ msgstr "Take only the supplies and leave."
 #: data
 msgid "Видал лучшие времена, но всё ещё режет."
 msgstr "It has seen better days, but it still cuts."
+
+#: scripts/ui/slots_screen.gd
+msgid "Виден в локальной сети"
+msgstr "Visible on the local network"
 
 #: data
 msgid "Видишь слабые места врагов."
@@ -1363,10 +1395,6 @@ msgstr "Pick a neighbouring node.\nThere is no way back on the map."
 msgid "Выбран другой путь: %s"
 msgstr "Another path was chosen: %s"
 
-#: scripts/ui/net_host_screen.gd
-msgid "Выбрать героя и начать"
-msgstr "Choose a hero and start"
-
 #: scripts/ui/drop_catcher.gd
 msgid "Выброшено: %s"
 msgstr "Dropped: %s"
@@ -1434,6 +1462,10 @@ msgstr "Quit"
 #: scripts/world/exit_door.gd
 msgid "Выход запечатан: убито %d из %d"
 msgstr "The exit is sealed: %d of %d killed"
+
+#: scripts/world/exit_door.gd
+msgid "Выход на карту · отряд у выхода: %d из %d"
+msgstr "Exit to the map · party at the exit: %d of %d"
 
 #: scripts/ui/hud.gd
 msgid "Выход открыт"
@@ -1615,9 +1647,9 @@ msgstr "Bitter, but it works."
 msgid "Горячее и сочное."
 msgstr "Hot and juicy."
 
-#: scripts/ui/net_join_screen.gd
-msgid "Гость"
-msgstr "Guest"
+#: scripts/ui/session_hud.gd
+msgid "Готов (F4)"
+msgstr "Ready (F4)"
 
 #: scripts/ui/settings_book.gd
 msgid "Готово"
@@ -1662,6 +1694,10 @@ msgstr "Crude but sturdy."
 #: data
 msgid "Густое и красное, как закат."
 msgstr "Thick and red, like a sunset."
+
+#: scripts/ui/session_hud.gd
+msgid "Да"
+msgstr "Yes"
 
 #: scripts/ui/info_book.gd
 msgid "Да вернётся солнце над Аурелией."
@@ -1787,10 +1823,6 @@ msgstr "The gravedigger's diary, page two"
 msgid "Дневник могильщика, страница первая"
 msgstr "The gravedigger's diary, page one"
 
-#: scripts/ui/net_host_screen.gd
-msgid "До 4 игроков. Враги становятся сильнее за каждого героя в отряде."
-msgstr "Up to 4 players. Enemies grow stronger for every hero in the party."
-
 #: data
 msgid "Доберитесь до 10 этажа."
 msgstr "Reach floor 10."
@@ -1887,9 +1919,9 @@ msgstr "Dragonling"
 msgid "Драконье копьё"
 msgstr "Dragon Lance"
 
-#: scripts/ui/net_host_screen.gd
-msgid "Друзья находят игру сами через «Присоединиться»"
-msgstr "Friends find the game themselves through \"Join\""
+#: scripts/autoload/world_net.gd
+msgid "Другая версия игры или игровых данных."
+msgstr "A different version of the game or its data."
 
 #: data
 msgid "Дубина"
@@ -1906,6 +1938,10 @@ msgstr "Smoke Screen"
 #: data
 msgid "Его звали Олдрик, и всю жизнь он хоронил чужих. Когда солнце упало, тёплый голос из-под катакомб пообещал ему корону. Он собрал трон из костей предков и сел на него — первый слуга Затмения. Мёртвые служат ему. Мёртвым всё равно — так он говорил."
 msgstr "His name was Oldric, and all his life he buried other people. When the sun fell, a warm voice from beneath the catacombs promised him a crown. He built a throne from his ancestors' bones and sat on it — the Eclipse's first servant. The dead serve him. The dead don't care — or so he used to say."
+
+#: scripts/ui/net_join_screen.gd
+msgid "Если в этом мире у вашего ника уже есть герой, вы получите его со всем снаряжением. Иначе хост создаст этого:"
+msgstr "If your nickname already has a hero in this world, you get them back with all their gear. Otherwise the host creates this one:"
 
 #: scripts/ui/quest_book.gd
 msgid "Ещё не готово"
@@ -1938,6 +1974,10 @@ msgstr "Roast Meat"
 #: scripts/game/game.gd
 msgid "Ждать (наблюдать)"
 msgstr "Wait (spectate)"
+
+#: scripts/ui/run_result_screen.gd
+msgid "Ждём хоста…"
+msgstr "Waiting for the host…"
 
 #: data
 msgid "Ждёт на потолке в наростах кристаллов и падает на голову."
@@ -2447,33 +2487,21 @@ msgstr "Quite right."
 msgid "И принеси трав: в храме всегда нужны бинты и отвары."
 msgstr "And bring herbs: the temple always needs bandages and brews."
 
-#: scripts/ui/net_join_screen.gd
-msgid "Игр не найдено. Хост должен нажать «Создать игру»."
-msgstr "No games found. The host must press \"Create game\"."
-
 #: scripts/ui/info_book.gd
 msgid "Игра"
 msgstr "Game"
-
-#: scripts/ui/net_host_screen.gd
-msgid "Игра открыта."
-msgstr "The game is open."
-
-#: scripts/ui/net_host_screen.gd
-msgid "Игра открыта. Ждём друзей..."
-msgstr "The game is open. Waiting for friends..."
 
 #: scripts/ui/info_book.gd
 msgid "Игра по сети в локальной сети: один игрок — хост, остальные присоединяются по IP.\n\n"
 msgstr "Network play over a local network: one player hosts, the others join by IP.\n\n"
 
-#: scripts/ui/net_host_screen.gd
-msgid "Игра по сети — хост"
-msgstr "Network game — host"
-
 #: scripts/ui/slots_screen.gd
 msgid "Играть"
 msgstr "Play"
+
+#: scripts/ui/slots_screen.gd
+msgid "Играть по сети (хост)"
+msgstr "Play online (host)"
 
 #: scripts/autoload/net.gd
 msgid "Игрок"
@@ -2483,13 +2511,9 @@ msgstr "Player"
 msgid "Игрок в кости"
 msgstr "The Dice Player"
 
-#: scripts/ui/net_host_screen.gd
-msgid "Игроки в лобби:"
-msgstr "Players in the lobby:"
-
-#: scripts/ui/net_join_screen.gd
-msgid "Игры в сети:"
-msgstr "Games on the network:"
+#: scripts/ui/slots_screen.gd
+msgid "Игроков:"
+msgstr "Players:"
 
 #: data
 msgid "Идол жадности"
@@ -2587,6 +2611,10 @@ msgstr "Intellect"
 msgid "Интерфейс"
 msgstr "Interface"
 
+#: scripts/ui/session_hud.gd
+msgid "Исключить"
+msgstr "Kick"
+
 #: data
 msgid "Искра Илары"
 msgstr "Ilara's Spark"
@@ -2636,8 +2664,8 @@ msgid "Итоги для города"
 msgstr "What the town gets"
 
 #: scripts/ui/net_join_screen.gd
-msgid "Ищем хостов..."
-msgstr "Looking for hosts..."
+msgid "Ищем миры в сети…"
+msgstr "Looking for worlds on the network…"
 
 #: data
 msgid "КТО-ТО ИЗ НАС НАСТОЯЩИЙ. КТО-ТО ИЗ НАС СМЕЁТСЯ. КТО-ТО ИЗ НАС ДЕРЖИТ ДВЕРЬ. если ты читаешь это с той стороны — не разбивай зеркала. они держат больше, чем отражения."
@@ -3323,6 +3351,10 @@ msgstr "Wings"
 msgid "Кто ест их каждый день, начинает видеть во сне чёрное солнце. Оно не светит — оно смотрит. Сегодня мой ученик не проснулся. Под его кожей светились те же голубые жилки, что в шляпках. Я сожгла запасы. Город меня проклял."
 msgstr "Those who eat them every day begin to dream of a black sun. It doesn't shine — it watches. Today my apprentice didn't wake up. Under his skin glowed the same blue veins as in the caps. I burned the stores. The town cursed me."
 
+#: scripts/ui/camp_screen.gd
+msgid "Куда идти дальше, решает хост."
+msgstr "The host decides where to go next."
+
 #: data
 msgid "Кузнец"
 msgstr "Blacksmith"
@@ -3578,6 +3610,10 @@ msgstr "Godot license"
 #: data
 msgid "Лишнее зелье здоровья на старте."
 msgstr "An extra health potion at the start."
+
+#: scripts/ui/session_hud.gd
+msgid "Лобби: %s"
+msgstr "Lobby: %s"
 
 #: data
 msgid "Ловкие и проницательные дети сумерек."
@@ -3863,6 +3899,10 @@ msgstr "World 1"
 msgid "Мир не загрузился: файл повреждён."
 msgstr "The world did not load: the file is damaged."
 
+#: scripts/autoload/world_net.gd
+msgid "Мир полон."
+msgstr "The world is full."
+
 #: data
 msgid "Мира"
 msgstr "Mira"
@@ -3882,6 +3922,10 @@ msgstr "Mira, the herbalist"
 #: scripts/ui/slots_screen.gd
 msgid "Миры"
 msgstr "Worlds"
+
+#: scripts/ui/net_join_screen.gd
+msgid "Миры в локальной сети:"
+msgstr "Worlds on the local network:"
 
 #: data
 msgid "Много карманов, мало веса."
@@ -4275,6 +4319,10 @@ msgstr "Finds: %s"
 msgid "Нашли жилу лунного кристалла. Светится сам, без факела. Звенит, если стукнуть. Старики говорят, это слёзы горы — она плачет, с тех пор как в неё упало чёрное солнце. Платят втрое. Копаем."
 msgstr "Found a vein of moon crystal. It glows on its own, no torch needed. It rings when struck. The old men say these are the mountain's tears — it has wept ever since the black sun fell into it. They pay triple. We dig."
 
+#: scripts/world/dungeon_gate.gd
+msgid "Не все готовы. Нажмите ещё раз, чтобы выступить без них."
+msgstr "Not everyone is ready. Press again to set out without them."
+
 #: scripts/traps/trap.gd
 msgid "Не вышло! Ловушка сработала"
 msgstr "Failed! The trap went off"
@@ -4290,10 +4338,6 @@ msgstr "No time for fishing!"
 #: data
 msgid "Не нюхайте синюю колбу. Просто не нюхайте."
 msgstr "Don't sniff the blue flask. Just don't."
-
-#: scripts/ui/net_host_screen.gd
-msgid "Не удалось открыть порт (занят?)"
-msgstr "Could not open the port (in use?)"
 
 #: scripts/autoload/net.gd
 msgid "Не удалось подключиться"
@@ -4315,9 +4359,17 @@ msgstr "The heavens fall upon the wicked."
 msgid "Небо горит!"
 msgstr "The sky is burning!"
 
+#: scripts/autoload/world_net.gd
+msgid "Неверный пароль."
+msgstr "Wrong password."
+
 #: scripts/combat/status_effects.gd
 msgid "Невидимость"
 msgstr "Invisibility"
+
+#: scripts/autoload/world_net.gd
+msgid "Недопустимый ник."
+msgstr "Invalid nickname."
 
 #: scripts/player/player.gd
 msgid "Недостаточно маны"
@@ -4391,6 +4443,10 @@ msgstr "Bring stone — and the town will rise."
 msgid "Несокрушимый"
 msgstr "Indomitable"
 
+#: scripts/ui/session_hud.gd
+msgid "Нет"
+msgstr "No"
+
 #: scripts/core/skill_set.gd
 msgid "Нет очков навыков"
 msgstr "No skill points"
@@ -4411,7 +4467,7 @@ msgstr "Invulnerable"
 msgid "Нечего лечить"
 msgstr "Nothing to cure"
 
-#: scripts/ui/net_host_screen.gd
+#: scripts/ui/net_join_screen.gd
 msgid "Ник:"
 msgstr "Nickname:"
 
@@ -4447,9 +4503,17 @@ msgstr "The new sun lit up, Elsa. For one moment. Then the black one drank it li
 msgid "Новости города"
 msgstr "Town news"
 
+#: scripts/ui/net_join_screen.gd
+msgid "Новый герой"
+msgstr "New hero"
+
 #: scripts/ui/run_result_screen.gd
 msgid "Новый житель: %s, %s"
 msgstr "New resident: %s, %s"
+
+#: scripts/ui/net_join_screen.gd
+msgid "Новый ник в этом мире: хост создаёт вашего героя…"
+msgstr "A new nickname in this world: the host is creating your hero…"
 
 #: scripts/ui/hint_manager.gd
 msgid "Новый уровень: {skill_tree} — дерево навыков, клик по слоту навыка — улучшить его."
@@ -4530,10 +4594,6 @@ msgstr "A poison cloud eats enemies from within."
 #: data
 msgid "Облик лича"
 msgstr "Lich Form"
-
-#: scripts/ui/net_join_screen.gd
-msgid "Обновить список"
-msgstr "Refresh the list"
 
 #: data
 msgid "Обожжённое на огне остриё."
@@ -4943,6 +5003,10 @@ msgstr "Unlocked"
 msgid "Открыть ключом (%s)"
 msgstr "Open with a key (%s)"
 
+#: scripts/ui/slots_screen.gd
+msgid "Открыть мир для сети"
+msgstr "Open the world to the network"
+
 #: scripts/events/event_cursed_chest.gd
 msgid "Открыть проклятый сундук (риск!)"
 msgstr "Open the cursed chest (risky!)"
@@ -5027,6 +5091,10 @@ msgstr "Skill points: %d (K — skill tree)"
 msgid "Очков навыков: %d · уровень героя %d"
 msgstr "Skill points: %d · hero level %d"
 
+#: scripts/autoload/world_net.gd
+msgid "Ошибка соединения."
+msgstr "Connection error."
+
 #: scripts/core/input_bindings.gd
 msgid "ПКМ"
 msgstr "RMB"
@@ -5082,6 +5150,14 @@ msgstr "Parry / roll / blink"
 #: scripts/player/player.gd
 msgid "Парирование!"
 msgstr "Parry!"
+
+#: scripts/ui/slots_screen.gd
+msgid "Пароль"
+msgstr "Password"
+
+#: scripts/ui/net_join_screen.gd
+msgid "Пароль:"
+msgstr "Password:"
 
 #: scripts/skills/passive_skill.gd
 msgid "Пассивно: "
@@ -5420,8 +5496,12 @@ msgid "Подземные воды поднялись. Своды затопил
 msgstr "The underground waters rose. The vaults flooded knee-deep, then waist-deep. The brothers left. I tied myself to the bell. The water is cold, but the toll carries farther underwater — even the stones feel it. Let it hear. Let it not sleep."
 
 #: scripts/ui/net_join_screen.gd
-msgid "Подключено! Ждём, пока хост начнёт забег..."
-msgstr "Connected! Waiting for the host to start the run..."
+msgid "Подключение к %s:%s…"
+msgstr "Connecting to %s:%s…"
+
+#: scripts/ui/net_join_screen.gd
+msgid "Подключено!"
+msgstr "Connected!"
 
 #: scripts/ui/net_join_screen.gd
 msgid "Подключиться"
@@ -5543,6 +5623,18 @@ msgstr "Pray."
 msgid "Поножи стража"
 msgstr "Guardian Greaves"
 
+#: scripts/ui/slots_screen.gd
+msgid "Порт"
+msgstr "Port"
+
+#: scripts/ui/slots_screen.gd
+msgid "Порт %s занят или недоступен."
+msgstr "Port %s is busy or unavailable."
+
+#: scripts/ui/net_join_screen.gd
+msgid "Порт:"
+msgstr "Port:"
+
 #: data
 msgid "Порча"
 msgstr "Hex"
@@ -5663,6 +5755,10 @@ msgstr "Life Steal"
 msgid "Поход закончится: всё найденное и спасённые доберутся до города."
 msgstr "The expedition will end: everything you found and everyone you saved will reach the town."
 
+#: scripts/world/dungeon_gate.gd
+msgid "Поход начинает хост. Нажмите «Готов» (F4), когда соберётесь."
+msgstr "The host starts the expedition. Press \"Ready\" (F4) when you are set."
+
 #: scripts/ui/run_result_screen.gd
 msgid "Поход окончен"
 msgstr "The expedition is over"
@@ -5735,6 +5831,10 @@ msgstr "Item enchanted"
 msgid "Предметы"
 msgstr "Items"
 
+#: scripts/ui/session_hud.gd
+msgid "Привязать этот клиент к профилю %s?"
+msgstr "Bind this client to the profile %s?"
+
 #: data
 msgid "Пригодятся для ремонта и ремесла."
 msgstr "Useful for repairs and crafting."
@@ -5788,8 +5888,8 @@ msgid "Присоединиться"
 msgstr "Join"
 
 #: scripts/ui/net_join_screen.gd
-msgid "Присоединиться (LAN)"
-msgstr "Join (LAN)"
+msgid "Присоединиться к миру"
+msgstr "Join a world"
 
 #: data
 msgid "Присоединиться к пению."
@@ -5919,6 +6019,10 @@ msgstr "A simple apprentice staff: fires bolts of magic."
 msgid "Противоядие"
 msgstr "Antidote"
 
+#: scripts/autoload/world_net.gd
+msgid "Профиль с этим ником принадлежит другому игроку."
+msgstr "The profile with this nickname belongs to another player."
+
 #: data
 msgid "Проход завален. Среди камней блестят жилы железа, но потолок над завалом трещит."
 msgstr "The passage is blocked. Veins of iron glint among the stones, but the ceiling above the rubble is cracking."
@@ -5966,6 +6070,10 @@ msgstr "Nothing."
 #: data
 msgid "Путники болтают, а я слушаю. Кто где видел клетку, где блестело золото, где лучше не ходить — всё через мою стойку."
 msgstr "Travellers talk and I listen. Who saw a cage where, where gold glinted, where it's better not to go — it all passes over my counter."
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "Путь выбирает хост."
+msgstr "The host chooses the way."
 
 #: scripts/core/skill_set.gd
 msgid "Путь выбран: «%s»"
@@ -6875,10 +6983,6 @@ msgstr "Your equipment needs no repairs"
 msgid "Сначала изучите: "
 msgstr "Learn first: "
 
-#: scripts/ui/net_join_screen.gd
-msgid "Сначала найдите игру в списке"
-msgstr "Find a game in the list first"
-
 #: scripts/core/buildings.gd
 msgid "Сначала победите стража: %s"
 msgstr "First defeat the guardian: %s"
@@ -6943,10 +7047,6 @@ msgstr "Crafted: %s"
 msgid "Создать"
 msgstr "Craft"
 
-#: scripts/ui/net_host_screen.gd
-msgid "Создать игру"
-msgstr "Create game"
-
 #: scripts/ui/slots_screen.gd
 msgid "Создать мир"
 msgstr "Create world"
@@ -6970,6 +7070,10 @@ msgstr "Sunblade"
 #: data
 msgid "Соломенное чучело у казармы. Бей сколько хочешь: показывает урон в секунду."
 msgstr "A straw dummy by the barracks. Hit it as much as you like: it shows damage per second."
+
+#: scripts/ui/session_hud.gd
+msgid "Сообщение (Enter — отправить, Esc — закрыть)"
+msgstr "Message (Enter — send, Esc — close)"
 
 #: scripts/core/stat_types.gd
 msgid "Сопр. магии"
@@ -8075,21 +8179,37 @@ msgstr "The cold cramps your fingers, but you surface with the loot."
 msgid "Хороший фундамент — половина дома."
 msgstr "A good foundation is half the house."
 
-#: scripts/ui/net_host_screen.gd
+#: scripts/autoload/world_net.gd
 msgid "Хост"
 msgstr "Host"
+
+#: scripts/autoload/world_net.gd
+msgid "Хост ещё не готов принять игроков."
+msgstr "The host is not ready to take players yet."
+
+#: scripts/autoload/world_net.gd
+msgid "Хост завершил сессию. Мир сохранён у хоста."
+msgstr "The host ended the session. The world is saved on the host's side."
+
+#: scripts/autoload/world_net.gd
+msgid "Хост исключил вас из сессии."
+msgstr "The host removed you from the session."
+
+#: scripts/autoload/world_net.gd
+msgid "Хост не отвечает."
+msgstr "The host does not answer."
 
 #: scripts/autoload/net.gd
 msgid "Хост покинул игру"
 msgstr "The host left the game"
 
-#: scripts/ui/net_join_screen.gd
-msgid "Хост: %s — игроков: %d"
-msgstr "Host: %s — players: %d"
-
 #: scripts/ui/main_menu.gd
 msgid "Хостить"
 msgstr "Host"
+
+#: scripts/ui/slots_screen.gd
+msgid "Хостить: выберите мир"
+msgstr "Host: pick a world"
 
 #: data
 msgid "Храм"
@@ -8467,6 +8587,10 @@ msgstr "It's still Oldric. The Bone King fell, but the Eclipse did not let him g
 msgid "Это мимик!"
 msgstr "It's a mimic!"
 
+#: scripts/autoload/game_flow.gd
+msgid "Это решает хост."
+msgstr "The host decides this."
+
 #: scripts/ui/codex_book.gd
 msgid "Это существо ещё не встречалось вам в бою.\nПобедите его, чтобы узнать больше."
 msgstr "You haven't met this creature in battle yet.\nDefeat it to learn more."
@@ -8474,6 +8598,14 @@ msgstr "You haven't met this creature in battle yet.\nDefeat it to learn more."
 #: data
 msgid "Это только начало."
 msgstr "This is only the beginning."
+
+#: scripts/ui/net_join_screen.gd
+msgid "Этот ник в мире привязан к другому устройству. Ждём, подтвердит ли хост…"
+msgstr "This nickname is bound to another device in this world. Waiting for the host to confirm…"
+
+#: scripts/autoload/world_net.gd
+msgid "Этот ник уже в игре."
+msgstr "This nickname is already in the game."
 
 #: scripts/combat/relic_powers.gd
 msgid "Эхо!"
@@ -8607,6 +8739,10 @@ msgstr "hits an area"
 msgid "в городе"
 msgstr "in town"
 
+#: scripts/ui/session_hud.gd
+msgid "в игре"
+msgstr "in game"
+
 #: scripts/ui/codex_book.gd
 msgid "в локации «%s»"
 msgstr "in \"%s\""
@@ -8654,6 +8790,10 @@ msgstr "navigation graph updated (v%d)"
 #: scripts/effects/dig_effect.gd
 msgid "до %d кирпичей подряд"
 msgstr "up to %d bricks in a row"
+
+#: scripts/ui/net_join_screen.gd
+msgid "если есть"
+msgstr "if any"
 
 #: scripts/enemies/enemy.gd
 msgid "ждёт"
@@ -8755,6 +8895,10 @@ msgstr "watches the others and rises on the next floor. Arrows at the screen edg
 msgid "нападает с потолка"
 msgstr "ambushes from the ceiling"
 
+#: scripts/ui/slots_screen.gd
+msgid "необязательно"
+msgstr "optional"
+
 #: scripts/enemies/enemy.gd
 msgid "нет"
 msgstr "none"
@@ -8798,6 +8942,10 @@ msgstr "shards and seals: %d"
 #: scripts/ui/expedition_map_screen.gd
 msgid "отдых, торговля, дорога домой"
 msgstr "rest, trade, the way home"
+
+#: scripts/ui/session_hud.gd
+msgid "отключён"
+msgstr "offline"
 
 #: scripts/autoload/meta_progress.gd
 msgid "открыт уровень Затмения %d «%s»"

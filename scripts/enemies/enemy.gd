@@ -1442,7 +1442,7 @@ func _update_squad(dt: float) -> void:
 	if Net.active and Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.enemy_float_text.rpc(spot, "+%d" % amount, Color(0.45, 1.0, 0.5))
+			Net.send(ns, &"enemy_float_text", [spot, "+%d" % amount, Color(0.45, 1.0, 0.5)])
 	HealBeam.spawn(get_parent(), global_position + Vector2(0, -data.collision_size.y * 0.7),
 			target.global_position + Vector2(0, -target.data.collision_size.y * 0.5), role.color)
 	_attack_anim_left = 0.3  # a casting gesture
@@ -1751,8 +1751,8 @@ func _shoot() -> void:
 	if Net.active and Net.is_host:
 		var ns = get_tree().get_first_node_in_group("net_game")
 		if ns and data.projectile_texture:
-			ns.enemy_projectile.rpc(data.projectile_texture.resource_path, from, dir_v,
-					data.projectile_speed, 2.5)
+			Net.send(ns, &"enemy_projectile", [data.projectile_texture.resource_path, from, dir_v,
+					data.projectile_speed, 2.5])
 
 
 # ------------------------------------------------------------------ damage
@@ -1803,7 +1803,7 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 			if Net.active and Net.is_host:
 				var nsw := get_tree().get_first_node_in_group("net_game") as NetSync
 				if nsw:
-					nsw.enemy_float_text.rpc(spot, "Уязвим!", Color(1.0, 0.7, 0.2))  # i18n-src
+					Net.send(nsw, &"enemy_float_text", [spot, "Уязвим!", Color(1.0, 0.7, 0.2)])  # i18n-src
 	hp = maxi(hp - dealt, min_hp())
 	_dormant = false
 	hp_bar.visible = true
@@ -1818,7 +1818,7 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 		if ns:
 			attacker = int(ns._last_hitter.get(net_id, 1))
 			if Net.is_host:
-				ns.damage_number.rpc(top, dealt, crit, attacker)
+				Net.send(ns, &"damage_number", [top, dealt, crit, attacker])
 	if attacker == 1:
 		EventBus.damage_dealt.emit(top, dealt, crit, false)
 	else:
@@ -1835,7 +1835,7 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 	if Net.active and Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.enemy_hurt.rpc(net_id, crit)
+			Net.send(ns, &"enemy_hurt", [net_id, crit])
 	if data.training_dummy:
 		_dummy_hit(dealt)
 		return
@@ -1870,7 +1870,7 @@ func take_status_damage(amount: int, p_status: StringName, color: Color) -> void
 	if Net.active and Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.enemy_float_text.rpc(spot, str(amount), color)
+			Net.send(ns, &"enemy_float_text", [spot, str(amount), color])
 	if data.training_dummy:
 		_dummy_hit(amount)
 		return
@@ -2013,7 +2013,7 @@ func _net_vanish(with_death: bool) -> void:
 	# Only enemies still registered on this floor (a floor change clears the
 	# registry first: the guests rebuild their floor anyway).
 	if ns and ns.enemies.get(net_id) == self:
-		ns.enemy_vanished.rpc(net_id, with_death)
+		Net.send(ns, &"enemy_vanished", [net_id, with_death])
 		ns.unregister_enemy(net_id)
 
 

@@ -257,7 +257,7 @@ func sell(index: int) -> void:
 			merchant.stock.append(item)
 			_refresh_goods()
 			if Net.is_host and ns:
-				ns.stock_added.rpc(merchant.net_seq, RunCodec.item_to_dict(item))
+				Net.send(ns, &"stock_added", [merchant.net_seq, RunCodec.item_to_dict(item)])
 		elif ns:
 			# The host owns the shared stock and echoes the addition back.
 			ns.request_sell.rpc_id(1, merchant.net_seq, RunCodec.item_to_dict(item))

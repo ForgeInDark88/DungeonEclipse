@@ -50,7 +50,7 @@ func execute(caster: Node, level: int) -> bool:
 			# dependency (net_sync references skill classes for cast replays).
 			var ns = caster.get_tree().get_first_node_in_group("net_game")
 			if ns and texture.resource_path != "":
-				ns.projectile_fx.rpc(texture.resource_path, origin, dir, speed, 1.2, color)
+				Net.send(ns, &"projectile_fx", [texture.resource_path, origin, dir, speed, 1.2, color])
 	return true
 
 

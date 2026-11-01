@@ -73,7 +73,7 @@ func finish() -> void:
 	if Net.active and Net.is_host:
 		var ns = get_tree().get_first_node_in_group("net_game")
 		if ns:
-			ns.event_used.rpc(net_seq)
+			Net.send(ns, &"event_used", [net_seq])
 	if sprite.sprite_frames and sprite.sprite_frames.has_animation(used_anim):
 		sprite.play(used_anim)
 	var light := get_node_or_null("PointLight2D") as PointLight2D

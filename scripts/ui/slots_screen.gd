@@ -4,7 +4,8 @@ extends BookPageScreen
 ## one - its miniature, name, last save, time played, region, heroes,
 ## prosperity, whether an expedition is under way - and what can be done:
 ## play / create, rename, delete (asks twice), restore from the backup.
-## `mode` "load" (main menu «Загрузить») or "new" («Новая игра»).
+## `mode` "load" (main menu «Загрузить»), "new" («Новая игра») or "host"
+## («Хостить»: the chosen world opens for the network).
 
 const SCENE := "res://scenes/ui/slots.tscn"
 
@@ -23,7 +24,8 @@ func _ready() -> void:
 	build_book(Vector2(540, 300))
 	AudioManager.play_music(&"menu")
 	left_page.add_theme_constant_override("separation", 3)
-	left_page.add_child(UIStyle.label(tr("Новая игра: выберите слот") if mode == "new" else tr("Миры"), 12))
+	left_page.add_child(UIStyle.label(tr("Новая игра: выберите слот") if mode == "new" \
+			else (tr("Хостить: выберите мир") if mode == "host" else tr("Миры")), 12))
 	for n in range(1, SaveManager.SLOT_COUNT + 1):
 		var b := BookPageScreen.button("", func() -> void: _select(n))
 		b.add_theme_font_size_override("font_size", 8)
@@ -99,17 +101,64 @@ func _select(n: int) -> void:
 		_name_field(tr("Мир %d") % n)
 		_details.add_child(_button(tr("Стереть и создать новый мир"), func() -> void: _confirm_overwrite(n)))
 		return
+	if mode == "host":
+		_host_form(n)
+		return
 	var play := _button(tr("Играть"), func() -> void:
 		if not GameFlow.continue_game(n):
 			_status.text = tr("Мир не загрузился: файл повреждён."))
 	_details.add_child(play)
 	play.grab_focus()
+	_details.add_child(_button(tr("Играть по сети (хост)"), func() -> void:
+		mode = "host"
+		_select(n)))
 	_name_field(String(info["name"]))
 	_details.add_child(_button(tr("Переименовать"), func() -> void:
 		if SaveManager.rename_slot(n, _name_edit.text):
 			_refresh_list()
 			_select(n)))
 	_details.add_child(_button(tr("Удалить мир"), func() -> void: _confirm_delete(n)))
+
+
+## Hosting the world of slot `n`: port, password, seats, LAN visibility.
+func _host_form(n: int) -> void:
+	var port := _labeled_edit(tr("Порт"), str(WorldNet.DEFAULT_PORT))
+	var pw := _labeled_edit(tr("Пароль"), "")
+	pw.placeholder_text = tr("необязательно")
+	var seats := SpinBox.new()
+	seats.min_value = 2
+	seats.max_value = Net.MAX_PLAYERS
+	seats.value = Net.MAX_PLAYERS
+	seats.prefix = tr("Игроков:")
+	_details.add_child(seats)
+	var lan := CheckBox.new()
+	lan.text = tr("Виден в локальной сети")
+	lan.button_pressed = true
+	lan.add_theme_font_size_override("font_size", 8)
+	lan.add_theme_color_override("font_color", UIStyle.INK)
+	_details.add_child(lan)
+	var go := _button(tr("Открыть мир для сети"), func() -> void:
+		var err := WorldNet.host_world(n, int(port.text), pw.text, int(seats.value), lan.button_pressed)
+		if err == "load":
+			_status.text = tr("Мир не загрузился: файл повреждён.")
+		elif err == "port":
+			_status.text = tr("Порт %s занят или недоступен.") % port.text)
+	_details.add_child(go)
+	go.grab_focus()
+
+
+func _labeled_edit(label: String, value: String) -> LineEdit:
+	var row := HBoxContainer.new()
+	var l := UIStyle.label(label, 8)
+	l.custom_minimum_size = Vector2(56, 0)
+	row.add_child(l)
+	var e := LineEdit.new()
+	e.text = value
+	e.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	e.add_theme_font_size_override("font_size", 8)
+	row.add_child(e)
+	_details.add_child(row)
+	return e
 
 
 func _name_field(text: String) -> void:

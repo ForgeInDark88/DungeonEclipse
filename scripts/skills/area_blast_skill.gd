@@ -63,7 +63,7 @@ func _net_blast_fx(caster: Node, center: Vector2, r: float) -> void:
 	var ns = caster.get_tree().get_first_node_in_group("net_game")
 	if ns == null:
 		return
-	ns.blast_fx.rpc(center, r, vfx, color)
+	Net.send(ns, &"blast_fx", [center, r, vfx, color])
 
 
 

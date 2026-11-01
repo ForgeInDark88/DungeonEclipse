@@ -86,7 +86,7 @@ func _net_boss_fx(kind: StringName, from: Vector2, dir: Vector2, color: Color, e
 		return
 	var ns = get_tree().get_first_node_in_group("net_game")
 	if ns:
-		ns.boss_fx.rpc(kind, from, dir, color, extra)
+		Net.send(ns, &"boss_fx", [kind, from, dir, color, extra])
 
 
 func _nearest_alive_player() -> Player:
@@ -847,7 +847,7 @@ func _net_shake(strength: float) -> void:
 	if Net.active and Net.is_host:
 		var ns = get_tree().get_first_node_in_group("net_game")
 		if ns:
-			ns.net_shake.rpc(strength)
+			Net.send(ns, &"net_shake", [strength])
 
 
 ## Bone King: the dead rise where the spikes burst.
@@ -1019,7 +1019,7 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 			if Net.active and Net.is_host:
 				var ns = get_tree().get_first_node_in_group("net_game")
 				if ns:
-					ns.enemy_float_text.rpc(spot, "Неуязвим", Color(0.8, 0.85, 1.0))  # i18n-src
+					Net.send(ns, &"enemy_float_text", [spot, "Неуязвим", Color(0.8, 0.85, 1.0)])  # i18n-src
 		_shield_flash()
 		return
 	# Bosses are not knocked around or interrupted by hits.
