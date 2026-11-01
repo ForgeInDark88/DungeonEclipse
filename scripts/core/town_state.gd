@@ -38,6 +38,8 @@ var eclipse_level: int = 0
 var expedition_active := false
 ## Records: expeditions, deaths, retreats, victories, nodes, rescues.
 var stats: Dictionary = {}
+## Seed of the world (made with it, kept for later use).
+var world_seed: int = 0
 ## Changes since the hero last walked the street (news on return).
 var news: Array[String] = []
 
@@ -106,6 +108,7 @@ func to_dict() -> Dictionary:
 		"expedition_active": expedition_active,
 		"stats": stats.duplicate(),
 		"news": Array(news),
+		"world_seed": world_seed,
 	}
 
 
@@ -131,6 +134,7 @@ static func from_dict(d: Dictionary) -> TownState:
 	t.eclipse_level = int(d.get("eclipse", 0)) if d.get("eclipse") is int else 0
 	t.expedition_active = d.get("expedition_active", false) == true
 	t.stats = _dict(d.get("stats"))
+	t.world_seed = int(d.get("world_seed", 0)) if d.get("world_seed") is int else 0
 	for n in _arr(d.get("news")):
 		t.news.append(str(n))
 	return t

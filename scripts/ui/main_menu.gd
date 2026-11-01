@@ -52,33 +52,26 @@ func _ready() -> void:
 	right_page.add_theme_constant_override("separation", 4)
 	right_page.add_child(_spacer(4))
 	var cont: Button = null
-	var town := SaveManager.load_town() if SaveManager.has_town() else null
-	var hero_d: Dictionary = town.hero if town else {}
-	if town and not hero_d.is_empty():
-		var cls := String(hero_d.get("class", "?"))
-		for c in ItemDatabase.classes:
-			if String(c.id) == cls:
-				cls = c.display_name
-		cont = BookPageScreen.button(tr("Продолжить — %s, ур. %d") % [cls, int(hero_d.get("level", 1))],
-			func() -> void:
-				if not GameFlow.continue_game():
-					GameFlow.new_game())
+	# The worlds (save slots): continue the last one, load any, make a new one.
+	if GameFlow.has_save():
+		SaveManager.use_slot(SaveManager.last_slot)  # the Sanctum and the chronicle of that world
+		var info := SaveManager.slot_info(SaveManager.last_slot)
+		cont = BookPageScreen.button(tr("Продолжить — %s") % String(info.get("name", "?")), func() -> void:
+			if not GameFlow.continue_game():
+				_open_slots("load"))
 		right_page.add_child(cont)
-	# «Новая игра» wipes the town: a second press confirms it.
-	var start := BookPageScreen.button(tr("Новая игра"), func() -> void: pass)
-	start.pressed.connect(func() -> void:
-		if cont == null or start.has_meta("armed"):
-			GameFlow.new_game()
-		else:
-			start.set_meta("armed", true)
-			start.text = tr("Стереть город и начать заново?"))
+	right_page.add_child(BookPageScreen.button(tr("Загрузить"), func() -> void: _open_slots("load")))
+	var start := BookPageScreen.button(tr("Новая игра"), func() -> void: _open_slots("new"))
 	right_page.add_child(start)
-	right_page.add_child(BookPageScreen.button(tr("Игра по сети (хост)"), func() -> void: get_tree().change_scene_to_file("res://scenes/ui/net_host.tscn")))
-	right_page.add_child(BookPageScreen.button(tr("Присоединиться (LAN)"), func() -> void: get_tree().change_scene_to_file("res://scenes/ui/net_join.tscn")))
-	right_page.add_child(BookPageScreen.button(tr("Святилище Затмения (%d оск.)") % MetaProgress.shards,
-		func() -> void: get_tree().change_scene_to_file(GameState.SANCTUM)))
-	right_page.add_child(BookPageScreen.button(tr("Летопись (%d/%d)") % [Codex.achieved.size(), Codex.achievements.size()],
-		func() -> void: get_tree().change_scene_to_file(GameState.CODEX)))
+	# multiplayer on one row: host / join
+	var net := HBoxContainer.new()
+	net.add_theme_constant_override("separation", 4)
+	for entry in [[tr("Хостить"), func() -> void: get_tree().change_scene_to_file("res://scenes/ui/net_host.tscn")],
+			[tr("Присоединиться"), func() -> void: get_tree().change_scene_to_file("res://scenes/ui/net_join.tscn")]]:
+		var nb := BookPageScreen.button(entry[0], entry[1])
+		nb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		net.add_child(nb)
+	right_page.add_child(net)
 	right_page.add_child(BookPageScreen.button(tr("Настройки"), open_settings))
 	# two small buttons on one row: the page holds a «Continue» line too
 	var row := HBoxContainer.new()
@@ -94,6 +87,11 @@ func _ready() -> void:
 		cont.grab_focus()
 	else:
 		start.grab_focus()
+
+
+func _open_slots(m: String) -> void:
+	SlotsScreen.mode = m
+	GameFlow.change_scene(SlotsScreen.SCENE, GameFlow.State.MAIN_MENU)
 
 
 func open_settings() -> SettingsBook:

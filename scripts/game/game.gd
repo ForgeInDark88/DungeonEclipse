@@ -134,6 +134,7 @@ func _load_floor() -> void:
 		AudioManager.play_music((b as Boss).boss.music)
 	if GameState.is_town() and GameState.expedition:
 		EventBus.message.emit(tr("%s · %s. Ворота похода — в конце улицы.") % [biome.display_name, Buildings.phase_name()])
+		_take_thumbnail()
 		_town_news()
 	elif GameState.expedition:
 		EventBus.message.emit(_location_title())
@@ -194,6 +195,15 @@ func finish_location() -> void:
 		GameFlow.location_cleared()).grab_focus()
 	overlay.on_pause_key = Callable()
 	overlay.visible = true
+
+
+## A miniature of the world for the load screen (taken in the street).
+func _take_thumbnail() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	await get_tree().create_timer(0.6).timeout
+	if is_inside_tree() and GameState.is_town():
+		SaveManager.save_thumbnail(get_viewport().get_texture().get_image())
 
 
 ## What changed in town while the hero was away (TownState.news): a page
@@ -362,11 +372,12 @@ func _toggle_pause() -> void:
 	overlay.add_button(tr("Дерево навыков"), func() -> void:
 		_toggle_pause()
 		skill_tree.open())
-	overlay.add_button(tr("В главное меню"), func() -> void: GameState.go_to_menu())
+	if GameState.expedition and GameState.is_town():
+		overlay.add_button(tr("Сохранить и выйти"), func() -> void: GameFlow.save_and_quit())
+	else:
+		overlay.add_button(tr("В главное меню"), func() -> void: GameState.go_to_menu())
 	if GameState.expedition and not GameState.is_town():
-		overlay.add_text(tr("(выход посреди похода — поход провален)"), 7)
-	elif GameState.expedition:
-		overlay.add_text(tr("(город сохраняется)"), 7)
+		overlay.add_text(tr("(в локации сохраняется только выход из неё: выйдя сейчас, вы сбежите из неё без награды)"), 6)
 	else:
 		overlay.add_text(tr("(забег продолжится с начала этажа)"), 7)
 	# Esc resumes: handled by the overlay (ALWAYS), the game tree itself pauses.

@@ -84,6 +84,26 @@ static func generate(seed_value: int, start_region := 0, options := {}) -> Exped
 	return m
 
 
+## The map as plain data (the expedition save) and back.
+func to_dict() -> Dictionary:
+	return {"seed": seed_value, "first_region": first_region, "nodes": nodes.duplicate(true),
+			"starts": Array(_starts), "cols": _cols}
+
+
+static func from_dict(d: Dictionary) -> ExpeditionMap:
+	var m := ExpeditionMap.new()
+	m.seed_value = int(d.get("seed", 0))
+	m.first_region = int(d.get("first_region", 0))
+	for i in range(m.first_region, ItemDatabase.regions.size()):
+		m.regions.append(ItemDatabase.regions[i])
+	for n in d.get("nodes", []):
+		if n is Dictionary:
+			m.nodes.append(n)
+	m._starts.assign(d.get("starts", []))
+	m._cols = int(d.get("cols", 0))
+	return m
+
+
 func node(id: int) -> Dictionary:
 	return nodes[id] if id >= 0 and id < nodes.size() else {}
 

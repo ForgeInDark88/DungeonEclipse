@@ -1,0 +1,162 @@
+class_name SlotsScreen
+extends BookPageScreen
+## The worlds (save slots). Left page: the slots. Right page: the chosen
+## one - its miniature, name, last save, time played, region, heroes,
+## prosperity, whether an expedition is under way - and what can be done:
+## play / create, rename, delete (asks twice), restore from the backup.
+## `mode` "load" (main menu «Загрузить») or "new" («Новая игра»).
+
+const SCENE := "res://scenes/ui/slots.tscn"
+
+## Set before the scene opens (static: survives the scene change).
+static var mode := "load"
+
+var _selected := 1
+var _slot_buttons: Array[Button] = []
+var _details: VBoxContainer
+var _name_edit: LineEdit
+var _status: Label
+
+
+func _ready() -> void:
+	get_tree().paused = false
+	build_book(Vector2(540, 300))
+	AudioManager.play_music(&"menu")
+	left_page.add_theme_constant_override("separation", 3)
+	left_page.add_child(UIStyle.label(tr("Новая игра: выберите слот") if mode == "new" else tr("Миры"), 12))
+	for n in range(1, SaveManager.SLOT_COUNT + 1):
+		var b := BookPageScreen.button("", func() -> void: _select(n))
+		b.add_theme_font_size_override("font_size", 8)
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.toggle_mode = true
+		left_page.add_child(b)
+		_slot_buttons.append(b)
+	var fill := Control.new()
+	fill.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	left_page.add_child(fill)
+	left_page.add_child(BookPageScreen.button(tr("Назад"), func() -> void:
+		GameFlow.change_scene(GameState.MAIN_MENU, GameFlow.State.MAIN_MENU)))
+	_details = VBoxContainer.new()
+	_details.add_theme_constant_override("separation", 3)
+	_details.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	right_page.add_child(_details)
+	_status = UIStyle.label("", 7, Color(0.55, 0.15, 0.1))
+	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_status.custom_minimum_size = Vector2(book_size.x / 2.0 - 40, 0)
+	right_page.add_child(_status)
+	var start := SaveManager.last_slot if SaveManager.last_slot > 0 else 1
+	if mode == "new" and SaveManager.free_slot() > 0:
+		start = SaveManager.free_slot()
+	_refresh_list()
+	_select(start)
+
+
+func _refresh_list() -> void:
+	for i in _slot_buttons.size():
+		var info := SaveManager.slot_info(i + 1)
+		var text := tr("Слот %d — пусто") % (i + 1)
+		if info.get("broken", false):
+			text = tr("Слот %d — повреждён") % (i + 1)
+		elif info["exists"]:
+			text = "%d. %s · %s" % [i + 1, info["name"], _date(int(info["updated"]))]
+		_slot_buttons[i].text = text
+
+
+func _select(n: int) -> void:
+	_selected = n
+	for i in _slot_buttons.size():
+		_slot_buttons[i].button_pressed = i + 1 == n
+	_status.text = ""
+	for c in _details.get_children():
+		c.queue_free()
+	var info := SaveManager.slot_info(n)
+	if info.get("broken", false):
+		_details.add_child(UIStyle.label(tr("Слот %d повреждён") % n, 10))
+		_details.add_child(_wrap(tr("Файл мира не читается, резервной копии тоже нет или она испорчена. Игра не загрузит этот мир.")))
+		_details.add_child(_button(tr("Удалить слот"), func() -> void: _confirm_delete(n)))
+		return
+	if not info["exists"]:
+		_details.add_child(UIStyle.label(tr("Слот %d — пусто") % n, 10))
+		_name_field(tr("Мир %d") % n)
+		_details.add_child(_button(tr("Создать мир"), func() -> void: GameFlow.new_game(n, _name_edit.text)))
+		return
+	var thumb := SaveManager.slot_thumbnail(n)
+	if thumb:
+		var tr_ := TextureRect.new()
+		tr_.texture = thumb
+		tr_.custom_minimum_size = Vector2(128, 72)
+		tr_.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tr_.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		_details.add_child(tr_)
+	_details.add_child(UIStyle.label(String(info["name"]), 10))
+	var secs := int(info.get("playtime", 0))
+	_details.add_child(_wrap(tr("Сохранено: %s\nВремя игры: %d:%02d\nРегион: %s · %s\nГероев: %d · Процветание: %d") % [
+		_date(int(info["updated"])), secs / 3600, (secs / 60) % 60, info.get("region", ""), info.get("state", ""),
+		int(info.get("heroes", 1)), int(info.get("prosperity", 0))]))
+	if info.get("backup", false):
+		_details.add_child(_wrap(tr("Основной файл повреждён: мир загрузится из резервной копии."), Color(0.55, 0.15, 0.1)))
+	if mode == "new":
+		_name_field(tr("Мир %d") % n)
+		_details.add_child(_button(tr("Стереть и создать новый мир"), func() -> void: _confirm_overwrite(n)))
+		return
+	var play := _button(tr("Играть"), func() -> void:
+		if not GameFlow.continue_game(n):
+			_status.text = tr("Мир не загрузился: файл повреждён."))
+	_details.add_child(play)
+	play.grab_focus()
+	_name_field(String(info["name"]))
+	_details.add_child(_button(tr("Переименовать"), func() -> void:
+		if SaveManager.rename_slot(n, _name_edit.text):
+			_refresh_list()
+			_select(n)))
+	_details.add_child(_button(tr("Удалить мир"), func() -> void: _confirm_delete(n)))
+
+
+func _name_field(text: String) -> void:
+	_name_edit = LineEdit.new()
+	_name_edit.text = text
+	_name_edit.max_length = 32
+	_name_edit.placeholder_text = tr("Название мира")
+	_name_edit.add_theme_font_size_override("font_size", 8)
+	_details.add_child(_name_edit)
+
+
+## A second press confirms (the button says what will happen).
+func _confirm_delete(n: int) -> void:
+	var b := _details.get_child(_details.get_child_count() - 1) as Button
+	if b and not b.has_meta("armed"):
+		b.set_meta("armed", true)
+		b.text = tr("Точно удалить мир навсегда?")
+		return
+	SaveManager.delete_slot(n)
+	_refresh_list()
+	_select(n)
+
+
+func _confirm_overwrite(n: int) -> void:
+	var b := _details.get_child(_details.get_child_count() - 1) as Button
+	if b and not b.has_meta("armed"):
+		b.set_meta("armed", true)
+		b.text = tr("Точно стереть «%s»?") % SaveManager.slot_info(n).get("name", "")
+		return
+	GameFlow.new_game(n, _name_edit.text)
+
+
+func _button(text: String, cb: Callable) -> Button:
+	var b := BookPageScreen.button(text, cb)
+	b.add_theme_font_size_override("font_size", 8)
+	return b
+
+
+func _wrap(text: String, color := UIStyle.INK) -> Label:
+	var l := UIStyle.label(text, 7, color)
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.custom_minimum_size = Vector2(book_size.x / 2.0 - 40, 0)
+	return l
+
+
+func _date(unix: int) -> String:
+	if unix <= 0:
+		return "—"
+	var d := Time.get_datetime_dict_from_unix_time(unix + int(Time.get_time_zone_from_system().get("bias", 0)) * 60)
+	return "%02d.%02d.%d %02d:%02d" % [d["day"], d["month"], d["year"], d["hour"], d["minute"]]

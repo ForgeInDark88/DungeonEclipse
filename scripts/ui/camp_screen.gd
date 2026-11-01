@@ -91,6 +91,7 @@ func _refresh() -> void:
 	var home := _action(tr("Домой с добычей"), func() -> void: GameFlow.retreat())
 	home.tooltip_text = tr("Поход закончится: всё найденное и спасённые доберутся до города.")
 	var on := _action(tr("Идти дальше"), func() -> void: GameFlow.location_cleared())
+	_action(tr("Сохранить и выйти"), func() -> void: GameFlow.save_and_quit())
 	on.grab_focus()
 
 

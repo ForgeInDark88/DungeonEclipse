@@ -55,4 +55,7 @@ signal achievement_unlocked(achievement: AchievementData)
 ## Exit seal of the floor: monsters killed / needed to open the exit (0 needed = no seal).
 signal seal_changed(kills: int, required: int)
 ## A loud sound at `pos` heard by monsters within `radius` (fights, explosions).
+## The world was saved (the autosave indicator).
+signal saved
+
 signal noise(pos: Vector2, radius: float)

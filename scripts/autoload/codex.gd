@@ -56,9 +56,20 @@ func _notification(what: int) -> void:
 			save_progress()
 
 
+## Empty values before another world's progress is loaded.
+func clear_progress() -> void:
+	counters = {}
+	enemy_kills = {}
+	items_found = {}
+	achieved = {}
+	lore_read = {}
+	lore_claimed = {}
+	_dirty = false
+
+
 func load_progress() -> void:
 	var cfg := ConfigFile.new()
-	if SaveManager.read_cfg(cfg, SaveManager.META_PATH) != OK:
+	if SaveManager.read_cfg(cfg, SaveManager.meta_path) != OK:
 		return
 	counters = cfg.get_value(SECTION, "counters", {})
 	enemy_kills = cfg.get_value(SECTION, "enemy_kills", {})
@@ -70,7 +81,7 @@ func load_progress() -> void:
 
 func save_progress() -> void:
 	var cfg := ConfigFile.new()
-	SaveManager.read_cfg(cfg, SaveManager.META_PATH)  # keep the other sections
+	SaveManager.read_cfg(cfg, SaveManager.meta_path)  # keep the other sections
 	SaveManager.migrate_meta(cfg)
 	cfg.set_value(SECTION, "counters", counters)
 	cfg.set_value(SECTION, "enemy_kills", enemy_kills)
@@ -78,7 +89,7 @@ func save_progress() -> void:
 	cfg.set_value(SECTION, "achieved", achieved)
 	cfg.set_value(SECTION, "lore_read", lore_read)
 	cfg.set_value(SECTION, "lore_claimed", lore_claimed)
-	SaveManager.write_cfg(cfg, SaveManager.META_PATH)
+	SaveManager.write_cfg(cfg, SaveManager.meta_path)
 	_dirty = false
 
 

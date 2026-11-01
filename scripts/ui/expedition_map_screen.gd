@@ -385,8 +385,7 @@ func _toggle_menu() -> void:
 		jt.open(JournalBook.Tab.BUILDINGS)))
 	box.add_child(BookPageScreen.button(tr("Настройки"), func() -> void: add_child(SettingsBook.new())))
 	box.add_child(BookPageScreen.button(tr("Как играть"), func() -> void: add_child(InfoBook.how_to_play())))
-	box.add_child(BookPageScreen.button(tr("В главное меню"), func() -> void: GameFlow.quit_to_menu()))
-	box.add_child(UIStyle.label(tr("(выход посреди похода — поход провален)"), 6, UIStyle.INK_SOFT))
+	box.add_child(BookPageScreen.button(tr("Сохранить и выйти"), func() -> void: GameFlow.save_and_quit()))
 	add_child(_menu)
 
 

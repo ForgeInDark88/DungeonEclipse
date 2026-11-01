@@ -284,12 +284,8 @@ msgid "%s: уровень %d!"
 msgstr "%s: level %d!"
 
 #: scripts/game/game.gd
-msgid "(выход посреди похода — поход провален)"
-msgstr "(leaving mid-expedition fails the expedition)"
-
-#: scripts/game/game.gd
-msgid "(город сохраняется)"
-msgstr "(the town is saved)"
+msgid "(в локации сохраняется только выход из неё: выйдя сейчас, вы сбежите из неё без награды)"
+msgstr "(a location is only saved at its exit: leave now and you flee it without its reward)"
 
 #: scripts/game/game.gd
 msgid "(забег продолжится с начала этажа)"
@@ -1315,6 +1311,10 @@ msgstr "Second Wind"
 msgid "Второй шанс: при гибели вы восстанете, а перо сгорит."
 msgstr "A second chance: when you die you rise again and the feather burns away."
 
+#: scripts/autoload/game_flow.gd
+msgid "Вы бежали из локации: она пройдена без награды."
+msgstr "You fled the location: it counts as passed, without a reward."
+
 #: data
 msgid "Вы бросаетесь в бой. Победите — и пленники свободны!"
 msgstr "You charge into battle. Win, and the prisoners are free!"
@@ -2083,6 +2083,10 @@ msgstr "End the expedition"
 msgid "Загляни в здания: каждое можно улучшить, если хватит материалов."
 msgstr "Look into the buildings: each can be upgraded if you have the materials."
 
+#: scripts/ui/main_menu.gd
+msgid "Загрузить"
+msgstr "Load"
+
 #: scripts/core/quest_log.gd
 msgid "Задание выполнено: «%s» — к глашатаю в город!"
 msgstr "Quest complete: \"%s\" — return to the herald in town!"
@@ -2459,10 +2463,6 @@ msgstr "The game is open."
 msgid "Игра открыта. Ждём друзей..."
 msgstr "The game is open. Waiting for friends..."
 
-#: scripts/ui/main_menu.gd
-msgid "Игра по сети (хост)"
-msgstr "Network game (host)"
-
 #: scripts/ui/info_book.gd
 msgid "Игра по сети в локальной сети: один игрок — хост, остальные присоединяются по IP.\n\n"
 msgstr "Network play over a local network: one player hosts, the others join by IP.\n\n"
@@ -2470,6 +2470,10 @@ msgstr "Network play over a local network: one player hosts, the others join by 
 #: scripts/ui/net_host_screen.gd
 msgid "Игра по сети — хост"
 msgstr "Network game — host"
+
+#: scripts/ui/slots_screen.gd
+msgid "Играть"
+msgstr "Play"
 
 #: scripts/autoload/net.gd
 msgid "Игрок"
@@ -3519,10 +3523,6 @@ msgstr "Chronicler: chapter rewards (%d)"
 msgid "Летопись"
 msgstr "Chronicle"
 
-#: scripts/ui/main_menu.gd
-msgid "Летопись (%d/%d)"
-msgstr "Chronicle (%d/%d)"
-
 #: scripts/ui/chronicler_book.gd
 msgid "Летопись Аурелии"
 msgstr "Chronicle of Aurelia"
@@ -3851,6 +3851,18 @@ msgstr "Mimic"
 msgid "Мимо!"
 msgstr "Miss!"
 
+#: scripts/autoload/game_flow.gd
+msgid "Мир %d"
+msgstr "World %d"
+
+#: scripts/autoload/save_manager.gd
+msgid "Мир 1"
+msgstr "World 1"
+
+#: scripts/ui/slots_screen.gd
+msgid "Мир не загрузился: файл повреждён."
+msgstr "The world did not load: the file is damaged."
+
 #: data
 msgid "Мира"
 msgstr "Mira"
@@ -3866,6 +3878,10 @@ msgstr "Mira showed you which ones to take. The bag is full of healing herbs."
 #: data
 msgid "Мира, травница"
 msgstr "Mira, the herbalist"
+
+#: scripts/ui/slots_screen.gd
+msgid "Миры"
+msgstr "Worlds"
 
 #: data
 msgid "Много карманов, мало веса."
@@ -4183,6 +4199,10 @@ msgstr "Press a key or a mouse button (Esc — cancel)"
 msgid "Назад"
 msgstr "Back"
 
+#: scripts/ui/slots_screen.gd
+msgid "Название мира"
+msgstr "World name"
+
 #: data
 msgid "Найдена в стенах подземелья."
 msgstr "Found in the walls of the dungeon."
@@ -4410,6 +4430,10 @@ msgstr "A new note in the Chronicle: \"%s\""
 #: scripts/ui/main_menu.gd
 msgid "Новая игра"
 msgstr "New game"
+
+#: scripts/ui/slots_screen.gd
+msgid "Новая игра: выберите слот"
+msgstr "New game: pick a slot"
 
 #: scripts/bosses/boss.gd
 msgid "Новая фаза!"
@@ -4775,6 +4799,10 @@ msgstr "Shard of the Mountain's Heart"
 msgid "Осколок чужого отражения. Проходит сквозь стены и режет света."
 msgstr "A shard of someone else's reflection. Passes through walls and cuts with light."
 
+#: scripts/ui/slots_screen.gd
+msgid "Основной файл повреждён: мир загрузится из резервной копии."
+msgstr "The main file is damaged: the world will load from its backup."
+
 #: scripts/ui/codex_book.gd
 msgid "Особенности: "
 msgstr "Traits: "
@@ -5130,6 +5158,10 @@ msgstr "Dash across."
 #: data
 msgid "Перевёрнутые повозки, разбросанные ящики. Те, кто их тащил, лежат рядом. То, что их убило, может быть ещё близко."
 msgstr "Overturned carts, scattered crates. Those who pulled them lie nearby. Whatever killed them may still be close."
+
+#: scripts/ui/slots_screen.gd
+msgid "Переименовать"
+msgstr "Rename"
 
 #: scripts/effects/teleport_effect.gd
 msgid "Переносит в случайное безопасное место этажа"
@@ -5752,6 +5784,10 @@ msgid "Принять дар."
 msgstr "Accept the gift."
 
 #: scripts/ui/main_menu.gd
+msgid "Присоединиться"
+msgstr "Join"
+
+#: scripts/ui/net_join_screen.gd
 msgid "Присоединиться (LAN)"
 msgstr "Join (LAN)"
 
@@ -5792,8 +5828,8 @@ msgid "Продолжить"
 msgstr "Continue"
 
 #: scripts/ui/main_menu.gd
-msgid "Продолжить — %s, ур. %d"
-msgstr "Continue — %s, lv. %d"
+msgid "Продолжить — %s"
+msgstr "Continue — %s"
 
 #: scripts/core/expedition_map.gd
 msgid "Происшествие"
@@ -6483,10 +6519,6 @@ msgstr "Sanctum"
 msgid "Святилище Затмения"
 msgstr "Sanctum of the Eclipse"
 
-#: scripts/ui/main_menu.gd
-msgid "Святилище Затмения (%d оск.)"
-msgstr "Sanctum of the Eclipse (%d shards)"
-
 #: scripts/game/game.gd
 msgid "Святилище Затмения: +%d осколков, +%d золота"
 msgstr "Sanctum of the Eclipse: +%d shards, +%d gold"
@@ -6755,6 +6787,18 @@ msgstr "Hard"
 msgid "Сложность"
 msgstr "Difficulty"
 
+#: scripts/ui/slots_screen.gd
+msgid "Слот %d повреждён"
+msgstr "Slot %d is damaged"
+
+#: scripts/ui/slots_screen.gd
+msgid "Слот %d — повреждён"
+msgstr "Slot %d — damaged"
+
+#: scripts/ui/slots_screen.gd
+msgid "Слот %d — пусто"
+msgstr "Slot %d — empty"
+
 #: scripts/ui/tooltip_text.gd
 msgid "Слот свободен"
 msgstr "Empty slot"
@@ -6903,6 +6947,10 @@ msgstr "Craft"
 msgid "Создать игру"
 msgstr "Create game"
 
+#: scripts/ui/slots_screen.gd
+msgid "Создать мир"
+msgstr "Create world"
+
 #: data
 msgid "Сокрушающий удар"
 msgstr "Crushing Blow"
@@ -6946,6 +6994,18 @@ msgstr "Resistances: "
 #: scripts/ui/inventory_book.gd
 msgid "Сортировать"
 msgstr "Sort"
+
+#: scripts/ui/save_indicator.gd
+msgid "Сохранено"
+msgstr "Saved"
+
+#: scripts/ui/slots_screen.gd
+msgid "Сохранено: %s\nВремя игры: %d:%02d\nРегион: %s · %s\nГероев: %d · Процветание: %d"
+msgstr "Saved: %s\nPlaytime: %d:%02d\nRegion: %s · %s\nHeroes: %d · Prosperity: %d"
+
+#: scripts/game/game.gd
+msgid "Сохранить и выйти"
+msgstr "Save and quit"
 
 #: data
 msgid "Сочится зелёной отравой."
@@ -7083,9 +7143,9 @@ msgstr "Shield Wall"
 msgid "Стены выложены черепами, а в центре — каменная чаша с тлеющими угольками. Кости тихо постукивают, будто кто-то считает."
 msgstr "The walls are lined with skulls, and in the centre stands a stone bowl of smouldering embers. The bones tap softly, as if someone were counting."
 
-#: scripts/ui/main_menu.gd
-msgid "Стереть город и начать заново?"
-msgstr "Erase the town and start over?"
+#: scripts/ui/slots_screen.gd
+msgid "Стереть и создать новый мир"
+msgstr "Erase and create a new world"
 
 #: data
 msgid "Стилет"
@@ -7479,6 +7539,14 @@ msgstr "Berserker Totem"
 msgid "Точильный камень"
 msgstr "Whetstone"
 
+#: scripts/ui/slots_screen.gd
+msgid "Точно стереть «%s»?"
+msgstr "Really erase \"%s\"?"
+
+#: scripts/ui/slots_screen.gd
+msgid "Точно удалить мир навсегда?"
+msgstr "Delete this world forever?"
+
 #: data
 msgid "Точные выверенные удары мечом и топором."
 msgstr "Precise, measured blows with sword and axe."
@@ -7723,6 +7791,14 @@ msgstr "Enemies killed"
 msgid "Убитые враги взрываются ядом (90% урона вокруг)."
 msgstr "Slain enemies explode in poison (90% damage around them)."
 
+#: scripts/ui/slots_screen.gd
+msgid "Удалить мир"
+msgstr "Delete world"
+
+#: scripts/ui/slots_screen.gd
+msgid "Удалить слот"
+msgstr "Delete slot"
+
 #: data
 msgid "Удар в спину"
 msgstr "Backstab"
@@ -7939,6 +8015,10 @@ msgstr "Weak to: "
 msgid "Уязвим!"
 msgstr "Vulnerable!"
 
+#: scripts/ui/slots_screen.gd
+msgid "Файл мира не читается, резервной копии тоже нет или она испорчена. Игра не загрузит этот мир."
+msgstr "The world file can't be read, and there is no usable backup. The game can't load this world."
+
 #: data
 msgid "Фантомный рывок"
 msgstr "Phantom Dash"
@@ -8006,6 +8086,10 @@ msgstr "The host left the game"
 #: scripts/ui/net_join_screen.gd
 msgid "Хост: %s — игроков: %d"
 msgstr "Host: %s — players: %d"
+
+#: scripts/ui/main_menu.gd
+msgid "Хостить"
+msgstr "Host"
 
 #: data
 msgid "Храм"
@@ -8519,9 +8603,17 @@ msgstr "of Storms"
 msgid "бьёт по площади"
 msgstr "hits an area"
 
+#: scripts/autoload/save_manager.gd
+msgid "в городе"
+msgstr "in town"
+
 #: scripts/ui/codex_book.gd
 msgid "в локации «%s»"
 msgstr "in \"%s\""
+
+#: scripts/autoload/save_manager.gd
+msgid "в походе"
+msgstr "on an expedition"
 
 #: scripts/bosses/boss.gd
 msgid "в ярости!"

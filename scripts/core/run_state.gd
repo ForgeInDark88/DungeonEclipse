@@ -39,6 +39,36 @@ var loc: Dictionary = {}
 var start_ms: int = 0
 
 
+## The expedition as plain data (run.save) and back.
+func to_dict() -> Dictionary:
+	return {
+		"seed": seed_value, "map": map.to_dict() if map else {}, "node": node_id, "path": Array(path),
+		"start_region": start_region, "gold_at_start": gold_at_start, "kills_at_start": kills_at_start,
+		"resources": resources.duplicate(), "finds": Array(finds), "rescued": Array(rescued),
+		"blueprints": Array(blueprints), "bosses": Array(bosses), "flags": flags.duplicate(true),
+		"elapsed": (Time.get_ticks_msec() - start_ms) / 1000,
+	}
+
+
+static func from_dict(d: Dictionary) -> RunState:
+	var r := RunState.new()
+	r.seed_value = int(d.get("seed", 0))
+	r.map = ExpeditionMap.from_dict(d.get("map", {}))
+	r.node_id = int(d.get("node", -1))
+	r.path.assign(d.get("path", []))
+	r.start_region = int(d.get("start_region", 0))
+	r.gold_at_start = int(d.get("gold_at_start", 0))
+	r.kills_at_start = int(d.get("kills_at_start", 0))
+	r.resources = d.get("resources", {})
+	r.finds.assign(d.get("finds", []))
+	r.rescued.assign(d.get("rescued", []))
+	r.blueprints.assign(d.get("blueprints", []))
+	r.bosses.assign(d.get("bosses", []))
+	r.flags = d.get("flags", {})
+	r.start_ms = Time.get_ticks_msec() - int(d.get("elapsed", 0)) * 1000
+	return r
+
+
 func current_node() -> Dictionary:
 	return map.node(node_id) if map and node_id >= 0 else {}
 

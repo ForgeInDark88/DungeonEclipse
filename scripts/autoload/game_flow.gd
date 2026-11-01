@@ -23,6 +23,11 @@ var state: State = State.MAIN_MENU
 var last_result: Dictionary = {}
 var _fade: ColorRect
 var _busy := false
+## The world in play (its slot is SaveManager.slot): name, when it was made,
+## seconds of play (counted while a world is loaded).
+var world_name := ""
+var world_created := 0
+var playtime := 0.0
 
 
 func _ready() -> void:
@@ -35,6 +40,7 @@ func _ready() -> void:
 	_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_fade)
+	add_child(SaveIndicator.new())
 	EventBus.item_collected.connect(_on_item_collected)
 	EventBus.chest_opened.connect(_on_chest_opened)
 
@@ -67,16 +73,31 @@ func is_busy() -> bool:
 	return _busy
 
 
+func _process(delta: float) -> void:
+	if GameState.town != null and GameState.expedition:
+		playtime += delta
+
+
 # ================================================================ the town
+## A world to continue: the last slot played.
 func has_save() -> bool:
-	return SaveManager.has_town() and SaveManager.load_town() != null
+	return SaveManager.last_slot > 0 and SaveManager.slot_exists(SaveManager.last_slot)
 
 
-## Main menu → «Новая игра»: the old town is wiped, a new hero is made.
-func new_game() -> void:
-	SaveManager.clear_town()
+## «Новая игра»: a new, empty world in slot `slot` (whatever was there is
+## wiped - the menu asks first), then a new hero.
+func new_game(slot := -1, name := "") -> void:
+	if slot <= 0:
+		slot = SaveManager.free_slot() if SaveManager.free_slot() > 0 else 1
+	if SaveManager.slot_exists(slot):
+		SaveManager.delete_slot(slot)
+	SaveManager.use_slot(slot)
+	world_name = name.strip_edges() if name.strip_edges() != "" else tr("Мир %d") % slot
+	world_created = int(Time.get_unix_time_from_system())
+	playtime = 0.0
 	GameState.town = null
 	GameState.hero = null
+	GameState.run = null
 	change_scene(GameState.CHARACTER_CREATION, State.HERO_CREATE)
 
 
@@ -85,6 +106,7 @@ func create_hero(race: RaceData, cls: ClassData, female: bool, difficulty_id: St
 	var town := TownState.new()
 	town.difficulty_id = difficulty_id
 	town.eclipse_level = clampi(eclipse, 0, EclipseLevels.MAX)
+	town.world_seed = randi()
 	Buildings.init_town(town)
 	GameState.town = town
 	_apply_run_rules(town)
@@ -97,31 +119,48 @@ func create_hero(race: RaceData, cls: ClassData, female: bool, difficulty_id: St
 	GameState.hero = hero
 	GameState.reset_run_stats()
 	GameState.kills = 0
+	if world_name == "":
+		world_name = tr("Мир %d") % maxi(1, SaveManager.slot)
+		world_created = int(Time.get_unix_time_from_system())
 	save_town()
 	enter_town()
 
 
-## Main menu → «Продолжить»: loads the town; an expedition cut short by
-## quitting the game is lost (as a death, the warehouse is safe).
-func continue_game() -> bool:
+## «Продолжить» / «Загрузить»: the world of `slot` (default: the last one).
+## An expedition saved on the road goes on from its last save; one whose
+## save was already used (a quit or a crash after a load) is lost, as a
+## death - the warehouse is safe. False when the world cannot be read.
+func continue_game(slot := -1) -> bool:
+	if slot <= 0:
+		slot = SaveManager.last_slot
+	if slot <= 0 or not SaveManager.slot_exists(slot):
+		return false
+	SaveManager.use_slot(slot)
 	var town := SaveManager.load_town()
 	if town == null:
 		return false
 	var hero := RunCodec.load_hero(town.hero)
 	if hero == null:
 		return false
+	var info := SaveManager.world_info()
+	world_name = String(info.get("name", tr("Мир %d") % slot))
+	world_created = int(info.get("created", 0))
+	playtime = float(info.get("playtime", 0))
 	GameState.town = town
 	_apply_run_rules(town)
 	GameState.hero = hero
 	hero.stats.set_modifier("meta", MetaProgress.stat_bonuses())
 	GameState.apply_eclipse(hero)
+	GameState.reset_run_stats()
+	GameState.kills = 0
 	if town.expedition_active:
+		if _resume_expedition():
+			return true
 		_strip_hero()
 		town.expedition_active = false
 		town.add_stat("lost")
 		town.news.append(tr("Прошлый поход прерван: снаряжение похода потеряно."))
-	GameState.reset_run_stats()
-	GameState.kills = 0
+		SaveManager.clear_expedition()
 	save_town()
 	enter_town()
 	return true
@@ -136,13 +175,92 @@ func _apply_run_rules(town: TownState) -> void:
 	GameState.quests.reset()
 
 
+## Saves the world in play. On the road the town keeps the hero as they
+## left (run.save holds the expedition's hero).
 func save_town() -> void:
 	var town := GameState.town
 	if town == null:
 		return
-	if GameState.hero:
+	if GameState.hero and GameState.run == null:
 		town.hero = RunCodec.save_hero(GameState.hero)
-	SaveManager.save_town(town)
+	SaveManager.save_town(town, {"name": world_name, "created": world_created, "playtime": int(playtime)})
+	EventBus.saved.emit()
+
+
+## Autosave of the expedition under way: `at` = "map", "camp" or
+## "location" (inside a platformer location only its entry is saved).
+func save_expedition(at := "map") -> void:
+	var run := GameState.run
+	var hero := GameState.hero
+	if run == null or hero == null:
+		return
+	var pact_ids: Array = []
+	for p in GameState.pacts:
+		pact_ids.append(String(p.id))
+	var stats: Dictionary = GameState.run_stats.duplicate()
+	stats.erase("start_ms")
+	SaveManager.save_expedition({
+		"used": false, "at": at, "run": run.to_dict(), "hero": RunCodec.save_hero(hero),
+		"pacts": pact_ids, "pet": String(GameState.pet.id) if GameState.pet else "",
+		"kills": GameState.kills, "stats": stats, "location": GameState.location.duplicate(true),
+	})
+	save_town()
+
+
+## Loads run.save (once: it is marked used right away). Saved on the map:
+## back on the map; at a camp: back at the fire; inside a location: the
+## hero fled it - it counts as walked, without its rewards.
+func _resume_expedition() -> bool:
+	var d := SaveManager.load_expedition()
+	if d.is_empty() or d.get("used", true):
+		return false
+	d["used"] = true
+	SaveManager.save_expedition(d)
+	var hero := RunCodec.load_hero(d.get("hero", {}))
+	if hero == null:
+		return false
+	hero.stats.set_modifier("meta", MetaProgress.stat_bonuses())
+	GameState.apply_eclipse(hero)
+	Buildings.apply_trophies(hero)
+	if Buildings.level(&"temple") >= 3:
+		hero.stats.set_modifier("blessing", {StatTypes.MAX_HP: roundi(hero.stats.max_hp() / 11.0)})
+	GameState.hero = hero
+	var run := RunState.from_dict(d.get("run", {}))
+	GameState.run = run
+	GameState.run_seed = run.seed_value
+	GameState.pacts.clear()
+	for pid in d.get("pacts", []):
+		for p in ItemDatabase.pacts:
+			if String(p.id) == String(pid):
+				GameState.add_pact(p)
+	GameState.pet = ItemDatabase.pets.get(StringName(d.get("pet", "")))
+	GameState.kills = int(d.get("kills", 0))
+	GameState.run_stats = d.get("stats", {})
+	GameState.run_stats["start_ms"] = Time.get_ticks_msec()
+	match String(d.get("at", "map")):
+		"camp":
+			GameState.location = d.get("location", {})
+			GameState.floor_number = int(GameState.location.get("depth", 1))
+			change_scene(CAMP_SCENE, State.LOCATION)
+		"location":
+			GameState.location = {}
+			GameState.run.flags["fled"] = int(GameState.run.flags.get("fled", 0)) + 1
+			change_scene(MAP_SCENE, State.EXPEDITION_MAP)
+			EventBus.message.emit.call_deferred(tr("Вы бежали из локации: она пройдена без награды."))
+		_:
+			GameState.location = {}
+			change_scene(MAP_SCENE, State.EXPEDITION_MAP)
+	return true
+
+
+## «Сохранить и выйти» (town, map, camp): the world and the expedition are
+## saved where they stand, then the main menu.
+func save_and_quit() -> void:
+	if GameState.run != null:
+		save_expedition("camp" if GameState.location_type() == &"camp" else "map")
+	else:
+		save_town()
+	_leave_to_menu()
 
 
 ## Walks the hero into the town street.
@@ -154,6 +272,7 @@ func enter_town() -> void:
 	GameState.run_active = true
 	GameState.town_return_floor = 0
 	Buildings.apply_trophies(GameState.hero)
+	save_town()
 	change_scene(GameState.GAME, State.TOWN)
 
 
@@ -181,7 +300,11 @@ func open_map(start_region := -1) -> void:
 		Buildings.on_expedition_start(GameState.hero)
 		town.expedition_active = true
 		town.add_stat("expeditions")
-		save_town()  # the hero as they left: a quit mid-expedition loses the rest
+		var keep := GameState.run
+		GameState.run = null
+		save_town()  # the hero as they left town
+		GameState.run = keep
+		save_expedition("map")
 	change_scene(MAP_SCENE, State.EXPEDITION_MAP)
 
 
@@ -265,8 +388,10 @@ func enter_node(id: int) -> bool:
 	EventBus.floor_changed.emit(GameState.floor_number)
 	var type := StringName(n["type"])
 	if type in PLATFORMER_TYPES:
+		save_expedition("location")
 		change_scene(GameState.GAME, State.LOCATION)
 	else:
+		save_expedition("camp")
 		change_scene(CAMP_SCENE, State.LOCATION)
 	return true
 
@@ -381,6 +506,7 @@ func location_cleared() -> void:
 			return
 		EventBus.message.emit(tr("%s позади. Дорога ведёт дальше.") % (reg.display_name if reg else ""))
 	GameState.location = {}
+	save_expedition("map")
 	change_scene(MAP_SCENE, State.EXPEDITION_MAP)
 
 
@@ -475,6 +601,7 @@ func end_expedition(outcome: RunState.Outcome) -> void:
 	r["prosperity"] = [prosperity_before, town.prosperity]
 	r["region_opened"] = town.region_unlocked > region_before
 	r["region"] = ItemDatabase.regions[town.region_unlocked].display_name if town.region_unlocked < ItemDatabase.regions.size() else ""
+	SaveManager.clear_expedition()
 	town.expedition_active = false
 	GameState.run = null
 	GameState.location = {}
@@ -495,6 +622,12 @@ func back_to_town() -> void:
 func quit_to_menu() -> void:
 	if GameState.run == null:
 		save_town()
+	elif GameState.location.is_empty() or GameState.location_type() == &"camp":
+		save_expedition("camp" if GameState.location_type() == &"camp" else "map")
+	_leave_to_menu()
+
+
+func _leave_to_menu() -> void:
 	GameState.hero = null
 	GameState.run = null
 	GameState.location = {}

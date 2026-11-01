@@ -3,7 +3,7 @@ extends SceneTree
 ## a location → back on the map → camp → home; death; a quit mid-expedition;
 ## the town save (round trip, broken file, newer format). Run with
 ##   xvfb-run -a godot --rendering-driver opengl3 -s tests/flow_test.gd
-## (writes only user://test_town.save).
+## (writes only user://test_saves/).
 
 var fails := 0
 
@@ -31,8 +31,10 @@ func _initialize() -> void:
 	var gs = root.get_node("GameState")
 	var idb = root.get_node("ItemDatabase")
 	root.get_node("MetaProgress").apply_upgrades = false
-	sm.town_path = "user://test_town.save"
-	sm.clear_town()
+	sm.saves_dir = "user://test_saves/"
+	sm.remember_slot = false
+	sm.delete_slot(1)
+	sm.use_slot(1)
 
 	# ---------------------------------------------------- hero → town
 	flow.create_hero(idb.races[0], idb.classes[0], false, &"normal", 0)
@@ -187,17 +189,47 @@ func _initialize() -> void:
 	flow.back_to_town()
 	await wait_scene(flow.State.TOWN)
 
-	# ---------------------------------------------------- quit mid-expedition
+	# ---------------------------------------------------- save and continue
 	gs.hero.add_gold(77)
 	flow.save_town()
 	flow.open_map()
 	await wait_scene(flow.State.EXPEDITION_MAP)
-	flow.quit_to_menu()
+	flow.enter_node(gs.run.next_choices()[0])
+	await wait_scene(flow.State.LOCATION)
+	gs.hero.add_gold(5)
+	flow.location_cleared()
+	await wait_scene(flow.State.EXPEDITION_MAP)
+	var node_q: int = gs.run.node_id
+	var gold_q: int = gs.hero.gold
+	flow.save_and_quit()
 	await wait_scene(flow.State.MAIN_MENU)
-	check(flow.continue_game(), "continue loads the town")
+	check(flow.continue_game(1), "continue loads the world")
+	await wait_scene(flow.State.EXPEDITION_MAP)
+	check(gs.run != null and gs.run.node_id == node_q and gs.hero.gold == gold_q, "the expedition goes on from its save on the map")
+	# a crash before the next save point: the used run.save is not loaded twice
+	flow._leave_to_menu()
+	await wait_scene(flow.State.MAIN_MENU)
+	check(flow.continue_game(1), "continue loads the world again")
 	await wait_scene(flow.State.TOWN)
-	check(gs.hero.gold == 0 and not gs.town.expedition_active, "a quit mid-expedition counts as lost")
+	check(gs.run == null and gs.hero.gold == 0 and not gs.town.expedition_active, "a used expedition save is lost, not replayed")
 	check(int(gs.town.stats.get("lost", 0)) == 1, "the town remembers the lost expedition")
+	# quitting inside a location: the hero fled it (counted, no reward)
+	flow.open_map()
+	await wait_scene(flow.State.EXPEDITION_MAP)
+	var fled_node: int = gs.run.next_choices()[0]
+	gs.run.map.nodes[fled_node]["type"] = &"level"
+	flow.enter_node(fled_node)
+	await wait_scene(flow.State.LOCATION)
+	flow._leave_to_menu()
+	await wait_scene(flow.State.MAIN_MENU)
+	flow.continue_game(1)
+	await wait_scene(flow.State.EXPEDITION_MAP)
+	check(gs.run != null and gs.run.node_id == fled_node and int(gs.run.flags.get("fled", 0)) == 1, "a quit inside a location: the hero fled it, back on the map")
+	flow.retreat()
+	await wait_scene(flow.State.RUN_RESULT)
+	check(not sm.has_expedition(), "the end of an expedition deletes its save")
+	flow.back_to_town()
+	await wait_scene(flow.State.TOWN)
 
 	# ---------------------------------------------------- the save file
 	gs.town.add_resource(&"iron", 4)
@@ -220,7 +252,7 @@ func _initialize() -> void:
 	cfg.save(sm.town_path)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(sm.town_path + ".bak"))
 	check(sm.load_town() == null, "a newer save format is refused, not crashed on")
-	sm.clear_town()
+	sm.delete_slot(1)
 
 	print("FAILURES: %d" % fails)
 	quit(1 if fails > 0 else 0)

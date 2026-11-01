@@ -44,7 +44,7 @@ func _ready() -> void:
 
 func load_progress() -> void:
 	var cfg := ConfigFile.new()
-	if SaveManager.read_cfg(cfg, SaveManager.META_PATH) != OK:
+	if SaveManager.read_cfg(cfg, SaveManager.meta_path) != OK:
 		return
 	SaveManager.migrate_meta(cfg)
 	shards = cfg.get_value(SECTION, "shards", 0)
@@ -56,14 +56,24 @@ func load_progress() -> void:
 
 func save_progress() -> void:
 	var cfg := ConfigFile.new()
-	SaveManager.read_cfg(cfg, SaveManager.META_PATH)  # keep the other sections
+	SaveManager.read_cfg(cfg, SaveManager.meta_path)  # keep the other sections
 	SaveManager.migrate_meta(cfg)
 	cfg.set_value(SECTION, "shards", shards)
 	cfg.set_value(SECTION, "gold", gold)
 	cfg.set_value(SECTION, "levels", levels)
 	cfg.set_value(SECTION, "unlocked", Array(unlocked))
 	cfg.set_value(SECTION, "eclipse_unlocked", eclipse_unlocked)
-	SaveManager.write_cfg(cfg, SaveManager.META_PATH)
+	SaveManager.write_cfg(cfg, SaveManager.meta_path)
+
+
+## Empty values before another world's progress is loaded.
+func reset_values() -> void:
+	shards = 0
+	gold = 0
+	levels = {}
+	unlocked.clear()
+	eclipse_unlocked = 0
+	changed.emit()
 
 
 ## Wipes the Sanctum (tests).
