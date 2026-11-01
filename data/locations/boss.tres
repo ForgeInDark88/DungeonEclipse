@@ -14,3 +14,5 @@ boss_arena = true
 reward_room = false
 danger = 5
 rewards_hint = "Страж региона, путь дальше"
+surface_screens_min = 9
+surface_screens_max = 12

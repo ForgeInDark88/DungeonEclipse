@@ -12,7 +12,7 @@ extends RefCounted
 ## Deterministic: the same instance always gives the same tiles and cells.
 
 const T = LevelLayout.Tile
-## Rows of rock between two layers: no sight, no sound, no path across.
+## Rows between two layers: no sight, no sound, no path across.
 const GAP := 40
 ## The surface's biome until regions name their own (stage 15).
 const SURFACE_BIOME := "res://data/town/town.tres"
@@ -28,7 +28,10 @@ static func build(li: LocationInstance) -> LevelLayout:
 		w = maxi(w, s.width)
 		h += s.height + GAP
 	h -= GAP
-	var out := LevelLayout.new(w, h, T.BEDROCK)
+	# The space between the layers stays empty: no tiles, no collision
+	# shapes, no graph nodes (each layer is closed by its own bedrock rim
+	# and the camera never leaves its layer).
+	var out := LevelLayout.new(w, h, T.EMPTY)
 	var y0 := 0
 	for i in subs.size():
 		var s: LevelLayout = subs[i]
@@ -42,6 +45,8 @@ static func build(li: LocationInstance) -> LevelLayout:
 				"biome": layer_biome(li, i), "id": StringName(layer["id"])})
 		for pid in s.portal_cells:
 			out.portal_cells[pid] = (s.portal_cells[pid] as Vector2i) + origin
+		for pid in s.portal_kinds:
+			out.portal_kinds[pid] = s.portal_kinds[pid]
 		y0 += s.height + GAP
 	var first: Dictionary = out.bands[0]
 	out.start_cell = (first["layout"] as LevelLayout).start_cell + (first["origin"] as Vector2i)
@@ -51,7 +56,8 @@ static func build(li: LocationInstance) -> LevelLayout:
 
 static func layer_biome(li: LocationInstance, i: int) -> BiomeData:
 	if int(li.layers[i]["kind"]) == LocationInstance.Kind.SURFACE:
-		return load(SURFACE_BIOME) as BiomeData
+		var sb: BiomeData = ItemDatabase.surface_biomes.get(StringName(li.layers[i].get("biome", &"")))
+		return sb if sb else load(SURFACE_BIOME) as BiomeData
 	var b := ItemDatabase.biome_by_id(li.biome)
 	return b if b else ItemDatabase.biome_for_floor(int(li.layers[i]["depth"]))
 
@@ -64,7 +70,8 @@ static func _layer_layout(li: LocationInstance, i: int) -> LevelLayout:
 	var ports := li.portals_of(i)
 	if kind == LocationInstance.Kind.SURFACE:
 		var sides := ports.filter(func(p: Dictionary) -> bool: return StringName(p["kind"]) == LocationInstance.SIDE).size()
-		return SurfaceGenerator.new().generate(depth, seed_value, sides)
+		var sbd := layer_biome(li, i) as SurfaceBiomeData
+		return SurfaceGenerator.new().generate(depth, seed_value, sides, int(layer.get("screens", -1)), sbd)
 	var gen := LevelGenerator.new()
 	# The floor's place in the dungeon: the prisoner waits on the last one.
 	GameState.location["band_last"] = bool(layer.get("last", false))

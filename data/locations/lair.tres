@@ -14,3 +14,5 @@ boss_arena = true
 reward_room = false
 danger = 4
 rewards_hint = "Страж, реликвия, редкая добыча"
+surface_screens_min = 6
+surface_screens_max = 8

@@ -12,6 +12,9 @@ extends Resource
 @export var display_name: String = ""
 ## The open surface on top (false: the dungeon starts right at the map).
 @export var has_surface: bool = true
+## Width of the surface in screens (6–12).
+@export var surface_screens_min: int = 6
+@export var surface_screens_max: int = 9
 ## Dungeon floors under the surface (rolled from the location seed).
 @export var floors_min: int = 2
 @export var floors_max: int = 3

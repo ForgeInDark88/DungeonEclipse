@@ -17,6 +17,9 @@ const SPRITES := {
 
 var portal_id: StringName
 var kind: StringName
+## The look of a way down from the surface (LevelLayout.portal_kinds):
+## cave, well, crypt, ruin_stairs, sinkhole ("" — by kind).
+var look: StringName = &""
 var manager: LocationManager
 var _sprite: Sprite2D
 var _light: PointLight2D
@@ -36,7 +39,10 @@ func _ready() -> void:
 	shape.position = Vector2(0, -15)
 	add_child(shape)
 	_sprite = Sprite2D.new()
-	_sprite.texture = AssetPaths.tex(SPRITES.get(kind, SPRITES[&"down"]))
+	var path: String = SPRITES.get(kind, SPRITES[&"down"])
+	if look != &"" and look != &"cave":
+		path = "res://assets/sprites/portals/%s.png" % String(look)
+	_sprite.texture = AssetPaths.tex(path)
 	_sprite.centered = true
 	_sprite.offset = Vector2(0, -_sprite.texture.get_height() / 2.0) if _sprite.texture else Vector2.ZERO
 	add_child(_sprite)

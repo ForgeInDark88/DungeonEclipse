@@ -904,6 +904,10 @@ msgid "Болотный плевун"
 msgstr "Bog Spitter"
 
 #: data
+msgid "Болото"
+msgstr "Swamp"
+
+#: data
 msgid "Болт пробивает двоих и отбрасывает."
 msgstr "The bolt pierces two and knocks them back."
 
@@ -1455,6 +1459,10 @@ msgstr "You don't answer — you listen. Mana fills you to the brim."
 msgid "Вы отдаёте:"
 msgstr "You give:"
 
+#: scripts/world/camp_fire.gd
+msgid "Вы отдохнули у костра."
+msgstr "You rested by the fire."
+
 #: scripts/game/game.gd
 msgid "Вы пали"
 msgstr "You have fallen"
@@ -1734,6 +1742,10 @@ msgstr "Town gate: set out on an expedition"
 #: scripts/world/rescue_cage.gd
 msgid "Горожанин благодарит, отдаёт %d золота и обещает прийти в город."
 msgstr "The townsman thanks you, gives you %d gold and promises to come to the town."
+
+#: data
+msgid "Горы"
+msgstr "Mountains"
 
 #: data
 msgid "Горькая настойка трав."
@@ -3643,6 +3655,10 @@ msgstr "The blade seems to swallow the light."
 msgid "Лекарь"
 msgstr "Healer"
 
+#: data
+msgid "Лес"
+msgstr "Forest"
+
 #: scripts/ui/fishing_game.gd
 msgid "Леска лопнула — ушла."
 msgstr "The line snapped — it got away."
@@ -3774,6 +3790,10 @@ msgstr "Location"
 #: scripts/game/game.gd
 msgid "Локация пройдена"
 msgstr "Location cleared"
+
+#: scripts/world/camp_fire.gd
+msgid "Локация сохранена у костра."
+msgstr "The location is saved at the fire."
 
 #: scripts/ui/expedition_map_screen.gd
 msgid "Локация: %s"
@@ -4450,6 +4470,10 @@ msgstr "Attack the guards."
 #: scripts/game/game.gd
 msgid "Настройки"
 msgstr "Settings"
+
+#: scripts/world/surface_sky.gd
+msgid "Наступает ночь."
+msgstr "Night falls."
 
 #: data
 msgid "Натиск"
@@ -6131,6 +6155,14 @@ msgstr "Accept"
 msgid "Принять дар."
 msgstr "Accept the gift."
 
+#: scripts/world/camp_fire.gd
+msgid "Присесть у костра: отдых и сохранение"
+msgstr "Sit by the fire: rest and save"
+
+#: scripts/world/camp_fire.gd
+msgid "Присесть у костра: сохраниться"
+msgstr "Sit by the fire: save"
+
 #: scripts/ui/multiplayer_book.gd
 msgid "Присоединиться"
 msgstr "Join"
@@ -6314,6 +6346,10 @@ msgstr "Jump"
 #: scripts/ui/fishing_game.gd
 msgid "Пусто."
 msgstr "Nothing."
+
+#: data
+msgid "Пустошь"
+msgstr "Wasteland"
 
 #: scripts/game/location_manager.gd
 msgid "Пути нет, пока жив страж"
@@ -6818,6 +6854,10 @@ msgstr "Light strengthens body and armor; stronger with a mace."
 #: data
 msgid "Свет... возвращается..."
 msgstr "The light... returns..."
+
+#: scripts/world/surface_sky.gd
+msgid "Светает."
+msgstr "Dawn breaks."
 
 #: data
 msgid "Светится в темноте холодным светом."
@@ -8510,6 +8550,10 @@ msgstr "The master of these lands. Victory opens the way on."
 #: data
 msgid "Хозяйка таверны"
 msgstr "Innkeeper"
+
+#: data
+msgid "Холмы"
+msgstr "Hills"
 
 #: data
 msgid "Холод сводит пальцы, но вы выныриваете с добычей."

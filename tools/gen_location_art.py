@@ -79,7 +79,66 @@ def lift(name: str) -> None:
     save(im, name)
 
 
+def well_entrance(name: str) -> None:
+    """A dry well with a rope down: 26×30."""
+    w, h = 26, 30
+    im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rectangle((2, 14, w - 3, h - 1), fill=(138, 134, 126, 255), outline=INK)
+    for y in range(17, h, 4):
+        d.line((3, y, w - 4, y), fill=(110, 106, 98, 255))
+    d.rectangle((5, 12, w - 6, 16), fill=(12, 10, 12, 255))
+    d.line((4, 2, 4, 14), fill=(100, 70, 40, 255), width=2)
+    d.line((w - 5, 2, w - 5, 14), fill=(100, 70, 40, 255), width=2)
+    d.line((4, 3, w - 5, 3), fill=(100, 70, 40, 255), width=2)
+    d.line((w // 2, 3, w // 2, 14), fill=(200, 180, 130, 255))
+    save(im, name)
+
+
+def crypt(name: str) -> None:
+    """A crypt door in a mound with a stone cross: 34×32."""
+    w, h = 34, 32
+    im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.pieslice((0, 6, w - 1, h + 22), 180, 360, fill=(110, 112, 104, 255), outline=INK)
+    d.rectangle((0, 18, w - 1, h - 1), fill=(110, 112, 104, 255), outline=INK)
+    d.rectangle((10, 14, w - 11, h - 1), fill=(20, 16, 18, 255), outline=INK)
+    d.line((w // 2, 0, w // 2, 10), fill=(160, 160, 150, 255), width=2)
+    d.line((w // 2 - 4, 4, w // 2 + 4, 4), fill=(160, 160, 150, 255), width=2)
+    save(im, name)
+
+
+def ruin_stairs(name: str) -> None:
+    """Steps down between two broken walls: 36×28."""
+    w, h = 36, 28
+    im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.polygon([(0, h - 1), (0, 6), (6, 2), (9, h - 1)], fill=(150, 144, 132, 255), outline=INK)
+    d.polygon([(w - 1, h - 1), (w - 1, 10), (w - 8, 4), (w - 10, h - 1)], fill=(150, 144, 132, 255), outline=INK)
+    d.rectangle((9, 12, w - 11, h - 1), fill=(14, 12, 14, 255))
+    for k in range(4):
+        y = 14 + k * 3
+        d.rectangle((10 + k, y, w - 12 - k, y + 1), fill=(120 - k * 18, 114 - k * 18, 104 - k * 18, 255))
+    save(im, name)
+
+
+def sinkhole(name: str) -> None:
+    """A ragged pit in the ground: 40×14 (a hole, roots at the rim)."""
+    w, h = 40, 14
+    im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.ellipse((1, 2, w - 2, h + 8), fill=(70, 52, 36, 255), outline=INK)
+    d.ellipse((6, 5, w - 7, h + 6), fill=(8, 6, 8, 255))
+    for x in range(6, w - 6, 6):
+        d.line((x, 5, x + 2, 11), fill=(110, 80, 50, 255))
+    save(im, name)
+
+
 if __name__ == "__main__":
+    well_entrance("well")
+    crypt("crypt")
+    ruin_stairs("ruin_stairs")
+    sinkhole("sinkhole")
     cave("cave", (110, 104, 96), 1)
     cave("cave_mossy", (86, 104, 76), 2)
     hatch("stairs_down", True)

@@ -123,6 +123,7 @@ func _process(delta: float) -> void:
 		_texture = ImageTexture.create_from_image(_image)
 		_small_tex.texture = _texture
 		_big_tex.texture = _texture
+		_view = Rect2i()
 	if _version == -1:
 		_version = _level.explored_version
 		_level.changed_cells.clear()
@@ -131,6 +132,7 @@ func _process(delta: float) -> void:
 		_version = _level.explored_version
 		_update_cells(_level.changed_cells)
 		_level.changed_cells.clear()
+	_set_view(player)
 	_layout(player)
 	# Marks (chests, door, elites...) refresh 10 times a second, not every frame.
 	_marks_timer -= delta
@@ -156,7 +158,7 @@ func _collect_marks() -> void:
 	_marks.clear()
 	for n in _level.entities.get_children():
 		var color := Color(0, 0, 0, 0)
-		if n is ExitDoor:
+		if n is ExitDoor or n is LayerPortal:
 			color = Color(0.8, 0.4, 1.0)
 		elif n is Chest and not n.opened:
 			color = Color(1.0, 0.85, 0.2)
@@ -184,11 +186,31 @@ func _redraw_image() -> void:
 	_texture.update(_image)
 
 
+## The part of the level shown: the hero's layer of a location (the other
+## layers stay off the map), the whole level otherwise.
+var _view := Rect2i()
+
+
+func _set_view(player: Player) -> void:
+	var v := Rect2i(0, 0, _level.layout.width, _level.layout.height)
+	if _level.location_mode:
+		var b := _level.layout_band(_level.band_index_at(player.global_position))
+		if not b.is_empty():
+			v = b["rect"]
+	if v == _view and _small_tex.texture is AtlasTexture:
+		return
+	_view = v
+	var at := AtlasTexture.new()
+	at.atlas = _texture
+	at.region = Rect2(v)
+	_small_tex.texture = at
+	_big_tex.texture = at
+
+
 ## Small map follows the hero; the big map shows the whole floor centred.
 func _layout(player: Player) -> void:
-	var lay := _level.layout
-	var map_size := Vector2(lay.width, lay.height)
-	var hero_cell := Vector2(_level.world_to_cell(player.global_position + Vector2(0, -8)))
+	var map_size := Vector2(_view.size)
+	var hero_cell := Vector2(_level.world_to_cell(player.global_position + Vector2(0, -8)) - _view.position)
 	var clip_small: Control = _small_tex.get_parent()
 	var offset := clip_small.size / 2.0 - hero_cell * SMALL_SCALE
 	offset = offset.clamp(clip_small.size - map_size * SMALL_SCALE, Vector2.ZERO) if map_size.x * SMALL_SCALE > clip_small.size.x else offset
@@ -211,21 +233,23 @@ func _draw_marks(canvas: Control, scale_default: float, small: bool) -> void:
 	var sc: float = canvas.get_meta("scale", scale_default)
 	var dot := maxf(2.0, sc)
 	for m in _marks:
-		var cell: Vector2i = m[0]
+		var cell: Vector2i = m[0] - _view.position
 		canvas.draw_rect(Rect2(Vector2(cell) * sc - Vector2(dot, dot) / 2.0 + Vector2(sc, sc) / 2.0, Vector2(dot, dot)), m[1])
 	# Co-op allies: always shown (they reveal where they are), in their colour.
 	var game := get_tree().current_scene
 	if Net.active and game and game.has_method("party"):
 		for p: Player in game.party():
 			if p.puppet and is_instance_valid(p):
-				var ac := _level.world_to_cell(p.global_position + Vector2(0, -8))
+				var ac := _level.world_to_cell(p.global_position + Vector2(0, -8)) - _view.position
+				if not Rect2i(Vector2i.ZERO, _view.size).has_point(ac):
+					continue  # in another layer
 				var col := UIStyle.ally_color(p.peer_id) if not p.dead else Color(0.6, 0.6, 0.6)
 				var r := Rect2(Vector2(ac) * sc - Vector2(dot, dot) * 0.6 + Vector2(sc, sc) / 2.0, Vector2(dot, dot) * 1.2)
 				canvas.draw_rect(r.grow(1.0), Color(0, 0, 0, 0.8))
 				canvas.draw_rect(r, col)
 	var player := _local_player()
 	if player and int(_blink * 4.0) % 2 == 0:
-		var pc := _level.world_to_cell(player.global_position + Vector2(0, -8))
+		var pc := _level.world_to_cell(player.global_position + Vector2(0, -8)) - _view.position
 		canvas.draw_rect(Rect2(Vector2(pc) * sc - Vector2(dot, dot) / 2.0 + Vector2(sc, sc) / 2.0, Vector2(dot, dot) * 1.2), Color.WHITE)
 
 

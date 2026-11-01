@@ -41,6 +41,8 @@ const ARENA_EXIT := &"arena_exit"
 ## The last save point: the portal the party went through last (the hero
 ## comes back there after a load).
 @export var save_portal: StringName = &""
+## A camp fire saved last: the hero comes back there instead ([x, y] px).
+@export var save_pos: Array = []
 ## The guardian of this location fell (the map exit and the arena exit open).
 @export var boss_beaten: bool = false
 
@@ -63,7 +65,9 @@ static func plan(node: Dictionary) -> LocationInstance:
 	var floors := rng.randi_range(def.floors_min, maxi(def.floors_min, def.floors_max))
 	var sides := rng.randi_range(def.side_entrances_min, maxi(def.side_entrances_min, def.side_entrances_max))
 	if def.has_surface:
-		li.layers.append({"id": &"surface", "kind": Kind.SURFACE, "depth": li.depth, "seed": rng.randi()})
+		li.layers.append({"id": &"surface", "kind": Kind.SURFACE, "depth": li.depth, "seed": rng.randi(),
+				"biome": surface_biome_for(li.region, rng.randi()),
+				"screens": rng.randi_range(def.surface_screens_min, maxi(def.surface_screens_min, def.surface_screens_max))})
 		li.portals.append({"id": &"map", "layer": 0, "kind": MAP, "to": &"", "locked": def.boss_arena})
 	for f in floors:
 		var arena := def.boss_arena and f == floors - 1
@@ -90,6 +94,21 @@ static func plan(node: Dictionary) -> LocationInstance:
 		li.portals.append({"id": &"arena_exit", "layer": li.layers.size() - 1, "kind": ARENA_EXIT, "to": &"main", "locked": true})
 	li.save_portal = &"map" if def.has_surface else &"f1_up"
 	return li
+
+
+## The open land of a node's region (RegionData.surface_biomes), picked by
+## the seed. `region` is the node's index on its map.
+static func surface_biome_for(region: int, roll: int) -> StringName:
+	var abs_region := region
+	if GameState.run and GameState.run.map:
+		abs_region += GameState.run.map.first_region
+	var ids: Array[StringName] = [&"forest"]
+	if abs_region >= 0 and abs_region < ItemDatabase.regions.size():
+		var r: RegionData = ItemDatabase.regions[abs_region]
+		if not r.surface_biomes.is_empty():
+			ids = r.surface_biomes
+	var id := StringName("surface_" + String(ids[absi(roll) % ids.size()]))
+	return id if ItemDatabase.surface_biomes.has(id) else &"surface_forest"
 
 
 func _link(a: StringName, layer_a: int, kind_a: StringName, b: StringName, layer_b: int, kind_b: StringName) -> void:
@@ -146,7 +165,7 @@ func to_dict() -> Dictionary:
 	return {"type": node_type, "depth": depth, "biome": biome, "region": region, "seed": seed_value,
 			"gen_seed": gen_seed, "play_seed": play_seed, "layers": layers.duplicate(true),
 			"portals": portals.duplicate(true), "state": state.duplicate(true),
-			"save_portal": save_portal, "boss_beaten": boss_beaten}
+			"save_portal": save_portal, "save_pos": save_pos.duplicate(), "boss_beaten": boss_beaten}
 
 
 static func from_dict(d: Dictionary) -> LocationInstance:
@@ -164,5 +183,6 @@ static func from_dict(d: Dictionary) -> LocationInstance:
 	li.portals = (d.get("portals", []) as Array).duplicate(true)
 	li.state = (d.get("state", {}) as Dictionary).duplicate(true)
 	li.save_portal = StringName(d.get("save_portal", &""))
+	li.save_pos = (d.get("save_pos", []) as Array).duplicate()
 	li.boss_beaten = bool(d.get("boss_beaten", false))
 	return li

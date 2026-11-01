@@ -189,8 +189,21 @@ func _load_location() -> void:
 
 
 ## LocationManager: the hero went to a layer with another biome.
+## Under the open sky the background stands still vertically (the sky fills
+## the screen, the hills sit at its bottom); underground it scrolls and
+## repeats as before.
 func apply_layer_biome(b: BiomeData) -> void:
 	_apply_biome(b)
+	var open_sky := b is SurfaceBiomeData
+	for layer in $Parallax.get_children():
+		var pl := layer as ParallaxLayer
+		if not pl.has_meta(&"scale"):
+			pl.set_meta(&"scale", pl.motion_scale)
+			pl.set_meta(&"mirror", pl.motion_mirroring)
+		var sc: Vector2 = pl.get_meta(&"scale")
+		var mi: Vector2 = pl.get_meta(&"mirror")
+		pl.motion_scale = Vector2(sc.x, 0.0) if open_sky else sc
+		pl.motion_mirroring = Vector2(mi.x, 0.0) if open_sky else mi
 
 
 ## Expedition: the exit of a location shows what it gave (gold, kills,

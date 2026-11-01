@@ -43,6 +43,15 @@ var is_surface := false
 ## Portal id -> cell of the portals between the layers of a location
 ## (LocationInstance portals; LocationBuilder fills them).
 var portal_cells: Dictionary = {}
+## Portal id -> look of a way down from the surface (cave, well, crypt...).
+var portal_kinds: Dictionary = {}
+## Surface (SurfaceGenerator): props {"tex": name in assets/sprites/surface,
+## "cell", "z"}, ponds and ravines (Rect2i cells), points of interest
+## {"type", "cell", "rect"}.
+var surface_props: Array[Dictionary] = []
+var water: Array[Rect2i] = []
+var ravines: Array[Rect2i] = []
+var pois: Array[Dictionary] = []
 ## A location of several layers stacked into one level (LocationBuilder):
 ## [{layer: int, rect: Rect2i (cells), origin: Vector2i, layout: LevelLayout,
 ##   depth: int, biome: BiomeData, kind: LocationInstance.Kind}]. Empty for

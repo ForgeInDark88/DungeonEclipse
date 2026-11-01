@@ -5,7 +5,7 @@ extends SceneTree
 ## - every portal of the plan has a cell in its own layer, on firm ground;
 ## - inside each layer every portal is reachable from every other one and
 ##   from the layer's start (LevelNav ground paths, the monsters' graph);
-## - the layers do not touch (bedrock between them);
+## - the layers do not touch (an empty gap between their bedrock rims);
 ## - a boss location ends in the guardian's arena, its ways out locked.
 ##   godot --headless -s tests/location_test.gd
 
@@ -14,7 +14,7 @@ const CLEARANCE := 2
 var LB = null
 var LI = null
 var fails := 0
-var stats := {"locations": 0, "layers": 0, "portals": 0, "paths": 0, "build_ms": 0}
+var stats := {"pois": 0, "locations": 0, "layers": 0, "portals": 0, "paths": 0, "build_ms": 0}
 
 
 func check(c: bool, what: String) -> void:
@@ -50,8 +50,8 @@ func _initialize() -> void:
 	check(la.tiles == lb.tiles and var_to_str(la.portal_cells) == var_to_str(lb.portal_cells), "the same plan gives the same tiles")
 	var c = LI.from_dict(a.to_dict())
 	check(LB.build(c).tiles == la.tiles, "a saved plan builds the same location")
-	print("locations: %d, layers: %d, portals: %d, paths checked: %d, avg build %.1f ms" % [
-		stats["locations"], stats["layers"], stats["portals"], stats["paths"],
+	print("locations: %d, layers: %d, portals: %d, points of interest: %d, paths checked: %d, avg build %.1f ms" % [
+		stats["locations"], stats["layers"], stats["portals"], stats["pois"], stats["paths"],
 		float(stats["build_ms"]) / maxf(1.0, stats["locations"])])
 	print("FAILURES: %d" % fails)
 	quit(1 if fails > 0 else 0)
@@ -79,7 +79,7 @@ func _check_location(node: Dictionary, tag: String) -> void:
 	for i in range(1, layout.bands.size()):
 		var prev: Rect2i = layout.bands[i - 1]["rect"]
 		var cur: Rect2i = layout.bands[i]["rect"]
-		check(cur.position.y - prev.end.y >= LB.GAP, "%s: rock between layers %d and %d" % [tag, i - 1, i])
+		check(cur.position.y - prev.end.y >= LB.GAP, "%s: a gap between layers %d and %d" % [tag, i - 1, i])
 	for i in layout.bands.size():
 		var band: Dictionary = layout.bands[i]
 		var rect: Rect2i = band["rect"]
@@ -102,6 +102,26 @@ func _check_location(node: Dictionary, tag: String) -> void:
 		# a layer is closed in rock: its own graph is the whole story
 		var nav := LevelNav.new(sub)
 		var start: Vector2i = sub.start_cell
+		# nothing stands inside the rock
+		for ch in sub.chests:
+			var cc: Vector2i = ch["cell"]
+			check(sub.get_tile(cc.x, cc.y) == LevelLayout.Tile.EMPTY, "%s: layer %d, chest %s in the open" % [tag, i, cc])
+		for ec: Vector2i in sub.enemy_cells:
+			check(sub.get_tile(ec.x, ec.y) != LevelLayout.Tile.BRICK and sub.get_tile(ec.x, ec.y) != LevelLayout.Tile.BEDROCK,
+					"%s: layer %d, monster %s in the open" % [tag, i, ec])
+		if int(band["kind"]) == 0:
+			# the surface: every point of interest and every chest is reachable
+			stats["pois"] += sub.pois.size()
+			check(sub.pois.size() >= 2, "%s: the surface has points of interest (%d)" % [tag, sub.pois.size()])
+			var surface_nav := LevelNav.new(sub)
+			for poi in sub.pois:
+				stats["paths"] += 1
+				check(not surface_nav.ground_path(sub.start_cell, poi["cell"], CLEARANCE).is_empty(),
+						"%s: point of interest %s at %s is reachable" % [tag, poi["type"], poi["cell"]])
+			for ch in sub.chests:
+				stats["paths"] += 1
+				check(not surface_nav.ground_path(sub.start_cell, ch["cell"], 1).is_empty(),
+						"%s: surface chest at %s is reachable" % [tag, ch["cell"]])
 		for k in cells.size():
 			var c: Vector2i = cells[k] - origin
 			if c == start:

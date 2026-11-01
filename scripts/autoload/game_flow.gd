@@ -360,8 +360,7 @@ func save_and_quit() -> void:
 	var lm: LocationManager = game.location if game and "location" in game else null
 	if GameState.run != null and lm != null:
 		# A location of layers: the hero comes back to this way in or out.
-		lm.instance.save_portal = lm.nearest_portal(game.player)
-		lm.save_point()
+		lm.save_where_standing(game.player)
 	elif GameState.run != null:
 		save_expedition("camp" if GameState.location_type() == &"camp" else "map")
 	else:

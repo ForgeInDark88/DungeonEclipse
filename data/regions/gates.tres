@@ -16,3 +16,4 @@ steps_max = 7
 boss = &"bone_king"
 lair_bosses = Array[StringName]([])
 color = Color(0.42, 0.33, 0.25, 1)
+surface_biomes = Array[StringName]([&"forest", &"hills"])

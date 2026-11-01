@@ -202,13 +202,20 @@ func build_location(p_layout: LevelLayout, seed_value: int) -> void:
 	for y in layout.height:
 		var bi := _row_band[y]
 		var open_sky := bi < 0 or int(layout.bands[bi]["kind"]) == LocationInstance.Kind.SURFACE
+		var band_w := (layout.bands[bi]["rect"] as Rect2i).end.x if bi >= 0 else 0
 		for x in layout.width:
 			var cell := Vector2i(x, y)
+			if x >= band_w and layout.get_tile(x, y) == T.EMPTY:
+				continue  # outside every layer: nothing to draw
 			if not open_sky and (noise.get_noise_2d(x, y) > -0.25 or _near_solid(cell)):
 				back.set_cell(cell, _src(cell), Vector2i(_back_variant(cell), AssetPaths.TILE_ROW_BACKWALL))
 			_apply_tile(cell, layout.get_tile(x, y))
 	for y in layout.height:
-		for x in layout.width:
+		var bj := _row_band[y]
+		if bj < 0:
+			continue
+		var bw := (layout.bands[bj]["rect"] as Rect2i).end.x
+		for x in bw:
 			_apply_detail(Vector2i(x, y))
 	for i in layout.bands.size():
 		_build_band(i, seed_value)
@@ -228,6 +235,8 @@ func _build_band(i: int, seed_value: int) -> void:
 			_spawn_ambience()
 			_spawn_decorations()
 		LocationInstance.Kind.SURFACE:
+			_spawn_surface_props()
+			_spawn_water()
 			_spawn_specials()
 			_spawn_chests()
 			_spawn_enemies()
@@ -242,6 +251,45 @@ func _build_band(i: int, seed_value: int) -> void:
 			_spawn_decorations()
 			_spawn_traps()
 	_exit_band()
+
+
+## The surface's trees, rocks, ruins and camps (behind or in front of the
+## hero by their z), from layout.surface_props.
+func _spawn_surface_props() -> void:
+	for p in layout.surface_props:
+		var tex := AssetPaths.tex("res://assets/sprites/surface/%s.png" % String(p["tex"]))
+		if tex == null:
+			continue
+		var s := Sprite2D.new()
+		s.texture = tex
+		s.centered = false
+		s.offset = Vector2(-floorf(tex.get_width() / 2.0), -tex.get_height())
+		s.z_index = int(p["z"])
+		if String(p["tex"]).begins_with("tree") or p["tex"] == &"reeds":
+			s.flip_h = (hash(p["cell"]) & 1) == 1
+		add_entity(s, cell_bottom(p["cell"]))
+
+
+## Ponds: a sheet of water over the dip, a lighter line on its surface.
+func _spawn_water() -> void:
+	var col := Color(0.3, 0.5, 0.75, 0.75)
+	if biome is SurfaceBiomeData:
+		col = (biome as SurfaceBiomeData).water_color
+	for r: Rect2i in layout.water:
+		var top := cell_bottom(Vector2i(r.position.x, r.position.y - 1))
+		var w := r.size.x * TILE
+		var poly := Polygon2D.new()
+		poly.color = col
+		poly.z_index = 2
+		poly.polygon = PackedVector2Array([Vector2(-TILE / 2.0, 4), Vector2(w - TILE / 2.0, 4),
+				Vector2(w - TILE / 2.0, r.size.y * TILE), Vector2(-TILE / 2.0, r.size.y * TILE)])
+		add_entity(poly, top)
+		var shine := Line2D.new()
+		shine.width = 1.0
+		shine.default_color = col.lightened(0.5)
+		shine.z_index = 2
+		shine.points = PackedVector2Array([Vector2(-TILE / 2.0, 4), Vector2(w - TILE / 2.0, 4)])
+		add_entity(shine, top)
 
 
 ## The band dictionary (LevelLayout.bands) of index i.
@@ -1011,6 +1059,8 @@ func _spawn_specials() -> void:
 				add_entity(Chronicler.new(), cell_bottom(info["cell"]))
 			&"event":
 				_spawn_event(info)
+			&"camp_fire":
+				add_entity(CampFire.new(), cell_bottom(info["cell"]))
 			&"dummy":
 				# Training dummy at the barracks: local on every machine
 				# (no net id), each player trains on their own copy.

@@ -16,3 +16,4 @@ steps_max = 8
 boss = &"illusionist"
 lair_bosses = Array[StringName]([&"flame_witch"])
 color = Color(0.6, 0.25, 0.15, 1)
+surface_biomes = Array[StringName]([&"ruins", &"hills"])

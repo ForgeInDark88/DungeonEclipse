@@ -37,6 +37,8 @@ var _fade: ColorRect
 var _rng := RandomNumberGenerator.new()
 ## A guest's call of the party waiting for the host: [peer, portal id].
 var _pull_request: Array = []
+## Time of day and weather over the surface (null without a surface).
+var sky: SurfaceSky
 
 
 func _init() -> void:
@@ -70,6 +72,7 @@ func setup(p_game: Node, p_level: DungeonLevel, li: LocationInstance) -> void:
 		lp.portal_id = pid
 		lp.kind = StringName(p["kind"])
 		lp.manager = self
+		lp.look = StringName(level.layout.portal_kinds.get(pid, &""))
 		level.add_entity(lp, level.cell_bottom(level.layout.portal_cells[pid]))
 		_portals[pid] = lp
 	for e in get_tree().get_nodes_in_group("enemies"):
@@ -78,6 +81,11 @@ func setup(p_game: Node, p_level: DungeonLevel, li: LocationInstance) -> void:
 			_tracked[int(en.get_meta(&"loc"))] = {"node": en, "band": level.band_index_at(en.global_position),
 					"pos": en.global_position, "data": en.data, "elite": en.elite != null or en.champion or en is Boss}
 	apply_state()
+	var sb := level.layout_band(0).get("biome") as SurfaceBiomeData if li.has_surface() else null
+	if sb:
+		sky = SurfaceSky.new()
+		add_child(sky)
+		sky.setup(sb, li.play_seed, game.get_node_or_null("Ambient") as CanvasModulate, game.player.camera)
 
 
 ## The hero stands at the last save point (the start of the surface on a
@@ -85,7 +93,9 @@ func setup(p_game: Node, p_level: DungeonLevel, li: LocationInstance) -> void:
 func place_player(player: Node2D) -> void:
 	var pid := instance.save_portal
 	var pos: Vector2 = level.start_position()
-	if level.layout.portal_cells.has(pid):
+	if instance.save_pos.size() == 2:
+		pos = Vector2(float(instance.save_pos[0]) + 12.0, float(instance.save_pos[1]))
+	elif level.layout.portal_cells.has(pid):
 		pos = level.cell_bottom(level.layout.portal_cells[pid]) + Vector2(14, 0)
 	player.global_position = pos
 	_enter_band(level.band_index_at(pos), true)
@@ -184,6 +194,7 @@ func travel(to: StringName) -> void:
 	# A save point: the host's (or the lone hero's) expedition is saved here.
 	if not GameFlow.is_guest():
 		instance.save_portal = to
+		instance.save_pos = []
 		save_point()
 	tw = create_tween()
 	tw.tween_property(_fade, "color:a", 0.0, FADE)
@@ -219,6 +230,8 @@ func _enter_band(i: int, first := false) -> void:
 	GameState.floor_number = int(b["depth"])
 	if game.has_method("apply_layer_biome"):
 		game.apply_layer_biome(b["biome"])
+	if sky:
+		sky.set_active(int(b["kind"]) == LocationInstance.Kind.SURFACE)
 	if int(b["kind"]) == LocationInstance.Kind.ARENA and not instance.boss_beaten:
 		for boss in get_tree().get_nodes_in_group("bosses"):
 			AudioManager.play_music((boss as Boss).boss.music)
@@ -352,6 +365,23 @@ func _respawns_here(bi: int) -> bool:
 		return false
 	var kind := int(level.layout_band(bi).get("kind", 0))
 	return kind == LocationInstance.Kind.SURFACE or (definition.respawn_in_dungeon and kind == LocationInstance.Kind.DUNGEON)
+
+
+## «Сохранить и выйти»: at the fire the hero sits by, else the nearest portal.
+func save_where_standing(player: Node2D) -> void:
+	for f in get_tree().get_nodes_in_group("camp_fires"):
+		if (f as Node2D).global_position.distance_to(player.global_position) < 64.0:
+			save_at_fire((f as Node2D).global_position)
+			return
+	instance.save_portal = nearest_portal(player)
+	instance.save_pos = []
+	save_point()
+
+
+## A camp fire of the surface: the save point is the fire itself.
+func save_at_fire(pos: Vector2) -> void:
+	instance.save_pos = [pos.x, pos.y]
+	save_point()
 
 
 ## Save point: the expedition with this location's state.
