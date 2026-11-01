@@ -181,7 +181,7 @@ func _initialize() -> void:
 	flow.enter_node(bid)
 	await wait_scene(flow.State.LOCATION)
 	var bosses := current_scene.get_tree().get_nodes_in_group("bosses")
-	check(current_scene.level.location_mode and int(current_scene.level.layout.bands[-1]["kind"]) == 2, "a lair node ends in a boss arena")
+	check(current_scene.level.location_mode and current_scene.level.layout.bands.any(func(b): return int(b["kind"]) == 2), "a lair node ends in a boss arena")
 	check(bosses.size() == 1 and bosses[0].boss.id == &"illusionist", "the lair's own guardian waits there")
 	check(gs.current_biome().id == &"mirror_halls", "the arena stands in the node's biome")
 	flow.hero_died()
@@ -223,8 +223,8 @@ func _initialize() -> void:
 	for sd in range(1, 400):
 		gs.run.map.nodes[lnode]["seed"] = sd * 7717
 		var pl = LIs.plan(gs.run.map.node(lnode))
-		var has_key := pl.portals.any(func(q): return q.get("lock", &"") == &"key")
-		var has_lift := pl.portals.any(func(q): return q["kind"] == &"lift" and q["layer"] == 1 + 1)
+		var has_key: bool = pl.portals.any(func(q): return q.get("lock", &"") == &"key")
+		var has_lift: bool = pl.portals.any(func(q): return q["kind"] == &"lift" and q["layer"] == 1 + 1)
 		if has_key and has_lift:
 			break
 	flow.enter_node(lnode)

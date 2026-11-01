@@ -244,6 +244,15 @@ func _host_coop() -> void:
 	wn.close_session()
 
 
+## The first locked way of the location (the same plan on every machine).
+func first_lock() -> StringName:
+	var lm = current_scene.location
+	for q in lm.instance.portals:
+		if q.get("locked", false) and q.get("lock", &"") != &"":
+			return StringName(q["id"])
+	return &""
+
+
 ## The heroes of the party: peer -> band of the location.
 func party_bands() -> Dictionary:
 	var out := {}
@@ -289,6 +298,11 @@ func _host_layers() -> void:
 			asleep += 1 if e.process_mode == Node.PROCESS_MODE_DISABLED else 0
 			awake += 0 if e.process_mode == Node.PROCESS_MODE_DISABLED else 1
 	check(asleep > 0 and awake == 0, "the monsters of the empty layers sleep (%d asleep, %d awake)" % [asleep, awake])
+	# a lock opened by the host is open for everybody
+	var lk := first_lock()
+	if lk != &"":
+		game.location.open_lock(lk, true)
+		print("LOCK OPENED: %s" % lk)
 	# everybody down: the host calls the party through the main entrance
 	game.location.request_pull(&"f1_up")
 	await create_timer(4.0).timeout
@@ -398,6 +412,13 @@ func _client() -> void:
 			await create_timer(0.25).timeout
 			waited += 0.25
 		check(lm.band == 1, "%s came down with the party's call" % nick)
+		var lk := first_lock()
+		if lk != &"":
+			var wl := 0.0
+			while not lm.instance.is_unlocked(lk) and wl < 12.0:
+				await create_timer(0.25).timeout
+				wl += 0.25
+			check(lm.instance.is_unlocked(lk), "%s sees the lock %s opened by the host" % [nick, lk])
 		while wn.session and tt < 80.0:
 			await create_timer(0.25).timeout
 			tt += 0.25

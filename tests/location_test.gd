@@ -83,7 +83,8 @@ func _check_location(node: Dictionary, tag: String) -> void:
 		if l.has("special"):
 			stats["side_floors"] += 1
 	if def.boss_arena:
-		check(int(layout.bands[-1]["kind"]) == 2, "%s: the last layer is the arena" % tag)
+		var main_floors: Array = li.layers.filter(func(l): return not l.has("special"))
+		check(int(main_floors[-1]["kind"]) == 2, "%s: the last floor is the arena" % tag)
 		check(not li.is_open(&"map") and not li.is_open(&"arena_exit"), "%s: the ways out wait for the guardian" % tag)
 		li.boss_beaten = true
 		check(li.is_open(&"map") and li.is_open(&"arena_exit"), "%s: a beaten guardian opens them" % tag)
