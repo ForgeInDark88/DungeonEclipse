@@ -111,19 +111,30 @@ func rebuild() -> void:
 	version += 1
 
 
+## Where the graph lives: the layers of a location (the empty space
+## between them has nothing to walk on), or the whole level.
+func _areas() -> Array[Rect2i]:
+	var out: Array[Rect2i] = []
+	for b in layout.bands:
+		out.append(b["rect"])
+	if out.is_empty():
+		out.append(Rect2i(0, 0, layout.width, layout.height))
+	return out
+
+
 func _build_ground(clearance: int) -> GroundGraph:
 	var g := GroundGraph.new()
-	var w := layout.width
-	var h := layout.height
-	g.reserve_space(w * h / 2)
-	for y in h:
-		for x in w:
-			if is_node(x, y, clearance):
-				g.add_point(id_of(Vector2i(x, y)), Vector2(x, y))
-	for y in h:
-		for x in w:
-			if g.has_point(id_of(Vector2i(x, y))):
-				_link_from(g, x, y, clearance)
+	g.reserve_space(layout.width * layout.height / 4)
+	for r in _areas():
+		for y in range(r.position.y, r.end.y):
+			for x in range(r.position.x, r.end.x):
+				if is_node(x, y, clearance):
+					g.add_point(id_of(Vector2i(x, y)), Vector2(x, y))
+	for r in _areas():
+		for y in range(r.position.y, r.end.y):
+			for x in range(r.position.x, r.end.x):
+				if g.has_point(id_of(Vector2i(x, y))):
+					_link_from(g, x, y, clearance)
 	return g
 
 
@@ -232,10 +243,16 @@ func _build_fly() -> void:
 	fly.cell_size = Vector2(1, 1)
 	fly.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
 	fly.update()
-	for y in layout.height:
-		for x in layout.width:
-			if LevelLayout.is_solid(layout.get_tile(x, y)):
-				fly.set_point_solid(Vector2i(x, y), true)
+	if not layout.bands.is_empty():
+		# a location: everything outside its layers is closed to flyers too
+		fly.fill_solid_region(fly.region, true)
+		for r in _areas():
+			fly.fill_solid_region(r, false)
+	for r in _areas():
+		for y in range(r.position.y, r.end.y):
+			for x in range(r.position.x, r.end.x):
+				if LevelLayout.is_solid(layout.get_tile(x, y)):
+					fly.set_point_solid(Vector2i(x, y), true)
 
 
 # --------------------------------------------------------------- queries

@@ -27,6 +27,14 @@ func _initialize() -> void:
 	sm.use_slot(1)
 	flow.create_hero(idb.races[0], idb.classes[0], false, &"normal", 0)
 	await wait_scene(flow.State.TOWN)
+	var tw: Array[float] = []
+	for k in 20:
+		await create_timer(0.25).timeout
+		tw.append(Engine.get_frames_per_second())
+	var ta := 0.0
+	for v in tw:
+		ta += v
+	print("town FPS (the reference on this machine): avg %.1f" % (ta / tw.size()))
 	flow.open_map()
 	await wait_scene(flow.State.EXPEDITION_MAP)
 	var def = idb.locations[&"level"]
