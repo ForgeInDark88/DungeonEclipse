@@ -92,6 +92,14 @@ msgid " (с инструментом «%s» — вдвое больше)"
 msgstr " (twice as much with a “%s”)"
 
 #: scripts/game/location_manager.gd
+msgid " · E — отпереть"
+msgstr " · E — unlock"
+
+#: scripts/game/location_manager.gd
+msgid " · E — разобрать"
+msgstr " · E — clear it"
+
+#: scripts/game/location_manager.gd
 msgid " · Shift+E — позвать отряд"
 msgstr " · Shift+E — call the party"
 
@@ -951,6 +959,10 @@ msgstr "Greater Healing Potion"
 msgid "Бомба"
 msgstr "Bomb"
 
+#: scripts/game/location_manager.gd
+msgid "Бомба расчистила завал."
+msgstr "The bomb cleared the rubble."
+
 #: data
 msgid "Бородовидная секира"
 msgstr "Bearded Axe"
@@ -1502,6 +1514,10 @@ msgstr "You have fallen"
 #: data
 msgid "Вы проскакиваете за миг до того, как камень уходит в лаву. Сундук ваш!"
 msgstr "You dash across a moment before the stone sinks into the lava. The chest is yours!"
+
+#: scripts/game/location_manager.gd
+msgid "Вы разобрали завал киркой."
+msgstr "You cleared the rubble with the pickaxe."
 
 #: data
 msgid "Вы срезаете шляпки, не дыша."
@@ -2282,6 +2298,10 @@ msgstr "Abandoned well"
 #: data
 msgid "Забытое святилище"
 msgstr "Forgotten Shrine"
+
+#: scripts/game/location_manager.gd
+msgid "Завал: нужна кирка или бомба"
+msgstr "Rubble: needs a pickaxe or a bomb"
 
 #: scripts/game/game.gd
 msgid "Завершить забег"
@@ -3146,6 +3166,10 @@ msgstr "Monster Fang"
 #: data
 msgid "Ключ"
 msgstr "Key"
+
+#: scripts/game/location_manager.gd
+msgid "Ключ подошёл: решётка открыта."
+msgstr "The key fits: the grate is open."
 
 #: scripts/autoload/world_net.gd
 msgid "Ключ у тюремщика: сначала разберитесь с охраной."
@@ -4530,6 +4554,10 @@ msgstr "Back"
 #: scripts/ui/slots_screen.gd
 msgid "Название мира"
 msgstr "World name"
+
+#: scripts/game/location_manager.gd
+msgid "Найден короткий путь: подъёмник на поверхность."
+msgstr "Shortcut found: a lift to the surface."
 
 #: data
 msgid "Найдена в стенах подземелья."
@@ -5947,6 +5975,18 @@ msgstr "Confirm"
 msgid "Подходит классу %s"
 msgstr "Suits the %s class"
 
+#: scripts/game/location_manager.gd
+msgid "Подъёмник вниз: %s"
+msgstr "Lift down: %s"
+
+#: scripts/game/location_manager.gd
+msgid "Подъёмник наверх: %s"
+msgstr "Lift up: %s"
+
+#: scripts/game/location_manager.gd
+msgid "Подъёмник поднят: его можно спустить только снизу"
+msgstr "The lift is up: it can only be called from below"
+
 #: data
 msgid "Пожиратель света"
 msgstr "Light Devourer"
@@ -6778,6 +6818,10 @@ msgstr "No recipes"
 #: scripts/ui/journal_book.gd
 msgid "Решения"
 msgstr "Decisions"
+
+#: scripts/game/location_manager.gd
+msgid "Решётка заперта: нужен ключ"
+msgstr "The grate is locked: needs a key"
 
 #: data
 msgid "Ржавые доспехи"
@@ -9703,6 +9747,14 @@ msgstr "slot to upgrade it. Some skills are stronger with a matching weapon."
 msgid "снять пометку «мусор»"
 msgstr "remove the junk mark"
 
+#: scripts/game/location_manager.gd
+msgid "сокровищница"
+msgstr "treasury"
+
+#: scripts/game/location_manager.gd
+msgid "старая шахта"
+msgstr "old mine"
+
 #: scripts/ui/info_book.gd
 msgid "стражей и само Затмение.\n\nКаждые 5 этажей — страж. Смерть обрывает забег: начнёте с первого этажа, "
 msgstr "guardians and the Eclipse itself.\n\nEvery 5 floors there is a guardian. Death ends the run: you start again from floor 1, "
@@ -9710,6 +9762,10 @@ msgstr "guardians and the Eclipse itself.\n\nEvery 5 floors there is a guardian.
 #: scripts/autoload/meta_progress.gd
 msgid "стражи: %d"
 msgstr "guardians: %d"
+
+#: scripts/game/location_manager.gd
+msgid "тайник"
+msgstr "cache"
 
 #: scripts/ui/multiplayer_book.gd
 msgid "только хост"

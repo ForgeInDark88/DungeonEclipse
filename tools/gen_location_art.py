@@ -134,7 +134,25 @@ def sinkhole(name: str) -> None:
     save(im, name)
 
 
+def lift(name: str) -> None:
+    """A mine lift: a wooden frame, a cage on ropes, 30×40."""
+    w, h = 30, 40
+    im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rectangle((2, 0, 5, h - 1), fill=(110, 76, 44, 255), outline=INK)
+    d.rectangle((w - 6, 0, w - 3, h - 1), fill=(110, 76, 44, 255), outline=INK)
+    d.rectangle((2, 0, w - 3, 3), fill=(130, 90, 52, 255), outline=INK)
+    d.line((10, 3, 10, 18), fill=(200, 180, 130, 255))
+    d.line((w - 11, 3, w - 11, 18), fill=(200, 180, 130, 255))
+    d.rectangle((7, 18, w - 8, h - 2), outline=(150, 150, 160, 255))
+    for x in range(9, w - 8, 3):
+        d.line((x, 18, x, h - 2), fill=(120, 120, 130, 255))
+    d.rectangle((7, h - 4, w - 8, h - 2), fill=(130, 90, 52, 255))
+    save(im, name)
+
+
 if __name__ == "__main__":
+    lift("lift")
     well_entrance("well")
     crypt("crypt")
     ruin_stairs("ruin_stairs")

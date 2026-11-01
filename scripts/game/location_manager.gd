@@ -112,6 +112,13 @@ func portal_prompt(pid: StringName) -> String:
 	if not portal_open(pid):
 		if kind == LocationInstance.MAP:
 			return tr("Дорога закрыта: сначала одолейте стража")
+		match StringName(p.get("lock", &"")):
+			&"key":
+				return tr("Решётка заперта: нужен ключ") + (tr(" · E — отпереть") if _hero_has(&"key") else "")
+			&"rubble":
+				return tr("Завал: нужна кирка или бомба") + (tr(" · E — разобрать") if _hero_has(&"pickaxe") or _hero_has(&"bomb") else "")
+			&"below":
+				return tr("Подъёмник поднят: его можно спустить только снизу")
 		return tr("Пути нет, пока жив страж")
 	var to := instance.portal(StringName(p.get("to", &"")))
 	var where := _layer_name(int(to.get("layer", 0))) if not to.is_empty() else ""
@@ -135,6 +142,10 @@ func portal_prompt(pid: StringName) -> String:
 			text = tr("Подняться: %s") % where
 		LocationInstance.ARENA_EXIT:
 			text = tr("Подняться на поверхность")
+		LocationInstance.LIFT:
+			text = tr("Подъёмник наверх: %s") % where
+		LocationInstance.LIFT_TOP:
+			text = tr("Подъёмник вниз: %s") % where
 	if Net.active and Net.players.size() > 1:
 		text += tr(" · Shift+E — позвать отряд")
 	return text
@@ -144,6 +155,8 @@ func _layer_name(i: int) -> String:
 	if i < 0 or i >= instance.layers.size():
 		return ""
 	var l: Dictionary = instance.layers[i]
+	if l.has("special"):
+		return {&"treasury": tr("сокровищница"), &"mine": tr("старая шахта"), &"cache": tr("тайник")}.get(StringName(l["special"]), tr("тайник"))
 	match int(l["kind"]):
 		LocationInstance.Kind.SURFACE:
 			return tr("поверхность")
@@ -157,10 +170,14 @@ func use_portal(pid: StringName, player: Node, call_party := false) -> void:
 	if _busy:
 		return
 	if not portal_open(pid):
-		EventBus.message.emit(portal_prompt(pid))
-		AudioManager.play_sfx(&"chest_locked")
+		if not _try_unlock(pid):
+			EventBus.message.emit(portal_prompt(pid))
+			AudioManager.play_sfx(&"chest_locked")
 		return
 	var p := instance.portal(pid)
+	if StringName(p["kind"]) == LocationInstance.LIFT:
+		# found from below: the lift stays down for everybody
+		open_lock(StringName(p["to"]), true)
 	if StringName(p["kind"]) == LocationInstance.MAP:
 		_leave_to_map()
 		return
@@ -169,6 +186,57 @@ func use_portal(pid: StringName, player: Node, call_party := false) -> void:
 		request_pull(to)
 		return
 	travel(to)
+
+
+# ------------------------------------------------------------------ locks
+func _hero_has(id: StringName) -> bool:
+	var hero: Hero = GameState.hero
+	return hero != null and hero.inventory.count_of(id) > 0
+
+
+## A key opens the grate (and is spent), a pickaxe clears the rubble (a bomb
+## too, spent). The lock opens for the whole party (the host keeps it).
+func _try_unlock(pid: StringName) -> bool:
+	var p := instance.portal(pid)
+	var hero: Hero = GameState.hero
+	match StringName(p.get("lock", &"")):
+		&"key":
+			if not _hero_has(&"key"):
+				return false
+			hero.inventory.remove_by_id(&"key", 1)
+			EventBus.message.emit(tr("Ключ подошёл: решётка открыта."))
+		&"rubble":
+			if _hero_has(&"pickaxe"):
+				EventBus.message.emit(tr("Вы разобрали завал киркой."))
+			elif _hero_has(&"bomb"):
+				hero.inventory.remove_by_id(&"bomb", 1)
+				Fx.explosion(level.entities, _portals[pid].global_position + Vector2(0, -10), 30.0, Color(1, 0.6, 0.2))
+				EventBus.message.emit(tr("Бомба расчистила завал."))
+			else:
+				return false
+		_:
+			return false
+	AudioManager.play_sfx(&"dig", _portals[pid].global_position)
+	open_lock(pid, true)
+	return true
+
+
+## Marks a lock open here and (host / guest) across the party.
+func open_lock(pid: StringName, announce: bool) -> void:
+	if instance.is_unlocked(pid):
+		return
+	instance.unlock(pid)
+	if _portals.has(pid):
+		_portals[pid].refresh()
+	if StringName(instance.portal(pid).get("lock", &"")) == &"below" and announce:
+		EventBus.message.emit(tr("Найден короткий путь: подъёмник на поверхность."))
+	if announce and Net.active:
+		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+		if ns:
+			if Net.is_host:
+				Net.send(ns, &"lock_opened", [pid])
+			else:
+				ns.lock_opened_request.rpc_id(1, pid)
 
 
 ## The local hero goes to portal `to` (another layer): fade, move, save.

@@ -13,6 +13,8 @@ const SPRITES := {
 	&"up": "res://assets/sprites/portals/stairs_up.png",
 	&"down": "res://assets/sprites/portals/stairs_down.png",
 	&"arena_exit": "res://assets/sprites/portals/arena_exit.png",
+	&"lift": "res://assets/sprites/portals/lift.png",
+	&"lift_top": "res://assets/sprites/portals/lift.png",
 }
 
 var portal_id: StringName

@@ -14,7 +14,7 @@ const CLEARANCE := 2
 var LB = null
 var LI = null
 var fails := 0
-var stats := {"pois": 0, "locations": 0, "layers": 0, "portals": 0, "paths": 0, "build_ms": 0}
+var stats := {"locks": 0, "lifts": 0, "side_floors": 0, "pois": 0, "locations": 0, "layers": 0, "portals": 0, "paths": 0, "build_ms": 0}
 
 
 func check(c: bool, what: String) -> void:
@@ -53,6 +53,7 @@ func _initialize() -> void:
 	print("locations: %d, layers: %d, portals: %d, points of interest: %d, paths checked: %d, avg build %.1f ms" % [
 		stats["locations"], stats["layers"], stats["portals"], stats["pois"], stats["paths"],
 		float(stats["build_ms"]) / maxf(1.0, stats["locations"])])
+	print("locked ways down: %d, lifts: %d, side floors: %d" % [stats["locks"], stats["lifts"], stats["side_floors"]])
 	print("FAILURES: %d" % fails)
 	quit(1 if fails > 0 else 0)
 
@@ -69,6 +70,18 @@ func _check_location(node: Dictionary, tag: String) -> void:
 	stats["layers"] += layout.bands.size()
 	check(layout.bands.size() == li.layers.size(), "%s: every layer is built" % tag)
 	var def = root.get_node("ItemDatabase").locations[StringName(node["type"])]
+	# a key-locked way down: its key lies on the surface; every lift has two ends
+	for p in li.portals:
+		if p.get("lock", &"") == &"key":
+			stats["locks"] += 1
+			var surf = layout.bands[0]["layout"]
+			check(surf.specials.any(func(sp): return sp["type"] == &"key_drop"), "%s: the key of %s lies on the surface" % [tag, p["id"]])
+		if p["kind"] == &"lift":
+			stats["lifts"] += 1
+			check(not li.portal(p["to"]).is_empty() and int(li.portal(p["to"])["layer"]) == 0, "%s: lift %s leads to the surface" % [tag, p["id"]])
+	for l in li.layers:
+		if l.has("special"):
+			stats["side_floors"] += 1
 	if def.boss_arena:
 		check(int(layout.bands[-1]["kind"]) == 2, "%s: the last layer is the arena" % tag)
 		check(not li.is_open(&"map") and not li.is_open(&"arena_exit"), "%s: the ways out wait for the guardian" % tag)

@@ -73,16 +73,34 @@ static func _layer_layout(li: LocationInstance, i: int) -> LevelLayout:
 		var sbd := layer_biome(li, i) as SurfaceBiomeData
 		var sg := SurfaceGenerator.new()
 		sg.node_type = li.node_type
-		return sg.generate(depth, seed_value, sides, int(layer.get("screens", -1)), sbd)
+		for p in ports:
+			if StringName(p["kind"]) == LocationInstance.LIFT_TOP:
+				sg.extra_portals.append(StringName(p["id"]))
+		var surf := sg.generate(depth, seed_value, sides, int(layer.get("screens", -1)), sbd)
+		# a key for a locked side entrance lies at a point of interest
+		if ports.any(func(p: Dictionary) -> bool: return p.get("lock", &"") == &"key") and not surf.pois.is_empty():
+			var poi: Dictionary = surf.pois[0]
+			for q in surf.pois:
+				if q["type"] in [&"bandit_camp", &"tower", &"graveyard", &"hunters"]:
+					poi = q
+					break
+			var kc: Vector2i = poi["cell"]
+			surf.specials.append({"type": &"key_drop", "cell": kc})
+		return surf
 	var gen := LevelGenerator.new()
 	# The floor's place in the dungeon: the prisoner waits on the last one.
 	# (a rescue node with a surface keeps its prisoner in the bandits' camp)
 	GameState.location["band_last"] = bool(layer.get("last", false)) and not (li.node_type == &"rescue" and li.has_surface())
 	var s: LevelLayout
+	# a side entrance's short floor: a treasury, an old mine, a cache
+	var keep_mods = GameState.location.get("mods", {})
+	if layer.has("special"):
+		GameState.location["mods"] = LocationInstance.SIDE_FLOORS.get(StringName(layer["special"]), {})
 	if kind == LocationInstance.Kind.ARENA:
 		s = gen.generate_arena(depth, seed_value)
 	else:
 		s = gen.generate(depth, seed_value)
+	GameState.location["mods"] = keep_mods
 	GameState.location.erase("band_last")
 	var has_down := false
 	for p in ports:
@@ -98,6 +116,8 @@ static func _layer_layout(li: LocationInstance, i: int) -> LevelLayout:
 				has_down = true
 			LocationInstance.ARENA_EXIT:
 				s.portal_cells[pid] = s.exit_cell
+			LocationInstance.LIFT:
+				s.portal_cells[pid] = _far_spot(s, seed_value + pid.hash())
 	if kind == LocationInstance.Kind.DUNGEON and not has_down and s.exit_cell.x >= 0:
 		# The bottom of a dungeon without a guardian: its treasure.
 		s.chests.append({"cell": s.exit_cell, "tier": 2})

@@ -21,6 +21,17 @@ extends Resource
 ## Side entrances on the surface besides the main one.
 @export var side_entrances_min: int = 1
 @export var side_entrances_max: int = 2
+## The surface's monsters and loot are this much shallower than the node
+## (the dungeon below is the dangerous, richer part).
+@export var surface_depth_offset: int = -1
+## A side entrance: chance to be locked (a key from the surface, or rubble
+## for a pickaxe / a bomb), chance to lead to a short special floor of its
+## own (a treasury, an old mine, a cache) instead of the first floor.
+@export_range(0.0, 1.0) var lock_chance: float = 0.4
+@export_range(0.0, 1.0) var side_floor_chance: float = 0.5
+## Chance per floor (from the second) of a lift up to the surface: found
+## from below, it stays open while the location lasts (a shortcut).
+@export_range(0.0, 1.0) var shortcut_chance: float = 0.6
 ## The last floor is the guardian's arena (boss / lair nodes): the way back
 ## to the map opens only after the guardian falls.
 @export var boss_arena: bool = false

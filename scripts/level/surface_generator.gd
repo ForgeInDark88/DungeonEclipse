@@ -42,6 +42,8 @@ var _busy_cols: Dictionary = {}
 ## entrances. `p_biome`: what grows here (null: plain forest rules).
 ## The node's type (a rescue node keeps its prisoner in the bandits' camp).
 var node_type: StringName = &""
+## More ways on the surface (lifts up from the deep floors).
+var extra_portals: Array[StringName] = []
 
 
 func generate(depth: int, seed_value: int, sides := 1, screens := -1, p_biome: SurfaceBiomeData = null) -> LevelLayout:
@@ -282,6 +284,15 @@ func _place_portals(sides: int) -> void:
 		var pid := StringName("side_%d" % (k + 1))
 		layout.portal_cells[pid] = c
 		layout.portal_kinds[pid] = SIDE_KINDS[rng.randi() % SIDE_KINDS.size()]
+		_reserve(c, 3)
+		_mark_cols(fx - 2, fx + 2)
+	for k in extra_portals.size():
+		var x := rng.randi_range(40, w - 40)
+		var fx := _flat_near(x, 2)
+		if fx < 0:
+			fx = x
+		var c := ground_cell(fx)
+		layout.portal_cells[extra_portals[k]] = c
 		_reserve(c, 3)
 		_mark_cols(fx - 2, fx + 2)
 

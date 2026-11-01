@@ -22,6 +22,20 @@ const SIDE := &"side"
 const UP := &"up"
 const DOWN := &"down"
 const ARENA_EXIT := &"arena_exit"
+## A lift between a floor (LIFT, below) and the surface (LIFT_TOP): locked
+## from above until somebody finds it from below.
+const LIFT := &"lift"
+const LIFT_TOP := &"lift_top"
+## Locks of a way down: a key, rubble (a pickaxe or a bomb), "below" (a
+## lift found from below).
+const LOCKS := [&"key", &"rubble"]
+## Short special floors behind side entrances (their LocationDefinition-free
+## rules: monsters, chests, ore of LevelGenerator via location mods).
+const SIDE_FLOORS := {
+	&"treasury": {"monsters": 0.6, "chests": 3, "chest_tier": 0.3},
+	&"mine": {"monsters": 0.7, "ore": 5.0, "chests": 1},
+	&"cache": {"monsters": 0.5, "chests": 2, "chest_tier": 0.15, "mimic": 0.3},
+}
 
 @export var node_type: StringName = &"level"
 @export var depth: int = 1
@@ -65,7 +79,7 @@ static func plan(node: Dictionary) -> LocationInstance:
 	var floors := rng.randi_range(def.floors_min, maxi(def.floors_min, def.floors_max))
 	var sides := rng.randi_range(def.side_entrances_min, maxi(def.side_entrances_min, def.side_entrances_max))
 	if def.has_surface:
-		li.layers.append({"id": &"surface", "kind": Kind.SURFACE, "depth": li.depth, "seed": rng.randi(),
+		li.layers.append({"id": &"surface", "kind": Kind.SURFACE, "depth": maxi(1, li.depth + def.surface_depth_offset), "seed": rng.randi(),
 				"biome": surface_biome_for(li.region, rng.randi()),
 				"screens": rng.randi_range(def.surface_screens_min, maxi(def.surface_screens_min, def.surface_screens_max))})
 		li.portals.append({"id": &"map", "layer": 0, "kind": MAP, "to": &"", "locked": def.boss_arena})
@@ -74,11 +88,32 @@ static func plan(node: Dictionary) -> LocationInstance:
 		li.layers.append({"id": StringName("floor_%d" % (f + 1)), "kind": Kind.ARENA if arena else Kind.DUNGEON,
 				"depth": li.depth + f, "seed": rng.randi(), "last": f == floors - 1})
 	var first := 1 if def.has_surface else 0
+	var arena_layer := first + floors - 1 if def.boss_arena else -1
 	# The surface's main entrance and the first floor's way up.
 	if def.has_surface:
 		li._link(&"main", 0, ENTRANCE, &"f1_up", first, UP)
 		for k in sides:
-			li._link(StringName("side_%d" % (k + 1)), 0, SIDE, StringName("f1_side_%d" % (k + 1)), first, UP)
+			var sid := StringName("side_%d" % (k + 1))
+			if rng.randf() < def.side_floor_chance:
+				# a short floor of its own: a treasury, an old mine, a cache
+				var keys := SIDE_FLOORS.keys()
+				var special: StringName = keys[rng.randi() % keys.size()]
+				li.layers.append({"id": StringName("side_floor_%d" % (k + 1)), "kind": Kind.DUNGEON,
+						"depth": li.depth + 1, "seed": rng.randi(), "special": special, "last": false})
+				li._link(sid, 0, SIDE, StringName("s%d_up" % (k + 1)), li.layers.size() - 1, UP)
+			else:
+				li._link(sid, 0, SIDE, StringName("f1_side_%d" % (k + 1)), first, UP)
+			if rng.randf() < def.lock_chance:
+				li.portal(sid)["lock"] = LOCKS[rng.randi() % LOCKS.size()]
+				li.portal(sid)["locked"] = true
+		# lifts from the deeper floors straight up to the surface
+		for f in range(2, floors + 1):
+			var layer_f := first + f - 1
+			if layer_f == arena_layer or rng.randf() >= def.shortcut_chance:
+				continue
+			li._link(StringName("lift_top_%d" % f), 0, LIFT_TOP, StringName("lift_%d" % f), layer_f, LIFT)
+			li.portal(StringName("lift_top_%d" % f))["lock"] = &"below"
+			li.portal(StringName("lift_top_%d" % f))["locked"] = true
 	else:
 		li.portals.append({"id": &"f1_up", "layer": first, "kind": MAP, "to": &"", "locked": def.boss_arena})
 	for f in range(1, floors):
@@ -87,11 +122,11 @@ static func plan(node: Dictionary) -> LocationInstance:
 		li._link(down, first + f - 1, DOWN, up, first + f, UP)
 	# No way out of the guardian's arena until the guardian falls.
 	for p in li.portals:
-		if int(p["layer"]) == li.layers.size() - 1 and def.boss_arena:
+		if int(p["layer"]) == arena_layer:
 			p["locked"] = true
 	if def.boss_arena and def.has_surface:
 		# Out of the beaten guardian's arena: straight up to the main entrance.
-		li.portals.append({"id": &"arena_exit", "layer": li.layers.size() - 1, "kind": ARENA_EXIT, "to": &"main", "locked": true})
+		li.portals.append({"id": &"arena_exit", "layer": arena_layer, "kind": ARENA_EXIT, "to": &"main", "locked": true})
 	li.save_portal = &"map" if def.has_surface else &"f1_up"
 	return li
 
@@ -143,6 +178,11 @@ func is_open(portal_id: StringName) -> bool:
 		return true
 	if StringName(p["kind"]) in [MAP, ARENA_EXIT] or int(layers[int(p["layer"])]["kind"]) == Kind.ARENA:
 		return boss_beaten
+	return is_unlocked(portal_id)
+
+
+## A lock opened this time (a key used, rubble cleared, a lift found).
+func is_unlocked(portal_id: StringName) -> bool:
 	for l in state:
 		if portal_id in (state[l] as Dictionary).get("opened", []):
 			return true
@@ -158,7 +198,19 @@ func layer_state(layer: int) -> Dictionary:
 
 
 func floors() -> int:
-	return layers.filter(func(l: Dictionary) -> bool: return int(l["kind"]) != Kind.SURFACE).size()
+	return layers.filter(func(l: Dictionary) -> bool: return int(l["kind"]) != Kind.SURFACE and not l.has("special")).size()
+
+
+## Marks a lock open (both ends of the way).
+func unlock(portal_id: StringName) -> void:
+	var p := portal(portal_id)
+	if p.is_empty():
+		return
+	var st := layer_state(int(p["layer"]))
+	var opened: Array = st.get("opened", [])
+	if not portal_id in opened:
+		opened.append(portal_id)
+	st["opened"] = opened
 
 
 func to_dict() -> Dictionary:

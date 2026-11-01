@@ -218,6 +218,15 @@ func _initialize() -> void:
 	await wait_scene(flow.State.EXPEDITION_MAP)
 	var lnode: int = gs.run.next_choices()[0]
 	gs.run.map.nodes[lnode]["type"] = &"level"
+	# a seed whose location has a key-locked side entrance and a lift
+	var LIs = load("res://scripts/core/location_instance.gd")
+	for sd in range(1, 400):
+		gs.run.map.nodes[lnode]["seed"] = sd * 7717
+		var pl = LIs.plan(gs.run.map.node(lnode))
+		var has_key := pl.portals.any(func(q): return q.get("lock", &"") == &"key")
+		var has_lift := pl.portals.any(func(q): return q["kind"] == &"lift" and q["layer"] == 1 + 1)
+		if has_key and has_lift:
+			break
 	flow.enter_node(lnode)
 	await wait_scene(flow.State.LOCATION)
 	var lm = current_scene.location
@@ -248,6 +257,30 @@ func _initialize() -> void:
 				check(e.data.habitat != &"dungeon", "a monster of the surface lives there (%s)" % e.data.id)
 				surface_foes += 1
 		check(surface_foes > 0, "the surface has its own monsters")
+		# a locked side entrance: no key — stays shut; a key opens it (and is spent)
+		var locked_id := &""
+		for q in lm.instance.portals:
+			if q.get("lock", &"") == &"key":
+				locked_id = StringName(q["id"])
+		check(locked_id != &"", "the location has a key-locked way down")
+		if locked_id != &"":
+			while gs.hero.inventory.count_of(&"key") > 0:
+				gs.hero.inventory.remove_by_id(&"key", 1)
+			lm.use_portal(locked_id, current_scene.player)
+			check(not lm.portal_open(locked_id), "without a key the grate stays shut")
+			gs.hero.inventory.add_item(idb.get_item(&"key"), 1)
+			lm.use_portal(locked_id, current_scene.player)
+			check(lm.portal_open(locked_id) and gs.hero.inventory.count_of(&"key") == 0, "a key opens the grate and is spent")
+			await create_timer(1.0).timeout
+			lm.travel(&"main")
+			await create_timer(1.0).timeout
+		# a lift of the second floor: shut from above, found from below
+		check(not lm.portal_open(&"lift_top_2"), "the lift is up: it cannot be called from above")
+		lm.travel(&"f2_up")
+		await create_timer(1.0).timeout
+		lm.use_portal(&"lift_2", current_scene.player)
+		await create_timer(1.0).timeout
+		check(lm.band == 0 and lm.portal_open(&"lift_top_2"), "from below the lift takes the hero up and stays open")
 		lm.travel(&"f1_up")
 		await create_timer(1.0).timeout
 		check(lm.band == 1, "the main entrance leads to the first floor")

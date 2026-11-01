@@ -1083,6 +1083,11 @@ func _spawn_specials() -> void:
 				add_entity(CampFire.new(), cell_bottom(info["cell"]))
 			&"elite_pack":
 				_spawn_elite_pack(info)
+			&"key_drop":
+				# the key of a locked way down (personal: every machine its own)
+				var key := ItemDatabase.get_item(&"key")
+				if key:
+					EventBus.spawn_items.emit.call_deferred(cell_bottom(info["cell"]) + Vector2(10, -8), [{"item": key, "count": 1}])
 			&"dummy":
 				# Training dummy at the barracks: local on every machine
 				# (no net id), each player trains on their own copy.

@@ -173,6 +173,25 @@ func _broadcast_enemy_state() -> void:
 			enemy_state.rpc_id(peer, list, NetInterp.now())
 
 
+## Guest → host: a lock of the location was opened here (a key, a pickaxe,
+## a lift found from below); the host keeps it and tells everybody.
+@rpc("any_peer", "call_remote", "reliable")
+func lock_opened_request(pid: StringName) -> void:
+	if not Net.is_host:
+		return
+	var lm := get_tree().get_first_node_in_group("location_manager") as LocationManager
+	if lm:
+		lm.open_lock(pid, false)
+		Net.send(self, &"lock_opened", [pid])
+
+
+@rpc("authority", "call_remote", "reliable")
+func lock_opened(pid: StringName) -> void:
+	var lm := get_tree().get_first_node_in_group("location_manager") as LocationManager
+	if lm:
+		lm.open_lock(pid, false)
+
+
 ## Guest → host: call the party through a portal of the location.
 @rpc("any_peer", "call_remote", "reliable")
 func request_pull(to: StringName) -> void:
