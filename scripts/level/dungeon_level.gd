@@ -791,7 +791,10 @@ func _spawn_specials() -> void:
 					cells.append(c)
 				if cells.is_empty():
 					cells.append(info["cell"])
-				cage.guard(spawn_ambush_wave(cells, 3 + floor_number / 8, true))
+				if Net.active and not Net.is_host:
+					cage.remote = true  # the guards are the host's (they arrive as shells)
+				else:
+					cage.guard(spawn_ambush_wave(cells, 3 + floor_number / 8, true))
 			&"miniboss":
 				_spawn_miniboss(info)
 			&"ambush":

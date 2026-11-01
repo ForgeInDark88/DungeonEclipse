@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="CoopRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/coop_rules.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+hp_per_extra = 0.8
+damage_per_extra = 0.5
+boss_hp_per_extra = 0.4
+monsters_per_extra = 0.25
+reward_per_extra = 0.3
+friendly_bomb_mult = 0.5

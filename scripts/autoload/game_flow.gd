@@ -556,7 +556,7 @@ func location_summary() -> Dictionary:
 		var table: Dictionary = ExpeditionMap.CLEAR_REWARD.get(key, {})
 		var bonus := int(n.get("depth", 1)) / 10
 		for id in table:
-			var amount := randi_range(int(table[id][0]), int(table[id][1]))
+			var amount := roundi(randi_range(int(table[id][0]), int(table[id][1])) * Net.reward_mult())
 			if amount > 0:
 				gain_resource(id, amount + bonus)
 		# Guardians (and now and then a crypt) keep blueprints of the town.

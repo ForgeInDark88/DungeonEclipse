@@ -765,6 +765,10 @@ func _spawn_net_puppet(peer_id: int) -> void:
 	net_players.add_child(p)
 	p.setup(mirror, null)
 	p.camera.enabled = false  # only the local player owns the viewport
+	if Net.world_session:
+		var spot := ReviveSpot.new()
+		spot.target = p
+		p.add_child(spot)
 	p.add_to_group("player")
 	p.net_place(level.start_position() + Vector2(14, 0))
 	var tag := UIStyle.outlined_label(_net_player_name(peer_id), 6, UIStyle.ally_color(peer_id))
@@ -829,6 +833,18 @@ func _net_on_floor_loaded() -> void:
 	for p: Player in party():
 		if p != player and p.dead:
 			p.revive()
+
+
+## A world session: an ally raised this fallen hero (35% health).
+func revive_local() -> void:
+	if player == null or not player.dead:
+		return
+	player.revive()
+	player.hero.stats.hp = maxi(1, roundi(player.hero.stats.max_hp() * 0.35))
+	player.hero.stats.hp_changed.emit(player.hero.stats.hp, player.hero.stats.max_hp())
+	overlay.visible = false
+	get_tree().paused = false
+	EventBus.message.emit(tr("Вас подняли на ноги!"))
 
 
 ## The local hero fell: wait for the next floor unless everyone is down.

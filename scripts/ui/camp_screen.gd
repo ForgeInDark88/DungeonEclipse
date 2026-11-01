@@ -92,10 +92,20 @@ func _refresh() -> void:
 	home.tooltip_text = tr("Поход закончится: всё найденное и спасённые доберутся до города.")
 	var on := _action(tr("Идти дальше"), func() -> void: GameFlow.location_cleared())
 	_action(tr("Сохранить и выйти"), func() -> void: GameFlow.save_and_quit())
+	if WorldNet.session:
+		var me: Dictionary = WorldNet.roster.get(multiplayer.get_unique_id(), {})
+		_action(tr("Я готов идти дальше ✓") if me.get("ready", false) else tr("Я готов идти дальше"), func() -> void:
+			WorldNet.toggle_ready()
+			await get_tree().create_timer(0.3).timeout
+			_refresh())
 	if GameFlow.is_guest():
 		home.disabled = true
 		on.disabled = true
 		right_page.add_child(UIStyle.label(tr("Куда идти дальше, решает хост."), 7, UIStyle.INK_SOFT))
+	elif WorldNet.session and not WorldNet.everyone_ready():
+		# the host leads on when everyone is ready (or on a second press)
+		for b: Button in [home, on]:
+			b.text += tr(" (не все готовы)")
 	on.grab_focus()
 
 

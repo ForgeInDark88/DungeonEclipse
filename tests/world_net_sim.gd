@@ -76,6 +76,9 @@ func _host() -> void:
 	if OS.get_environment("SCENARIO") == "trade":
 		await _host_trade()
 		return
+	if OS.get_environment("SCENARIO") == "coop":
+		await _host_coop()
+		return
 	var kicked := false
 	var t := 0.0
 	var stay := float(env_int("STAY", 40))
@@ -162,6 +165,66 @@ func _host_trade() -> void:
 	wn.close_session()
 
 
+## The state of the location on this machine: the level's tiles, chests,
+## and the enemies (their net ids and kinds) - equal on every machine.
+func state_hash() -> String:
+	var game = current_scene
+	if game == null or not ("level" in game) or game.level == null:
+		return "no-level"
+	var lvl = game.level
+	var chests := []
+	for c in root.get_tree().get_nodes_in_group("chests"):
+		chests.append([int(c.global_position.x), int(c.global_position.y)])
+	chests.sort()
+	var foes := []
+	var ns = root.get_tree().get_first_node_in_group("net_game")
+	if ns:
+		for id in ns.enemies:
+			var e = ns.enemies[id]
+			if is_instance_valid(e):
+				foes.append("%d:%s" % [id, e.data.id])
+	foes.sort()
+	return ("%s|%s|%s" % [lvl.layout.tiles.hex_encode().sha256_text(), str(chests), str(foes)]).sha256_text().left(16) + " foes=%d" % foes.size()
+
+
+func _make_invulnerable() -> void:
+	var game = current_scene
+	if game and "player" in game and game.player:
+		game.player._invulnerable = 999.0
+
+
+## Host side of the co-op run: two guests, three locations, hashes.
+func _host_coop() -> void:
+	var gs = root.get_node("GameState")
+	var t := 0.0
+	while wn.roster.size() < 3 and t < 30.0:
+		await create_timer(0.25).timeout
+		t += 0.25
+	check(wn.roster.size() == 3, "two guests joined")
+	# the generator: one seed, one level
+	var a := LevelGenerator.new().generate(7, 99)
+	var b := LevelGenerator.new().generate(7, 99)
+	check(a.tiles == b.tiles and str(a.chests) == str(b.chests), "the same seed builds the same level")
+	await create_timer(2.0).timeout
+	flow.open_map()
+	await create_timer(2.5).timeout
+	for k in 3:
+		var id: int = gs.run.next_choices()[0]
+		gs.run.map.nodes[id]["type"] = &"level"
+		gs.run.map.nodes[id]["sub"] = &""
+		flow.enter_node(id)
+		await create_timer(9.0).timeout
+		_make_invulnerable()
+		print("HASH %d: %s" % [k, state_hash()])
+		flow.location_cleared()
+		await create_timer(3.0).timeout
+	flow.retreat()
+	await create_timer(2.5).timeout
+	flow.back_to_town()
+	await create_timer(3.0).timeout
+	wn.close_session()
+
+
 func _client() -> void:
 	var expect := OS.get_environment("EXPECT")
 	var st := {"done": false, "result": "", "kicked": false}
@@ -225,6 +288,27 @@ func _client() -> void:
 		await create_timer(3.0).timeout
 		check(wn.town_net.safe_cache.size() == 1, "my safe holds the bomb")
 		wn.close_session()
+		return
+	if OS.get_environment("SCENARIO") == "coop":
+		var k := 0
+		var tt := 0.0
+		var printed := {}
+		while tt < 60.0 and wn.session:
+			await create_timer(0.25).timeout
+			tt += 0.25
+			_make_invulnerable()
+			if flow.state == flow.State.LOCATION and current_scene and "level" in current_scene and current_scene.level:
+				var key: int = gs.run.node_id if gs.run else -1
+				if not printed.has(key):
+					printed[key] = true
+					var at := tt
+					while tt < at + 7.0:
+						await create_timer(0.25).timeout
+						tt += 0.25
+						_make_invulnerable()
+					print("HASH %d: %s" % [k, state_hash()])
+					k += 1
+		check(k == 3, "the guest went through three locations (%d)" % k)
 		return
 	if OS.get_environment("SCENARIO") == "flow":
 		var seen: Array = []

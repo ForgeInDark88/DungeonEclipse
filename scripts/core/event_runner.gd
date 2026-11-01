@@ -75,7 +75,16 @@ static func roll(option: Dictionary, rng: RandomNumberGenerator = null) -> Dicti
 
 
 ## Applies `effects`; returns the lines telling what happened.
-static func apply(effects: Dictionary) -> Array[String]:
+## `party_member`: the effects reach another hero of a co-op party - only
+## what happens to a hero (no costs paid by the chooser, nothing of the
+## expedition: resources, rescues and flags are the host's).
+static func apply(effects: Dictionary, party_member := false) -> Array[String]:
+	if party_member:
+		effects = effects.duplicate()
+		for k in ["take_item", "resource", "rescue", "flag", "rumours", "fight"]:
+			effects.erase(k)
+		if int(effects.get("gold", 0)) < 0:
+			effects.erase("gold")
 	var lines: Array[String] = []
 	var hero := GameState.hero
 	var run := GameState.run

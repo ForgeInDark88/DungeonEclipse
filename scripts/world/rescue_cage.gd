@@ -11,6 +11,8 @@ var level: DungeonLevel
 ## NpcData id, or REFUGEE for a nameless townsman.
 var npc_id: StringName = REFUGEE
 var freed := false
+## A guest's copy: the host keeps the guards and opens the lock.
+var remote := false
 var _guards: Array[Enemy] = []
 var _cage: Sprite2D
 var _person: Sprite2D
@@ -76,23 +78,36 @@ func get_prompt() -> String:
 func interact(player: Node) -> void:
 	if freed:
 		return
+	if remote:
+		WorldNet.cage_request.rpc_id(1)
+		return
 	if guards_left() > 0:
 		EventBus.message.emit(tr("Ключ у тюремщика: сначала разберитесь с охраной."))
 		AudioManager.play_sfx(&"chest_locked", global_position)
+		return
+	open_up(player)
+	WorldNet.cage_opened_all()
+
+
+## The lock opens (on every machine of the party): the prisoner speaks and
+## follows the hero of this machine.
+func open_up(player: Node) -> void:
+	if freed:
 		return
 	freed = true
 	remove_from_group("interactable")
 	AudioManager.play_sfx(&"chest_open", global_position)
 	_cage.visible = false
 	Fx.sparks(get_parent(), global_position + Vector2(0, -16), Color(1.0, 0.9, 0.5), 22, 80.0)
-	GameFlow.rescue(npc_id)
+	if not remote:
+		GameFlow.rescue(npc_id)
 	var n := _npc()
 	if n:
 		var book := DialogBook.new()
 		get_tree().current_scene.add_child(book)
 		book.open_text(n, n.rescue_text, tr("Идём, город ждёт."))
 	else:
-		var hero: Hero = (player as Player).hero if player is Player else GameState.hero
+		var hero: Hero = GameState.hero
 		var gold := 20 + 6 * (level.floor_number if level else 1)
 		hero.add_gold(gold)
 		EventBus.message.emit(tr("Горожанин благодарит, отдаёт %d золота и обещает прийти в город.") % gold)

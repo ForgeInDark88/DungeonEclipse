@@ -125,6 +125,9 @@ static func data_checksum() -> String:
 	for e in ItemDatabase.road_events:
 		ids.append("v:" + String(e.id))
 	ids.sort()
+	var r: CoopRules = Net.rules()
+	ids.append("c:%s:%s:%s:%s:%s:%s" % [r.hp_per_extra, r.damage_per_extra, r.boss_hp_per_extra,
+			r.monsters_per_extra, r.reward_per_extra, r.friendly_bomb_mult])
 	ids.append(String(ProjectSettings.get_setting("application/config/version", "")))
 	return "|".join(ids).sha256_text()
 
@@ -430,6 +433,277 @@ func _system(fmt: String, args: Array) -> void:
 	if chat_log.size() > 50:
 		chat_log.pop_front()
 	chat_received.emit("", text)
+
+
+# -------------------------------------------------------- world settings
+## Settings of the world for its sessions (TownState.flags, the host's):
+## path: "vote" (majority, the host breaks ties) | "host";
+## friendly_fire: "bombs" (default: bombs hurt allies a little) | "off" | "all";
+## build_rule: "all" (default) | "host".
+const SETTINGS := {"path": ["vote", "host"], "friendly_fire": ["bombs", "off", "all"], "build_rule": ["all", "host"]}
+
+
+func setting(key: String) -> String:
+	var t := GameState.town
+	var d: String = SETTINGS[key][0]
+	return String(t.flag(key, d)) if t else d
+
+
+## Host: the next value of a setting (lobby buttons).
+func cycle_setting(key: String) -> void:
+	if not Net.is_host or GameState.town == null:
+		return
+	var vals: Array = SETTINGS[key]
+	var i := vals.find(setting(key))
+	GameState.town.set_flag(key, vals[(i + 1) % vals.size()])
+	GameFlow.save_town()
+	town_net.push_town()
+	roster_changed.emit()
+
+
+# ------------------------------------------------------------ path votes
+signal votes_changed(votes: Dictionary)
+
+## Host: peer -> map node id voted for (the current fork).
+var votes := {}
+var _vote_left := 0.0
+const VOTE_TIME := 30.0
+
+
+## Anyone: pick the next node. «host» rule: only the host's pick counts;
+## «vote»: every online player votes, the majority wins once all voted (or
+## the time is up), a tie goes the way the host voted.
+func pick_node(id: int) -> void:
+	if not session:
+		GameFlow.enter_node(id)
+		return
+	if Net.is_host:
+		_vote(1, id)
+	else:
+		vote_rpc.rpc_id(1, id)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func vote_rpc(id: int) -> void:
+	if Net.is_host:
+		_vote(multiplayer.get_remote_sender_id(), id)
+
+
+func _vote(peer: int, id: int) -> void:
+	var run := GameState.run
+	if run == null or not id in run.next_choices() or not roster.has(peer):
+		return
+	if setting("path") == "host":
+		if peer == 1:
+			votes.clear()
+			GameFlow.enter_node(id)
+		return
+	if votes.is_empty():
+		_vote_left = VOTE_TIME
+	votes[peer] = id
+	_send_votes()
+	var online := roster.keys().filter(func(p: int) -> bool: return roster[p]["status"] == "online")
+	if online.all(func(p: int) -> bool: return votes.has(p)):
+		_resolve_votes()
+
+
+func _process(delta: float) -> void:
+	if Net.is_host and not votes.is_empty() and _vote_left > 0.0:
+		_vote_left -= delta
+		if _vote_left <= 0.0:
+			_resolve_votes()
+
+
+func _resolve_votes() -> void:
+	var count := {}
+	for p in votes:
+		count[votes[p]] = int(count.get(votes[p], 0)) + 1
+	var best := -1
+	var best_n := 0
+	var tie := false
+	for id in count:
+		if count[id] > best_n:
+			best = id
+			best_n = count[id]
+			tie = false
+		elif count[id] == best_n:
+			tie = true
+	if tie and votes.has(1):
+		best = votes[1]
+	var host_vote: int = votes.get(1, best)
+	if tie and not votes.has(1):
+		best = host_vote
+	votes.clear()
+	_send_votes()
+	if best >= 0:
+		system_line("Отряд выбрал путь.")  # i18n-src
+		GameFlow.enter_node(best)
+
+
+func _send_votes() -> void:
+	votes_changed.emit(votes)
+	votes_sync.rpc(votes)
+
+
+@rpc("authority", "call_remote", "reliable")
+func votes_sync(v: Dictionary) -> void:
+	votes = v
+	votes_changed.emit(v)
+
+
+# ------------------------------------------------------------ road events
+## Host: the outcome of a road event reaches every hero of the party.
+func share_event(event_id: StringName, text: String, effects: Dictionary) -> void:
+	if session and Net.is_host and Net.active:
+		event_result.rpc(event_id, text, effects)
+
+
+@rpc("authority", "call_remote", "reliable")
+func event_result(event_id: StringName, text: String, effects: Dictionary) -> void:
+	var lines := EventRunner.apply(effects, true)
+	for s in get_tree().get_nodes_in_group("event_spots"):
+		(s as EventSpot).finish()
+	var spot := get_tree().get_first_node_in_group("event_spots") as EventSpot
+	var dlg: EventDialog = null
+	for c in get_tree().current_scene.get_children() if get_tree().current_scene else []:
+		if c is EventDialog:
+			dlg = c
+	if dlg == null and spot and spot.event:
+		dlg = EventDialog.new()
+		get_tree().current_scene.add_child(dlg)
+		dlg.open(spot.event, null)
+	if dlg:
+		dlg.show_result(text, lines)
+
+
+# --------------------------------------------------------------- rescues
+## Guest → host: open the cage of this location (if its guards are dead).
+@rpc("any_peer", "call_remote", "reliable")
+func cage_request() -> void:
+	if not Net.is_host:
+		return
+	var cage := get_tree().get_first_node_in_group("rescue_cages") as RescueCage
+	var peer := multiplayer.get_remote_sender_id()
+	if cage == null or cage.freed:
+		return
+	if cage.guards_left() > 0:
+		_note.rpc_id(peer, "Ключ у тюремщика: сначала разберитесь с охраной.")  # i18n-src
+		return
+	cage.interact(get_tree().get_first_node_in_group("player"))
+
+
+## Host: the cage is open - every guest sees the prisoner come out.
+func cage_opened_all() -> void:
+	if session and Net.is_host and Net.active:
+		Net.send(self, &"cage_opened", [])
+
+
+@rpc("authority", "call_remote", "reliable")
+func cage_opened() -> void:
+	var cage := get_tree().get_first_node_in_group("rescue_cages") as RescueCage
+	if cage:
+		cage.open_up(get_tree().get_first_node_in_group("player"))
+
+
+@rpc("authority", "call_remote", "reliable")
+func _note(text: String) -> void:
+	EventBus.message.emit(tr(text))
+
+
+# --------------------------------------------------------------- revives
+## Anyone: raise a fallen ally standing next to them.
+func revive(target_peer: int) -> void:
+	if Net.is_host:
+		_revive(multiplayer.get_unique_id(), target_peer)
+	else:
+		revive_request.rpc_id(1, target_peer)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func revive_request(target_peer: int) -> void:
+	if Net.is_host:
+		_revive(multiplayer.get_remote_sender_id(), target_peer)
+
+
+func _revive(by: int, target: int) -> void:
+	var game := get_tree().current_scene
+	if game == null or not game.has_method("party"):
+		return
+	var helper: Player = null
+	var fallen: Player = null
+	for p: Player in game.party():
+		if p.peer_id == by:
+			helper = p
+		if p.peer_id == target:
+			fallen = p
+	if helper == null or fallen == null or helper.dead or not fallen.dead \
+			or helper.global_position.distance_to(fallen.global_position) > 48.0:
+		return
+	system_line("%s поднимает %s.", [String(roster.get(by, {}).get("nick", "?")), String(roster.get(target, {}).get("nick", "?"))])  # i18n-src
+	if target == multiplayer.get_unique_id():
+		_revived()
+	else:
+		_revived.rpc_id(target)
+
+
+## The fallen hero of this machine stands up (35% health).
+@rpc("authority", "call_remote", "reliable")
+func _revived() -> void:
+	var game := get_tree().current_scene
+	if game and game.has_method("revive_local"):
+		game.revive_local()
+
+
+# ---------------------------------------------------------- marks, emotes
+## G: «look here» - a mark at the mouse for everyone in this location.
+func mark(pos: Vector2) -> void:
+	var nick := String(roster.get(multiplayer.get_unique_id(), {}).get("nick", ""))
+	_show_mark(pos, nick)
+	Net.send(self, &"_show_mark", [pos, nick])
+
+
+@rpc("any_peer", "call_remote", "unreliable")
+func _show_mark(pos: Vector2, nick: String) -> void:
+	var game := get_tree().current_scene
+	if game == null or not ("level" in game) or game.level == null:
+		return
+	var m := UIStyle.outlined_label("▼ " + nick, 7, UIStyle.GOLD)
+	m.position = pos + Vector2(-10, -24)
+	m.z_index = 50
+	game.level.add_child(m)
+	var tw := m.create_tween()
+	tw.tween_property(m, "position:y", pos.y - 30.0, 0.4).set_trans(Tween.TRANS_SINE)
+	tw.tween_interval(2.4)
+	tw.tween_property(m, "modulate:a", 0.0, 0.5)
+	tw.tween_callback(m.queue_free)
+	AudioManager.play_ui(&"ui_click")
+
+
+const EMOTES := ["!", "?", "♥", "→", "Сюда!", "Помогите!"]
+
+
+## F5–F8 (+): a short sign over my hero for the party.
+func emote(i: int) -> void:
+	var me := multiplayer.get_unique_id()
+	_show_emote(me, i)
+	Net.send(self, &"_show_emote", [me, i])
+
+
+@rpc("any_peer", "call_remote", "unreliable")
+func _show_emote(peer: int, i: int) -> void:
+	var game := get_tree().current_scene
+	if game == null or not game.has_method("party") or i < 0 or i >= EMOTES.size():
+		return
+	for p: Player in game.party():
+		if p.peer_id == peer:
+			var b := UIStyle.outlined_label(tr(EMOTES[i]), 9, UIStyle.PARCHMENT)
+			b.position = Vector2(-8, -60)
+			p.add_child(b)
+			var tw := b.create_tween()
+			tw.tween_property(b, "position:y", -68.0, 0.3)
+			tw.tween_interval(1.6)
+			tw.tween_property(b, "modulate:a", 0.0, 0.4)
+			tw.tween_callback(b.queue_free)
 
 
 # ------------------------------------------------------------------ flow

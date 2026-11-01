@@ -197,7 +197,7 @@ func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null, p_ch
 		max_hp = maxi(1, roundi(max_hp * (1.0 + GameState.run_effect("boss_hp"))))
 	# Co-op: the party makes the dungeon meaner.
 	if Net.active:
-		max_hp = maxi(1, roundi(max_hp * Net.enemy_hp_mult()))
+		max_hp = maxi(1, roundi(max_hp * Net.enemy_hp_mult() * (Net.boss_hp_mult() if self is Boss else 1.0)))
 		damage = maxi(1, roundi(damage * Net.enemy_damage_mult()))
 	hp = max_hp
 	if puppet:

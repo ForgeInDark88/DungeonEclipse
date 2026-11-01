@@ -22,9 +22,14 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
+## A guest of a co-op party only watches: the host chooses for everyone.
+var read_only := false
+
+
 func open(p_event: EventData, p_spot: EventSpot) -> void:
 	event = p_event
 	spot = p_spot
+	read_only = GameFlow.is_guest()
 	if not get_tree().paused and not Net.active:
 		get_tree().paused = true
 		_paused_here = true
@@ -106,12 +111,31 @@ func _show_choices() -> void:
 		b.add_theme_font_size_override("font_size", 8)
 		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		b.disabled = not ok
+		b.disabled = not ok or read_only
 		_right.add_child(b)
 		if ok and first == null:
 			first = b
-	if first:
+	if read_only:
+		_right.add_child(_wrap(tr("Выбор делает хост: исход получат все."), 7, UIStyle.INK_SOFT))
+		var back := BookPageScreen.button(tr("Закрыть"), close)
+		_right.add_child(back)
+		back.grab_focus.call_deferred()
+	elif first:
 		first.grab_focus.call_deferred()
+
+
+## A party member's side of the host's choice: the outcome and what it did
+## to this hero.
+func show_result(text: String, lines: Array[String]) -> void:
+	for c in _right.get_children():
+		c.queue_free()
+	_right.add_child(UIStyle.label(tr("Хост выбрал"), 10))
+	_right.add_child(_wrap(tr(text), 8))
+	if not lines.is_empty():
+		_right.add_child(_wrap("\n".join(lines), 7, UIStyle.INK_SOFT))
+	var b := BookPageScreen.button(tr("Дальше"), close)
+	_right.add_child(b)
+	b.grab_focus.call_deferred()
 
 
 ## Takes an answer: rolls and applies its outcome, tells what happened.
@@ -119,6 +143,7 @@ func choose(opt: Dictionary) -> void:
 	var outcome := EventRunner.roll(opt)
 	var effects: Dictionary = outcome.get("effects", {})
 	var lines := EventRunner.apply(effects)
+	WorldNet.share_event(event.id, String(outcome.get("text", "")), effects)
 	if spot:
 		spot.finish()
 	for c in _right.get_children():

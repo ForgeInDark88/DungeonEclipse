@@ -18,6 +18,8 @@ var color := Color(1.0, 0.6, 0.2)
 ## Networked visual copy on the guest: it explodes for the effect but does
 ## no damage and no tile changes — the host's real bomb did the work.
 var visual_only := false
+## Who threw it (co-op friendly fire spares the thrower).
+var thrower_peer := 1
 var _stuck := false
 var _t := 0.0
 
@@ -68,6 +70,7 @@ func explode() -> void:
 				var st: StatusEffects = enemy.get_node_or_null("StatusEffects")
 				if st:
 					st.apply(status, status_duration, status_power)
+	_friendly_fire(center)
 	var level := get_parent().get_parent() as DungeonLevel
 	if level:
 		if breaks_tiles:
@@ -77,3 +80,24 @@ func explode() -> void:
 	Fx.explosion(get_parent(), global_position, radius, color)
 	EventBus.screen_shake.emit(6.0)
 	queue_free()
+
+
+## A world session whose friendly fire is on: allies in the blast are hurt
+## (CoopRules.friendly_bomb_mult of the damage), the thrower is spared.
+func _friendly_fire(center: Vector2) -> void:
+	if not (Net.world_session and Net.is_host) or WorldNet.setting("friendly_fire") == "off":
+		return
+	var game := get_tree().current_scene
+	if game == null or not game.has_method("party"):
+		return
+	var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+	var amount := roundi(damage * Net.rules().friendly_bomb_mult)
+	for p: Player in game.party():
+		if p.peer_id == thrower_peer or p.dead or p.global_position.distance_to(global_position) > radius + 6.0:
+			continue
+		if not LineOfSight.can_hit(self, center, p):
+			continue
+		if p.peer_id == multiplayer.get_unique_id():
+			p.net_take_damage(amount, global_position, damage_type)
+		elif ns:
+			ns.player_damage.rpc_id(p.peer_id, amount, global_position, damage_type)

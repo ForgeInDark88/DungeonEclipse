@@ -10,9 +10,7 @@ const DISCOVERY_PORT := 24566
 const PROBE := "eclipse-probe"
 const ANNOUNCE := "eclipse-host"
 const MAX_PLAYERS := 4
-## Difficulty grows with the party: enemy HP/damage multiplier.
-const HP_PER_EXTRA := 0.8
-const DAMAGE_PER_EXTRA := 0.5
+## Difficulty grows with the party: data/coop/rules.tres (CoopRules).
 
 signal player_joined(info: Dictionary)
 signal player_left(peer_id: int)
@@ -253,16 +251,42 @@ func rpc_late_join(peer_id: int) -> void:
 
 
 # ------------------------------------------------------------ difficulty
+const RULES_PATH := "res://data/coop/rules.tres"
+var _rules: CoopRules
+
+
+## The party's rules (data/coop/rules.tres).
+func rules() -> CoopRules:
+	if _rules == null:
+		_rules = load(RULES_PATH) as CoopRules if ResourceLoader.exists(RULES_PATH) else CoopRules.new()
+	return _rules
+
+
+## Extra players in the party (0 alone).
+func extra_players() -> int:
+	if not active:
+		return 0
+	return maxi(0, mini(players.size(), MAX_PLAYERS) - 1)
+
+
 func enemy_hp_mult() -> float:
-	if not active or players.size() <= 1:
-		return 1.0
-	return 1.0 + HP_PER_EXTRA * (mini(players.size(), MAX_PLAYERS) - 1)
+	return 1.0 + rules().hp_per_extra * extra_players()
 
 
 func enemy_damage_mult() -> float:
-	if not active or players.size() <= 1:
-		return 1.0
-	return 1.0 + DAMAGE_PER_EXTRA * (mini(players.size(), MAX_PLAYERS) - 1)
+	return 1.0 + rules().damage_per_extra * extra_players()
+
+
+func boss_hp_mult() -> float:
+	return 1.0 + rules().boss_hp_per_extra * extra_players()
+
+
+func monster_count_mult() -> float:
+	return 1.0 + rules().monsters_per_extra * extra_players()
+
+
+func reward_mult() -> float:
+	return 1.0 + rules().reward_per_extra * extra_players()
 
 
 # -------------------------------------------------------------- discovery

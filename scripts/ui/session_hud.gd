@@ -59,8 +59,20 @@ func _ready() -> void:
 	_refresh()
 
 
+var _ping: Label
+var _ping_left := 0.0
+
+
 func _process(delta: float) -> void:
 	visible = WorldNet.session
+	_ping_left -= delta
+	if visible and _ping_left <= 0.0:
+		_ping_left = 1.0
+		if _ping == null:
+			_ping = UIStyle.outlined_label("", 6, Color(0.7, 0.9, 0.7))
+			_ping.position = Vector2(8, 34)
+			add_child(_ping)
+		_ping.text = _ping_text()
 	for entry in _lines.duplicate():
 		entry[1] -= delta
 		(entry[0] as Label).modulate.a = clampf(entry[1] / 1.5, 0.0, 1.0)
@@ -85,6 +97,28 @@ func _unhandled_input(e: InputEvent) -> void:
 	elif key.keycode == KEY_F1:
 		_toggle_lobby()
 		get_viewport().set_input_as_handled()
+	elif key.keycode == KEY_G:
+		var game := get_tree().current_scene
+		if game and "level" in game and game.level:
+			WorldNet.mark(game.level.get_global_mouse_position())
+			get_viewport().set_input_as_handled()
+	elif key.keycode >= KEY_F5 and key.keycode <= KEY_F8:
+		WorldNet.emote(key.keycode - KEY_F5 + (2 if key.shift_pressed else 0))
+		get_viewport().set_input_as_handled()
+
+
+## Round trip to the host (guests), or the party's worst (the host).
+func _ping_text() -> String:
+	var mp := Net.multiplayer.multiplayer_peer as ENetMultiplayerPeer
+	if mp == null:
+		return ""
+	var worst := 0
+	var peers: Array = [1] if not Net.is_host else Array(Net.multiplayer.get_peers())
+	for p in peers:
+		var pp := mp.get_peer(p)
+		if pp:
+			worst = maxi(worst, int(pp.get_statistic(ENetPacketPeer.PEER_ROUND_TRIP_TIME)))
+	return tr("пинг %d мс") % worst
 
 
 func _send(text: String) -> void:
@@ -193,4 +227,12 @@ func _refresh_lobby() -> void:
 			box.add_child(row2)
 	var ready := BookPageScreen.button(tr("Готов (F4)"), func() -> void: WorldNet.toggle_ready())
 	box.add_child(ready)
-	box.add_child(UIStyle.label(tr("Enter — чат · F1 — закрыть"), 6, UIStyle.INK_SOFT))
+	if Net.is_host:
+		var names := {"path": tr("Путь: %s"), "friendly_fire": tr("Огонь по своим: %s"), "build_rule": tr("Строят: %s")}
+		var vals := {"vote": tr("голосование"), "host": tr("хост"), "bombs": tr("бомбы"), "off": tr("нет"), "all": tr("все")}
+		for key in names:
+			var k := String(key)
+			box.add_child(BookPageScreen.button(names[k] % vals.get(WorldNet.setting(k), WorldNet.setting(k)), func() -> void:
+				WorldNet.cycle_setting(k)
+				_refresh_lobby()))
+	box.add_child(UIStyle.label(tr("Enter — чат · F1 — закрыть · G — метка · F5–F8 — эмоции"), 6, UIStyle.INK_SOFT))

@@ -75,6 +75,10 @@ msgstr " (two-handed)"
 msgid " (и все прежние)"
 msgstr " (and all before it)"
 
+#: scripts/ui/camp_screen.gd
+msgid " (не все готовы)"
+msgstr " (not everyone is ready)"
+
 #: scripts/ui/session_hud.gd
 msgid " (отключён)"
 msgstr " (offline)"
@@ -246,6 +250,10 @@ msgstr "A %s handles this weapon poorly: −%d%% damage, −%d%% speed"
 #: scripts/bosses/boss.gd
 msgid "%s повержен: +1 очко навыка"
 msgstr "%s defeated: +1 skill point"
+
+#: scripts/autoload/world_net.gd
+msgid "%s поднимает %s."
+msgstr "%s raises %s."
 
 #: scripts/autoload/game_flow.gd
 msgid "%s позади. Дорога ведёт дальше."
@@ -544,8 +552,8 @@ msgid "DungeonEclipse — версия %s.\n\nИдея, дизайн и тест
 msgstr "DungeonEclipse — version %s.\n\nIdea, design and testing — the DungeonEclipse team and friends "
 
 #: scripts/ui/session_hud.gd
-msgid "Enter — чат · F1 — закрыть"
-msgstr "Enter — chat · F1 — close"
+msgid "Enter — чат · F1 — закрыть · G — метка · F5–F8 — эмоции"
+msgstr "Enter — chat · F1 — close · G — mark · F5–F8 — emotes"
 
 #: scripts/ui/character_creation.gd
 msgid "HP %d · Мана %d · Урон %d"
@@ -1035,6 +1043,10 @@ msgstr "The bag holds gold and a couple of useful trinkets. The scout watches yo
 msgid "В сумке:"
 msgstr "In the bag:"
 
+#: scripts/game/game.gd
+msgid "Вас подняли на ноги!"
+msgstr "You were raised to your feet!"
+
 #: scripts/ui/event_dialog.gd
 msgid "Ваш выбор"
 msgstr "Your choice"
@@ -1423,6 +1435,10 @@ msgstr "Choose an item on the right.\n\nUpgrade: +15% to bonuses and +12% to wea
 msgid "Выберите соседний узел.\nНазад по карте пути нет."
 msgstr "Pick a neighbouring node.\nThere is no way back on the map."
 
+#: scripts/ui/event_dialog.gd
+msgid "Выбор делает хост: исход получат все."
+msgstr "The host makes the choice: everyone gets the outcome."
+
 #: scripts/core/skill_set.gd
 msgid "Выбран другой путь: %s"
 msgstr "Another path was chosen: %s"
@@ -1622,6 +1638,10 @@ msgstr "Hunger"
 #: data
 msgid "Голос замолкает обиженно. Но вы узнали о нём что-то важное."
 msgstr "The voice falls silent, offended. But you learned something important about it."
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "Голос отдан. Ждём остальных…"
+msgstr "Vote cast. Waiting for the others…"
 
 #: data
 msgid "Голос снизу говорит со мной каждую ночь. Тёплый, ласковый, как солнце в детстве. Обещает: собери мне трон из костей, Олдрик, — и станешь королём над всеми, кого хоронил. Короля наверху больше никто не видел, люди бегут к ущелью. А мёртвые... мёртвые меня слушаются. Я спускаюсь."
@@ -2975,7 +2995,7 @@ msgstr "Monster Fang"
 msgid "Ключ"
 msgstr "Key"
 
-#: scripts/world/rescue_cage.gd
+#: scripts/autoload/world_net.gd
 msgid "Ключ у тюремщика: сначала разберитесь с охраной."
 msgstr "The jailer has the key: deal with the guards first."
 
@@ -4787,6 +4807,10 @@ msgstr "Fire"
 msgid "Огонь не жжёт, а усиливает."
 msgstr "Fire doesn't burn — it empowers."
 
+#: scripts/ui/session_hud.gd
+msgid "Огонь по своим: %s"
+msgstr "Friendly fire: %s"
+
 #: scripts/ui/inventory_book.gd
 msgid "Огонь/Лёд/Яд/Магия"
 msgstr "Fire/Ice/Poison/Magic"
@@ -5150,6 +5174,10 @@ msgstr "The reflection nods and gives you a part of itself: your eyes grow sharp
 #: scripts/combat/legend_hit_effect.gd
 msgid "Отражение повторяет удар (%d%% урона)%s"
 msgstr "A reflection repeats the blow (%d%% damage)%s"
+
+#: scripts/autoload/world_net.gd
+msgid "Отряд выбрал путь."
+msgstr "The party chose the path."
 
 #: scripts/game/game.gd
 msgid "Отряд пал"
@@ -5603,6 +5631,10 @@ msgstr "Raises %d %s for %d s (%d%% damage, at most %d)"
 msgid "Поднять скелета"
 msgstr "Raise Skeleton"
 
+#: scripts/world/revive_spot.gd
+msgid "Поднять союзника: %s"
+msgstr "Raise ally: %s"
+
 #: scripts/game/game.gd
 msgid "Подобрано"
 msgstr "Picked up"
@@ -5702,6 +5734,10 @@ msgstr "Received: %s"
 #: data
 msgid "Поляна голубых грибов. Они светятся тем же светом, что и чёрное солнце внизу, и пахнут мёдом."
 msgstr "A glade of blue mushrooms. They glow with the same light as the black sun below and smell of honey."
+
+#: scripts/autoload/world_net.gd
+msgid "Помогите!"
+msgstr "Help!"
 
 #: data
 msgid "Помолиться."
@@ -6170,6 +6206,10 @@ msgstr "Path chosen: \"%s\""
 #: scripts/ui/skill_tree_book.gd
 msgid "Путь избран: «%s»"
 msgstr "Path chosen: \"%s\""
+
+#: scripts/ui/session_hud.gd
+msgid "Путь: %s"
+msgstr "Path: %s"
 
 #: data
 msgid "Пять ножей веером."
@@ -7447,6 +7487,10 @@ msgstr "A swift dash through enemies."
 msgid "Строить может только хост."
 msgstr "Only the host may build."
 
+#: scripts/ui/session_hud.gd
+msgid "Строят: %s"
+msgstr "Who builds: %s"
+
 #: data
 msgid "Студень, растворяющий всё на своём пути. Прыгает на добычу."
 msgstr "A jelly that dissolves everything in its path. Leaps at its prey."
@@ -7530,6 +7574,10 @@ msgstr "Play 10 runs."
 #: data
 msgid "Сыр"
 msgstr "Cheese"
+
+#: scripts/autoload/world_net.gd
+msgid "Сюда!"
+msgstr "Over here!"
 
 #: data
 msgid "Таверна"
@@ -8287,6 +8335,10 @@ msgstr "A good foundation is half the house."
 msgid "Хост"
 msgstr "Host"
 
+#: scripts/ui/event_dialog.gd
+msgid "Хост выбрал"
+msgstr "The host chose"
+
 #: scripts/autoload/world_net.gd
 msgid "Хост ещё не готов принять игроков."
 msgstr "The host is not ready to take players yet."
@@ -8723,6 +8775,14 @@ msgstr "Echo!"
 msgid "Я был могильщиком. Потом — Королём костей. Меня убили, и я думал, что наконец лягу в землю. Но солнце внизу не отпускает своих. Оно выжимает из меня силу, как воду из тряпки, и каждая капля горит. Теперь я пепел в короне. И пепел помнит всех, кто меня хоронил."
 msgstr "I was a gravedigger. Then the Bone King. They killed me, and I thought I would finally lie in the earth. But the sun below does not let its own go. It wrings the strength out of me like water from a rag, and every drop burns. Now I am ash in a crown. And the ash remembers everyone who buried me."
 
+#: scripts/ui/camp_screen.gd
+msgid "Я готов идти дальше"
+msgstr "I'm ready to move on"
+
+#: scripts/ui/camp_screen.gd
+msgid "Я готов идти дальше ✓"
+msgstr "I'm ready to move on ✓"
+
 #: data
 msgid "Я поищу."
 msgstr "I'll look for them."
@@ -8835,6 +8895,10 @@ msgstr "free"
 msgid "бомба"
 msgstr "a bomb"
 
+#: scripts/ui/session_hud.gd
+msgid "бомбы"
+msgstr "bombs"
+
 #: data
 msgid "бури"
 msgstr "of Storms"
@@ -8863,6 +8927,10 @@ msgstr "on an expedition"
 msgid "в ярости!"
 msgstr "is enraged!"
 
+#: scripts/ui/session_hud.gd
+msgid "все"
+msgstr "everyone"
+
 #: scripts/ui/info_book.gd
 msgid "встроен в движок.\n\nСписок всех сторонних компонентов и их лицензий — THIRD_PARTY_LICENSES.md."
 msgstr "built into the engine.\n\nThe list of all third-party components and their licenses is in THIRD_PARTY_LICENSES.md."
@@ -8882,6 +8950,10 @@ msgstr "the hero who shattered the Eclipse"
 #: scripts/autoload/meta_progress.gd
 msgid "глубина: %d"
 msgstr "depth: %d"
+
+#: scripts/ui/session_hud.gd
+msgid "голосование"
+msgstr "vote"
 
 #: scripts/core/event_runner.gd
 msgid "горожанин"
@@ -9067,6 +9139,10 @@ msgstr "offline"
 msgid "открыт уровень Затмения %d «%s»"
 msgstr "Eclipse level %d \"%s\" unlocked"
 
+#: scripts/ui/session_hud.gd
+msgid "пинг %d мс"
+msgstr "ping %d ms"
+
 #: scripts/autoload/meta_progress.gd
 msgid "победа над Затмением: %d"
 msgstr "victory over the Eclipse: %d"
@@ -9194,6 +9270,10 @@ msgstr "flank"
 #: scripts/ui/codex_book.gd
 msgid "ходит по земле"
 msgstr "walks on the ground"
+
+#: scripts/ui/session_hud.gd
+msgid "хост"
+msgstr "host"
 
 #: scripts/core/stat_types.gd
 msgid "яд"

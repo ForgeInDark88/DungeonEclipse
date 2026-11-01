@@ -304,11 +304,14 @@ func _watch_game() -> void:
 		check(seen, "host: sees the guest's defence")
 		await get_tree().create_timer(2.4).timeout  # stay in step with the guest's phase
 	else:
-		await get_tree().create_timer(0.8).timeout
 		var circles := 0
-		for n in level.entities.get_children():
-			if n is Telegraph:
-				circles += 1
+		for i in 25:
+			await get_tree().create_timer(0.1).timeout
+			for n in level.entities.get_children():
+				if n is Telegraph:
+					circles += 1
+			if circles > 0:
+				break
 		check(circles > 0, "client: sees the host's warning circle (%d)" % circles)
 		if mine:
 			mine._defend_cd = 0.0

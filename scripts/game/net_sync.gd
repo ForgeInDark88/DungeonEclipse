@@ -1035,12 +1035,13 @@ func pact_taken(seq: int, offer_index: int) -> void:
 ## to every client. Used by the host's own throws and validated requests.
 func spawn_net_bomb(pos: Vector2, dir: float, damage: int, radius: float, fuse_time: float,
 		damage_type: int, status_id: StringName, status_duration: float, status_power: float,
-		breaks_tiles: bool, color: Color) -> void:
+		breaks_tiles: bool, color: Color, thrower := 1) -> void:
 	var game := get_tree().current_scene
 	var level: DungeonLevel = game.level if game != null and "level" in game else null
 	if level == null:
 		return
 	var bomb: Node2D = (load("res://scenes/world/bomb.tscn") as PackedScene).instantiate()
+	bomb.thrower_peer = thrower
 	bomb.damage = damage
 	bomb.radius = radius
 	bomb.fuse_time = fuse_time
@@ -1067,7 +1068,7 @@ func request_bomb(pos: Vector2, dir: float, damage: int, radius: float, fuse_tim
 	if not _sender_near(sender, pos, 160.0) or damage <= 0 or damage > 200 or radius > 128.0:
 		return
 	spawn_net_bomb(pos, dir, damage, radius, fuse_time, damage_type, status_id,
-			status_duration, status_power, breaks_tiles, color)
+			status_duration, status_power, breaks_tiles, color, sender)
 
 
 ## Host → clients: a visual-only bomb copy (no damage, no tile changes —

@@ -181,6 +181,28 @@ func _build_map() -> void:
 	_canvas.add_child(_hero_marker)
 	if first_open:
 		first_open.grab_focus()
+	WorldNet.votes_changed.connect(_show_votes)
+	_show_votes(WorldNet.votes)
+
+
+## Who voted for which fork: the voters' nicks under the node.
+var _vote_labels: Array[Label] = []
+
+
+func _show_votes(v: Dictionary) -> void:
+	for l in _vote_labels:
+		if is_instance_valid(l):
+			l.queue_free()
+	_vote_labels.clear()
+	var by_node := {}
+	for peer in v:
+		var nick := String(WorldNet.roster.get(peer, {}).get("nick", "?"))
+		by_node[v[peer]] = by_node.get(v[peer], []) + [nick]
+	for id in by_node:
+		var l := UIStyle.outlined_label(", ".join(by_node[id]), 6, UIStyle.GOLD)
+		l.position = node_pos(int(id)) + Vector2(-20, 10)
+		_canvas.add_child(l)
+		_vote_labels.append(l)
 
 
 func _focus_box() -> StyleBoxFlat:
@@ -338,8 +360,13 @@ func _reward_text(n: Dictionary) -> String:
 func _walk_to(id: int) -> void:
 	if _moving or not id in _run.next_choices():
 		return
-	if GameFlow.is_guest():
-		EventBus.message.emit(tr("Путь выбирает хост."))
+	if WorldNet.session:
+		# the party decides: a vote (or the host's pick, by the world's setting)
+		if WorldNet.setting("path") == "host" and GameFlow.is_guest():
+			EventBus.message.emit(tr("Путь выбирает хост."))
+			return
+		WorldNet.pick_node(id)
+		EventBus.message.emit(tr("Голос отдан. Ждём остальных…"))
 		return
 	_moving = true
 	Tooltip.hide_tip()
