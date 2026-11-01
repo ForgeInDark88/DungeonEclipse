@@ -71,10 +71,13 @@ static func _layer_layout(li: LocationInstance, i: int) -> LevelLayout:
 	if kind == LocationInstance.Kind.SURFACE:
 		var sides := ports.filter(func(p: Dictionary) -> bool: return StringName(p["kind"]) == LocationInstance.SIDE).size()
 		var sbd := layer_biome(li, i) as SurfaceBiomeData
-		return SurfaceGenerator.new().generate(depth, seed_value, sides, int(layer.get("screens", -1)), sbd)
+		var sg := SurfaceGenerator.new()
+		sg.node_type = li.node_type
+		return sg.generate(depth, seed_value, sides, int(layer.get("screens", -1)), sbd)
 	var gen := LevelGenerator.new()
 	# The floor's place in the dungeon: the prisoner waits on the last one.
-	GameState.location["band_last"] = bool(layer.get("last", false))
+	# (a rescue node with a surface keeps its prisoner in the bandits' camp)
+	GameState.location["band_last"] = bool(layer.get("last", false)) and not (li.node_type == &"rescue" and li.has_surface())
 	var s: LevelLayout
 	if kind == LocationInstance.Kind.ARENA:
 		s = gen.generate_arena(depth, seed_value)

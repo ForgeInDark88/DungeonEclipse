@@ -544,6 +544,11 @@ func _on_chest_opened(chest: Node) -> void:
 		gain_resource(id, randi_range(1, 2), (chest as Node2D).global_position)
 
 
+## A blueprint the town does not have yet, for a find on the way.
+func roll_blueprint() -> StringName:
+	return _roll_blueprint()
+
+
 ## A blueprint the town does not have yet (&"" = none left).
 func _roll_blueprint() -> StringName:
 	var owned: Array = GameState.town.blueprints.duplicate() if GameState.town else []
@@ -689,8 +694,17 @@ func end_expedition(outcome: RunState.Outcome) -> void:
 				var npc: NpcData = ItemDatabase.npcs.get(id)
 				town.news.append(tr("В город переехал(а) %s.") % (npc.display_name if npc else String(id)))
 		for k in run.flags:
-			if not k in ["nodes_done", "rumours", "events_seen", "after_fight_rescue"]:
+			if not k in ["nodes_done", "rumours", "events_seen", "after_fight_rescue", "places"]:
 				town.flags[k] = run.flags[k]
+		# places found on the surfaces: the scouts' map of the world grows
+		var places: Array = run.flags.get("places", [])
+		if not places.is_empty():
+			town.add_stat("places_found", places.size())
+			var known_places: Dictionary = town.flags.get("places_known", {})
+			for kd in places:
+				known_places[String(kd)] = int(known_places.get(String(kd), 0)) + 1
+			town.flags["places_known"] = known_places
+			town.news.append(tr("Разведчики нанесли на карту новые места: %d.") % places.size())
 		for bp in run.blueprints:
 			if not bp in town.blueprints:
 				town.blueprints.append(bp)

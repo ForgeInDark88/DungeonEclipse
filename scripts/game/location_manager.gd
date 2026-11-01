@@ -300,6 +300,17 @@ func capture_state() -> void:
 	for t in get_tree().get_nodes_in_group("traps"):
 		if t.disarmed and t.has_meta(&"loc"):
 			instance.layer_state(_band_of(t)).get("traps").append(int(t.get_meta(&"loc")))
+	if instance.has_surface():
+		(instance.layer_state(0)["flags"] as Dictionary)["found"] = _found.keys()
+	# the surface: what was gathered and smashed (the saving machine's own)
+	for i in instance.layers.size():
+		instance.layer_state(i)["gathered"] = []
+	for r in get_tree().get_nodes_in_group("resource_nodes"):
+		if r.has_meta(&"loc") and r.charges < int(ResourceNode.KINDS[r.kind]["charges"]):
+			instance.layer_state(_band_of(r))["gathered"].append([int(r.get_meta(&"loc")), r.charges])
+	for b in get_tree().get_nodes_in_group("breakables"):
+		if b.has_meta(&"loc") and b.broken:
+			instance.layer_state(_band_of(b))["gathered"].append([int(b.get_meta(&"loc")), 0])
 	_scan_dead()
 	for id in _dead:
 		var info: Dictionary = _tracked.get(id, {})
@@ -339,6 +350,23 @@ func apply_state() -> void:
 	for t in get_tree().get_nodes_in_group("traps"):
 		if t.has_meta(&"loc") and traps.has(int(t.get_meta(&"loc"))) and not t.disarmed:
 			t._apply_disarmed()
+	if instance.has_surface():
+		for i in (instance.layer_state(0)["flags"] as Dictionary).get("found", []):
+			_found[int(i)] = true
+	var gathered := {}
+	for key in instance.state:
+		for g in (instance.state[key] as Dictionary).get("gathered", []):
+			gathered[int(g[0])] = int(g[1])
+	for r in get_tree().get_nodes_in_group("resource_nodes"):
+		if r.has_meta(&"loc") and gathered.has(int(r.get_meta(&"loc"))):
+			r.charges = gathered[int(r.get_meta(&"loc"))]
+			if r.charges <= 0:
+				r._spent()
+	for b in get_tree().get_nodes_in_group("breakables"):
+		if b.has_meta(&"loc") and gathered.has(int(b.get_meta(&"loc"))):
+			b.broken = true
+			b.remove_from_group("interactable")
+			b.modulate.a = 0.0
 	for id in dead:
 		_dead[id] = true
 		var info: Dictionary = _tracked.get(id, {})
@@ -446,6 +474,7 @@ func _process(delta: float) -> void:
 		var bi := level.band_index_at(player.global_position)
 		if bi >= 0 and bi != band:
 			_enter_band(bi)  # fell or was pulled through
+		_discover(player)
 	if GameFlow.is_guest() or (Net.active and not Net.is_host):
 		return
 	var active := active_bands()
@@ -459,6 +488,7 @@ func _process(delta: float) -> void:
 			en.process_mode = mode
 	_scan_dead()
 	_step_respawns(TICK)
+	_step_night()
 
 
 ## Bands with a living hero in them (the host simulates only these).
@@ -487,6 +517,103 @@ func _scan_dead() -> void:
 				if int(_respawn_count.get(key, 0)) < definition.respawn_max:
 					_respawns.append({"data": info["data"], "pos": key, "band": info["band"],
 							"left": definition.respawn_time * _rng.randf_range(0.8, 1.2)})
+
+
+# ----------------------------------------------------------- discoveries
+const POI_NAMES := {
+	&"bandit_camp": "Лагерь бандитов", &"shrine": "Святилище", &"tower": "Разрушенная башня",
+	&"cart": "Повозка торговца", &"graveyard": "Старое кладбище", &"well": "Заброшенный колодец",
+	&"hunters": "Стоянка охотников", &"stranger": "Костёр странника",
+}
+var _found: Dictionary = {}
+
+
+## The hero comes near a point of interest of the surface: it is found
+## (a line on the screen; the town's scouts learn of it on a safe return).
+func _discover(player: Node2D) -> void:
+	var b := level.layout_band(0)
+	if b.is_empty() or int(b["kind"]) != LocationInstance.Kind.SURFACE:
+		return
+	var sub: LevelLayout = b["layout"]
+	for i in sub.pois.size():
+		if _found.has(i):
+			continue
+		var poi: Dictionary = sub.pois[i]
+		var pos := level.cell_bottom((poi["cell"] as Vector2i) + (b["origin"] as Vector2i))
+		if pos.distance_to(player.global_position) < 90.0:
+			_found[i] = true
+			var kind := StringName(poi["type"])
+			EventBus.message.emit(tr("Найдено место: %s") % tr(POI_NAMES.get(kind, String(kind))))
+			EventBus.place_discovered.emit(kind)
+			if GameState.run and not GameFlow.is_guest():
+				var places: Array = GameState.run.flags.get("places", [])
+				places.append(String(kind))
+				GameState.run.flags["places"] = places
+
+
+# ------------------------------------------------------- night creatures
+const NIGHT_COUNT := Vector2i(4, 7)
+var _night_out := false
+var _night_foes: Array[Enemy] = []
+
+
+## Host: at nightfall the night creatures of the biome come out on the
+## surface (far from every hero); at dawn the ones nobody is near fade.
+func _step_night() -> void:
+	if sky == null:
+		return
+	var night := sky.is_night()
+	if night and not _night_out:
+		_night_out = true
+		_spawn_night()
+	elif not night and _night_out:
+		_night_out = false
+		for e in _night_foes:
+			if is_instance_valid(e) and not e.is_dead() and not _hero_near(e.global_position, 300.0):
+				e.remove_from_group("enemies")
+				var ns := get_tree().get_first_node_in_group("net_game") as NetSync
+				if ns and Net.active:
+					ns.enemies.erase(e.net_id)
+					Net.send(ns, &"enemy_gone", [e.net_id])
+				e.queue_free()
+		_night_foes.clear()
+
+
+func _spawn_night() -> void:
+	var b := level.layout_band(0)
+	if b.is_empty() or int(b["kind"]) != LocationInstance.Kind.SURFACE:
+		return
+	var sb: BiomeData = b["biome"]
+	var pool := ItemDatabase.enemies_for_floor(int(b["depth"]), sb.id, true)
+	if pool.is_empty():
+		return
+	var sub: LevelLayout = b["layout"]
+	var origin: Vector2i = b["origin"]
+	var cells: Array[Vector2i] = sub.enemy_cells.duplicate()
+	for i in cells.size():
+		var j := _rng.randi_range(0, cells.size() - 1)
+		var t := cells[i]
+		cells[i] = cells[j]
+		cells[j] = t
+	var want := _rng.randi_range(NIGHT_COUNT.x, NIGHT_COUNT.y)
+	for c in cells:
+		if _night_foes.size() >= want:
+			break
+		var pos := level.cell_bottom(c + origin)
+		if _hero_near(pos, definition.respawn_min_distance if definition else 360.0):
+			continue
+		var e := level.spawn_enemy_at(pool[_rng.randi_range(0, pool.size() - 1)], pos)
+		if e:
+			_night_foes.append(e)
+	if not _night_foes.is_empty():
+		EventBus.message.emit(tr("Из темноты выходят ночные твари."))
+
+
+func _hero_near(pos: Vector2, dist: float) -> bool:
+	for p in (game.party() if game.has_method("party") else [game.player]):
+		if is_instance_valid(p) and (p as Node2D).global_position.distance_to(pos) < dist:
+			return true
+	return false
 
 
 func _step_respawns(dt: float) -> void:

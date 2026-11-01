@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/goblin_sheet.png" id="3"]
+[ext_resource type="Resource" path="res://data/animations/cultist_layout.tres" id="4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/goblin.png" id="5"]
+
+[resource]
+script = ExtResource("1")
+id = &"goblin"
+display_name = "Гоблин"
+description = "Мелкий, злобный и не один."
+texture = ExtResource("5")
+sheet = ExtResource("3")
+sheet_layout = ExtResource("4")
+behavior = 0
+collision_size = Vector2(10, 16)
+max_hp = 18
+damage = 6
+armor = 0
+speed = 48.0
+chase_speed = 90.0
+aggro_range = 150.0
+attack_range = 14.0
+attack_cooldown = 1.0
+jumps = true
+xp_reward = 11
+loot_table = ExtResource("2")
+loot_chance = 0.3
+gold_min = 2
+gold_max = 6
+min_floor = 1
+spawn_weight = 1.10
+biomes = Array[StringName]([&"surface_forest", &"surface_ruins", &"surface_mountains", &"surface_wasteland"])
+habitat = &"surface"
+tint = Color(1, 1, 1, 1)
+gender = "m"

@@ -237,6 +237,9 @@ func _build_band(i: int, seed_value: int) -> void:
 		LocationInstance.Kind.SURFACE:
 			_spawn_surface_props()
 			_spawn_water()
+			_spawn_surface_things()
+			_spawn_secret_walls()
+			_spawn_lore()
 			_spawn_specials()
 			_spawn_chests()
 			_spawn_enemies()
@@ -268,6 +271,23 @@ func _spawn_surface_props() -> void:
 		if String(p["tex"]).begins_with("tree") or p["tex"] == &"reeds":
 			s.flip_h = (hash(p["cell"]) & 1) == 1
 		add_entity(s, cell_bottom(p["cell"]))
+
+
+## Things to gather, barrels and crates (personal: every machine has its
+## own; their place in the build order keeps the saved state's ids).
+func _spawn_surface_things() -> void:
+	for r in layout.resources:
+		var n := ResourceNode.new()
+		n.kind = StringName(r["kind"])
+		n.depth = floor_number
+		_net_seq_node(n)
+		add_entity(n, cell_bottom(r["cell"]))
+	for b in layout.breakables:
+		var k := Breakable.new()
+		k.look = StringName(b["look"])
+		k.depth = floor_number
+		_net_seq_node(k)
+		add_entity(k, cell_bottom(b["cell"]))
 
 
 ## Ponds: a sheet of water over the dip, a lighter line on its surface.
@@ -319,7 +339,7 @@ func _exit_band() -> void:
 ## (an ambush wave, a mimic); returns what to restore.
 func _rules_at(cell: Vector2i) -> Array:
 	var keep := [floor_number, biome]
-	if location_mode:
+	if location_mode and layout == _composite:  # (while a band is built, its rules hold)
 		var b := layout_band(band_index_at_cell(cell))
 		if not b.is_empty():
 			floor_number = int(b["depth"])
@@ -1061,6 +1081,8 @@ func _spawn_specials() -> void:
 				_spawn_event(info)
 			&"camp_fire":
 				add_entity(CampFire.new(), cell_bottom(info["cell"]))
+			&"elite_pack":
+				_spawn_elite_pack(info)
 			&"dummy":
 				# Training dummy at the barracks: local on every machine
 				# (no net id), each player trains on their own copy.
@@ -1256,6 +1278,26 @@ func break_secret(cell: Vector2i) -> void:
 		return
 	for c: Vector2i in _secret_lists[_secret_cells[cell]]:
 		break_tile(c, true)
+
+
+## A point of interest's leader: the strongest local monster as a champion
+## with an elite affix (a better reward), and the treasure it guards.
+func _spawn_elite_pack(info: Dictionary) -> void:
+	var pool := ItemDatabase.enemies_for_floor(floor_number, biome.id if biome else &"")
+	pool = pool.filter(func(e: EnemyData) -> bool: return not e.neutral)
+	if pool.is_empty():
+		return
+	pool.sort_custom(func(a: EnemyData, b: EnemyData) -> bool: return a.max_hp > b.max_hp)
+	var data: EnemyData = pool[rng.randi_range(0, mini(1, pool.size() - 1))]
+	var ok := ItemDatabase.elites.filter(func(a: EliteAffixData) -> bool: return a.min_floor <= floor_number)
+	var elite: EliteAffixData = ok[rng.randi_range(0, ok.size() - 1)] if not ok.is_empty() else null
+	if Net.active and not Net.is_host:
+		return  # rolls burnt; the champion arrives as the host's shell
+	var e := (load(ENEMY_SCENE) as PackedScene).instantiate() as Enemy
+	e.setup(data, floor_number, elite, true)
+	_net_tag(e)
+	add_entity(e, cell_bottom(info["cell"]))
+	_net_broadcast_enemy(e, elite, true)
 
 
 ## Host: a monster comes back at a world position (surface respawns).
@@ -1535,6 +1577,10 @@ func _spawn_enemies() -> void:
 					mates.append([mate_data, mate_cell])
 		if Net.active and not Net.is_host:
 			continue  # shells arrive as host descriptors
+		if data.neutral:
+			elite = null  # a deer is a deer (rolls above kept the RNG in step)
+			role = null
+			mates.clear()
 		_spawn_floor_enemy(data, elite, cell, role)
 		for m in mates:
 			_spawn_floor_enemy(m[0], null, m[1], null)

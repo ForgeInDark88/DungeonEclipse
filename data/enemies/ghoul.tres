@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/ghoul_sheet.png" id="3"]
+[ext_resource type="Resource" path="res://data/animations/cultist_layout.tres" id="4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/ghoul.png" id="5"]
+
+[resource]
+script = ExtResource("1")
+id = &"ghoul"
+display_name = "Упырь"
+description = "Выходит из могил, когда темнеет."
+texture = ExtResource("5")
+sheet = ExtResource("3")
+sheet_layout = ExtResource("4")
+behavior = 0
+collision_size = Vector2(12, 22)
+max_hp = 40
+damage = 11
+armor = 1
+speed = 42.0
+chase_speed = 85.0
+aggro_range = 190.0
+attack_range = 18.0
+attack_cooldown = 1.1
+jumps = true
+xp_reward = 24
+loot_table = ExtResource("2")
+loot_chance = 0.3
+gold_min = 2
+gold_max = 6
+min_floor = 1
+spawn_weight = 1.00
+biomes = Array[StringName]([&"surface_forest", &"surface_hills", &"surface_swamp", &"surface_ruins", &"surface_mountains", &"surface_wasteland"])
+habitat = &"surface"
+tint = Color(1, 1, 1, 1)
+gender = "m"
+night_only = true

@@ -170,8 +170,15 @@ var danger_time := 0.0
 @onready var status: StatusEffects = $StatusEffects
 
 
+## Surface life (EnemyData.sleeper / neutral): dozing until a hero comes
+## close; a neutral animal minds its own business until hurt.
+var _asleep := false
+var _provoked := false
+
+
 func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null, p_champion := false) -> void:
 	data = p_data
+	_asleep = p_data.sleeper
 	floor_number = p_floor
 	elite = p_elite
 	champion = p_champion
@@ -571,8 +578,14 @@ func _set_flash(amount: float, color := Color.WHITE) -> void:
 func _can_see_player() -> bool:
 	if _player == null or _player.dead:
 		return false
+	if data.neutral and not _provoked:
+		return false
 	var to_player := _player.global_position - global_position
 	var dist := to_player.length()
+	if _asleep:
+		if dist > 40.0:
+			return false  # sneak past it
+		_asleep = false
 	if dist > data.aggro_range * AGGRO_MULT:
 		return false
 	# Invisibility potion: only noticed when bumped into.
@@ -601,6 +614,8 @@ func _player_visible() -> bool:
 
 
 func _think() -> void:
+	if _asleep and randf() < 0.04:
+		_show_mark("z", Color(0.75, 0.85, 1.0))
 	_update_squad(0.2)
 	_sees_player = _can_see_player()
 	if _sees_player:
@@ -656,6 +671,12 @@ func _notice() -> void:
 
 ## A sound at `pos` (fight, explosion, an ally calling).
 func hear(pos: Vector2) -> void:
+	if data.neutral and not _provoked:
+		return
+	if _asleep:
+		if pos.distance_to(global_position) > 150.0:
+			return  # a sound far away does not wake it
+		_asleep = false
 	_dormant = false
 	_dormant_check = 1.0
 	if _dead or state in [State.CHASE, State.ATTACK, State.ALERT, State.HURT]:
@@ -1778,6 +1799,8 @@ func status_resistance(id: StringName) -> float:
 func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.INF, damage_type: int = 0) -> void:
 	if hp <= 0:
 		return
+	_asleep = false
+	_provoked = true
 	if puppet:
 		# Clients never apply damage: the host is the judge.
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync

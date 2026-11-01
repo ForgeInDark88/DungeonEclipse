@@ -225,6 +225,29 @@ func _initialize() -> void:
 	if lm:
 		check(lm.band == 0 and current_scene.level.layout.bands[0]["kind"] == 0, "the hero starts on the surface")
 		check(current_scene.get_tree().get_nodes_in_group("layer_portals").size() >= 4, "the portals between the layers stand")
+		# the surface's life: things to gather, crates, its own monsters
+		var nodes := current_scene.get_tree().get_nodes_in_group("resource_nodes")
+		check(nodes.size() >= 4, "the surface has things to gather (%d)" % nodes.size())
+		var herb = null
+		for n in nodes:
+			if n.kind in [&"tree", &"boulder", &"herb", &"vein"]:
+				herb = n
+				break
+		if herb:
+			var res_before := 0
+			for k in gs.run.resources:
+				res_before += int(gs.run.resources[k])
+			herb.interact(current_scene.player)
+			var res_after := 0
+			for k in gs.run.resources:
+				res_after += int(gs.run.resources[k])
+			check(res_after > res_before, "gathering brings a resource for the town (%s)" % herb.kind)
+		var surface_foes := 0
+		for e in current_scene.get_tree().get_nodes_in_group("enemies"):
+			if current_scene.level.band_index_at(e.global_position) == 0:
+				check(e.data.habitat != &"dungeon", "a monster of the surface lives there (%s)" % e.data.id)
+				surface_foes += 1
+		check(surface_foes > 0, "the surface has its own monsters")
 		lm.travel(&"f1_up")
 		await create_timer(1.0).timeout
 		check(lm.band == 1, "the main entrance leads to the first floor")

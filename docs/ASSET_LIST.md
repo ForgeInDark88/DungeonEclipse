@@ -57,3 +57,39 @@
 Вода в прудах рисуется кодом (`DungeonLevel._spawn_water`, цвет
 `SurfaceBiomeData.water_color`). Погода — частицы (`SurfaceSky`), для
 тумана используется `fx/light.png`.
+
+## Враги поверхности — `assets/sprites/enemies/` (этап 16)
+Генератор: `python3 tools/gen_surface_monsters.py`. Строки листа:
+idle 4, walk 6, windup 4, attack 3, hurt 2, death 6 кадров. Иконка
+`<id>.png` — первый кадр.
+
+| Файл | Кадр | Раскладка | Кто |
+|---|---|---|---|
+| `wolf_sheet.png`, `boar_sheet.png`, `snake_sheet.png` | 32×22 | `data/animations/beast_layout.tres` | волк, кабан, змея |
+| `deer_sheet.png` | 32×26 | `deer_layout.tres` | олень (мирный) |
+| `bandit_sheet.png`, `bandit_archer_sheet.png`, `thief_sheet.png`, `goblin_sheet.png`, `ghoul_sheet.png` | 24×28 | `cultist_layout.tres` | бандиты, вор, гоблин, упырь (ночной) |
+| `ogre_sheet.png` | 36×40 | `ogre_layout.tres` | огр |
+
+Лесной паук, ночной призрак и ворон пока используют листы паука,
+призрака и летучей мыши, перекрашенные через `tint`.
+
+## Добыча на поверхности — `assets/sprites/surface/`
+| Файл | Размер | Что это |
+|---|---|---|
+| `ore_vein.png` | 26×18 | Рудная жила (железо и железная руда) |
+| `herb.png` | 14×12 | Травы (ресурс города «Травы») |
+| `berry_bush.png` | 24×16 | Ягодный куст |
+| `dig_mark.png` | 14×6 | Крестик над кладом (копать лопатой) |
+| `barrel.png`, `crate.png` | 14×16, 16×16 | Бочка и ящик (ломаются) |
+
+Деревья и валуны для добычи — это обычные пропы поверхности.
+
+## Предметы — `assets/sprites/items/`
+| Файл | Размер | Что это |
+|---|---|---|
+| `pickaxe.png` | 16×16 | Кирка (вдвое больше камня и железа) |
+| `shovel.png` | 16×16 | Лопата (раскопать клад) |
+| `wild_berries.png` | 16×16 | Лесные ягоды (еда) |
+
+Топорик берётся существующий (`hatchet`, оружие): в рюкзаке или в
+руке он удваивает добычу дерева.

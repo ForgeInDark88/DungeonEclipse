@@ -418,6 +418,17 @@ func request_hit(e: Enemy, amount: int, crit: bool, damage_type: int,
 
 
 # Host side: an enemy actually died → tell everyone, credit the killer.
+## Host → clients: a monster leaves without a fight (the night creatures at
+## dawn): no kill, no reward, the shell just goes.
+@rpc("authority", "call_remote", "reliable")
+func enemy_gone(net_id: int) -> void:
+	var e: Enemy = enemies.get(net_id)
+	enemies.erase(net_id)
+	if e and is_instance_valid(e):
+		e.remove_from_group("enemies")
+		e.queue_free()
+
+
 func broadcast_death(e: Enemy, xp: int, gold: int) -> void:
 	var killer := int(_last_hitter.get(e.net_id, 1))
 	Net.send(self, &"enemy_died", [e.net_id, xp, gold, killer])

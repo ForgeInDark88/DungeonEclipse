@@ -25,7 +25,7 @@ const HEIGHT := 48
 const GROUND_MIN := 18
 const GROUND_MAX := HEIGHT - 6
 const SAFE_START := 12
-const POI_TYPES := [&"bandit_camp", &"shrine", &"tower", &"cart", &"graveyard", &"well", &"hunters"]
+const POI_TYPES := [&"bandit_camp", &"shrine", &"tower", &"cart", &"graveyard", &"well", &"hunters", &"stranger"]
 const SIDE_KINDS := [&"cave", &"well", &"crypt", &"ruin_stairs", &"sinkhole"]
 
 var rng := RandomNumberGenerator.new()
@@ -40,6 +40,10 @@ var _busy_cols: Dictionary = {}
 
 ## `screens`: the width in screens (6–12, -1: rolled). `sides`: side
 ## entrances. `p_biome`: what grows here (null: plain forest rules).
+## The node's type (a rescue node keeps its prisoner in the bandits' camp).
+var node_type: StringName = &""
+
+
 func generate(depth: int, seed_value: int, sides := 1, screens := -1, p_biome: SurfaceBiomeData = null) -> LevelLayout:
 	rng.seed = seed_value
 	biome = p_biome if p_biome else SurfaceBiomeData.new()
@@ -60,6 +64,7 @@ func generate(depth: int, seed_value: int, sides := 1, screens := -1, p_biome: S
 	_trees(screens)
 	_ledges()
 	_props()
+	_resources(screens)
 	_place_chests(depth)
 	_place_enemies(depth)
 	_edges()
@@ -192,6 +197,24 @@ func _ravines(screens: int) -> void:
 			layout.set_tile(x, cy, T.LADDER)
 		layout.ravines.append(Rect2i(x, gy, wdt, ground[x] - gy))
 		_mark_cols(x - 2, x + wdt + 1)
+		# a hidden cave in the far bank: a cracked wall, a chest behind it
+		var wall := x + wdt
+		var bottom := ground[x + 1] - 1
+		var room := true
+		for cx in range(wall + 2, wall + 7):
+			# nothing else in those columns (wall + 1 is the ravine's own margin), and solid earth over the cave
+			if _busy_cols.has(cx) or cx >= layout.width - 20 or ground[cx] > bottom - 3:
+				room = false
+		if rng.randf() < 0.45 and room:
+			for cx in range(wall + 1, wall + 6):
+				for cy in range(bottom - 1, bottom + 1):
+					layout.set_tile(cx, cy, T.EMPTY)
+			var cells: Array[Vector2i] = [Vector2i(wall, bottom - 1), Vector2i(wall, bottom)]
+			for cc in cells:
+				layout.set_tile(cc.x, cc.y, T.BRICK)
+			layout.secret_walls.append(cells)
+			layout.chests.append({"cell": Vector2i(wall + 4, bottom), "tier": 2, "secret": true})
+			_mark_cols(wall, wall + 6)
 
 
 ## A shallow pond: a dip 2 cells deep under the water's surface.
@@ -273,6 +296,9 @@ func _place_pois(depth: int) -> void:
 	var count := rng.randi_range(3, 6)
 	var kinds: Array = POI_TYPES.duplicate()
 	_shuffle(kinds)
+	if node_type == &"rescue":
+		kinds.erase(&"bandit_camp")
+		kinds.push_front(&"bandit_camp")  # the prisoner waits in the bandits' camp
 	var w := layout.width
 	var span := float(w - 50) / float(count)
 	for k in count:
@@ -299,11 +325,19 @@ func _build_poi(kind: StringName, x: int, r: int, depth: int) -> void:
 			_prop(&"tent", Vector2i(x - 3, c.y))
 			_prop(&"tent", Vector2i(x + 3, c.y))
 			_prop(&"campfire", c, 0)
-			layout.chests.append({"cell": Vector2i(x + r - 1, c.y), "tier": 1})
-			for dx in [-4, -1, 2, 4]:
-				var e := Vector2i(x + dx, c.y)
-				if not e in layout.enemy_cells:
-					layout.enemy_cells.append(e)
+			layout.chests.append({"cell": Vector2i(x + r - 1, c.y), "tier": 2 if depth >= 6 else 1})
+			layout.specials.append({"type": &"elite_pack", "cell": Vector2i(x - 1, c.y)})
+			if node_type == &"rescue":
+				# the cage by the fire; its guards are the camp's bandits
+				layout.specials.append({"type": &"rescue", "cell": Vector2i(x + 1, c.y),
+						"cells": [Vector2i(x - 4, c.y), Vector2i(x + 3, c.y), Vector2i(x - 2, c.y)]})
+			else:
+				for dx in [-4, 2, 4]:
+					var e := Vector2i(x + dx, c.y)
+					if not e in layout.enemy_cells:
+						layout.enemy_cells.append(e)
+			layout.breakables.append({"look": &"barrel", "cell": Vector2i(x - r, c.y)})
+			layout.breakables.append({"look": &"crate", "cell": Vector2i(x + r - 2, c.y)})
 			_reserve(c, r)
 		&"hunters":
 			_prop(&"tent", Vector2i(x - 2, c.y))
@@ -330,6 +364,12 @@ func _build_poi(kind: StringName, x: int, r: int, depth: int) -> void:
 		&"cart":
 			_prop(&"cart", Vector2i(x - 2, c.y))
 			layout.specials.append({"type": &"merchant", "cell": Vector2i(x + 1, c.y)})
+			layout.breakables.append({"look": &"crate", "cell": Vector2i(x + 3, c.y)})
+			_reserve(c, r)
+		&"stranger":
+			# a wanderer with an errand (the quest board's giver)
+			_prop(&"campfire", Vector2i(x - 2, c.y), 0)
+			layout.specials.append({"type": &"quest", "cell": Vector2i(x + 1, c.y)})
 			_reserve(c, r)
 		&"graveyard":
 			for dx in [-4, -2, 0, 2, 4]:
@@ -341,6 +381,9 @@ func _build_poi(kind: StringName, x: int, r: int, depth: int) -> void:
 			_prop(&"well", c)
 			layout.chests.append({"cell": Vector2i(x + 2, c.y), "tier": 0})
 			_reserve(c, r)
+	# a note of the chronicle lies at the first shrine, tower or graveyard
+	if layout.lore_cell.x < 0 and kind in [&"shrine", &"tower", &"graveyard"]:
+		layout.lore_cell = Vector2i(x - 1, c.y) if kind != &"tower" else Vector2i(x - 2, c.y - 11)
 
 
 # --------------------------------------------------------- trees and props
@@ -397,6 +440,37 @@ func _props() -> void:
 			_prop(biome.rocks[rng.randi() % biome.rocks.size()], c, -1)
 		elif r < 0.09 and not biome.small.is_empty():
 			_prop(biome.small[rng.randi() % biome.small.size()], c, 1)
+
+
+## Trees to chop, boulders and ore veins, herbs and berry bushes, crosses
+## over buried treasure, crates by the road.
+func _resources(screens: int) -> void:
+	for p in layout.surface_props:
+		var tex := String(p["tex"])
+		if tex.begins_with("tree") and tex != "tree_dead" and rng.randf() < 0.5:
+			layout.resources.append({"kind": &"tree", "cell": p["cell"]})
+		elif tex == "rock_big" or tex == "rock_red":
+			layout.resources.append({"kind": &"boulder", "cell": p["cell"]})
+	var add := func(kind: StringName, count: int) -> void:
+		for i in count:
+			var x := rng.randi_range(SAFE_START + 4, layout.width - 12)
+			if _busy_cols.has(x):
+				continue
+			var c := ground_cell(x)
+			if _taken.has(c) or layout.get_tile(c.x, c.y) != T.EMPTY:
+				continue
+			layout.resources.append({"kind": kind, "cell": c})
+			_reserve(c, 1)
+	add.call(&"vein", rng.randi_range(1, 2) + screens / 5)
+	add.call(&"herb", rng.randi_range(2, 4))
+	add.call(&"berries", rng.randi_range(1, 3))
+	add.call(&"dig", rng.randi_range(0, 2))
+	for i in rng.randi_range(1, 3):
+		var x := rng.randi_range(SAFE_START + 4, layout.width - 12)
+		var c := ground_cell(x)
+		if not _busy_cols.has(x) and not _taken.has(c) and layout.get_tile(c.x, c.y) == T.EMPTY:
+			layout.breakables.append({"look": [&"barrel", &"crate"][rng.randi() % 2], "cell": c})
+			_reserve(c, 1)
 
 
 func _min_ground(x0: int, x1: int) -> int:

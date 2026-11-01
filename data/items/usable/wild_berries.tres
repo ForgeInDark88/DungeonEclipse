@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="UsableItemData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/item_effect.gd" id="e1"]
+[ext_resource type="Script" path="res://scripts/effects/heal_effect.gd" id="e2"]
+[ext_resource type="Script" path="res://scripts/data/usable_item_data.gd" id="e4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/wild_berries.png" id="e5"]
+
+[sub_resource type="Resource" id="s1"]
+script = ExtResource("e2")
+amount = 12
+percent = 0.0
+
+[resource]
+script = ExtResource("e4")
+effects = Array[ExtResource("e1")]([SubResource("s1")])
+consume_on_use = true
+cooldown = 0.4
+use_animation = &"use"
+use_sound = &"item_use"
+id = &"wild_berries"
+display_name = "Лесные ягоды"
+description = "Кисло-сладкие, собраны с куста на поверхности."
+icon = ExtResource("e5")
+item_type = 1
+rarity = 0
+item_level = 1
+unique = false
+max_stack = 20
+stat_bonuses = {}
+price = 4
+currency_value = 0

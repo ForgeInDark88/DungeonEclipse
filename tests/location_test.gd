@@ -119,6 +119,8 @@ func _check_location(node: Dictionary, tag: String) -> void:
 				check(not surface_nav.ground_path(sub.start_cell, poi["cell"], CLEARANCE).is_empty(),
 						"%s: point of interest %s at %s is reachable" % [tag, poi["type"], poi["cell"]])
 			for ch in sub.chests:
+				if ch.get("secret", false):
+					continue  # behind a cracked wall: a pickaxe or a bomb first
 				stats["paths"] += 1
 				check(not surface_nav.ground_path(sub.start_cell, ch["cell"], 1).is_empty(),
 						"%s: surface chest at %s is reachable" % [tag, ch["cell"]])

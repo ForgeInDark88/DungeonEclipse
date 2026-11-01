@@ -204,9 +204,15 @@ func enemy_by_id(id: StringName) -> EnemyData:
 	return null
 
 
-func enemies_for_floor(floor_number: int, biome_id: StringName = &"") -> Array[EnemyData]:
+func enemies_for_floor(floor_number: int, biome_id: StringName = &"", night := false) -> Array[EnemyData]:
 	var list: Array[EnemyData] = []
+	# the open land has its own life; the floors theirs
+	var surface := surface_biomes.has(biome_id)
 	for e in enemies:
+		if e.habitat != &"any" and (e.habitat == &"surface") != surface:
+			continue
+		if e.night_only != night:
+			continue
 		if e.min_floor <= floor_number and (e.biomes.is_empty() or biome_id == &"" or biome_id in e.biomes):
 			list.append(e)
 	return list

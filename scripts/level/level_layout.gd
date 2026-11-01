@@ -52,6 +52,10 @@ var surface_props: Array[Dictionary] = []
 var water: Array[Rect2i] = []
 var ravines: Array[Rect2i] = []
 var pois: Array[Dictionary] = []
+## Surface: things to gather {"kind": ResourceNode kind, "cell"}, barrels
+## and crates {"look", "cell"}.
+var resources: Array[Dictionary] = []
+var breakables: Array[Dictionary] = []
 ## A location of several layers stacked into one level (LocationBuilder):
 ## [{layer: int, rect: Rect2i (cells), origin: Vector2i, layout: LevelLayout,
 ##   depth: int, biome: BiomeData, kind: LocationInstance.Kind}]. Empty for
