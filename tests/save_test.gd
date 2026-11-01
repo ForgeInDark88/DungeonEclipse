@@ -120,5 +120,28 @@ func _initialize() -> void:
 	check(not sm.has_expedition(), "an expedition save can be deleted (death)")
 	for n in range(1, sm.SLOT_COUNT + 1):
 		sm.delete_slot(n)
+
+	# ------------------------------------------- network settings, profiles
+	NetSettings.path = "user://test_net_settings.cfg"
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(NetSettings.path))
+	check(int(NetSettings.get_value("port")) == 7777 and NetSettings.rules()["path"] == "vote", "network settings start at the defaults")
+	NetSettings.set_value("port", 7801)
+	NetSettings.set_value("friendly_fire", "off")
+	NetSettings.set_value("nick", "Тест")
+	check(int(NetSettings.get_value("port")) == 7801 and NetSettings.rules()["friendly_fire"] == "off"
+			and String(NetSettings.get_value("nick")) == "Тест", "network settings are kept")
+	var pp = root.get_node("PlayerProfiles")
+	pp.identity_path = "user://test_identity.cfg"
+	var tok: String = pp.local_token()
+	check(tok != "" and pp.local_token() == tok, "the token stays the same")
+	pp.reset_token()
+	check(pp.local_token() != tok, "a reset gives a new token")
+	var book = load("res://scripts/ui/multiplayer_book.gd").new()
+	root.add_child(book)
+	await process_frame
+	check(book.get_child_count() > 0, "the multiplayer screen opens")
+	book.close()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(NetSettings.path))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(pp.identity_path))
 	print("FAILURES: %d" % fails)
 	quit(1 if fails > 0 else 0)

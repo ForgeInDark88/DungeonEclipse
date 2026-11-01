@@ -65,12 +65,17 @@ func _ready() -> void:
 	trade.name = "Trade"
 	add_child(trade)
 	add_child(SessionHud.new())  # after the trade node: it listens to it
+	EventBus.player_died.connect(func() -> void: report(&"died"))
+	EventBus.item_collected.connect(func(item: ItemData, _pos: Vector2) -> void:
+		if item and item.rarity >= ItemData.Rarity.EPIC and ItemDatabase.items.has(item.id):
+			report(&"found", item.id))
 
 
 # ================================================================== host
 ## Hosts the world of `slot`: loads it, then listens. "" on success, else
-## the reason.
-func host_world(slot: int, port := DEFAULT_PORT, p_password := "", seats := Net.MAX_PLAYERS, discoverable := true) -> String:
+## the reason. `rules`: the session rules to write into the world (SETTINGS
+## keys; the host form passes the network settings of the menu).
+func host_world(slot: int, port := DEFAULT_PORT, p_password := "", seats := Net.MAX_PLAYERS, discoverable := true, rules := {}) -> String:
 	if Net.active:
 		Net.leave()
 	if not GameFlow.continue_game(slot):
@@ -83,10 +88,15 @@ func host_world(slot: int, port := DEFAULT_PORT, p_password := "", seats := Net.
 	_host_port = port
 	password = p_password
 	world_name = GameFlow.world_name
+	for k in rules:
+		if SETTINGS.has(k) and String(rules[k]) in SETTINGS[k] and GameState.town:
+			GameState.town.set_flag(k, String(rules[k]))
 	roster.clear()
 	_accepted.clear()
 	chat_log.clear()
-	var nick := normalize_nick(SaveManager.last_name)
+	var nick := normalize_nick(String(NetSettings.get_value("nick")))
+	if nick == "":
+		nick = normalize_nick(SaveManager.last_name)
 	if nick == "":
 		nick = tr("Хост")
 	roster[1] = {"nick": nick, "key": nick_key(nick), "status": "online", "ready": true,
@@ -263,7 +273,7 @@ func admit(peer: int, nick: String, hero: Hero) -> void:
 			"race": hero.race.id, "cls": hero.class_data.id, "female": hero.female}
 	Net.players[peer] = _net_info(roster[peer])
 	_broadcast_roster()
-	system_line("%s входит в мир.", [nick])  # i18n-src
+	system_line("%s входит в мир.", [nick], &"portal")  # i18n-src
 	enter_world.rpc_id(peer, RunCodec.save_hero(hero), GameFlow.flow_payload(), world_name)
 
 
@@ -338,7 +348,7 @@ func kick(peer: int) -> void:
 	Net.players.erase(peer)
 	reject(peer, "kicked")
 	_broadcast_roster()
-	system_line("%s исключён из сессии.", [nick])  # i18n-src
+	system_line("%s исключён из сессии.", [nick], &"ui_book_close")  # i18n-src
 
 
 ## Net: a peer is gone. The host keeps its place as «offline» (the hero
@@ -354,7 +364,7 @@ func on_peer_left(peer: int) -> void:
 		roster[peer]["status"] = "offline"
 		roster[peer]["ready"] = false
 		Net.players.erase(peer)
-		system_line("%s отключился.", [String(roster[peer]["nick"])])  # i18n-src
+		system_line("%s отключился.", [String(roster[peer]["nick"])], &"ui_book_close")  # i18n-src
 		_broadcast_roster()
 	get_tree().call_group("net_game", "on_peer_left", peer)
 
@@ -419,20 +429,66 @@ func chat_line(nick: String, text: String) -> void:
 
 ## Host: a line of the session's log (joins, leaves, deaths, finds) for
 ## everyone, each in their own language.
-func system_line(fmt: String, args: Array = []) -> void:
+## An item id among the args is shown by its name (in the reader's language).
+## `sfx`: the sound of the line (a join, a fall, a find).
+func system_line(fmt: String, args: Array = [], sfx: StringName = &"ui_click") -> void:
 	if not Net.is_host:
 		return
-	_system(fmt, args)
-	_system.rpc(fmt, args)
+	_system(fmt, args, sfx)
+	_system.rpc(fmt, args, sfx)
 
 
 @rpc("authority", "call_remote", "reliable")
-func _system(fmt: String, args: Array) -> void:
-	var text := tr(fmt) % args if not args.is_empty() else tr(fmt)
+func _system(fmt: String, args: Array, sfx: StringName = &"ui_click") -> void:
+	var shown := []
+	for a in args:
+		var item: ItemData = ItemDatabase.items.get(a) if a is StringName else null
+		shown.append(tr(item.display_name) if item else a)
+	var text := tr(fmt) % shown if not shown.is_empty() else tr(fmt)
 	chat_log.append(["", text])
 	if chat_log.size() > 50:
 		chat_log.pop_front()
 	chat_received.emit("", text)
+	AudioManager.play_ui(sfx)
+
+
+## This machine's news for the session log: &"died" (my hero fell),
+## &"found" (an epic or legendary item, `arg` its id).
+func report(kind: StringName, arg: StringName = &"") -> void:
+	if not session or not Net.active:
+		return
+	if Net.is_host:
+		_report(1, kind, arg)
+	else:
+		_report_rpc.rpc_id(1, kind, arg)
+
+
+var _report_at := {}
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _report_rpc(kind: StringName, arg: StringName) -> void:
+	if not Net.is_host:
+		return
+	var peer := multiplayer.get_remote_sender_id()
+	var now := Time.get_ticks_msec()
+	if now - int(_report_at.get(peer, -10000)) < 1000:
+		return  # a flood
+	_report_at[peer] = now
+	_report(peer, kind, arg)
+
+
+func _report(peer: int, kind: StringName, arg: StringName) -> void:
+	if not roster.has(peer):
+		return
+	var nick := String(roster[peer]["nick"])
+	match kind:
+		&"died":
+			system_line("%s пал в бою.", [nick], &"player_death")  # i18n-src
+		&"found":
+			var item: ItemData = ItemDatabase.items.get(arg)
+			if item and item.rarity >= ItemData.Rarity.EPIC:
+				system_line("%s находит: %s", [nick, arg], &"pickup_epic")  # i18n-src
 
 
 # -------------------------------------------------------- world settings
@@ -456,6 +512,7 @@ func cycle_setting(key: String) -> void:
 	var vals: Array = SETTINGS[key]
 	var i := vals.find(setting(key))
 	GameState.town.set_flag(key, vals[(i + 1) % vals.size()])
+	NetSettings.set_value(key, setting(key))  # the next session starts so too
 	GameFlow.save_town()
 	town_net.push_town()
 	roster_changed.emit()
@@ -639,7 +696,7 @@ func _revive(by: int, target: int) -> void:
 	if helper == null or fallen == null or helper.dead or not fallen.dead \
 			or helper.global_position.distance_to(fallen.global_position) > 48.0:
 		return
-	system_line("%s поднимает %s.", [String(roster.get(by, {}).get("nick", "?")), String(roster.get(target, {}).get("nick", "?"))])  # i18n-src
+	system_line("%s поднимает %s.", [String(roster.get(by, {}).get("nick", "?")), String(roster.get(target, {}).get("nick", "?"))], &"cast_heal")  # i18n-src
 	if target == multiplayer.get_unique_id():
 		_revived()
 	else:

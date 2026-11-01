@@ -62,6 +62,7 @@ func _host() -> void:
 		town.hero = RunCodec.save_hero(hero)
 		gs.town = town
 		sm.save_town(town, {"name": "Сетевой мир"})
+	NetSettings.path = "user://test_net_settings_host_%d.cfg" % env_int("PORT", 7790)
 	sm.last_name = "Хозяин"
 	var err: String = wn.host_world(1, env_int("PORT", 7790), OS.get_environment("PASS"), env_int("SEATS", 3), false)
 	check(err == "", "the world is hosted (%s)" % err)
@@ -201,6 +202,21 @@ func _host_coop() -> void:
 		await create_timer(0.25).timeout
 		t += 0.25
 	check(wn.roster.size() == 3, "two guests joined")
+	await create_timer(1.5).timeout
+	var log_text := str(wn.chat_log)
+	check(log_text.contains("Ann") and log_text.contains("Ben"), "the session log tells who came")
+	var epic_name := ""
+	for id in root.get_node("ItemDatabase").items:
+		var it = root.get_node("ItemDatabase").items[id]
+		if it.rarity >= ItemData.Rarity.EPIC:
+			epic_name = TranslationServer.translate(it.display_name)
+			break
+	var waited := 0.0
+	while not log_text.contains(epic_name) and waited < 10.0:
+		await create_timer(0.25).timeout
+		waited += 0.25
+		log_text = str(wn.chat_log)
+	check(epic_name != "" and log_text.contains(epic_name), "the session log tells a guest's find")
 	# the generator: one seed, one level
 	var a := LevelGenerator.new().generate(7, 99)
 	var b := LevelGenerator.new().generate(7, 99)
@@ -290,6 +306,15 @@ func _client() -> void:
 		wn.close_session()
 		return
 	if OS.get_environment("SCENARIO") == "coop":
+		if nick == "Ann":
+			var wait := 0.0
+			while not wn.roster.has(root.get_multiplayer().get_unique_id()) and wait < 10.0:
+				await create_timer(0.2).timeout
+				wait += 0.2
+			for id in root.get_node("ItemDatabase").items:
+				if root.get_node("ItemDatabase").items[id].rarity >= ItemData.Rarity.EPIC:
+					wn.report(&"found", id)
+					break
 		var k := 0
 		var tt := 0.0
 		var printed := {}

@@ -26,9 +26,10 @@ func _ready() -> void:
 	AudioManager.play_music(&"menu")
 	left_page.add_theme_constant_override("separation", 3)
 	left_page.add_child(UIStyle.label(tr("Присоединиться к миру"), 11))
-	_ip = _field(tr("Адрес:"), "127.0.0.1", tr("IP или домен хоста"))
-	_port = _field(tr("Порт:"), str(WorldNet.DEFAULT_PORT), "7777")
-	_nick = _field(tr("Ник:"), SaveManager.last_name, tr("Ваш ник"))
+	_ip = _field(tr("Адрес:"), String(NetSettings.get_value("address")), tr("IP или домен хоста"))
+	_port = _field(tr("Порт:"), str(NetSettings.get_value("join_port")), "7777")
+	var default_nick := String(NetSettings.get_value("nick"))
+	_nick = _field(tr("Ник:"), default_nick if default_nick != "" else SaveManager.last_name, tr("Ваш ник"))
 	_nick.max_length = WorldNet.NICK_MAX
 	_pass = _field(tr("Пароль:"), "", tr("если есть"))
 	_pass.secret = true
@@ -145,6 +146,9 @@ func _join() -> void:
 		_status.text = WorldNet.fail_text("nick_bad")
 		return
 	SaveManager.last_name = nick
+	NetSettings.set_value("address", _ip.text.strip_edges())
+	if _port.text.is_valid_int():
+		NetSettings.set_value("join_port", int(_port.text))
 	SaveManager.save_settings()
 	Net.start_discovery(false)
 	_status.text = tr("Подключение к %s:%s…") % [_ip.text.strip_edges(), _port.text.strip_edges()]

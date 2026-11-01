@@ -69,15 +69,8 @@ func _ready() -> void:
 	right_page.add_child(BookPageScreen.button(tr("Загрузить"), func() -> void: _open_slots("load")))
 	var start := BookPageScreen.button(tr("Новая игра"), func() -> void: _open_slots("new"))
 	right_page.add_child(start)
-	# multiplayer on one row: host / join
-	var net := HBoxContainer.new()
-	net.add_theme_constant_override("separation", 4)
-	for entry in [[tr("Хостить"), func() -> void: _open_slots("host")],
-			[tr("Присоединиться"), func() -> void: get_tree().change_scene_to_file("res://scenes/ui/net_join.tscn")]]:
-		var nb := BookPageScreen.button(entry[0], entry[1])
-		nb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		net.add_child(nb)
-	right_page.add_child(net)
+	# host / join, my profiles, the network settings
+	right_page.add_child(BookPageScreen.button(tr("Мультиплеер"), func() -> void: add_child(MultiplayerBook.new())))
 	right_page.add_child(BookPageScreen.button(tr("Настройки"), open_settings))
 	# two small buttons on one row: the page holds a «Continue» line too
 	var row := HBoxContainer.new()

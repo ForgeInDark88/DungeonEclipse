@@ -122,23 +122,32 @@ func _select(n: int) -> void:
 
 ## Hosting the world of slot `n`: port, password, seats, LAN visibility.
 func _host_form(n: int) -> void:
-	var port := _labeled_edit(tr("Порт"), str(WorldNet.DEFAULT_PORT))
-	var pw := _labeled_edit(tr("Пароль"), "")
+	var port := _labeled_edit(tr("Порт"), str(NetSettings.get_value("port")))
+	var pw := _labeled_edit(tr("Пароль"), String(NetSettings.get_value("password")))
 	pw.placeholder_text = tr("необязательно")
+	pw.secret = true
 	var seats := SpinBox.new()
 	seats.min_value = 2
 	seats.max_value = Net.MAX_PLAYERS
-	seats.value = Net.MAX_PLAYERS
+	seats.value = int(NetSettings.get_value("seats"))
 	seats.prefix = tr("Игроков:")
 	_details.add_child(seats)
 	var lan := CheckBox.new()
 	lan.text = tr("Виден в локальной сети")
-	lan.button_pressed = true
+	lan.button_pressed = bool(NetSettings.get_value("lan"))
 	lan.add_theme_font_size_override("font_size", 8)
 	lan.add_theme_color_override("font_color", UIStyle.INK)
 	_details.add_child(lan)
+	_details.add_child(UIStyle.label(tr("Правила сессии — в «Мультиплеер» → «Сетевые настройки» и в лобби (F1)."), 6, UIStyle.INK_SOFT))
 	var go := _button(tr("Открыть мир для сети"), func() -> void:
-		var err := WorldNet.host_world(n, int(port.text), pw.text, int(seats.value), lan.button_pressed)
+		if not port.text.is_valid_int() or int(port.text) <= 0 or int(port.text) > 65535:
+			_status.text = tr("Порт — число от 1 до 65535.")
+			return
+		NetSettings.set_value("port", int(port.text))
+		NetSettings.set_value("password", pw.text)
+		NetSettings.set_value("seats", int(seats.value))
+		NetSettings.set_value("lan", lan.button_pressed)
+		var err := WorldNet.host_world(n, int(port.text), pw.text, int(seats.value), lan.button_pressed, NetSettings.rules())
 		if err == "load":
 			_status.text = tr("Мир не загрузился: файл повреждён.")
 		elif err == "port":

@@ -235,6 +235,10 @@ msgstr "%s for %d s"
 msgid "%s на %d%% на %.1f с%s"
 msgstr "%s by %d%% for %.1f s%s"
 
+#: scripts/autoload/world_net.gd
+msgid "%s находит: %s"
+msgstr "%s finds: %s"
+
 #: scripts/ui/trade_book.gd
 msgid "%s отдаёт:"
 msgstr "%s gives:"
@@ -242,6 +246,10 @@ msgstr "%s gives:"
 #: scripts/autoload/world_net.gd
 msgid "%s отключился."
 msgstr "%s disconnected."
+
+#: scripts/autoload/world_net.gd
+msgid "%s пал в бою."
+msgstr "%s fell in battle."
 
 #: scripts/ui/tooltip_text.gd
 msgid "%s плохо владеет этим оружием: −%d%% урона, −%d%% скорости"
@@ -302,6 +310,10 @@ msgstr "%s — %d g"
 #: scripts/ui/camp_screen.gd
 msgid "%s — %d оск."
 msgstr "%s — %d shards"
+
+#: scripts/ui/multiplayer_book.gd
+msgid "%s — %s, ур. %d · мир «%s»"
+msgstr "%s — %s, lv. %d · world “%s”"
 
 #: scripts/ui/journal_book.gd
 msgid "%s — убито %d · с глубины %d"
@@ -1175,7 +1187,7 @@ msgstr "Take only the supplies and leave."
 msgid "Видал лучшие времена, но всё ещё режет."
 msgstr "It has seen better days, but it still cuts."
 
-#: scripts/ui/slots_screen.gd
+#: scripts/ui/multiplayer_book.gd
 msgid "Виден в локальной сети"
 msgstr "Visible on the local network"
 
@@ -1390,6 +1402,10 @@ msgstr "You charge into battle. Win, and the prisoners are free!"
 #: scripts/ui/run_result_screen.gd
 msgid "Вы вернулись живым, и всё найденное — ваше."
 msgstr "You came back alive, and everything you found is yours."
+
+#: scripts/ui/multiplayer_book.gd
+msgid "Вы ещё не играли в чужих мирах."
+msgstr "You have not played in other people's worlds yet."
 
 #: scripts/ui/building_book.gd
 msgid "Вы здоровы"
@@ -1862,6 +1878,10 @@ msgstr "Longbow"
 #: scripts/game/game.gd
 msgid "Для города: %s"
 msgstr "For the town: %s"
+
+#: scripts/ui/multiplayer_book.gd
+msgid "Для миров, которые вы хостите:"
+msgstr "For the worlds you host:"
 
 #: data
 msgid "Дневник могильщика, последняя страница"
@@ -2567,7 +2587,7 @@ msgstr "Player"
 msgid "Игрок в кости"
 msgstr "The Dice Player"
 
-#: scripts/ui/slots_screen.gd
+#: scripts/ui/multiplayer_book.gd
 msgid "Игроков:"
 msgstr "Players:"
 
@@ -3407,6 +3427,10 @@ msgstr "Wings"
 msgid "Кто ест их каждый день, начинает видеть во сне чёрное солнце. Оно не светит — оно смотрит. Сегодня мой ученик не проснулся. Под его кожей светились те же голубые жилки, что в шляпках. Я сожгла запасы. Город меня проклял."
 msgstr "Those who eat them every day begin to dream of a black sun. It doesn't shine — it watches. Today my apprentice didn't wake up. Under his skin glowed the same blue veins as in the caps. I burned the stores. The town cursed me."
 
+#: scripts/ui/multiplayer_book.gd
+msgid "Кто строит"
+msgstr "Who builds"
+
 #: scripts/ui/camp_screen.gd
 msgid "Куда идти дальше, решает хост."
 msgstr "The host decides where to go next."
@@ -3999,6 +4023,10 @@ msgstr "Can pick a locked chest — with some luck."
 msgid "Можно оттолкнуться от воздуха ещё раз."
 msgstr "You can push off the air once more."
 
+#: scripts/ui/multiplayer_book.gd
+msgid "Мои профили"
+msgstr "My profiles"
+
 #: scripts/ui/building_book.gd
 msgid "Мой сейф"
 msgstr "My safe"
@@ -4106,6 +4134,10 @@ msgstr "Male"
 #: scripts/ui/settings_book.gd
 msgid "Музыка"
 msgstr "Music"
+
+#: scripts/ui/main_menu.gd
+msgid "Мультиплеер"
+msgstr "Multiplayer"
 
 #: scripts/ui/smith_book.gd
 msgid "Мусор: Ctrl+ЛКМ в рюкзаке"
@@ -4535,6 +4567,10 @@ msgstr "Invulnerable"
 msgid "Нечего лечить"
 msgstr "Nothing to cure"
 
+#: scripts/ui/multiplayer_book.gd
+msgid "Ник"
+msgstr "Nick"
+
 #: scripts/ui/net_join_screen.gd
 msgid "Ник:"
 msgstr "Nickname:"
@@ -4806,6 +4842,10 @@ msgstr "Fire"
 #: data
 msgid "Огонь не жжёт, а усиливает."
 msgstr "Fire doesn't burn — it empowers."
+
+#: scripts/ui/multiplayer_book.gd
+msgid "Огонь по своим"
+msgstr "Friendly fire"
 
 #: scripts/ui/session_hud.gd
 msgid "Огонь по своим: %s"
@@ -5263,7 +5303,7 @@ msgstr "Parry / roll / blink"
 msgid "Парирование!"
 msgstr "Parry!"
 
-#: scripts/ui/slots_screen.gd
+#: scripts/ui/multiplayer_book.gd
 msgid "Пароль"
 msgstr "Password"
 
@@ -5747,13 +5787,17 @@ msgstr "Pray."
 msgid "Поножи стража"
 msgstr "Guardian Greaves"
 
-#: scripts/ui/slots_screen.gd
+#: scripts/ui/multiplayer_book.gd
 msgid "Порт"
 msgstr "Port"
 
 #: scripts/ui/slots_screen.gd
 msgid "Порт %s занят или недоступен."
 msgstr "Port %s is busy or unavailable."
+
+#: scripts/ui/slots_screen.gd
+msgid "Порт — число от 1 до 65535."
+msgstr "The port is a number from 1 to 65535."
 
 #: scripts/ui/net_join_screen.gd
 msgid "Порт:"
@@ -5915,6 +5959,14 @@ msgstr "Honour the king's memory."
 msgid "Праведный гнев"
 msgstr "Righteous Wrath"
 
+#: scripts/ui/multiplayer_book.gd
+msgid "Правила можно менять и в лобби сессии (F1)."
+msgstr "The rules can also be changed in the session lobby (F1)."
+
+#: scripts/ui/slots_screen.gd
+msgid "Правила сессии — в «Мультиплеер» → «Сетевые настройки» и в лобби (F1)."
+msgstr "Session rules: “Multiplayer” → “Network settings” and the lobby (F1)."
+
 #: scripts/core/input_bindings.gd
 msgid "Предмет 1"
 msgstr "Item 1"
@@ -6007,7 +6059,7 @@ msgstr "Accept"
 msgid "Принять дар."
 msgstr "Accept the gift."
 
-#: scripts/ui/main_menu.gd
+#: scripts/ui/multiplayer_book.gd
 msgid "Присоединиться"
 msgstr "Join"
 
@@ -6206,6 +6258,10 @@ msgstr "Path chosen: \"%s\""
 #: scripts/ui/skill_tree_book.gd
 msgid "Путь избран: «%s»"
 msgstr "Path chosen: \"%s\""
+
+#: scripts/ui/multiplayer_book.gd
+msgid "Путь по карте"
+msgstr "Map path"
 
 #: scripts/ui/session_hud.gd
 msgid "Путь: %s"
@@ -6619,6 +6675,10 @@ msgstr "Sapper"
 msgid "Сбросить навыки — %d з."
 msgstr "Reset skills — %d g"
 
+#: scripts/ui/multiplayer_book.gd
+msgid "Сбросить токен"
+msgstr "Reset token"
+
 #: data
 msgid "Сваришь мне зелий?"
 msgstr "Will you brew me potions?"
@@ -6882,6 +6942,10 @@ msgstr "A series of lightning-fast blows at everyone around."
 #: data
 msgid "Серия молниеносных ударов."
 msgstr "A series of lightning-fast blows."
+
+#: scripts/ui/multiplayer_book.gd
+msgid "Сетевые настройки"
+msgstr "Network settings"
 
 #: scripts/core/stat_types.gd
 msgid "Сила"
@@ -7735,6 +7799,18 @@ msgstr "Then come back with new trophies."
 msgid "Тогда свет вернётся."
 msgstr "Then the light will return."
 
+#: scripts/ui/multiplayer_book.gd
+msgid "Токен сброшен."
+msgstr "Token reset."
+
+#: scripts/ui/multiplayer_book.gd
+msgid "Токен связывает ваши профили с этим компьютером. После сброса хосты спросят, привязать ли вас заново."
+msgstr "The token ties your profiles to this computer. After a reset, hosts will ask whether to bind you again."
+
+#: scripts/ui/multiplayer_book.gd
+msgid "Токен этого компьютера: %s…"
+msgstr "This computer's token: %s…"
+
 #: data
 msgid "Толстокожие враги"
 msgstr "Thick-Skinned Foes"
@@ -7794,6 +7870,10 @@ msgstr "Berserker Totem"
 #: data
 msgid "Точильный камень"
 msgstr "Whetstone"
+
+#: scripts/ui/multiplayer_book.gd
+msgid "Точно сбросить? Нажмите ещё раз"
+msgstr "Really reset? Press again"
 
 #: scripts/ui/slots_screen.gd
 msgid "Точно стереть «%s»?"
@@ -8359,7 +8439,7 @@ msgstr "The host does not answer."
 msgid "Хост покинул игру"
 msgstr "The host left the game"
 
-#: scripts/ui/main_menu.gd
+#: scripts/ui/multiplayer_book.gd
 msgid "Хостить"
 msgstr "Host"
 
@@ -8895,7 +8975,7 @@ msgstr "free"
 msgid "бомба"
 msgstr "a bomb"
 
-#: scripts/ui/session_hud.gd
+#: scripts/ui/multiplayer_book.gd
 msgid "бомбы"
 msgstr "bombs"
 
@@ -8927,7 +9007,7 @@ msgstr "on an expedition"
 msgid "в ярости!"
 msgstr "is enraged!"
 
-#: scripts/ui/session_hud.gd
+#: scripts/ui/multiplayer_book.gd
 msgid "все"
 msgstr "everyone"
 
@@ -8951,7 +9031,7 @@ msgstr "the hero who shattered the Eclipse"
 msgid "глубина: %d"
 msgstr "depth: %d"
 
-#: scripts/ui/session_hud.gd
+#: scripts/ui/multiplayer_book.gd
 msgid "голосование"
 msgstr "vote"
 
@@ -9083,13 +9163,17 @@ msgstr "watches the others and rises on the next floor. Arrows at the screen edg
 msgid "нападает с потолка"
 msgstr "ambushes from the ceiling"
 
-#: scripts/ui/slots_screen.gd
+#: scripts/ui/multiplayer_book.gd
 msgid "необязательно"
 msgstr "optional"
 
 #: scripts/enemies/enemy.gd
 msgid "нет"
 msgstr "none"
+
+#: scripts/ui/multiplayer_book.gd
+msgid "ник по умолчанию"
+msgstr "default nick"
 
 #: scripts/ui/run_result_screen.gd
 msgid "ничего ценного"
@@ -9199,6 +9283,10 @@ msgstr "relics and cursed goods"
 msgid "ресурсов нет"
 msgstr "no resources"
 
+#: scripts/ui/multiplayer_book.gd
+msgid "решает хост"
+msgstr "host decides"
+
 #: scripts/ui/expedition_map_screen.gd
 msgid "руда и камень для города"
 msgstr "ore and stone for the town"
@@ -9246,6 +9334,10 @@ msgstr "guardians and the Eclipse itself.\n\nEvery 5 floors there is a guardian.
 #: scripts/autoload/meta_progress.gd
 msgid "стражи: %d"
 msgstr "guardians: %d"
+
+#: scripts/ui/multiplayer_book.gd
+msgid "только хост"
+msgstr "host only"
 
 #: data
 msgid "точности"
