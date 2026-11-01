@@ -62,22 +62,44 @@ func _on_seal_changed(kills: int, required: int, initial := false) -> void:
 
 func get_prompt() -> String:
 	if _sealed:
-		return "Выход запечатан: убито %d из %d" % [_kills, _required]
-	var text := "Спуститься глубже (этаж %d)" % (GameState.floor_number + 1)
+		return tr("Выход запечатан: убито %d из %d") % [_kills, _required]
+	if GameState.expedition and Net.world_session:
+		var nsp := get_tree().get_first_node_in_group("net_game") as NetSync
+		var cp := nsp.party_count_at(global_position) if nsp else Vector2i(1, 1)
+		return tr("Выход на карту · отряд у выхода: %d из %d") % [cp.x, cp.y]
+	if GameState.expedition:
+		return tr("Выход: вернуться на карту похода")
+	var text := tr("Спуститься глубже (этаж %d)") % (GameState.floor_number + 1)
 	var ns := get_tree().get_first_node_in_group("net_game") as NetSync if Net.active else null
 	if ns:
 		var c := ns.party_count_at(global_position)
 		if c.y > 1:
-			text += " · отряд у выхода: %d из %d" % [c.x, c.y]
+			text += tr(" · отряд у выхода: %d из %d") % [c.x, c.y]
 	return text
 
 
 func interact(_player: Node) -> void:
 	if _sealed:
-		EventBus.message.emit("Печать держится: нужно убить ещё %d врагов" % (_required - _kills))
+		EventBus.message.emit(tr("Печать держится: нужно убить ещё %d врагов") % (_required - _kills))
 		AudioManager.play_sfx(&"dig", global_position, -6.0)
 		return
 	AudioManager.play_sfx(&"portal")
+	if GameState.expedition and Net.world_session:
+		# Co-op: the party leaves together, the host moves everyone on.
+		var nsx := get_tree().get_first_node_in_group("net_game") as NetSync
+		if nsx:
+			if Net.is_host:
+				nsx.host_party_move(Net.multiplayer.get_unique_id(), &"exit")
+			else:
+				nsx.request_floor.rpc_id(1, &"exit")
+		return
+	if GameState.expedition:
+		var game := get_tree().current_scene
+		if game and game.has_method("finish_location"):
+			game.finish_location()
+		else:
+			GameFlow.location_cleared()
+		return
 	if Net.active and not Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:

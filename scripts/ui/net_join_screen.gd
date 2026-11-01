@@ -1,124 +1,120 @@
 extends BookPageScreen
-## Join screen: finds hosted games on the LAN by broadcast, lets the player
-## pick a hero, and connects. When the host starts, everyone is pulled into
-## the run.
+## Join a world session. Left page: address (IP or domain), port, nickname,
+## password, the worlds found on the LAN (UDP broadcast) and the status of
+## the attempt (connecting, wrong version, wrong password, full, nickname
+## taken, waiting for the host to bind this device). Right page: the hero
+## to make if this nickname has no profile in that world yet.
 
-const FIND_TIME := 3.0
+const FIND_EVERY := 1.5
 
 var _servers: ItemList
-var _name_edit: LineEdit
+var _ip: LineEdit
+var _port: LineEdit
+var _nick: LineEdit
+var _pass: LineEdit
 var _status: Label
-var _race_buttons: Array[Button] = []
-var _class_buttons: Array[Button] = []
+var _connect: Button
 var _female := false
 var _race: RaceData
 var _cls: ClassData
-var _find_left := FIND_TIME
+var _find_left := 0.5
+var _found: Array = []
 
 
 func _ready() -> void:
 	build_book(Vector2(560, 300))
 	AudioManager.play_music(&"menu")
-	left_page.add_child(UIStyle.label("Присоединиться (LAN)", 11))
-	var name_row := HBoxContainer.new()
-	name_row.add_theme_constant_override("separation", 6)
-	name_row.add_child(UIStyle.label("Ник:", 8))
-	_name_edit = LineEdit.new()
-	_name_edit.text = SaveManager.last_name
-	_name_edit.placeholder_text = "Ваш ник"
-	_name_edit.custom_minimum_size = Vector2(140, 0)
-	_name_edit.max_length = 16
-	name_row.add_child(_name_edit)
-	left_page.add_child(name_row)
-	left_page.add_child(UIStyle.label("Игры в сети:", 9, UIStyle.INK_SOFT))
+	left_page.add_theme_constant_override("separation", 3)
+	left_page.add_child(UIStyle.label(tr("Присоединиться к миру"), 11))
+	_ip = _field(tr("Адрес:"), String(NetSettings.get_value("address")), tr("IP или домен хоста"))
+	_port = _field(tr("Порт:"), str(NetSettings.get_value("join_port")), "7777")
+	var default_nick := String(NetSettings.get_value("nick"))
+	_nick = _field(tr("Ник:"), default_nick if default_nick != "" else SaveManager.last_name, tr("Ваш ник"))
+	_nick.max_length = WorldNet.NICK_MAX
+	_pass = _field(tr("Пароль:"), "", tr("если есть"))
+	_pass.secret = true
+	left_page.add_child(UIStyle.label(tr("Миры в локальной сети:"), 8, UIStyle.INK_SOFT))
 	_servers = ItemList.new()
-	_servers.custom_minimum_size = Vector2(230, 90)
-	_servers.add_theme_font_size_override("font_size", 8)
+	_servers.custom_minimum_size = Vector2(230, 56)
+	_servers.add_theme_font_size_override("font_size", 7)
+	_servers.item_selected.connect(func(i: int) -> void:
+		if i < _found.size():
+			_ip.text = String(_found[i]["ip"])
+			_port.text = str(int(_found[i].get("port", WorldNet.DEFAULT_PORT))))
 	left_page.add_child(_servers)
-	_status = UIStyle.label("Ищем хостов...", 8)
+	_status = UIStyle.label(tr("Ищем миры в сети…"), 7)
+	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_status.custom_minimum_size = Vector2(230, 0)
 	left_page.add_child(_status)
 
-	right_page.add_child(UIStyle.label("Ваш герой", 10))
-	var race_row := HBoxContainer.new()
-	right_page.add_child(race_row)
-	var race_group := ButtonGroup.new()
-	for r in ItemDatabase.races:
-		if not MetaProgress.is_unlocked(r):
-			continue
-		var b := _toggle(r.display_name, race_group)
-		b.pressed.connect(func() -> void: _race = r)
-		race_row.add_child(b)
-		_race_buttons.append(b)
-	var class_row := HBoxContainer.new()
-	right_page.add_child(class_row)
-	var class_group := ButtonGroup.new()
-	for c in ItemDatabase.classes:
-		if not MetaProgress.is_unlocked(c):
-			continue
-		var b := _toggle(c.display_name, class_group)
-		b.pressed.connect(func() -> void: _cls = c)
-		class_row.add_child(b)
-		_class_buttons.append(b)
-	var sex_row := HBoxContainer.new()
-	right_page.add_child(sex_row)
-	var sex_group := ButtonGroup.new()
-	var male := _toggle("Мужчина", sex_group)
-	var female := _toggle("Женщина", sex_group)
-	male.button_pressed = true
-	female.pressed.connect(func() -> void: _female = true)
-	sex_row.add_child(male)
-	sex_row.add_child(female)
-	if not _race_buttons.is_empty():
-		_race_buttons[0].button_pressed = true
-		_race = ItemDatabase.races[0]
-	if not _class_buttons.is_empty():
-		_class_buttons[0].button_pressed = true
-		_cls = ItemDatabase.classes[0]
-
-	right_page.add_child(BookPageScreen.button("Подключиться", _join))
-	right_page.add_child(BookPageScreen.button("Обновить список", func() -> void:
-		Net.start_discovery(true)
-		_find_left = FIND_TIME))
-	right_page.add_child(BookPageScreen.button("Назад", func() -> void:
+	right_page.add_theme_constant_override("separation", 3)
+	right_page.add_child(UIStyle.label(tr("Новый герой"), 10))
+	var hint := UIStyle.label(tr("Если в этом мире у вашего ника уже есть герой, вы получите его со всем снаряжением. Иначе хост создаст этого:"), 7, UIStyle.INK_SOFT)
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.custom_minimum_size = Vector2(240, 0)
+	right_page.add_child(hint)
+	_row(ItemDatabase.races, func(r: RaceData) -> void: _race = r)
+	_row(ItemDatabase.classes, func(c: ClassData) -> void: _cls = c)
+	var sex := HBoxContainer.new()
+	var sg := ButtonGroup.new()
+	var m := _toggle(tr("Мужчина"), sg)
+	m.button_pressed = true
+	m.pressed.connect(func() -> void: _female = false)
+	var f := _toggle(tr("Женщина"), sg)
+	f.pressed.connect(func() -> void: _female = true)
+	sex.add_child(m)
+	sex.add_child(f)
+	right_page.add_child(sex)
+	_race = ItemDatabase.races[0]
+	_cls = ItemDatabase.classes[0]
+	var fill := Control.new()
+	fill.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	right_page.add_child(fill)
+	_connect = BookPageScreen.button(tr("Подключиться"), _join)
+	right_page.add_child(_connect)
+	right_page.add_child(BookPageScreen.button(tr("Назад"), func() -> void:
 		Net.start_discovery(false)
-		Net.leave()
+		if Net.active:
+			Net.leave()
+		WorldNet.session = false
 		get_tree().change_scene_to_file(GameState.MAIN_MENU)))
-
+	WorldNet.join_result.connect(_on_result)
+	WorldNet.hero_needed.connect(func() -> void:
+		_status.text = tr("Новый ник в этом мире: хост создаёт вашего героя…")
+		PlayerProfiles.create_hero(_race.id, _cls.id, _female))
 	Net.start_discovery(true)
-	multiplayer.connected_to_server.connect(_on_net_connected)
-	_servers.grab_focus()
+	_connect.grab_focus()
 
 
-func _process(delta: float) -> void:
-	if not Net._discovering:
-		return
-	_find_left -= delta
-	if _find_left <= 0.0:
-		_find_left = 1.5
-		_refresh_servers()
+func _field(label: String, value: String, placeholder: String) -> LineEdit:
+	var row := HBoxContainer.new()
+	var l := UIStyle.label(label, 8)
+	l.custom_minimum_size = Vector2(48, 0)
+	row.add_child(l)
+	var e := LineEdit.new()
+	e.text = value
+	e.placeholder_text = placeholder
+	e.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	e.add_theme_font_size_override("font_size", 8)
+	row.add_child(e)
+	left_page.add_child(row)
+	return e
 
 
-func _refresh_servers() -> void:
-	_servers.clear()
-	for s in Net.discovered():
-		_servers.add_item("Хост: %s — игроков: %d" % [s["names"], s["count"]])
-	if _servers.item_count == 0:
-		_status.text = "Игр не найдено. Хост должен нажать «Создать игру»."
-
-
-func _join() -> void:
-	if _servers.item_count == 0:
-		_status.text = "Сначала найдите игру в списке"
-		return
-	var picked := _servers.get_selected_items()
-	var idx := picked[0] if not picked.is_empty() else 0
-	var ip: String = Net.discovered()[idx]["ip"]
-	SaveManager.last_name = _name_edit.text.strip_edges()
-	SaveManager.save_settings()
-	Net.my_info = {"name": SaveManager.last_name if SaveManager.last_name != "" else "Гость",
-			"race": _race.id, "cls": _cls.id, "female": _female}
-	if not Net.join_game(ip):
-		_status.text = "Не удалось подключиться"
+func _row(list: Array, cb: Callable) -> void:
+	var row := HFlowContainer.new()
+	var g := ButtonGroup.new()
+	var first := true
+	for d in list:
+		if not MetaProgress.is_unlocked(d):
+			continue
+		var b := _toggle(d.display_name, g)
+		b.pressed.connect(func() -> void: cb.call(d))
+		if first:
+			b.button_pressed = true
+			first = false
+		row.add_child(b)
+	right_page.add_child(row)
 
 
 func _toggle(text: String, group: ButtonGroup) -> Button:
@@ -131,10 +127,45 @@ func _toggle(text: String, group: ButtonGroup) -> Button:
 	return b
 
 
-func _exit_tree() -> void:
+func _process(delta: float) -> void:
+	_find_left -= delta
+	if _find_left <= 0.0 and Net._discovering:
+		_find_left = FIND_EVERY
+		_found = Net.discovered().filter(func(s: Dictionary) -> bool: return s.has("world"))
+		_servers.clear()
+		for s in _found:
+			_servers.add_item("%s%s — %d/%d · %s" % ["🔒 " if s.get("locked", false) else "", s["world"],
+					int(s["count"]), int(s["max"]), s["names"]])
+		if _found.is_empty() and not WorldNet.session:
+			_status.text = tr("В локальной сети миров не найдено. Введите адрес хоста вручную.")
+
+
+func _join() -> void:
+	var nick := WorldNet.normalize_nick(_nick.text)
+	if nick == "":
+		_status.text = WorldNet.fail_text("nick_bad")
+		return
+	SaveManager.last_name = nick
+	NetSettings.set_value("address", _ip.text.strip_edges())
+	if _port.text.is_valid_int():
+		NetSettings.set_value("join_port", int(_port.text))
+	SaveManager.save_settings()
 	Net.start_discovery(false)
+	_status.text = tr("Подключение к %s:%s…") % [_ip.text.strip_edges(), _port.text.strip_edges()]
+	_connect.disabled = true
+	if not WorldNet.join_world(_ip.text.strip_edges(), int(_port.text), nick, _pass.text):
+		_connect.disabled = false
 
 
-func _on_net_connected() -> void:
-	_status.text = "Подключено! Ждём, пока хост начнёт забег..."
-	AudioManager.play_ui(&"ui_book_open")
+func _on_result(ok: bool, reason: String) -> void:
+	if not is_inside_tree():
+		return
+	if reason == "pending":
+		_status.text = tr("Этот ник в мире привязан к другому устройству. Ждём, подтвердит ли хост…")
+		return
+	_connect.disabled = false
+	if ok:
+		_status.text = tr("Подключено!")
+	else:
+		_status.text = WorldNet.fail_text(reason)
+		Net.start_discovery(true)

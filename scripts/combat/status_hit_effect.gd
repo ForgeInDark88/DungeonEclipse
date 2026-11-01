@@ -25,7 +25,7 @@ func describe() -> String:
 	var name := StatusEffects.display_name(status)
 	match status:
 		&"stun":
-			return "%s на %.1f с%s" % [name, duration, _chance_text()]
+			return tr("%s на %.1f с%s") % [name, duration, _chance_text()]
 		&"slow":
-			return "%s на %d%% на %.1f с%s" % [name, roundi(power * 100.0), duration, _chance_text()]
-	return "%s: %d урона/0.5 с, %.1f с%s" % [name, roundi(power), duration, _chance_text()]
+			return tr("%s на %d%% на %.1f с%s") % [name, roundi(power * 100.0), duration, _chance_text()]
+	return tr("%s: %d урона/0.5 с, %.1f с%s") % [name, roundi(power), duration, _chance_text()]

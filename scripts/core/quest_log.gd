@@ -87,7 +87,7 @@ func _bump(type: Type, n: int) -> void:
 		return
 	progress = mini(progress + n, int(q["target"]))
 	if progress >= int(q["target"]):
-		EventBus.message.emit("Задание выполнено: «%s» — к глашатаю в город!" % q["title"])
+		EventBus.message.emit(tr("Задание выполнено: «%s» — к глашатаю в город!") % q["title"])
 		AudioManager.play_ui(&"level_up")
 	quests_changed.emit()
 
@@ -118,7 +118,7 @@ func _on_floor_changed(f: int) -> void:
 		return
 	progress = maxi(progress, f)
 	if progress >= int(q["target"]) and progress == int(q["target"]):
-		EventBus.message.emit("Задание выполнено: «%s» — к глашатаю в город!" % q["title"])
+		EventBus.message.emit(tr("Задание выполнено: «%s» — к глашатаю в город!") % q["title"])
 		AudioManager.play_ui(&"level_up")
 	quests_changed.emit()
 

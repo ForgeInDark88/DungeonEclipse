@@ -36,6 +36,9 @@ signal combo_changed(combo: int)
 ## A kill credited to THIS machine's hero (co-op: enemy_killed fires on every
 ## machine for every kill; the combo counts only one's own).
 signal own_kill(enemy: EnemyData)
+## The local hero cast a skill / used a consumable (portrait reactions).
+signal hero_cast
+signal hero_used_item(item: ItemData)
 signal boss_spawned(boss: Node)
 signal boss_hp_changed(hp: int, max_hp: int)
 ## Presentation: the intro card when the heroes meet a boss, and the big
@@ -52,4 +55,7 @@ signal achievement_unlocked(achievement: AchievementData)
 ## Exit seal of the floor: monsters killed / needed to open the exit (0 needed = no seal).
 signal seal_changed(kills: int, required: int)
 ## A loud sound at `pos` heard by monsters within `radius` (fights, explosions).
+## The world was saved (the autosave indicator).
+signal saved
+
 signal noise(pos: Vector2, radius: float)

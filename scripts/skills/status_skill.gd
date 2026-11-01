@@ -21,7 +21,7 @@ func describe(level: int) -> String:
 	var d := duration + duration_per_level * (level - 1)
 	match status:
 		&"shield":
-			return "Щит поглощает %d урона, %d сек." % [p, roundi(d)]
+			return tr("Щит поглощает %d урона, %d сек.") % [p, roundi(d)]
 		&"regen":
-			return "Регенерация %d HP каждые 0.5 с, %d сек." % [p, roundi(d)]
-	return "%s на %d сек." % [StatusEffects.display_name(status), roundi(d)]
+			return tr("Регенерация %d HP каждые 0.5 с, %d сек.") % [p, roundi(d)]
+	return tr("%s на %d сек.") % [StatusEffects.display_name(status), roundi(d)]

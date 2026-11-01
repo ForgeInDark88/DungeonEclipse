@@ -111,10 +111,14 @@ func _load_floor() -> void:
 	var seed_value := GameState.floor_seed()
 	var gen := LevelGenerator.new()
 	var layout: LevelLayout
-	if GameState.is_town():
+	if GameState.is_town() and GameState.expedition and GameState.town:
+		layout = TownBuilder.build_hub(GameState.town)
+	elif GameState.is_town():
 		layout = TownBuilder.build()
 	elif GameState.is_boss_floor():
 		layout = gen.generate_arena(floor_number, seed_value)
+	elif GameState.location_type() == &"event":
+		layout = gen.generate_event_room(floor_number, seed_value)
 	else:
 		layout = gen.generate(floor_number, seed_value)
 	var biome := GameState.current_biome()
@@ -128,17 +132,23 @@ func _load_floor() -> void:
 	_sync_pet()
 	for b in get_tree().get_nodes_in_group("bosses"):
 		AudioManager.play_music((b as Boss).boss.music)
-	if GameState.is_town():
-		EventBus.message.emit("%s. Вход в подземелье — в конце улицы." % biome.display_name)
+	if GameState.is_town() and GameState.expedition:
+		EventBus.message.emit(tr("%s · %s. Ворота похода — в конце улицы.") % [biome.display_name, Buildings.phase_name()])
+		_take_thumbnail()
+		_town_news()
+	elif GameState.expedition:
+		EventBus.message.emit(_location_title())
+	elif GameState.is_town():
+		EventBus.message.emit(tr("%s. Вход в подземелье — в конце улицы.") % biome.display_name)
 	elif GameState.is_boss_floor():
-		EventBus.message.emit("Этаж %d — логово стража!" % floor_number)
+		EventBus.message.emit(tr("Этаж %d — логово стража!") % floor_number)
 	else:
-		EventBus.message.emit("Этаж %d — %s" % [floor_number, biome.display_name] if biome else "Этаж %d" % floor_number)
+		EventBus.message.emit(tr("Этаж %d — %s") % [floor_number, biome.display_name] if biome else tr("Этаж %d") % floor_number)
 	_net_on_floor_loaded()
 
 	# Between-floors save: the snapshot must be taken with the floor freshly
 	# built (it regenerates from the seed on continue, loot included).
-	if GameState.run_active and not player.dead \
+	if GameState.run_active and not player.dead and not GameState.expedition \
 			and not (GameState.floor_number == GameState.TOWN_FLOOR and GameState.town_return_floor > 0) \
 			and not Net.active:
 		# A mid-run visit to town keeps the snapshot of the floor the hero
@@ -146,6 +156,111 @@ func _load_floor() -> void:
 		# (In co-op the host's save is the only one; taken outside this branch.)
 		if Net.is_host:
 			SaveManager.save_run()
+
+
+## Expedition: the exit of a location shows what it gave (gold, kills,
+## finds, town resources, shards), then back to the map.
+func finish_location() -> void:
+	if overlay.visible or player.dead:
+		return
+	var s := GameFlow.location_summary()
+	book.close()
+	skill_tree.close()
+	get_tree().paused = true
+	overlay.clear()
+	overlay.set_panel_size(Vector2(320, 210))
+	overlay.add_text(tr("Локация пройдена"), 13)
+	overlay.add_text(_location_title(), 7)
+	overlay.add_control(_stats_grid([
+		[tr("Золото"), "%+d" % int(s.get("gold", 0))], [tr("Убито"), str(int(s.get("kills", 0)))],
+		[tr("Подобрано"), str(int(s.get("picked", 0)))], [tr("Осколки"), "%+d" % int(s.get("shards", 0))],
+	]))
+	var finds: Array = s.get("finds", [])
+	if not finds.is_empty():
+		overlay.add_text(tr("Находки: %s") % ", ".join(finds), 7)
+	var res: Dictionary = s.get("resources", {})
+	if not res.is_empty():
+		overlay.add_text(tr("Для города: %s") % TownResources.describe(res), 7)
+	var saved := StringName(s.get("rescued", &""))
+	if saved != &"":
+		var nd: NpcData = ItemDatabase.npcs.get(saved)
+		overlay.add_text(tr("Спасён: %s — придёт в город, если вы вернётесь живым.") % (nd.display_name if nd else tr("горожанин")), 7)
+	var bp := StringName(s.get("blueprint", &""))
+	if bp != &"":
+		var bd := ItemDatabase.building(bp)
+		overlay.add_text(tr("Чертёж: %s") % (bd.display_name if bd else String(bp)), 7)
+	overlay.add_text(tr("Добыча едет с вами, пока вы живы: дома она станет вашей."), 6)
+	overlay.add_button(tr("На карту похода"), func() -> void:
+		overlay.visible = false
+		GameFlow.location_cleared()).grab_focus()
+	overlay.on_pause_key = Callable()
+	overlay.visible = true
+
+
+## A miniature of the world for the load screen (taken in the street).
+func _take_thumbnail() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	await get_tree().create_timer(0.6).timeout
+	if is_inside_tree() and GameState.is_town():
+		SaveManager.save_thumbnail(get_viewport().get_texture().get_image())
+
+
+## What changed in town while the hero was away (TownState.news): a page
+## of news with the portraits of the people who moved in; the newcomers
+## shine in the street.
+func _town_news() -> void:
+	var t := GameState.town
+	if t == null or (t.news.is_empty() and (t.flags.get("arrived", []) as Array).is_empty()):
+		return
+	var lines := t.news.duplicate()
+	var arrived: Array = t.flags.get("arrived", [])
+	t.news.clear()
+	t.flags.erase("arrived")
+	GameFlow.save_town()
+	await get_tree().create_timer(0.9).timeout
+	if not is_inside_tree() or overlay.visible:
+		return
+	get_tree().paused = true
+	overlay.clear()
+	overlay.set_panel_size(Vector2(340, 190 + 14 * mini(lines.size(), 6)))
+	overlay.add_text(tr("Новости города"), 12)
+	if not arrived.is_empty():
+		var row := HBoxContainer.new()
+		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		row.add_theme_constant_override("separation", 6)
+		for id in arrived:
+			var n: NpcData = ItemDatabase.npcs.get(StringName(id))
+			if n == null:
+				continue
+			var pic := TextureRect.new()
+			pic.texture = n.portrait
+			pic.custom_minimum_size = Vector2(40, 40)
+			pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			pic.tooltip_text = n.display_name
+			row.add_child(pic)
+		overlay.add_control(row)
+	for line in lines.slice(0, 6):
+		overlay.add_text(line, 7)
+	overlay.add_button(tr("Пройтись по городу"), func() -> void:
+		overlay.visible = false
+		get_tree().paused = false
+		for n in get_tree().get_nodes_in_group("town_npcs"):
+			if String((n as TownNpc).data.id) in arrived:
+				Fx.sparks(n.get_parent(), (n as Node2D).global_position + Vector2(0, -16), Color(1.0, 0.9, 0.5), 24, 90.0)).grab_focus()
+	overlay.on_pause_key = Callable()
+	overlay.visible = true
+
+
+## «Глубина 7 — Логово элиты · Руины» for the location banner.
+func _location_title() -> String:
+	var type := GameState.location_type()
+	var name := ExpeditionMap.type_name(type)
+	var sub := StringName(GameState.location.get("sub", &""))
+	if sub != &"":
+		name = tr(ExpeditionMap.SPECIAL_NAMES.get(sub, String(sub)))
+	var biome := GameState.current_biome()
+	return tr("Глубина %d — %s · %s") % [GameState.depth(), name, biome.display_name if biome else ""]
 
 
 ## The pet of the run follows the hero (one at a time, re-placed every floor).
@@ -172,6 +287,9 @@ func _apply_biome(biome: BiomeData) -> void:
 	# A touch below the biome's ambient: torches, ore and magic make warm
 	# pools of light instead of vanishing in a flat even light.
 	($Ambient as CanvasModulate).color = biome.ambient * Color(0.88, 0.87, 0.86, 1.0)
+	if GameState.expedition and GameState.is_town():
+		# Morning, day, evening or night in the town (Buildings.day_phase).
+		($Ambient as CanvasModulate).color *= Buildings.PHASE_TINT[Buildings.day_phase()]
 	AudioManager.play_music(biome.music)
 	player.apply_biome(biome)
 	var textures := [biome.parallax_far, biome.parallax_mid, biome.parallax_near]
@@ -233,16 +351,35 @@ func _toggle_pause() -> void:
 		return
 	get_tree().paused = true
 	overlay.clear()
-	overlay.set_panel_size(Vector2(220, 220))
-	overlay.add_text("Пауза", 12)
-	overlay.add_button("Продолжить", _toggle_pause).grab_focus()
-	overlay.add_button("Как играть", func() -> void: add_child(InfoBook.how_to_play()))
-	overlay.add_button("Настройки", open_settings)
-	overlay.add_button("Дерево навыков", func() -> void:
+	overlay.set_panel_size(Vector2(220, 280 if GameState.expedition else 220))
+	overlay.add_text(tr("Пауза"), 12)
+	overlay.add_button(tr("Продолжить"), _toggle_pause).grab_focus()
+	overlay.add_button(tr("Как играть"), func() -> void: add_child(InfoBook.how_to_play()))
+	overlay.add_button(tr("Настройки"), open_settings)
+	if GameState.expedition:
+		overlay.add_button(tr("Журнал"), func() -> void:
+			_toggle_pause()
+			var j := JournalBook.new()
+			add_child(j)
+			j.open())
+		if GameState.is_town():
+			# Safe zones only: the town's overview (buildings and resources).
+			overlay.add_button(tr("Город"), func() -> void:
+				_toggle_pause()
+				var jt := JournalBook.new()
+				add_child(jt)
+				jt.open(JournalBook.Tab.BUILDINGS))
+	overlay.add_button(tr("Дерево навыков"), func() -> void:
 		_toggle_pause()
 		skill_tree.open())
-	overlay.add_button("В главное меню", func() -> void: GameState.go_to_menu())
-	overlay.add_text("(забег продолжится с начала этажа)", 7)
+	if GameState.expedition and GameState.is_town():
+		overlay.add_button(tr("Сохранить и выйти"), func() -> void: GameFlow.save_and_quit())
+	else:
+		overlay.add_button(tr("В главное меню"), func() -> void: GameState.go_to_menu())
+	if GameState.expedition and not GameState.is_town():
+		overlay.add_text(tr("(в локации сохраняется только выход из неё: выйдя сейчас, вы сбежите из неё без награды)"), 6)
+	else:
+		overlay.add_text(tr("(забег продолжится с начала этажа)"), 7)
 	# Esc resumes: handled by the overlay (ALWAYS), the game tree itself pauses.
 	overlay.on_pause_key = _toggle_pause
 	overlay.visible = true
@@ -251,6 +388,14 @@ func _toggle_pause() -> void:
 func _on_spawn_items(pos: Vector2, stacks: Array) -> void:
 	if level == null:
 		return
+	# A world session: loot is personal - every machine spawns its own drops
+	# for its own hero, nobody else sees them (nothing to fight over).
+	if Net.world_session:
+		for entry: Dictionary in stacks:
+			var lp: ItemPickup = PICKUP_SCENE.instantiate()
+			lp.setup(entry["item"], entry["count"], Vector2(randf_range(-70.0, 70.0), randf_range(-170.0, -110.0)))
+			level.add_entity(lp, pos)
+		return
 	# Co-op: loot is the host's (spawned there and broadcast to everyone). A
 	# guest's own copy would be a phantom nobody else sees or can share.
 	if Net.active and not Net.is_host:
@@ -258,6 +403,18 @@ func _on_spawn_items(pos: Vector2, stacks: Array) -> void:
 	for entry: Dictionary in stacks:
 		var p: ItemPickup = PICKUP_SCENE.instantiate()
 		p.setup(entry["item"], entry["count"], Vector2(randf_range(-70.0, 70.0), randf_range(-170.0, -110.0)))
+		level.add_entity(p, pos)
+		if Net.active and Net.is_host and net_sync:
+			net_sync.broadcast_item(p)
+
+
+## Host: an item everyone sees and anyone may take (thrown on the floor).
+func spawn_shared(pos: Vector2, stacks: Array) -> void:
+	if level == null:
+		return
+	for entry: Dictionary in stacks:
+		var p: ItemPickup = PICKUP_SCENE.instantiate()
+		p.setup(entry["item"], entry["count"], Vector2(randf_range(-40.0, 40.0), -120.0))
 		level.add_entity(p, pos)
 		if Net.active and Net.is_host and net_sync:
 			net_sync.broadcast_item(p)
@@ -343,6 +500,8 @@ func _flash_screen(color: Color) -> void:
 
 func _exit_tree() -> void:
 	Engine.time_scale = 1.0
+	if Net.world_session:
+		Net.set_scene_token("")
 
 
 func _on_player_died() -> void:
@@ -353,6 +512,9 @@ func _on_player_died() -> void:
 	book.close()
 	skill_tree.close()
 	await get_tree().create_timer(1.2).timeout
+	if GameState.expedition:
+		GameFlow.hero_died()  # the result screen tells what was lost
+		return
 	var hero := GameState.hero
 	get_tree().paused = true
 	var stats := GameState.run_stats.duplicate()
@@ -360,21 +522,21 @@ func _on_player_died() -> void:
 	var reward := GameState.end_run()
 	overlay.clear()
 	overlay.set_panel_size(Vector2(340, 236))
-	overlay.add_text("Героиня погибла" if hero.female else "Герой погиб", 14)
-	overlay.add_text("%s %s · уровень %d" % [hero.race.display_name, hero.class_data.display_name, hero.level], 8)
+	overlay.add_text(tr("Героиня погибла") if hero.female else tr("Герой погиб"), 14)
+	overlay.add_text(tr("%s %s · уровень %d") % [hero.race.display_name, hero.class_data.display_name, hero.level], 8)
 	var found: Array = stats.get("found", [0, 0, 0])
 	overlay.add_control(_stats_grid([
-		["Этаж", str(GameState.floor_number)], ["Время", "%d:%02d" % [seconds / 60, seconds % 60]],
-		["Убито врагов", str(GameState.kills)], ["Элиты / стражи", "%d / %d" % [int(stats.get("elites", 0)), int(stats.get("bosses", 0))]],
-		["Золото собрано", str(int(stats.get("gold", 0)))], ["Находки", _found_text(found)],
-		["Лучшее комбо", "×%d" % int(stats.get("best_combo", 0))],
+		[tr("Этаж"), str(GameState.floor_number)], [tr("Время"), "%d:%02d" % [seconds / 60, seconds % 60]],
+		[tr("Убито врагов"), str(GameState.kills)], [tr("Элиты / стражи"), "%d / %d" % [int(stats.get("elites", 0)), int(stats.get("bosses", 0))]],
+		[tr("Золото собрано"), str(int(stats.get("gold", 0)))], [tr("Находки"), _found_text(found)],
+		[tr("Лучшее комбо"), "×%d" % int(stats.get("best_combo", 0))],
 	]))
 	if not reward.is_empty() and (reward["shards"] > 0 or reward["gold"] > 0):
-		var text := "Святилище Затмения: +%d осколков, +%d золота" % [reward["shards"], reward["gold"]]
+		var text := tr("Святилище Затмения: +%d осколков, +%d золота") % [reward["shards"], reward["gold"]]
 		if not reward["parts"].is_empty():
 			text += "\n(" + ", ".join(reward["parts"]) + ")"
 		overlay.add_text(text, 7)
-	overlay.add_button("В главное меню", func() -> void: GameState.go_to_menu()).grab_focus()
+	overlay.add_button(tr("В главное меню"), func() -> void: GameState.go_to_menu()).grab_focus()
 	overlay.visible = true
 
 
@@ -394,32 +556,33 @@ func _on_eclipse_defeated() -> void:
 	get_tree().paused = true
 	overlay.clear()
 	overlay.set_panel_size(Vector2(360, 262))
-	overlay.add_text("Затмение рассеяно", 14)
-	overlay.add_text("Чёрное солнце угасло, и свет вернулся в подземелья.\n%s %s · уровень %d — %s." % [
+	overlay.add_text(tr("Затмение рассеяно"), 14)
+	overlay.add_text(tr("Чёрное солнце угасло, и свет вернулся в подземелья.\n%s %s · уровень %d — %s.") % [
 		hero.race.display_name, hero.class_data.display_name, hero.level,
-		"героиня, разбившая Затмение" if hero.female else "герой, разбивший Затмение"], 7)
+		tr("героиня, разбившая Затмение") if hero.female else tr("герой, разбивший Затмение")], 7)
 	overlay.add_control(_stats_grid([
-		["Этаж", str(GameState.floor_number)], ["Время", "%d:%02d" % [seconds / 60, seconds % 60]],
-		["Убито врагов", str(GameState.kills)], ["Элиты / стражи", "%d / %d" % [int(stats.get("elites", 0)), int(stats.get("bosses", 0))]],
-		["Золото собрано", str(int(stats.get("gold", 0)))], ["Находки", _found_text(stats.get("found", [0, 0, 0]))],
-		["Лучшее комбо", "×%d" % int(stats.get("best_combo", 0))],
+		[tr("Этаж"), str(GameState.floor_number)], [tr("Время"), "%d:%02d" % [seconds / 60, seconds % 60]],
+		[tr("Убито врагов"), str(GameState.kills)], [tr("Элиты / стражи"), "%d / %d" % [int(stats.get("elites", 0)), int(stats.get("bosses", 0))]],
+		[tr("Золото собрано"), str(int(stats.get("gold", 0)))], [tr("Находки"), _found_text(stats.get("found", [0, 0, 0]))],
+		[tr("Лучшее комбо"), "×%d" % int(stats.get("best_combo", 0))],
 	]))
-	overlay.add_text("Награда за победу: +%d осколков Затмения." % MetaProgress.SHARDS_VICTORY, 7)
+	overlay.add_text(tr("Награда за победу: +%d осколков Затмения.") % MetaProgress.SHARDS_VICTORY, 7)
 	# The secret ending: everyone who knows the guardians' stories may let the
 	# sun go instead of breaking it.
 	if Codex.knows_all_guardians() and not stats.get("secret_ending", false):
-		overlay.add_button("Вспомнить их имена и вернуть свет", _secret_ending).grab_focus()
+		overlay.add_button(tr("Вспомнить их имена и вернуть свет"), _secret_ending).grab_focus()
 	else:
 		var gk := Codex.guardians_known()
 		if not stats.get("secret_ending", false):
-			overlay.add_text("Летописец говорил о другом пути... (записи стражей: %d из %d)" % [gk.x, gk.y], 6)
-	var finish := overlay.add_button("Завершить забег", _finish_victory)
+			overlay.add_text(tr("Летописец говорил о другом пути... (записи стражей: %d из %d)") % [gk.x, gk.y], 6)
+	var finish := overlay.add_button(tr("Завершить поход") if GameState.expedition else tr("Завершить забег"), _finish_victory)
 	if not Codex.knows_all_guardians():
 		finish.grab_focus()
-	overlay.add_button("Спуститься глубже (бесконечный режим)", func() -> void:
-		get_tree().paused = false
-		overlay.visible = false
-		EventBus.message.emit("Глубины зовут дальше. Награда за победу сохранится."))
+	if not GameState.expedition:
+		overlay.add_button(tr("Спуститься глубже (бесконечный режим)"), func() -> void:
+			get_tree().paused = false
+			overlay.visible = false
+			EventBus.message.emit(tr("Глубины зовут дальше. Награда за победу сохранится.")))
 	overlay.visible = true
 
 
@@ -433,26 +596,30 @@ func _secret_ending() -> void:
 	se.finished.connect(func() -> void:
 		overlay.clear()
 		overlay.set_panel_size(Vector2(340, 150))
-		overlay.add_text("Рассвет над Аурелией", 13)
-		overlay.add_text("Награда за тайную концовку: +%d осколков." % MetaProgress.SHARDS_SECRET, 7)
-		overlay.add_button("Завершить забег", _finish_victory).grab_focus()
-		overlay.add_button("Спуститься глубже (бесконечный режим)", func() -> void:
-			get_tree().paused = false
-			overlay.visible = false)
+		overlay.add_text(tr("Рассвет над Аурелией"), 13)
+		overlay.add_text(tr("Награда за тайную концовку: +%d осколков.") % MetaProgress.SHARDS_SECRET, 7)
+		overlay.add_button(tr("Завершить поход") if GameState.expedition else tr("Завершить забег"), _finish_victory).grab_focus()
+		if not GameState.expedition:
+			overlay.add_button(tr("Спуститься глубже (бесконечный режим)"), func() -> void:
+				get_tree().paused = false
+				overlay.visible = false)
 		overlay.visible = true)
 
 
 func _finish_victory() -> void:
+	if GameState.expedition:
+		GameFlow.location_cleared()  # the last guardian: the road ends in victory
+		return
 	var reward := GameState.end_run()
 	overlay.clear()
 	overlay.set_panel_size(Vector2(340, 150))
-	overlay.add_text("Забег завершён победой", 13)
+	overlay.add_text(tr("Забег завершён победой"), 13)
 	if not reward.is_empty():
-		var text := "Святилище Затмения: +%d осколков, +%d золота" % [reward["shards"], reward["gold"]]
+		var text := tr("Святилище Затмения: +%d осколков, +%d золота") % [reward["shards"], reward["gold"]]
 		if not reward["parts"].is_empty():
 			text += "\n(" + ", ".join(reward["parts"]) + ")"
 		overlay.add_text(text, 7)
-	overlay.add_button("В главное меню", func() -> void:
+	overlay.add_button(tr("В главное меню"), func() -> void:
 		if Net.active:
 			Net.leave()
 		GameState.go_to_menu()).grab_focus()
@@ -519,7 +686,7 @@ func _net_bootstrap() -> void:
 	# The host is the clock: every floor move of the party goes through it.
 	# town_return rides along so the guests' city gate knows the resume floor.
 	EventBus.floor_changed.connect(func(f: int) -> void:
-		if Net.is_host:
+		if Net.is_host and not Net.world_session:  # a world session moves by WorldNet.flow
 			Net.rpc_set_floor(f, GameState.town_return_floor))
 	# Late roster updates must not leave puppets missing on clients.
 	Net.players_changed.connect(func() -> void:
@@ -546,6 +713,7 @@ func _make_hero_from(info: Dictionary) -> Hero:
 	h.female = bool(info.get("female", false))
 	h.give_starting_kit()
 	h.skills.add_points(1)
+	GameState.apply_eclipse(h)
 	return h
 
 
@@ -560,7 +728,7 @@ func party() -> Array[Player]:
 
 
 func _net_player_name(peer_id: int) -> String:
-	return String(Net.players.get(peer_id, {}).get("name", "Игрок"))
+	return String(Net.players.get(peer_id, {}).get("name", tr("Игрок")))
 
 
 ## Spawns the local player and a puppet per other peer (once per session).
@@ -597,6 +765,10 @@ func _spawn_net_puppet(peer_id: int) -> void:
 	net_players.add_child(p)
 	p.setup(mirror, null)
 	p.camera.enabled = false  # only the local player owns the viewport
+	if Net.world_session:
+		var spot := ReviveSpot.new()
+		spot.target = p
+		p.add_child(spot)
 	p.add_to_group("player")
 	p.net_place(level.start_position() + Vector2(14, 0))
 	var tag := UIStyle.outlined_label(_net_player_name(peer_id), 6, UIStyle.ally_color(peer_id))
@@ -607,7 +779,7 @@ func _spawn_net_puppet(peer_id: int) -> void:
 	hud.add_ally(_net_player_name(peer_id), mirror)
 	# Everyone (except the puppet's owner) learns about it from the host.
 	if Net.is_host:
-		spawn_ally.rpc(peer_id, info)
+		Net.send(self, &"spawn_ally", [peer_id, info])
 
 
 ## Host → clients: a new ally's puppet exists, here is who they are.
@@ -634,9 +806,20 @@ func _net_on_floor_loaded() -> void:
 	if not Net.active:
 		return
 	_net_spawn_players()
+	if Net.world_session:
+		# A world session: this machine stands here now (Net.send routes by it).
+		Net.set_scene_token("%d:%d:%s" % [GameFlow.state, int(GameState.location.get("seed", 0)), GameState.location_type()])
 	# Every floor: the guest asks the host for a fresh world snapshot —
 	# spawn descriptors broadcast mid-transition may have been dropped.
 	if not Net.is_host:
+		if Net.world_session:
+			# the host must stand here too before it can answer
+			for i in 60:
+				if Net.peer_in_scene(1) or not is_inside_tree():
+					break
+				await get_tree().create_timer(0.1).timeout
+			if not is_inside_tree():
+				return
 		net_sync.net_hello.rpc_id(1)
 	var sp := level.start_position()
 	player.global_position = sp
@@ -650,6 +833,18 @@ func _net_on_floor_loaded() -> void:
 	for p: Player in party():
 		if p != player and p.dead:
 			p.revive()
+
+
+## A world session: an ally raised this fallen hero (35% health).
+func revive_local() -> void:
+	if player == null or not player.dead:
+		return
+	player.revive()
+	player.hero.stats.hp = maxi(1, roundi(player.hero.stats.max_hp() * 0.35))
+	player.hero.stats.hp_changed.emit(player.hero.stats.hp, player.hero.stats.max_hp())
+	overlay.visible = false
+	get_tree().paused = false
+	EventBus.message.emit(tr("Вас подняли на ноги!"))
 
 
 ## The local hero fell: wait for the next floor unless everyone is down.
@@ -668,9 +863,9 @@ func _on_player_died_coop() -> void:
 		get_tree().paused = true
 		overlay.clear()
 		overlay.set_panel_size(Vector2(340, 150))
-		overlay.add_text("Вы пали", 14)
-		overlay.add_text("Возрождение на следующем этаже...", 9)
-		overlay.add_button("Ждать (наблюдать)", func() -> void:
+		overlay.add_text(tr("Вы пали"), 14)
+		overlay.add_text(tr("Возрождение на следующем этаже..."), 9)
+		overlay.add_button(tr("Ждать (наблюдать)"), func() -> void:
 			get_tree().paused = false
 			overlay.visible = false)
 		overlay.visible = true
@@ -688,22 +883,25 @@ func net_run_ended() -> void:
 	get_tree().paused = true
 	overlay.clear()
 	overlay.set_panel_size(Vector2(340, 150))
-	overlay.add_text("Отряд пал", 14)
-	overlay.add_button("В главное меню", func() -> void:
+	overlay.add_text(tr("Отряд пал"), 14)
+	overlay.add_button(tr("В главное меню"), func() -> void:
 		Net.leave()
 		GameState.go_to_menu())
 	overlay.visible = true
 
 
 func _end_run_coop() -> void:
+	if Net.world_session:
+		GameFlow.hero_died()  # the whole party fell: the expedition is lost for everyone
+		return
 	GameState.end_run()
 	net_run_ended.rpc()
 	var hero := GameState.hero
 	get_tree().paused = true
 	overlay.clear()
 	overlay.set_panel_size(Vector2(340, 150))
-	overlay.add_text("Отряд пал", 14)
-	overlay.add_button("В главное меню", func() -> void:
+	overlay.add_text(tr("Отряд пал"), 14)
+	overlay.add_button(tr("В главное меню"), func() -> void:
 		Net.leave()
 		GameState.go_to_menu())
 	overlay.visible = true

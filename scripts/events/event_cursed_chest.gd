@@ -20,7 +20,7 @@ func _ready() -> void:
 
 
 func get_prompt() -> String:
-	return "Открыть проклятый сундук (риск!)"
+	return tr("Открыть проклятый сундук (риск!)")
 
 
 func _activate(player: Node) -> bool:
@@ -30,6 +30,6 @@ func _activate(player: Node) -> bool:
 	_reward_item(&"special", f)
 	_reward_item(&"special", f + 2)  # the curse pays off: one roll as if deeper
 	player.status.apply(&"curse", 30.0, 1.0)
-	EventBus.message.emit("Проклятие! Из тьмы лезут твари")
+	EventBus.message.emit(tr("Проклятие! Из тьмы лезут твари"))
 	_ambush(2 + f / 3, 0.5)
 	return true

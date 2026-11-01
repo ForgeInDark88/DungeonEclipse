@@ -31,4 +31,4 @@ func _init() -> void:
 
 
 func subtitle() -> String:
-	return SLOT_TYPE_NAMES.get(slot_type, String(slot_type))
+	return TranslationServer.translate(SLOT_TYPE_NAMES.get(slot_type, String(slot_type)))

@@ -59,7 +59,7 @@ func _ready() -> void:
 	_legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_legend.add_theme_font_size_override("normal_font_size", 6)
 	_legend.add_theme_color_override("default_color", UIStyle.INK)
-	_legend.text = "Карта этажа (M)   [color=#ffffff]■[/color] герой  [color=#cc66ff]■[/color] выход  [color=#ffd933]■[/color] сундук  [color=#4dff66]■[/color] торговец  [color=#4de6ff]■[/color] событие  [color=#ff4033]■[/color] элита/босс"
+	_legend.text = tr("Карта этажа (M)   [color=#ffffff]■[/color] герой  [color=#cc66ff]■[/color] выход  [color=#ffd933]■[/color] сундук  [color=#4dff66]■[/color] торговец  [color=#4de6ff]■[/color] событие  [color=#ff4033]■[/color] элита/босс")
 	_legend.position = Vector2(12, 202)
 	_legend.size = Vector2(340, 12)
 	_big.add_child(_legend)

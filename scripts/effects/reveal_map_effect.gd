@@ -7,9 +7,9 @@ func apply(user: Node) -> bool:
 	if user.level == null:
 		return false
 	user.level.reveal_all()
-	EventBus.message.emit("Карта этажа раскрыта (M)")
+	EventBus.message.emit(tr("Карта этажа раскрыта (M)"))
 	return true
 
 
 func describe() -> String:
-	return "Раскрывает всю карту этажа"
+	return tr("Раскрывает всю карту этажа")

@@ -3,7 +3,7 @@ extends EventObject
 
 
 func get_prompt() -> String:
-	return "Испить из фонтана (полное исцеление)"
+	return tr("Испить из фонтана (полное исцеление)")
 
 
 func _activate(player: Node) -> bool:
@@ -14,5 +14,5 @@ func _activate(player: Node) -> bool:
 	player.status.apply(&"regen", 8.0, 2.0)
 	Fx.sparks(get_parent(), global_position + Vector2(0, -16), Color(0.5, 0.8, 1.0), 24, 70.0)
 	AudioManager.play_sfx(&"potion_drink", global_position)
-	EventBus.message.emit("Вода смывает раны и проклятия")
+	EventBus.message.emit(tr("Вода смывает раны и проклятия"))
 	return true

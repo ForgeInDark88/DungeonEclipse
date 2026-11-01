@@ -32,7 +32,7 @@ func describe(level: int) -> String:
 	var b := _bonuses_for(level)
 	for k in b:
 		parts.append("%s %s" % [StatTypes.label(k), StatTypes.format_value(k, b[k], true)])
-	var text := "%s на %d сек." % [", ".join(parts), roundi(duration + duration_per_level * (level - 1))]
+	var text := tr("%s на %d сек.") % [", ".join(parts), roundi(duration + duration_per_level * (level - 1))]
 	if heal_percent > 0.0:
-		text += ", лечит %d%%" % roundi(heal_percent * 100)
+		text += tr(", лечит %d%%") % roundi(heal_percent * 100)
 	return text

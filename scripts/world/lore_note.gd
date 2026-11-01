@@ -67,7 +67,7 @@ func can_interact() -> bool:
 func get_prompt() -> String:
 	if lore == null:
 		return ""
-	return "Прочитать: «%s»" % lore.title if not Codex.is_lore_read(lore.id) else "Перечитать: «%s»" % lore.title
+	return tr("Прочитать: «%s»") % lore.title if not Codex.is_lore_read(lore.id) else tr("Перечитать: «%s»") % lore.title
 
 
 func interact(_player: Node) -> void:
@@ -76,7 +76,7 @@ func interact(_player: Node) -> void:
 	var first := not Codex.is_lore_read(lore.id)
 	if first:
 		Codex.read_lore(lore.id)
-		EventBus.message.emit("Новая запись в Летописи: «%s»" % lore.title)
+		EventBus.message.emit(tr("Новая запись в Летописи: «%s»") % lore.title)
 	AudioManager.play_ui(&"ui_book_open")
 	var book := LoreBook.new()
 	get_tree().current_scene.add_child(book)

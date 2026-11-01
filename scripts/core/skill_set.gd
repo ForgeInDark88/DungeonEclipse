@@ -179,27 +179,27 @@ func prerequisites_met(s: SkillData) -> bool:
 ## Why `s` cannot be learned / raised now ("" = it can).
 func block_reason(s: SkillData, hero_level: int) -> String:
 	if rank(s) >= s.max_level:
-		return "Максимальный уровень"
+		return tr("Максимальный уровень")
 	if not is_learned(s):
 		var b := branch_of(s)
 		if chosen_branch >= 0 and b >= 0 and b != chosen_branch:
-			return "Путь выбран: «%s»" % branch_name_of(b)
+			return tr("Путь выбран: «%s»") % branch_name_of(b)
 		var rival := chosen_rival(s)
 		if rival:
-			return "Выбран другой путь: %s" % rival.display_name
+			return tr("Выбран другой путь: %s") % rival.display_name
 		var need := required_points(s) - spent_in(b)
 		if need > 0:
-			return "Вложите ещё %d очк. в ветвь «%s»" % [need, branch_name_of(b)]
+			return tr("Вложите ещё %d очк. в ветвь «%s»") % [need, branch_name_of(b)]
 		if hero_level < required_level(s):
-			return "Нужен уровень героя %d" % required_level(s)
+			return tr("Нужен уровень героя %d") % required_level(s)
 		if not prerequisites_met(s):
 			var names: Array[String] = []
 			for r in s.requires:
 				if r and not is_learned(r):
 					names.append(r.display_name)
-			return "Сначала изучите: " + ", ".join(names)
+			return tr("Сначала изучите: ") + ", ".join(names)
 	if skill_points <= 0:
-		return "Нет очков навыков"
+		return tr("Нет очков навыков")
 	return ""
 
 

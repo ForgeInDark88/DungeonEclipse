@@ -21,6 +21,9 @@ const SHARDS_SECRET := 25
 const SHARD_ITEM := &"eclipse_shard"
 
 var shards: int = 0
+## Highest level of the Eclipse open for a new run (a victory on level N
+## opens N + 1; 0 = none yet - the first victory opens level 1).
+var eclipse_unlocked: int = 0
 var gold: int = 0
 ## upgrade id -> level
 var levels: Dictionary = {}
@@ -41,23 +44,36 @@ func _ready() -> void:
 
 func load_progress() -> void:
 	var cfg := ConfigFile.new()
-	if cfg.load(SaveManager.META_PATH) != OK:
+	if SaveManager.read_cfg(cfg, SaveManager.meta_path) != OK:
 		return
+	SaveManager.migrate_meta(cfg)
 	shards = cfg.get_value(SECTION, "shards", 0)
 	gold = cfg.get_value(SECTION, "gold", 0)
 	levels = cfg.get_value(SECTION, "levels", {})
 	unlocked.assign(cfg.get_value(SECTION, "unlocked", []))
+	eclipse_unlocked = cfg.get_value(SECTION, "eclipse_unlocked", 0)
 
 
 func save_progress() -> void:
 	var cfg := ConfigFile.new()
-	if FileAccess.file_exists(SaveManager.META_PATH):
-		cfg.load(SaveManager.META_PATH)  # keep the other sections
+	SaveManager.read_cfg(cfg, SaveManager.meta_path)  # keep the other sections
+	SaveManager.migrate_meta(cfg)
 	cfg.set_value(SECTION, "shards", shards)
 	cfg.set_value(SECTION, "gold", gold)
 	cfg.set_value(SECTION, "levels", levels)
 	cfg.set_value(SECTION, "unlocked", Array(unlocked))
-	cfg.save(SaveManager.META_PATH)
+	cfg.set_value(SECTION, "eclipse_unlocked", eclipse_unlocked)
+	SaveManager.write_cfg(cfg, SaveManager.meta_path)
+
+
+## Empty values before another world's progress is loaded.
+func reset_values() -> void:
+	shards = 0
+	gold = 0
+	levels = {}
+	unlocked.clear()
+	eclipse_unlocked = 0
+	changed.emit()
 
 
 ## Wipes the Sanctum (tests).
@@ -154,25 +170,33 @@ func finish_run(hero: Hero, floor_reached: int, stats: Dictionary) -> Dictionary
 			if stack and stack.item.shard_value > 0:
 				from_items += stack.item.shard_value * stack.count
 	if from_items > 0:
-		parts.append("осколки и печати: %d" % from_items)
+		parts.append(tr("осколки и печати: %d") % from_items)
 	var from_depth := floor_reached / FLOORS_PER_SHARD
 	if from_depth > 0:
-		parts.append("глубина: %d" % from_depth)
+		parts.append(tr("глубина: %d") % from_depth)
 	var from_bosses := int(stats.get("bosses", 0)) * SHARDS_PER_BOSS
 	if from_bosses > 0:
-		parts.append("стражи: %d" % from_bosses)
+		parts.append(tr("стражи: %d") % from_bosses)
 	var s := from_items + from_depth + from_bosses
 	if stats.get("victory", false):
-		parts.append("победа над Затмением: %d" % SHARDS_VICTORY)
+		parts.append(tr("победа над Затмением: %d") % SHARDS_VICTORY)
 		s += SHARDS_VICTORY
 	if stats.get("secret_ending", false):
-		parts.append("рассвет над Аурелией: %d" % SHARDS_SECRET)
+		parts.append(tr("рассвет над Аурелией: %d") % SHARDS_SECRET)
 		s += SHARDS_SECRET
 	var diff: DifficultyData = GameState.difficulty
 	if diff and not is_equal_approx(diff.shard_mult, 1.0) and s > 0:
 		var total := roundi(s * diff.shard_mult)
-		parts.append("сложность «%s»: %+d" % [diff.display_name, total - s])
+		parts.append(tr("сложность «%s»: %+d") % [diff.display_name, total - s])
 		s = total
+	var lvl := GameState.eclipse_level
+	if lvl > 0 and s > 0:
+		var total2 := roundi(s * EclipseLevels.shard_mult(lvl))
+		parts.append(tr("Затмение %d «%s»: %+d") % [lvl, EclipseLevels.level_name(lvl), total2 - s])
+		s = total2
+	if stats.get("victory", false) and lvl >= eclipse_unlocked and lvl < EclipseLevels.MAX:
+		eclipse_unlocked = lvl + 1
+		parts.append(tr("открыт уровень Затмения %d «%s»") % [eclipse_unlocked, EclipseLevels.level_name(eclipse_unlocked)])
 	var g := roundi(int(stats.get("gold", 0)) * GOLD_BANK_SHARE)
 	shards += s
 	gold += g

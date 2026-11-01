@@ -30,7 +30,7 @@ func apply(user: Node) -> bool:
 				target = c
 				break
 	if target.x < 0:
-		EventBus.message.emit("Свиток не нашёл безопасного места")
+		EventBus.message.emit(tr("Свиток не нашёл безопасного места"))
 		return false
 	Fx.sparks(user.get_parent(), user.global_position + Vector2(0, -10), Color(0.7, 0.5, 1.0), 16, 80.0)
 	user.global_position = level.cell_bottom(target)
@@ -41,4 +41,4 @@ func apply(user: Node) -> bool:
 
 
 func describe() -> String:
-	return "Переносит к выходу с этажа" if to_exit else "Переносит в случайное безопасное место этажа"
+	return tr("Переносит к выходу с этажа") if to_exit else tr("Переносит в случайное безопасное место этажа")

@@ -50,15 +50,15 @@ func execute(caster: Node, level: int) -> bool:
 			# dependency (net_sync references skill classes for cast replays).
 			var ns = caster.get_tree().get_first_node_in_group("net_game")
 			if ns and texture.resource_path != "":
-				ns.projectile_fx.rpc(texture.resource_path, origin, dir, speed, 1.2, color)
+				Net.send(ns, &"projectile_fx", [texture.resource_path, origin, dir, speed, 1.2, color])
 	return true
 
 
 func describe(level: int) -> String:
 	var n := count + (int((level - 1) / extra_every_levels) if extra_every_levels > 0 else 0)
-	var text := "%d снаряд(а), урон %d%%" % [n, roundi((damage_multiplier + damage_per_level * (level - 1)) * 100)]
+	var text := tr("%d снаряд(а), урон %d%%") % [n, roundi((damage_multiplier + damage_per_level * (level - 1)) * 100)]
 	if blast_radius > 0.0:
-		text += ", взрыв"
+		text += tr(", взрыв")
 	if pierce > 0:
-		text += ", пробивает %d" % pierce
+		text += tr(", пробивает %d") % pierce
 	return text

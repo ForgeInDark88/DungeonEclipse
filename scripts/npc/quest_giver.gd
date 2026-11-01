@@ -20,10 +20,10 @@ func _ready() -> void:
 
 func get_prompt() -> String:
 	if GameState.quests.all_done():
-		return "Глашатай гильдии"
+		return tr("Глашатай гильдии")
 	if GameState.quests.is_done():
-		return "Сдать задание глашатаю"
-	return "Приказы гильдии"
+		return tr("Сдать задание глашатаю")
+	return tr("Приказы гильдии")
 
 
 func interact(_player: Node) -> void:

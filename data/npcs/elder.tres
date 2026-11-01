@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="NpcData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/npc_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/npc/elder.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/portraits/npc_elder.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+id = &"elder"
+display_name = "Староста Гвен"
+profession = "Староста"
+order = 0
+resident_from_start = true
+home = &""
+sprite = ExtResource("2")
+portrait = ExtResource("3")
+discount = 0.0
+build_discount = 0.0
+depth_min = 1
+rescue_text = ""
+dialogs = Array[Dictionary]([{"id": "intro", "when": "", "once": true, "text": "Ты вернулся живым — уже хорошо. Город почти пуст: кто сбежал, кого держат в клетках слуги Затмения. Приводи людей, приноси дерево, камень и железо — и мы отстроимся.", "options": [{"text": "Что строить первым?", "reply": "Склад, библиотеку и башню можно ставить хоть сейчас. Кузню, храм, таверну и лавку зелий — только когда вернутся их мастера. Ищи пленников на карте похода."}, {"text": "Я пойду.", "reply": "Ворота — в конце улицы. Береги себя."}]}, {"id": "bone_king", "when": "boss:bone_king", "once": true, "text": "Король костей пал! Люди шепчутся об этом у колодца. Теперь можно строить Зал славы: пусть все видят, что тьму можно бить.", "options": [{"text": "Это только начало.", "reply": "Тогда возвращайся с новыми трофеями."}]}, {"id": "survivors", "when": "flag:helped_survivors", "once": true, "text": "Люди, которых ты вывел из глубин, рассказывают о тебе всем подряд. Дети рисуют солнце на стенах — впервые за много лет.", "options": [{"text": "Они заслужили свет.", "reply": "Как и все мы. Спасибо."}]}, {"id": "oldric", "when": "flag:oldric_rest", "once": true, "text": "Говорят, ты дал покой призраку могильщика. Олдрик хоронил наших отцов... Может, теперь и он отдохнёт.", "options": [{"text": "Надеюсь.", "reply": "Летописец захочет об этом услышать."}]}, {"id": "king", "when": "flag:king_honoured", "once": true, "text": "Ты почтил статую короля? Старики плакали, когда услышали. «Свет вернётся к тем, кто помнит» — так говорили при нём.", "options": [{"text": "Я помню.", "reply": "Тогда свет вернётся."}]}, {"id": "growing", "when": "expeditions:3", "once": true, "text": "Город оживает: снова дымят трубы. Чем больше построек и жителей, тем щедрее купцы и тем больше узнаёшь о дороге.", "options": [{"text": "Спасибо, Гвен.", "reply": "Тебе спасибо."}]}, {"id": "idle", "when": "", "once": false, "text": "Каждый новый дом — новая надежда. Возвращайся с добычей.", "options": [{"text": "Что дальше?", "reply": "Загляни в здания: каждое можно улучшить, если хватит материалов."}]}])

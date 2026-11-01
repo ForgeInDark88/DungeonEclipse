@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="BuildingData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/building_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/town/alchemist.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"alchemist"
+display_name = "Алхимик"
+description = "Квинт варит зелья из трав, что вы приносите."
+order = 2
+slot = 34
+width = 5
+start_level = 0
+max_level = 3
+costs = Array[Dictionary]([{"gold": 100, "herbs": 5, "stone": 3}, {"gold": 220, "herbs": 8, "crystal": 1}, {"gold": 420, "herbs": 10, "crystal": 2}])
+requires_resident = &"alchemist"
+requires_boss = &"drowned_bell"
+boss_level = 0
+blueprint_level = 3
+level_texts = Array[String](["Лавка зелий и эликсиров.", "Больше зелий, редкие эликсиры.", "Зелье здоровья в дорогу перед каждым походом."])
+action = &"alchemist"
+texture = ExtResource("2")
+chimney = Vector2(14, 4)
+prosperity = 3

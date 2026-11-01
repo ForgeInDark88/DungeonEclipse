@@ -426,7 +426,7 @@ func _squads() -> void:
 	var before := patient.hp
 	await _run(3.0, func() -> bool: return patient.hp > before)
 	check(patient.hp > before, "the healer healed the wounded ally (%d → %d)" % [before, patient.hp])
-	check(healer.display_name().begins_with("Лекарь"), "the leader is named by its role (%s)" % healer.display_name())
+	check(healer.display_name().begins_with(tr("Лекарь")), "the leader is named by its role (%s)" % healer.display_name())
 	var guard := _role_enemy(&"golem", Vector2i(14, 9), &"shieldbearer")
 	var warded := _enemy(&"skeleton", Vector2i(16, 9))
 	var plain := _enemy(&"skeleton", Vector2i(24, 9))

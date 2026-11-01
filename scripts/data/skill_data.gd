@@ -54,5 +54,5 @@ func synergy_text() -> String:
 		return ""
 	var names: Array[String] = []
 	for t in synergy_weapons:
-		names.append(String(WeaponItemData.WEAPON_TYPE_NAMES[t]).to_lower())
-	return "Синергия (%s): +%d%% силы" % [", ".join(names), roundi(synergy_power * 100.0)]
+		names.append(TranslationServer.translate(WeaponItemData.WEAPON_TYPE_NAMES[t]).to_lower())
+	return tr("Синергия (%s): +%d%% силы") % [", ".join(names), roundi(synergy_power * 100.0)]

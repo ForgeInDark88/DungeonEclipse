@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="BuildingData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/building_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/town/hall.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"hall"
+display_name = "Зал славы"
+description = "Трофеи на витрине дают силу каждому походу: +4 к здоровью и +1 к урону за каждый."
+order = 8
+slot = 103
+width = 5
+start_level = 0
+max_level = 3
+costs = Array[Dictionary]([{"gold": 120, "stone": 8}, {"gold": 260, "stone": 10, "iron": 4}, {"gold": 500, "stone": 12, "crystal": 3}])
+requires_resident = &""
+requires_boss = &"bone_king"
+boss_level = 1
+blueprint_level = 0
+level_texts = Array[String](["3 места для трофеев.", "6 мест для трофеев.", "9 мест для трофеев."])
+action = &"hall"
+texture = ExtResource("2")
+chimney = Vector2(0, 0)
+prosperity = 3

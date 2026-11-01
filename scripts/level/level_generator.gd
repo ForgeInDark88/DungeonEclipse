@@ -26,12 +26,20 @@ const MERCHANT_CHANCE := 0.4
 const SMITH_CHANCE := 0.3
 ## Event rooms per floor: 1, sometimes 2.
 const SECOND_EVENT_CHANCE := 0.4
+## Chance of an ambush room on a floor (from floor 2).
+const AMBUSH_CHANCE := 0.8
+## Monster places per floor at most (squad companions come on top).
+const MAX_MONSTERS := 30
 
 
 func generate(floor_number: int, seed_value: int) -> LevelLayout:
 	rng.seed = seed_value
 	cols = clampi(3 + floor_number / 2, 3, 6)
 	rows = clampi(2 + floor_number / 3, 2, 5)
+	if GameState.expedition:
+		# Expedition locations are short trips: one sweep to the exit.
+		cols = clampi(3 + floor_number / 6, 3, 5)
+		rows = clampi(2 + floor_number / 12, 2, 3)
 	layout = LevelLayout.new(cols * ROOM_W + 1, rows * ROOM_H + 1, T.BRICK)
 	_connected.clear()
 	_path.clear()
@@ -57,6 +65,35 @@ func generate(floor_number: int, seed_value: int) -> LevelLayout:
 	_place_chests(floor_number)
 	_place_enemies(floor_number)
 	_place_lore()
+	return layout
+
+
+## A road event's room: a short hall with a few ledges, the event's scenery
+## in the middle (special "road_event" with the cells a fight would come
+## from), in on the left, out on the right.
+func generate_event_room(_floor_number: int, seed_value: int) -> LevelLayout:
+	rng.seed = seed_value
+	var w := 40
+	var h := 14
+	layout = LevelLayout.new(w, h, T.BRICK)
+	_make_border()
+	for y in range(1, h - 2):
+		for x in range(1, w - 1):
+			layout.set_tile(x, y, T.EMPTY)
+	var fy := h - 2
+	for seg in [[6, 10, fy - 4], [w - 11, w - 7, fy - 4], [w / 2 - 3, w / 2 + 2, fy - 7]]:
+		for x in range(seg[0], seg[1] + 1):
+			layout.set_tile(x, seg[2], T.PLATFORM)
+	# a little unevenness of the floor
+	for x in [3 + rng.randi() % 3, w - 5 - rng.randi() % 3]:
+		layout.set_tile(x, fy - 1, T.BRICK)
+	layout.start_cell = Vector2i(2, fy - 1)
+	layout.exit_cell = Vector2i(w - 3, fy - 1)
+	var cells: Array[Vector2i] = []
+	for dx in [-9, 9, -12, 12, -6, 6]:
+		cells.append(Vector2i(w / 2 + dx, fy - 1))
+	layout.specials.append({"type": &"road_event", "cell": Vector2i(w / 2, fy - 1), "cells": cells})
+	layout.is_event_room = true
 	return layout
 
 
@@ -328,17 +365,43 @@ func _place_lore() -> void:
 
 ## Reserves side rooms for the merchant (and random events, see below).
 func _place_specials(_floor_number: int) -> void:
+	var floor_number_for_specials := _floor_number
 	var rooms: Array[Vector2i] = []
 	for room: Vector2i in _spots:
 		if room != _path[0] and room != _path[_path.size() - 1] and _connected.has(room):
 			rooms.append(room)
 	_shuffle(rooms)
+	# A rescue node: the prisoner's cage in the room before the exit, its
+	# guards around it (DungeonLevel spawns them, RescueCage opens after).
+	if GameState.location_type() == &"rescue":
+		var room: Vector2i = _path[maxi(1, _path.size() - 2)]
+		var cell: Variant = _take_spot(room, true)
+		if cell != null:
+			var guards: Array[Vector2i] = []
+			for k in 4:
+				var gc: Variant = _take_spot(room, true)
+				if gc != null:
+					guards.append(gc)
+			layout.specials.append({"type": &"rescue", "cell": cell, "cells": guards})
+			_reserved[room] = true
+			rooms.erase(room)
 	# The floor guardian: a champion in a room whose doors slam shut on entry.
 	if not rooms.is_empty():
 		var room: Vector2i = rooms.pop_back()
 		var cell: Variant = _take_spot(room, true)
 		if cell != null:
 			layout.specials.append({"type": &"miniboss", "cell": cell, "room": _room_rect(room)})
+			_reserved[room] = true
+	# An ambush room (from floor 2): the doors slam, three waves, a relic altar.
+	if floor_number_for_specials >= 2 and not rooms.is_empty() and rng.randf() < AMBUSH_CHANCE:
+		var room: Vector2i = rooms.pop_back()
+		var cells: Array[Vector2i] = []
+		for k in 6:
+			var c: Variant = _take_spot(room, true)
+			if c != null:
+				cells.append(c)
+		if cells.size() >= 3:
+			layout.specials.append({"type": &"ambush", "cell": cells[0], "room": _room_rect(room), "cells": cells})
 			_reserved[room] = true
 	if not rooms.is_empty() and rng.randf() < MERCHANT_CHANCE:
 		var room: Vector2i = rooms.pop_back()
@@ -370,7 +433,8 @@ func _place_chests(floor_number: int) -> void:
 		if room != _path[0] and not _reserved.has(room):
 			rooms.append(room)
 	_shuffle(rooms)
-	var count := 2 + (cols * rows) / 3
+	# Fewer chests (was 2 + rooms / 3): finds should feel like finds.
+	var count := 1 + (cols * rows) / 6 + int(GameState.location_mod("chests", 0))
 	var placed := 0
 	# Sealed (secret) rooms always hide a good chest, often a second one -
 	# and greed is punished: a third of them are mimics.
@@ -394,11 +458,12 @@ func _place_chests(floor_number: int) -> void:
 		if cell == null:
 			continue
 		var roll := rng.randf()
-		var gold_chance := 0.06 + 0.02 * floor_number
-		var iron_chance := 0.22 + 0.03 * floor_number
+		var gold_chance := 0.06 + 0.02 * floor_number + float(GameState.location_mod("chest_tier", 0.0))
+		var iron_chance := 0.22 + 0.03 * floor_number + float(GameState.location_mod("chest_tier", 0.0))
 		var tier := 2 if roll < gold_chance else (1 if roll < gold_chance + iron_chance else 0)
 		# From floor 3 a few ordinary chests bite back.
-		var mimic_chance := 0.0 if floor_number < 3 else minf(0.04 + 0.01 * floor_number, 0.14)
+		var mimic_chance := (0.0 if floor_number < 3 else minf(0.04 + 0.01 * floor_number, 0.14)) \
+				+ float(GameState.location_mod("mimic", 0.0))
 		layout.chests.append({"cell": cell, "tier": tier, "mimic": rng.randf() < mimic_chance})
 		placed += 1
 
@@ -435,12 +500,24 @@ func _place_enemies(floor_number: int) -> void:
 			rooms.append(room)
 	if rooms.is_empty():
 		return
-	# Density grows with depth: more monsters per room on deeper floors.
-	var count := 3 + roundi(floor_number * 2.4) + rooms.size() / 2
-	for i in count:
-		var cell: Variant = _take_spot(rooms[rng.randi_range(0, rooms.size() - 1)])
+	# Pacing: fewer, tougher monsters gathered in lairs (packs of 3-5 in
+	# some rooms), quiet rooms in between - fight, breathe, fight - instead
+	# of a carpet of mobs to mow through (it was ~70 places on floor 22).
+	var horde := (1.0 + EclipseLevels.value(GameState.eclipse_level, "monster_count")) \
+			* float(GameState.location_mod("monsters", 1.0)) * Net.monster_count_mult()
+	var per_depth := 0.5 if GameState.expedition else 0.75  # compact locations: fewer, not denser
+	var count := mini(roundi(MAX_MONSTERS * horde), roundi((4 + roundi(floor_number * per_depth) + rooms.size() / 4) * horde))
+	_shuffle(rooms)
+	var lairs := rooms.slice(0, clampi(ceili(count / 4.0), 1, rooms.size()))
+	var placed := 0
+	var guard := 0
+	while placed < count and guard < count * 6:
+		guard += 1
+		var room: Vector2i = lairs[guard % lairs.size()]
+		var cell: Variant = _take_spot(room)
 		if cell != null:
 			layout.enemy_cells.append(cell)
+			placed += 1
 
 
 func _shuffle(arr: Array) -> void:

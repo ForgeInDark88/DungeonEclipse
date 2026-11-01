@@ -143,6 +143,16 @@ FRAMES = [
     ("wounded1", dict(eye="tired", mouth="open_small", knit=1, wounded=True, breath=1, sway=1)),
     ("fierce0", dict(eye="narrow", mouth="open_small", knit=1)),
     ("fierce1", dict(eye="narrow", mouth="roar", knit=2, head=(1, 0))),
+    # v2: a four-step breath, joy, casting, a sip of a potion, resolve, death
+    ("neutral2", dict(breath=1)),
+    ("neutral3", dict(sway=-1)),
+    ("smile0", dict(eye="happy", mouth="smile")),
+    ("smile1", dict(eye="happy", mouth="smile", breath=1, sway=1)),
+    ("cast0", dict(eye="narrow", knit=1, glow=True)),
+    ("cast1", dict(eye="narrow", mouth="open_small", knit=1, glow=True, head=(0, -1))),
+    ("drink", dict(eye="half", drink=True, head=(0, -1))),
+    ("resolve", dict(eye="narrow", mouth="frown", knit=1, head=(1, 0))),
+    ("dead", dict(eye="closed", mouth="open_small", knit=1, head=(0, 2))),
 ]
 
 
@@ -344,7 +354,7 @@ def eyes(d, im, r, skin, sh, eye, look, knit):
         d.line((ex1 - 3, ey - 2, ex1 + 1, ey - 3), fill=lid_c)  # creases
         d.line((ex2 - 2, ey + 1, ex2 + 2, ey - 1), fill=c4(lid))
         return
-    top = {"open": -1, "half": 1, "narrow": 0, "tired": 0}[eye]
+    top = {"open": -1, "half": 1, "narrow": 0, "tired": 0, "happy": -1}[eye]
     # near eye: white, iris with a dark rim, pupil, glint, lid with a crease
     d.rectangle((ex1 - 3, ey + top, ex1 + 3, ey + 2), fill=(236, 230, 222, 255))
     d.line((ex1 - 3, ey + 2, ex1 + 3, ey + 2), fill=(196, 186, 182, 255))
@@ -354,6 +364,12 @@ def eyes(d, im, r, skin, sh, eye, look, knit):
     d.point((ix - 1, ey + 2), fill=tone(r["eyes"], 0.6))
     d.point((ix + 1, ey + 2), fill=tone(r["eyes"], 1.3))
     d.point((ix, ey + max(top, 0) + 1), fill=(12, 8, 12, 255))
+    # depth: the upper lid shades the top of the iris and the inner white,
+    # a soft lower lash line under the eye
+    d.line((ix - 1, ey + top, ix + 1, ey + top), fill=tone(r["eyes"], 0.55))
+    d.point((ex1 - 3, ey + max(top, 0)), fill=(196, 186, 182, 255))
+    for x in range(ex1 - 2, ex1 + 3):
+        put(im, x, ey + 3, tone(skin, 0.78, sh, True), 0.35)
     if top <= 0:
         d.point((ix, ey), fill=(12, 8, 12, 255))
         d.point((ix + 1, ey - 1 if top < 0 else ey), fill=(255, 255, 255, 255))
@@ -363,11 +379,32 @@ def eyes(d, im, r, skin, sh, eye, look, knit):
         d.line((ex1 - 3, ey - 3, ex1 + 2, ey - 3), fill=lid_c)  # lid crease
     if eye == "tired":
         d.line((ex1 - 3, ey + 3, ex1 + 2, ey + 3), fill=tone(skin, 0.72, sh, True))  # dark circles
+    if eye == "happy":
+        # Smiling eyes: the raised cheek covers the bottom of the eye in a
+        # crescent (skin over the white and the iris, highest in the middle),
+        # a soft lid shadow on its edge, laugh lines at the outer corner.
+        cheek = tone(skin, 1.06, sh, True)
+        edge = tone(skin, 0.74, sh, True)
+        for x in range(ex1 - 3, ex1 + 4):
+            lift = 1 if abs(x - ex1) <= 1 else 0
+            d.point((x, ey + 2), fill=cheek)
+            if lift:
+                d.point((x, ey + 1), fill=cheek)
+        d.line((ex1 - 2, ey + 1, ex1 + 2, ey + 1), fill=edge)
+        for k in range(3):  # laugh lines (crow's feet) at the outer corner
+            d.point((ex1 - 5, ey - 1 + k), fill=tone(skin, 0.72, sh, True))
+        d.point((ex1 - 6, ey), fill=tone(skin, 0.78, sh, True))
+        for x, y in ((ex1 - 2, ey + 4), (ex1 - 1, ey + 4), (ex1, ey + 4), (ex2, ey + 4), (ex2 + 1, ey + 4)):
+            put(im, x, y, tone(skin, 1.15), 0.3)  # the cheek apples catch the light
     # far eye: foreshortened, partly behind the bridge
     d.rectangle((ex2 - 1, ey + top, ex2 + 2, ey + 1), fill=(226, 218, 210, 255))
     d.rectangle((ex2 + 1 + look, ey + top, ex2 + 2 + look, ey + 1), fill=c4(r["eyes"]))
     d.point((ex2 + 1 + look, ey + max(top, 0)), fill=(12, 8, 12, 255))
     d.line((ex2 - 2, ey - 2 + max(top, 0), ex2 + 2, ey - 2 + max(top, 0)), fill=c4(lid))
+    if eye == "happy":  # the far eye smiles too (after it is drawn)
+        for x in range(ex2 - 1, ex2 + 3):
+            d.point((x, ey + 1), fill=tone(skin, 1.06, sh, True))
+        d.line((ex2 - 1, ey + 1, ex2 + 2, ey + 1), fill=tone(skin, 0.74, sh, True))
     if r.get("female") and eye not in ("closed", "squeeze"):
         d.point((ex1 - 5, ey - 2), fill=c4(lid))  # lashes
         d.point((ex1 - 5, ey - 3), fill=c4(lid))
@@ -429,6 +466,30 @@ def nose_and_mouth(d, im, r, skin, sh, mouth):
         d.line((39 + m, 40, 44 + m, 40), fill=(232, 226, 210, 255))
         d.line((38 + m, 39, 45 + m, 39), fill=(120, 52, 52, 255))
         d.line((39 + m, 43, 44 + m, 43), fill=(196, 104, 100, 255))
+    elif mouth == "smile":
+        x0, x1 = 37 + m, 46 + m  # mouth corners
+        dark = tone(skin, 0.48, sh, True)
+        lip = (150, 66, 64, 255) if not r.get("female") else (176, 78, 84, 255)
+        lower = (206, 116, 110, 255) if not r.get("female") else (214, 112, 118, 255)
+        # the curve: corners 2 px higher than the middle
+        curve = {x0: 38, x0 + 1: 39, x1 - 1: 39, x1: 38}
+        for x in range(x0, x1 + 1):
+            y = curve.get(x, 40)
+            d.point((x, y), fill=dark if x in (x0, x1) else lip)
+        for x in range(x0 + 2, x1 - 1):  # open a little: teeth on top, shadow below
+            d.point((x, 41), fill=(240, 234, 220, 255) if x0 + 2 < x < x1 - 2 else (190, 180, 170, 255))
+        d.line((x0 + 2, 42, x1 - 2, 42), fill=(84, 26, 30, 255))
+        d.line((x0 + 2, 43, x1 - 2, 43), fill=lower)  # lower lip
+        d.point(((x0 + x1) // 2, 43), fill=(240, 170, 160, 255))  # its light
+        d.line((x0 + 3, 44, x1 - 3, 44), fill=tone(skin, 0.82, sh, True))  # under the lip
+        # nasolabial folds: nose wing -> mouth corner
+        nx, ny = NOSE
+        for k in range(4):
+            put(im, x0 - 1 + (k // 3), ny + 1 + k, tone(skin, 0.62, sh, True), 0.55)
+            put(im, x1 + 1, ny + 1 + k, tone(skin, 0.7, sh, True), 0.35)
+        put(im, x0 - 1, 38, tone(skin, 0.6, sh, True), 0.6)  # dimple
+        for x, y in ((x0 - 3, 35), (x0 - 2, 34), (x1 + 2, 35)):
+            put(im, x, y, tone(skin, 1.22), 0.6)  # lifted cheeks
     else:
         frown = 1 if mouth == "frown" else 0
         d.line((37 + m, 41 + frown, 38 + m, 40), fill=tone(skin, 0.5, sh, True))
@@ -698,15 +759,45 @@ def head_gear(im, cls_id, cfg, r, sway):
                     px[x, y] = (clamp(r_ + (150 - r_) * k), clamp(g_ + (110 - g_) * k * 0.5), clamp(b_ + (255 - b_) * k), a_)
 
 
-def frame(race_id, cls_id, breath=0, sway=0, head=(0, 0), female=False, **kw):
+def frame(race_id, cls_id, breath=0, sway=0, head=(0, 0), female=False, glow=False, drink=False, **kw):
     r = (RACES_F if female else RACES)[race_id]
     cfg = CLASSES[cls_id]
     im = new()
     im.alpha_composite(shift(back_hair(r, cfg, sway), *head))
     im.alpha_composite(shift(body_layer(r, cls_id, cfg), 0, -breath))
-    im.alpha_composite(shift(head_layer(r, cls_id, cfg, sway=sway, **kw), *head))
+    face = head_layer(r, cls_id, cfg, sway=sway, **kw)
+    if glow:
+        _eye_glow(face, cfg["rim"], kw.get("look", 0))
+    im.alpha_composite(shift(face, *head))
+    if drink:
+        _flask(im, head)
     rim(im, cfg["rim"])
     return gp.outline(im, (14, 10, 16, 255))
+
+
+def _eye_glow(im, col, look=0):
+    """Casting: the eyes light up in the class colour, a soft halo around."""
+    for (ex, ey), size in ((EYE_NEAR, 1), (EYE_FAR, 0)):
+        cx = ex + 1 + look
+        for dy in range(-3, 4):
+            for dx in range(-4, 5):
+                dd = math.hypot(dx, dy * 1.4)
+                if dd < 4.2:
+                    put(im, cx + dx, ey + 1 + dy, col, 0.75 * (1 - dd / 4.2))
+        put(im, cx, ey + 1, (255, 255, 255), 1.0)
+        if size:
+            put(im, cx - 1, ey + 1, col, 0.9)
+            put(im, cx + 1, ey + 1, col, 0.9)
+
+
+def _flask(im, head):
+    """Drinking: a small red potion raised to the lips."""
+    d = ImageDraw.Draw(im)
+    x, y = 37 + head[0], 41 + head[1]
+    d.polygon([(x, y), (x + 6, y - 5), (x + 10, y - 1), (x + 4, y + 4)], fill=(190, 220, 230, 230))  # glass
+    d.polygon([(x + 3, y + 1), (x + 7, y - 3), (x + 9, y - 1), (x + 5, y + 3)], fill=(200, 30, 40, 255))  # potion
+    d.line((x + 6, y - 5, x + 8, y - 7), fill=(150, 110, 70, 255), width=2)  # cork
+    d.point((x + 2, y), fill=(255, 255, 255, 255))
 
 
 def sheet(race_id, cls_id, female=False):

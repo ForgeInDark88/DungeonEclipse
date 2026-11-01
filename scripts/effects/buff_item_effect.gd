@@ -18,4 +18,4 @@ func describe() -> String:
 	var parts: Array[String] = []
 	for k in bonuses:
 		parts.append("%s %s" % [StatTypes.label(k), StatTypes.format_value(k, float(bonuses[k]), true)])
-	return "%s на %d сек." % [", ".join(parts), roundi(duration)]
+	return tr("%s на %d сек.") % [", ".join(parts), roundi(duration)]

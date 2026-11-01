@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="NpcData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/npc_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/npc/cartographer.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/portraits/npc_cartographer.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+id = &"cartographer"
+display_name = "Рен"
+profession = "Картограф"
+order = 5
+resident_from_start = false
+home = &"scout_tower"
+sprite = ExtResource("2")
+portrait = ExtResource("3")
+discount = 0.0
+build_discount = 0.0
+depth_min = 3
+rescue_text = "Карты! Мои карты целы? Я Рен, картограф. Я знаю дороги под городом лучше, чем свои пять пальцев — и теперь все знаки на карте ваши."
+dialogs = Array[Dictionary]([{"id": "intro", "when": "", "once": true, "text": "Теперь, когда я в городе, на карте похода видны все знаки: где опасность, где золото, где кровь. И что ждёт в каждом месте — я подскажу точно.", "options": [{"text": "А башня?", "reply": "Постройте башню разведчиков — и вы увидите, какие места ждут на несколько шагов дальше."}]}, {"id": "idle", "when": "", "once": false, "text": "Дорога никогда не бывает прямой. Особенно под землёй.", "options": []}])

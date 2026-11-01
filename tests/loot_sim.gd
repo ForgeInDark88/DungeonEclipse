@@ -138,6 +138,12 @@ func _ready() -> void:
 	md.append("")
 	md.append("Все цели выполнены." if failures.is_empty() else "Не выполнено: " + ", ".join(failures))
 	md.append("")
+	# The game loop's section (tests/loop_balance_sim.gd) is kept as it is.
+	var old := FileAccess.get_file_as_string(REPORT)
+	var at := old.find("<!-- loop-balance:start -->")
+	if at >= 0:
+		md.append("")
+		md.append(old.substr(at).strip_edges())
 	var f := FileAccess.open(REPORT, FileAccess.WRITE)
 	if f:
 		f.store_string("\n".join(md))

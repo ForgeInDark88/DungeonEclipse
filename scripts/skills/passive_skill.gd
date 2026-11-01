@@ -37,5 +37,5 @@ func describe(level: int) -> String:
 	for k in b:
 		parts.append("%s %s" % [StatTypes.label(k), StatTypes.format_value(k, b[k], true)])
 	if hit_effect:
-		parts.append("при ударе %d%%: %s" % [roundi(chance_for(maxi(level, 1)) * 100.0), hit_effect.describe()])
-	return "Пассивно: " + ", ".join(parts)
+		parts.append(tr("при ударе %d%%: %s") % [roundi(chance_for(maxi(level, 1)) * 100.0), hit_effect.describe()])
+	return tr("Пассивно: ") + ", ".join(parts)

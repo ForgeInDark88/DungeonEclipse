@@ -70,9 +70,9 @@ func _build(lore: LoreData) -> void:
 	create_tween().tween_property(text, "visible_ratio", 1.0, clampf(lore.text.length() / 220.0, 0.6, 2.2))
 	var foot := HBoxContainer.new()
 	box.add_child(foot)
-	var count := UIStyle.label("Летопись: %d из %d записей" % [Codex.lore_read_count(), ItemDatabase.lore.size()], 7, UIStyle.INK_SOFT)
+	var count := UIStyle.label(tr("Летопись: %d из %d записей") % [Codex.lore_read_count(), ItemDatabase.lore.size()], 7, UIStyle.INK_SOFT)
 	count.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	foot.add_child(count)
-	var close_b := BookPageScreen.button("Закрыть", close)
+	var close_b := BookPageScreen.button(tr("Закрыть"), close)
 	foot.add_child(close_b)
 	close_b.grab_focus()

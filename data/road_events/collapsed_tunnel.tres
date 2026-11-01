@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"collapsed_tunnel"
+title = "Обвал"
+text = "Проход завален. Среди камней блестят жилы железа, но потолок над завалом трещит."
+regions = Array[StringName]([])
+min_depth = 1
+max_depth = 99
+weight = 1.0
+prop = &"rubble"
+options = Array[Dictionary]([{"text": "Разобрать завал руками.", "requires": "", "hint": "", "outcomes": [{"chance": 0.6, "text": "Тяжело, но вы пробиваетесь — и уносите с собой камень и руду.", "effects": {"resource": {"stone": 3, "iron": 2}}}, {"chance": 0.4, "text": "Сверху падает глыба. Камень вы всё-таки достали, но дорого.", "effects": {"hp_pct": -25, "resource": {"stone": 2}}}]}, {"text": "Подорвать бомбой.", "requires": "item:bomb", "hint": "бомба", "outcomes": [{"chance": 1.0, "text": "Бах! Проход открыт, руда лежит россыпью.", "effects": {"take_item": "bomb", "resource": {"stone": 3, "iron": 3}}}]}, {"text": "Обойти стороной.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Обход долгий, но безопасный.", "effects": {}}]}])

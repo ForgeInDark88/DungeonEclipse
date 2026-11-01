@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="BuildingData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/building_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/town/scout_tower.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"scout_tower"
+display_name = "Башня разведчиков"
+description = "С вершины видно, что ждёт на дороге."
+order = 10
+slot = 124
+width = 2
+start_level = 0
+max_level = 3
+costs = Array[Dictionary]([{"gold": 90, "wood": 5, "stone": 6}, {"gold": 200, "stone": 10, "iron": 3}, {"gold": 380, "stone": 12, "crystal": 1}])
+requires_resident = &""
+requires_boss = &""
+boss_level = 0
+blueprint_level = 0
+level_texts = Array[String](["Типы узлов видны на 1 шаг дальше.", "На 2 шага дальше.", "На 3 шага дальше."])
+action = &"scout"
+texture = ExtResource("2")
+chimney = Vector2(0, 0)
+prosperity = 3

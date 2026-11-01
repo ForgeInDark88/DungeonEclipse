@@ -37,7 +37,7 @@ var immunities: Array[StringName] = []
 
 
 static func display_name(id: StringName) -> String:
-	return INFO[id][0] if INFO.has(id) else String(id)
+	return TranslationServer.translate(INFO[id][0]) if INFO.has(id) else String(id)
 
 
 static func color_of(id: StringName) -> Color:

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="RelicItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/relic_item_data.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/revive_scroll.png" id="e2"]
+
+[resource]
+script = ExtResource("e1")
+heal_on_kill = 0
+second_chance = true
+revive_percent = 0.4
+id = &"revive_scroll"
+display_name = "Свиток воскрешения"
+description = "Молитва храма: при гибели вы встанете с 40% здоровья, а свиток рассыплется пеплом. Продаётся в храме города."
+icon = ExtResource("e2")
+item_type = 3
+rarity = 2
+item_level = 3
+unique = false
+max_stack = 1
+stat_bonuses = {}
+price = 260
+currency_value = 0

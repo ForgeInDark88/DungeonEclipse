@@ -1,0 +1,238 @@
+class_name SessionHud
+extends CanvasLayer
+## The world session on screen (WorldNet keeps it across scenes):
+## - the party: nickname, online / offline, ready, the host's crown;
+## - the chat and the session log (who came, who left, who fell, what was
+##   found): the last lines fade, Enter opens the input;
+## - F4: ready for the next expedition; F1: the lobby (the host kicks
+##   players and binds new devices to profiles there).
+
+const LINES := 6
+const LINE_LIFE := 9.0
+
+var _roster: VBoxContainer
+var _log: VBoxContainer
+var _input: LineEdit
+var _lobby: PanelContainer
+var _lines: Array = []  # [Label, time left]
+var _invite_box: VBoxContainer
+
+
+func _ready() -> void:
+	layer = 60
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	_roster = VBoxContainer.new()
+	_roster.position = Vector2(8, 44)
+	_roster.add_theme_constant_override("separation", 0)
+	_roster.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_roster)
+	_log = VBoxContainer.new()
+	_log.position = Vector2(8, 200)
+	_log.add_theme_constant_override("separation", 0)
+	_log.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_log)
+	_input = LineEdit.new()
+	_input.position = Vector2(8, 300)
+	_input.size = Vector2(220, 14)
+	_input.max_length = WorldNet.CHAT_MAX
+	_input.placeholder_text = tr("Сообщение (Enter — отправить, Esc — закрыть)")
+	_input.add_theme_font_size_override("font_size", 7)
+	_input.visible = false
+	_input.text_submitted.connect(_send)
+	_input.gui_input.connect(func(e: InputEvent) -> void:
+		if e is InputEventKey and e.pressed and e.keycode == KEY_ESCAPE:
+			_input.visible = false
+			_input.release_focus()
+			_input.accept_event())
+	add_child(_input)
+	WorldNet.roster_changed.connect(_refresh)
+	WorldNet.chat_received.connect(_on_chat)
+	PlayerProfiles.approval_needed.connect(func(_p: int, _n: String) -> void: _refresh_lobby())
+	_invite_box = VBoxContainer.new()
+	_invite_box.position = Vector2(220, 44)
+	add_child(_invite_box)
+	WorldNet.trade.invited.connect(_on_invite)
+	WorldNet.trade.opened.connect(func(_id: int, nick: String) -> void:
+		var tb := TradeBook.new()
+		get_tree().current_scene.add_child(tb)
+		tb.open(nick))
+	_refresh()
+
+
+var _ping: Label
+var _ping_left := 0.0
+
+
+func _process(delta: float) -> void:
+	visible = WorldNet.session
+	_ping_left -= delta
+	if visible and _ping_left <= 0.0:
+		_ping_left = 1.0
+		if _ping == null:
+			_ping = UIStyle.outlined_label("", 6, Color(0.7, 0.9, 0.7))
+			_ping.position = Vector2(8, 34)
+			add_child(_ping)
+		_ping.text = _ping_text()
+	for entry in _lines.duplicate():
+		entry[1] -= delta
+		(entry[0] as Label).modulate.a = clampf(entry[1] / 1.5, 0.0, 1.0)
+		if entry[1] <= 0.0:
+			(entry[0] as Label).queue_free()
+			_lines.erase(entry)
+
+
+func _unhandled_input(e: InputEvent) -> void:
+	if not WorldNet.session:
+		return
+	var key := e as InputEventKey
+	if key == null or not key.pressed or key.echo:
+		return
+	if key.keycode == KEY_ENTER and not _input.visible:
+		_input.visible = true
+		_input.grab_focus()
+		get_viewport().set_input_as_handled()
+	elif key.keycode == KEY_F4:
+		WorldNet.toggle_ready()
+		get_viewport().set_input_as_handled()
+	elif key.keycode == KEY_F1:
+		_toggle_lobby()
+		get_viewport().set_input_as_handled()
+	elif key.keycode == KEY_G:
+		var game := get_tree().current_scene
+		if game and "level" in game and game.level:
+			WorldNet.mark(game.level.get_global_mouse_position())
+			get_viewport().set_input_as_handled()
+	elif key.keycode >= KEY_F5 and key.keycode <= KEY_F8:
+		WorldNet.emote(key.keycode - KEY_F5 + (2 if key.shift_pressed else 0))
+		get_viewport().set_input_as_handled()
+
+
+## Round trip to the host (guests), or the party's worst (the host).
+func _ping_text() -> String:
+	var mp := Net.multiplayer.multiplayer_peer as ENetMultiplayerPeer
+	if mp == null:
+		return ""
+	var worst := 0
+	var peers: Array = [1] if not Net.is_host else Array(Net.multiplayer.get_peers())
+	for p in peers:
+		var pp := mp.get_peer(p)
+		if pp:
+			worst = maxi(worst, int(pp.get_statistic(ENetPacketPeer.PEER_ROUND_TRIP_TIME)))
+	return tr("пинг %d мс") % worst
+
+
+func _send(text: String) -> void:
+	WorldNet.say(text)
+	_input.text = ""
+	_input.visible = false
+	_input.release_focus()
+
+
+func _refresh() -> void:
+	for c in _roster.get_children():
+		c.queue_free()
+	for id in WorldNet.roster:
+		var r: Dictionary = WorldNet.roster[id]
+		var online: bool = r["status"] == "online"
+		var mark := ("♛ " if int(id) == 1 else "") + String(r["nick"])
+		if not online:
+			mark += tr(" (отключён)")
+		elif r.get("ready", false):
+			mark += " ✓"
+		var col := UIStyle.ally_color(int(id)) if online else Color(0.6, 0.6, 0.6)
+		_roster.add_child(UIStyle.outlined_label(mark, 7, col))
+	_refresh_lobby()
+
+
+func _on_chat(nick: String, text: String) -> void:
+	var l := UIStyle.outlined_label(("%s: %s" % [nick, text]) if nick != "" else "· " + text, 7,
+			UIStyle.PARCHMENT if nick != "" else Color(0.75, 0.85, 1.0))
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.custom_minimum_size = Vector2(240, 0)
+	_log.add_child(l)
+	_lines.append([l, LINE_LIFE])
+	while _lines.size() > LINES:
+		(_lines[0][0] as Label).queue_free()
+		_lines.pop_front()
+
+
+## «X предлагает обмен»: accept or refuse.
+func _on_invite(trade_id: int, from_nick: String) -> void:
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", UIStyle.texture_box(AssetPaths.TOOLTIP, 4))
+	var box := VBoxContainer.new()
+	panel.add_child(box)
+	box.add_child(UIStyle.label(tr("%s предлагает обмен") % from_nick, 8))
+	var row := HBoxContainer.new()
+	row.add_child(BookPageScreen.button(tr("Принять"), func() -> void:
+		WorldNet.trade.accept(trade_id)
+		panel.queue_free()))
+	row.add_child(BookPageScreen.button(tr("Отказать"), func() -> void: panel.queue_free()))
+	box.add_child(row)
+	_invite_box.add_child(panel)
+	get_tree().create_timer(20.0).timeout.connect(func() -> void:
+		if is_instance_valid(panel):
+			panel.queue_free())
+
+
+# ------------------------------------------------------------------ lobby
+func _toggle_lobby() -> void:
+	if _lobby:
+		_lobby.queue_free()
+		_lobby = null
+		return
+	_lobby = PanelContainer.new()
+	_lobby.add_theme_stylebox_override("panel", UIStyle.texture_box(AssetPaths.TOOLTIP, 4))
+	_lobby.position = Vector2(200, 60)
+	_lobby.custom_minimum_size = Vector2(240, 0)
+	add_child(_lobby)
+	_refresh_lobby()
+
+
+func _refresh_lobby() -> void:
+	if _lobby == null:
+		return
+	for c in _lobby.get_children():
+		c.queue_free()
+	var box := VBoxContainer.new()
+	_lobby.add_child(box)
+	box.add_child(UIStyle.label(tr("Лобби: %s") % WorldNet.world_name, 9))
+	for id in WorldNet.roster:
+		var r: Dictionary = WorldNet.roster[id]
+		var row := HBoxContainer.new()
+		var l := UIStyle.label("%s · %s%s" % [r["nick"], tr("в игре") if r["status"] == "online" else tr("отключён"),
+				tr(" · готов") if r.get("ready", false) else ""], 7)
+		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(l)
+		if int(id) != multiplayer.get_unique_id() and r["status"] == "online":
+			var tr_b := BookPageScreen.button(tr("Обмен"), func() -> void: WorldNet.trade.invite(int(id)))
+			tr_b.add_theme_font_size_override("font_size", 7)
+			row.add_child(tr_b)
+		if Net.is_host and int(id) != 1 and r["status"] == "online":
+			var kick := BookPageScreen.button(tr("Исключить"), func() -> void: WorldNet.kick(int(id)))
+			kick.add_theme_font_size_override("font_size", 7)
+			row.add_child(kick)
+		box.add_child(row)
+	if Net.is_host:
+		for peer in PlayerProfiles.pending:
+			var nick := String(PlayerProfiles.pending[peer]["nick"])
+			box.add_child(UIStyle.label(tr("Привязать этот клиент к профилю %s?") % nick, 7, Color(0.55, 0.15, 0.1)))
+			var row2 := HBoxContainer.new()
+			row2.add_child(BookPageScreen.button(tr("Да"), func() -> void:
+				PlayerProfiles.approve(peer)
+				_refresh_lobby()))
+			row2.add_child(BookPageScreen.button(tr("Нет"), func() -> void:
+				PlayerProfiles.deny(peer)
+				_refresh_lobby()))
+			box.add_child(row2)
+	var ready := BookPageScreen.button(tr("Готов (F4)"), func() -> void: WorldNet.toggle_ready())
+	box.add_child(ready)
+	if Net.is_host:
+		var names := {"path": tr("Путь: %s"), "friendly_fire": tr("Огонь по своим: %s"), "build_rule": tr("Строят: %s")}
+		var vals := {"vote": tr("голосование"), "host": tr("хост"), "bombs": tr("бомбы"), "off": tr("нет"), "all": tr("все")}
+		for key in names:
+			var k := String(key)
+			box.add_child(BookPageScreen.button(names[k] % vals.get(WorldNet.setting(k), WorldNet.setting(k)), func() -> void:
+				WorldNet.cycle_setting(k)
+				_refresh_lobby()))
+	box.add_child(UIStyle.label(tr("Enter — чат · F1 — закрыть · G — метка · F5–F8 — эмоции"), 6, UIStyle.INK_SOFT))

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"dice_player"
+title = "Игрок в кости"
+text = "За перевёрнутой бочкой сидит человек в лохмотьях и трясёт кости. «Сыграем? Ставка — полсотни. Выиграешь — получишь втрое»."
+regions = Array[StringName]([])
+min_depth = 1
+max_depth = 99
+weight = 0.8
+prop = &"gambler"
+options = Array[Dictionary]([{"text": "Поставить 50 золота.", "requires": "gold:50", "hint": "50 золота", "outcomes": [{"chance": 0.45, "text": "Шестёрки! Он ругается и отсчитывает выигрыш.", "effects": {"gold": 100}}, {"chance": 0.55, "text": "Кости ложатся не в вашу пользу. Игрок довольно щурится.", "effects": {"gold": -50}}]}, {"text": "Подменить кости (ловкость рук).", "requires": "class:rogue", "hint": "разбойник", "outcomes": [{"chance": 1.0, "text": "Он даже не заметил подмены. Кошель сам прыгает к вам в руки.", "effects": {"gold": 120}}]}, {"text": "Пройти мимо.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы идёте дальше, ничего не потеряв и ничего не найдя.", "effects": {}}]}])

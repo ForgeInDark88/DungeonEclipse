@@ -60,6 +60,12 @@ var _glance_left := 0.0
 var _next_glance := 7.0
 var _hurt_t := -1.0
 var _fierce_t := -1.0
+## Reactions with a hold time: joy (level, a rare find), casting, a sip of a
+## potion, resolve (a guardian appears). Seconds left; the strongest wins.
+var _smile_left := 0.0
+var _cast_left := 0.0
+var _drink_left := 0.0
+var _resolve_left := 0.0
 var _shake_left := 0.0
 var _flash_color := Color.TRANSPARENT
 var _flash_left := 0.0
@@ -109,7 +115,17 @@ func setup(p_hero: Hero, p_player: Player) -> void:
 	add_child(_flash)
 	_last_hp = hero.stats.hp
 	hero.stats.hp_changed.connect(_on_hp)
-	hero.leveled_up.connect(func(_l: int) -> void: _start_flash(Color(1.0, 0.85, 0.3, 0.5)))
+	hero.leveled_up.connect(func(_l: int) -> void:
+		_start_flash(Color(1.0, 0.85, 0.3, 0.5))
+		_smile_left = 1.8)
+	EventBus.item_collected.connect(func(it: ItemData, _p: Vector2) -> void:
+		if it and it.rarity >= ItemData.Rarity.RARE:
+			_smile_left = maxf(_smile_left, 1.0))
+	EventBus.hero_cast.connect(func() -> void: _cast_left = 0.5)
+	EventBus.hero_used_item.connect(func(it: ItemData) -> void:
+		if it is UsableItemData:
+			_drink_left = 0.7)
+	EventBus.boss_spawned.connect(func(_b: Node) -> void: _resolve_left = 2.0)
 	EventBus.player_died.connect(func() -> void: _dead = true)
 	# The hero hits a monster: a short snarl (not restarted while it plays).
 	EventBus.damage_dealt.connect(func(_p: Vector2, _a: int, _c: bool, on_player: bool) -> void:
@@ -225,6 +241,10 @@ func _process(delta: float) -> void:
 
 func _update_timers(delta: float) -> void:
 	_shake_left = maxf(0.0, _shake_left - delta)
+	_smile_left = maxf(0.0, _smile_left - delta)
+	_cast_left = maxf(0.0, _cast_left - delta)
+	_drink_left = maxf(0.0, _drink_left - delta)
+	_resolve_left = maxf(0.0, _resolve_left - delta)
 	_flash_left = maxf(0.0, _flash_left - delta)
 	if _hurt_t >= 0.0:
 		_hurt_t += delta
@@ -259,25 +279,52 @@ func _update_timers(delta: float) -> void:
 ## Which frame to show now (priority: death, pain, snarl, blink, wounds, glance, breath).
 func _frame_name() -> StringName:
 	if _dead:
-		return &"blink"
+		return &"dead"
 	if _hurt_t >= 0.0:
 		return &"hurt0" if _hurt_t < 0.1 else &"hurt1"
 	if _fierce_t >= 0.0:
 		return &"fierce0" if _fierce_t < 0.08 else &"fierce1"
+	if _cast_left > 0.0:
+		return &"cast0" if _cast_left > 0.38 else &"cast1"
+	if _drink_left > 0.0:
+		return &"drink"
 	if _blink_t >= 0.0:
 		return &"blink_half" if _blink_t < 0.04 or _blink_t > BLINK_TIME - 0.04 else &"blink"
+	if _smile_left > 0.0:
+		return &"smile1" if fmod(_time, 0.6) < 0.3 else &"smile0"
+	if _resolve_left > 0.0:
+		return &"resolve"
 	var low := _low_hp()
 	if low:
 		return &"wounded1" if fmod(_time, 0.9) < 0.45 else &"wounded0"
 	if _glance_left > 0.0:
 		return &"glance"
-	# Calm breathing: in for 1.3 s, out for 1.5 s.
-	return &"neutral1" if fmod(_time, 2.8) < 1.3 else &"neutral0"
+	# Calm breathing in four steps: rest, breathe in, full, breathe out, sway.
+	var t := fmod(_time, 3.2)
+	if t < 0.8:
+		return &"neutral0"
+	if t < 1.3:
+		return &"neutral2"
+	if t < 2.1:
+		return &"neutral1"
+	if t < 2.6:
+		return &"neutral2"
+	return &"neutral3"
 
 
 ## Old layered portraits have fewer expressions.
 func _fallback(f: StringName) -> StringName:
 	match f:
+		&"neutral2":
+			return &"neutral1"
+		&"neutral3", &"smile0", &"smile1", &"resolve":
+			return &"neutral0"
+		&"cast0", &"cast1":
+			return &"fierce0"
+		&"drink":
+			return &"blink_half"
+		&"dead":
+			return &"blink"
 		&"blink_half":
 			return &"blink"
 		&"hurt0", &"hurt1":
@@ -302,7 +349,7 @@ func _update_glints() -> void:
 			&"twinkle":
 				var c := fmod(_time + ph, 3.5)
 				a = clampf(1.0 - absf(c - 0.25) / 0.25, 0.0, 1.0)
-		if _dead or (g[3] and _frame in [&"blink", &"blink_half", &"hurt0", &"hurt1"]):
+		if _dead or (g[3] and _frame in [&"blink", &"blink_half", &"hurt0", &"hurt1", &"drink", &"dead"]):
 			a = 0.0
 		t.modulate.a = clampf(a, 0.0, 1.0)
 

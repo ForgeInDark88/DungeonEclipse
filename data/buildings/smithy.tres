@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="BuildingData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/building_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/town/smithy.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"smithy"
+display_name = "Кузница"
+description = "Брам, сын Торна, раздувает отцовский горн."
+order = 6
+slot = 79
+width = 6
+start_level = 0
+max_level = 3
+costs = Array[Dictionary]([{"gold": 80, "wood": 4, "iron": 4}, {"gold": 200, "iron": 8, "stone": 4}, {"gold": 450, "iron": 12, "crystal": 2}])
+requires_resident = &"blacksmith"
+requires_boss = &""
+boss_level = 0
+blueprint_level = 3
+level_texts = Array[String](["Ремонт, улучшение, зачарование, переплавка.", "Работа кузнеца на 15% дешевле.", "Работа кузнеца на 30% дешевле."])
+action = &"smith"
+texture = ExtResource("2")
+chimney = Vector2(64, 8)
+prosperity = 3

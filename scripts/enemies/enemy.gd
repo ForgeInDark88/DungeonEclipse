@@ -24,8 +24,17 @@ const STATE_NAMES := ["patrol", "chase", "attack", "hurt", "alert", "search", "r
 const GRAVITY := 900.0
 const PROJECTILE_SCENE := preload("res://scenes/world/projectile.tscn")
 ## Monster strength per floor below the first (see docs/BALANCE.md).
-const HP_SCALE_PER_FLOOR := 0.4
-const DMG_SCALE_PER_FLOOR := 0.22
+const HP_SCALE_PER_FLOOR := 0.46
+const DMG_SCALE_PER_FLOOR := 0.24
+## Pacing: about a third as many monsters per floor as before (lairs, see
+## LevelGenerator._place_enemies) - each one is a bit tougher and pays more,
+## so a floor gives about the same xp and gold in far fewer fights.
+const REWARD_MULT := 2.2
+const GOLD_MULT := 1.8
+## Loot: there was too much of it (~50 items a floor deep down).
+const LOOT_MULT := 0.6
+## Elites drop their rare loot this often (it used to be every time).
+const ELITE_LOOT_CHANCE := 0.6
 ## Elites drop from this richer table instead of their own.
 const ELITE_LOOT_TABLE := &"enemy_rare"
 const WORLD_MASK := 1
@@ -184,9 +193,11 @@ func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null, p_ch
 	# Difficulty and curses of the altars of fate.
 	max_hp = maxi(1, roundi(max_hp * (1.0 + GameState.run_effect("enemy_hp"))))
 	damage = maxi(1, roundi(damage * (1.0 + GameState.run_effect("enemy_damage"))))
+	if self is Boss:  # levels of the Eclipse: angrier guardians
+		max_hp = maxi(1, roundi(max_hp * (1.0 + GameState.run_effect("boss_hp"))))
 	# Co-op: the party makes the dungeon meaner.
 	if Net.active:
-		max_hp = maxi(1, roundi(max_hp * Net.enemy_hp_mult()))
+		max_hp = maxi(1, roundi(max_hp * Net.enemy_hp_mult() * (Net.boss_hp_mult() if self is Boss else 1.0)))
 		damage = maxi(1, roundi(damage * Net.enemy_damage_mult()))
 	hp = max_hp
 	if puppet:
@@ -198,9 +209,9 @@ func setup(p_data: EnemyData, p_floor: int, p_elite: EliteAffixData = null, p_ch
 func display_name() -> String:
 	var base := data.display_name
 	if elite:
-		base = "%s %s" % [elite.prefix(data.gender), base.left(1).to_lower() + base.substr(1)]
+		base = "%s %s" % [elite.prefix(data.gender), ItemFactory.after_adjective(base)]
 	if champion:
-		return "Страж этажа: %s" % base
+		return tr("Страж этажа: %s") % base
 	if role:
 		return "%s: %s" % [role.title, base]
 	return base
@@ -495,7 +506,7 @@ func _physics_process(delta: float) -> void:
 	if lvl and lvl.nav and lvl.nav.is_forbidden(_feet_cell()) and data.behavior != EnemyData.Behavior.FLYER and is_on_floor():
 		_path.clear()  # landed on a trap cell: plan a way off right now
 		if danger_time == 0.0 or fmod(danger_time, 1.0) < delta:
-			AIDebug.log_event(self, "danger", "%s в клетке ловушки %s (%s, шаг %s, прошлый шаг %s, vel %s, jumping %s)" % [data.id, _feet_cell(), state_name(), _debug_step(), _last_step, velocity, _jumping])
+			AIDebug.log_event(self, "danger", tr("%s в клетке ловушки %s (%s, шаг %s, прошлый шаг %s, vel %s, jumping %s)") % [data.id, _feet_cell(), state_name(), _debug_step(), _last_step, velocity, _jumping])
 		danger_time += delta
 	_attack_anim_left = maxf(0.0, _attack_anim_left - delta)
 	_update_animation()
@@ -1200,7 +1211,7 @@ func _debug_step() -> String:
 	if _path_i < _path.size():
 		var st: Dictionary = _path[_path_i]
 		return "%s→%s" % [LevelNav.EDGE_NAMES[st["kind"]] if st["kind"] >= 0 else "fly", st["cell"]]
-	return "нет"
+	return tr("нет")
 
 
 func state_name() -> String:
@@ -1222,11 +1233,11 @@ func debug_memory_pos() -> Vector2:
 func debug_extra() -> String:
 	var parts: Array[String] = []
 	if _hold:
-		parts.append("ждёт")
+		parts.append(tr("ждёт"))
 	if _flank != 0.0:
-		parts.append("фланг")
+		parts.append(tr("фланг"))
 	if _stuck_level > 0:
-		parts.append("застрял %d" % _stuck_level)
+		parts.append(tr("застрял %d") % _stuck_level)
 	return " ".join(parts)
 
 
@@ -1265,7 +1276,7 @@ func _unstick() -> void:
 		1:
 			_path.clear()
 			_path_goal = Vector2i(-9999, -9999)
-			AIDebug.log_event(self, "repath", "%s: нет движения, новый путь (%s, клетка %s, шаг %s, pos %s, last %s, sees %s)" % [data.id, state_name(), _feet_cell(), _debug_step(), global_position, _last_seen, _sees_player])
+			AIDebug.log_event(self, "repath", tr("%s: нет движения, новый путь (%s, клетка %s, шаг %s, pos %s, last %s, sees %s)") % [data.id, state_name(), _feet_cell(), _debug_step(), global_position, _last_seen, _sees_player])
 		2:
 			dir = -dir
 			_jumping = false
@@ -1275,7 +1286,7 @@ func _unstick() -> void:
 				_stop_climb()
 				velocity = Vector2(dir * data.speed, -260.0)
 			_path.clear()
-			AIDebug.log_event(self, "maneuver", "%s: прыжок и разворот (%s, клетка %s, шаг %s)" % [data.id, state_name(), _feet_cell(), _debug_step()])
+			AIDebug.log_event(self, "maneuver", tr("%s: прыжок и разворот (%s, клетка %s, шаг %s)") % [data.id, state_name(), _feet_cell(), _debug_step()])
 		_:
 			_stuck_level = 0
 			_path.clear()
@@ -1295,7 +1306,7 @@ func _unstick() -> void:
 			global_position = lvl.cell_bottom(target) + (Vector2(0, -4) if data.behavior == EnemyData.Behavior.FLYER else Vector2.ZERO)
 			_stuck_anchor = global_position
 			Fx.sparks(get_parent(), global_position + Vector2(0, -6), Color(0.7, 0.6, 1.0), 8, 40.0)
-			AIDebug.log_event(self, "teleport", "%s: телепорт %s → %s (pos %s, level %s)" % [data.id, here, target, global_position, lvl.global_position])
+			AIDebug.log_event(self, "teleport", tr("%s: телепорт %s → %s (pos %s, level %s)") % [data.id, here, target, global_position, lvl.global_position])
 
 
 func _free_fly_cell(lvl: DungeonLevel, from: Vector2i) -> Vector2i:
@@ -1330,13 +1341,13 @@ func _dummy_step(delta: float) -> void:
 	if _dps_label == null:
 		return
 	if _dummy_log.is_empty():
-		_dps_label.text = "Бей меня!"
+		_dps_label.text = tr("Бей меня!")
 		return
 	var total := 0
 	for h in _dummy_log:
 		total += int(h[1])
 	var span := clampf(now - float(_dummy_log[0][0]), 1.0, 5.0)
-	_dps_label.text = "Урон/с: %d · за 5 с: %d" % [roundi(total / span), total]
+	_dps_label.text = tr("Урон/с: %d · за 5 с: %d") % [roundi(total / span), total]
 
 
 # ------------------------------------------------------------- squads
@@ -1431,7 +1442,7 @@ func _update_squad(dt: float) -> void:
 	if Net.active and Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.enemy_float_text.rpc(spot, "+%d" % amount, Color(0.45, 1.0, 0.5))
+			Net.send(ns, &"enemy_float_text", [spot, "+%d" % amount, Color(0.45, 1.0, 0.5)])
 	HealBeam.spawn(get_parent(), global_position + Vector2(0, -data.collision_size.y * 0.7),
 			target.global_position + Vector2(0, -target.data.collision_size.y * 0.5), role.color)
 	_attack_anim_left = 0.3  # a casting gesture
@@ -1740,8 +1751,8 @@ func _shoot() -> void:
 	if Net.active and Net.is_host:
 		var ns = get_tree().get_first_node_in_group("net_game")
 		if ns and data.projectile_texture:
-			ns.enemy_projectile.rpc(data.projectile_texture.resource_path, from, dir_v,
-					data.projectile_speed, 2.5)
+			Net.send(ns, &"enemy_projectile", [data.projectile_texture.resource_path, from, dir_v,
+					data.projectile_speed, 2.5])
 
 
 # ------------------------------------------------------------------ damage
@@ -1780,7 +1791,7 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 		dealt = maxi(1, roundi(dealt * (1.0 - ward)))
 		Fx.sparks(get_parent(), global_position + Vector2(0, -data.collision_size.y * 0.6), Color(0.5, 0.75, 1.0), 4, 50.0)
 	if dealt <= 0:
-		EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 4), "Иммунитет", Color(0.7, 0.7, 0.7))
+		EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 4), tr("Иммунитет"), Color(0.7, 0.7, 0.7))
 		return
 	if damage_type > 0 and resistance(damage_type) < 0.0:
 		# Weakness: say it (not on every hit) so elemental gear feels right.
@@ -1788,11 +1799,11 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 		if now - _weak_shown > 1.2:
 			_weak_shown = now
 			var spot := global_position + Vector2(0, -data.collision_size.y - 14)
-			EventBus.floating_text.emit(spot, "Уязвим!", Color(1.0, 0.7, 0.2))
+			EventBus.floating_text.emit(spot, tr("Уязвим!"), Color(1.0, 0.7, 0.2))
 			if Net.active and Net.is_host:
 				var nsw := get_tree().get_first_node_in_group("net_game") as NetSync
 				if nsw:
-					nsw.enemy_float_text.rpc(spot, "Уязвим!", Color(1.0, 0.7, 0.2))
+					Net.send(nsw, &"enemy_float_text", [spot, "Уязвим!", Color(1.0, 0.7, 0.2)])  # i18n-src
 	hp = maxi(hp - dealt, min_hp())
 	_dormant = false
 	hp_bar.visible = true
@@ -1807,7 +1818,7 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 		if ns:
 			attacker = int(ns._last_hitter.get(net_id, 1))
 			if Net.is_host:
-				ns.damage_number.rpc(top, dealt, crit, attacker)
+				Net.send(ns, &"damage_number", [top, dealt, crit, attacker])
 	if attacker == 1:
 		EventBus.damage_dealt.emit(top, dealt, crit, false)
 	else:
@@ -1824,7 +1835,7 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 	if Net.active and Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.enemy_hurt.rpc(net_id, crit)
+			Net.send(ns, &"enemy_hurt", [net_id, crit])
 	if data.training_dummy:
 		_dummy_hit(dealt)
 		return
@@ -1859,7 +1870,7 @@ func take_status_damage(amount: int, p_status: StringName, color: Color) -> void
 	if Net.active and Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.enemy_float_text.rpc(spot, str(amount), color)
+			Net.send(ns, &"enemy_float_text", [spot, str(amount), color])
 	if data.training_dummy:
 		_dummy_hit(amount)
 		return
@@ -2002,7 +2013,7 @@ func _net_vanish(with_death: bool) -> void:
 	# Only enemies still registered on this floor (a floor change clears the
 	# registry first: the guests rebuild their floor anyway).
 	if ns and ns.enemies.get(net_id) == self:
-		ns.enemy_vanished.rpc(net_id, with_death)
+		Net.send(ns, &"enemy_vanished", [net_id, with_death])
 		ns.unregister_enemy(net_id)
 
 
@@ -2012,13 +2023,22 @@ func _exit_tree() -> void:
 		_net_vanish(false)
 
 
+## A guest's own drop of this (dead) enemy in a world session.
+func personal_drop() -> void:
+	if data == null or data.no_rewards:
+		return
+	var gold_find := GameState.hero.stats.get_value(StatTypes.GOLD_FIND) if GameState.hero else 0.0
+	drop_loot(roundi(GOLD_MULT * randi_range(data.gold_min, data.gold_max) * (1.0 + 0.10 * (floor_number - 1))
+			* (elite.gold_mult if elite else 1.0) * (1.0 + gold_find)))
+
+
 ## XP, gold, loot and kill events (not for illusions and other fakes).
 ## Co-op: the host keeps the world (loot drops there and is replicated),
 ## the killer gets the xp/gold through the net, everyone counts the kill.
 func _give_rewards() -> void:
-	var xp := roundi((data.xp_reward + floor_number - 1) * (elite.xp_mult if elite else 1.0) * maxf(0.0, 1.0 + GameState.run_effect("xp") + GameState.combo_bonus()))
+	var xp := roundi(REWARD_MULT * (data.xp_reward + floor_number - 1) * (elite.xp_mult if elite else 1.0) * maxf(0.0, 1.0 + GameState.run_effect("xp") + GameState.combo_bonus()))
 	var gold_find := GameState.hero.stats.get_value(StatTypes.GOLD_FIND) if GameState.hero else 0.0
-	var gold := roundi(randi_range(data.gold_min, data.gold_max) * (1.0 + 0.10 * (floor_number - 1)) * (elite.gold_mult if elite else 1.0) * (1.0 + gold_find) * maxf(0.0, 1.0 + GameState.run_effect("gold") + GameState.combo_bonus()))
+	var gold := roundi(GOLD_MULT * randi_range(data.gold_min, data.gold_max) * (1.0 + 0.10 * (floor_number - 1)) * (elite.gold_mult if elite else 1.0) * (1.0 + gold_find) * maxf(0.0, 1.0 + GameState.run_effect("gold") + GameState.combo_bonus()))
 	if Net.active:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
@@ -2033,6 +2053,13 @@ func _give_rewards() -> void:
 		EventBus.floating_text.emit(global_position + Vector2(0, -data.collision_size.y - 12), "+%d XP" % xp, Color(1.0, 0.85, 0.3))
 		if elite:
 			EventBus.elite_killed.emit(data)
+	drop_loot(gold)
+
+
+## What the enemy drops: coins, an elite's shards, its loot table. In a
+## world session every machine rolls its own (personal loot, see
+## NetSync.enemy_died), here on the host for the host's hero.
+func drop_loot(gold: int) -> void:
 	if gold > 0:
 		var coin := ItemDatabase.get_item(&"gold_coin")
 		if coin:
@@ -2042,7 +2069,7 @@ func _give_rewards() -> void:
 		if shard:
 			EventBus.spawn_items.emit(global_position + Vector2(0, -8), [{"item": shard, "count": elite.shard_drop}])
 	var table: LootTable = ItemDatabase.get_loot_table(ELITE_LOOT_TABLE) if elite else data.loot_table
-	if table and (elite != null or randf() < data.loot_chance):
+	if table and ((elite != null and randf() < ELITE_LOOT_CHANCE) or (elite == null and randf() < minf(0.9, data.loot_chance * LOOT_MULT))):
 		var loot := table.roll(floor_number)
 		if not loot.is_empty():
 			EventBus.spawn_items.emit(global_position + Vector2(0, -8), loot)

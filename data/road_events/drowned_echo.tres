@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"drowned_echo"
+title = "Колокол под водой"
+text = "Из чёрной воды доносится звон. На дне что-то блестит — то ли сундук, то ли кости в доспехах."
+regions = Array[StringName]([&"deeps"])
+min_depth = 16
+max_depth = 30
+weight = 1.0
+prop = &"bell"
+options = Array[Dictionary]([{"text": "Нырнуть за блеском.", "requires": "", "hint": "", "outcomes": [{"chance": 0.6, "text": "Холод сводит пальцы, но вы выныриваете с добычей.", "effects": {"loot": "special", "hp_pct": -15}}, {"chance": 0.4, "text": "Вода тянет вниз. Вы выбираетесь пустым и продрогшим.", "effects": {"hp_pct": -30}}]}, {"text": "Ударить в колокол на берегу.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Звон будит утопленников. Но и сокровища поднимаются вместе с ними.", "effects": {"fight": "elite", "loot": "special"}}]}, {"text": "Пройти мимо.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы идёте дальше, ничего не потеряв и ничего не найдя.", "effects": {}}]}])

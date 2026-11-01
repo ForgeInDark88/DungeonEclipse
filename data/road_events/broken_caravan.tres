@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"broken_caravan"
+title = "Разбитый караван"
+text = "Перевёрнутые повозки, разбросанные ящики. Те, кто их тащил, лежат рядом. То, что их убило, может быть ещё близко."
+regions = Array[StringName]([])
+min_depth = 2
+max_depth = 99
+weight = 1.0
+prop = &"caravan"
+options = Array[Dictionary]([{"text": "Обыскать ящики.", "requires": "", "hint": "", "outcomes": [{"chance": 0.7, "text": "Под досками — уцелевший товар и кошель.", "effects": {"loot": "special", "gold": 40, "resource": {"wood": 2}}}, {"chance": 0.3, "text": "Из темноты выходят хозяева этих мест. Придётся драться!", "effects": {"fight": "level"}}]}, {"text": "Взять только припасы и уйти.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Сухари и чистая вода: силы возвращаются.", "effects": {"hp_pct": 30, "resource": {"wood": 1}}}]}, {"text": "Пройти мимо.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы идёте дальше, ничего не потеряв и ничего не найдя.", "effects": {}}]}])

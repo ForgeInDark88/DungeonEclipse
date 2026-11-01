@@ -212,7 +212,7 @@ func _build_left_page(page: Control) -> void:
 	stats_box.add_theme_constant_override("separation", 0)
 	stats_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	page.add_child(stats_box)
-	var header := UIStyle.label("Характеристики", 8, UIStyle.INK_SOFT)
+	var header := UIStyle.label(tr("Характеристики"), 8, UIStyle.INK_SOFT)
 	stats_box.add_child(header)
 	for stat in ["level"] + StatTypes.PRIMARY + ["hp", "mana"] + [StatTypes.DAMAGE, StatTypes.ARMOR, StatTypes.SPEED, StatTypes.CRIT_CHANCE, "resist"]:
 		var row := HBoxContainer.new()
@@ -226,7 +226,7 @@ func _build_left_page(page: Control) -> void:
 		stats_box.add_child(row)
 		_stat_labels[stat] = [name_l, value_l]
 
-	var help := UIStyle.label("ПКМ / двойной клик — надеть или использовать.\nПеретащите предмет за книгу — выбросить.\nВ быстрые слоты (1–7) — перетащите вниз.", 6, UIStyle.INK_SOFT)
+	var help := UIStyle.label(tr("ПКМ / двойной клик — надеть или использовать.\nПеретащите предмет за книгу — выбросить.\nВ быстрые слоты (1–7) — перетащите вниз."), 6, UIStyle.INK_SOFT)
 	help.position = Vector2(0, DOLL_AREA.y + 22)
 	help.size = Vector2(page.size.x, 30)
 	help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -249,11 +249,11 @@ func _refresh_pacts() -> void:
 	var names: Array[String] = []
 	for p in GameState.pacts:
 		names.append(p.display_name)
-	_pacts_label.text = "Судьба: " + ", ".join(names) if not names.is_empty() else ""
+	_pacts_label.text = tr("Судьба: ") + ", ".join(names) if not names.is_empty() else ""
 
 
 func _pacts_tooltip() -> String:
-	var lines: Array[String] = ["[b]Алтари судьбы (до конца забега)[/b]"]
+	var lines: Array[String] = [tr("[b]Алтари судьбы (до конца забега)[/b]")]
 	for p in GameState.pacts:
 		lines.append("[color=%s]%s[/color] — %s" % ["#c04030" if p.is_curse() else UIStyle.GOOD_HEX, p.display_name, p.description])
 	return "\n".join(lines)
@@ -265,14 +265,14 @@ func _build_right_page(page: Control) -> void:
 	tabs.alignment = BoxContainer.ALIGNMENT_CENTER
 	tabs.add_theme_constant_override("separation", 6)
 	page.add_child(tabs)
-	for t in [["Рюкзак", false], ["Ремесло", true]]:
+	for t in [[tr("Рюкзак"), false], [tr("Ремесло"), true]]:
 		var craft: bool = t[1]
 		var b := BookPageScreen.button(t[0], func() -> void: _show_tab(craft))
 		b.add_theme_font_size_override("font_size", 8)
 		tabs.add_child(b)
 		_tab_buttons.append(b)
 	# Sorting sits with the tabs: equipment by rarity first, junk last.
-	var sort_b := BookPageScreen.button("Сортировать", func() -> void: hero.inventory.sort_slots())
+	var sort_b := BookPageScreen.button(tr("Сортировать"), func() -> void: hero.inventory.sort_slots())
 	sort_b.add_theme_font_size_override("font_size", 8)
 	tabs.add_child(sort_b)
 	_bag_page = Control.new()
@@ -334,7 +334,7 @@ func _refresh_crafting() -> void:
 	for c in _craft_list.get_children():
 		c.queue_free()
 	if ItemDatabase.recipes.is_empty():
-		_craft_list.add_child(UIStyle.label("Рецептов нет", 7, UIStyle.INK_SOFT))
+		_craft_list.add_child(UIStyle.label(tr("Рецептов нет"), 7, UIStyle.INK_SOFT))
 	for r in ItemDatabase.recipes:
 		var item := ItemDatabase.get_item(r.result)
 		if item == null:
@@ -357,7 +357,7 @@ func _refresh_crafting() -> void:
 			var col := "#2e5a1e" if have >= need else "#8a2a1e"
 			parts.append("[color=%s]%s %d/%d[/color]" % [col, ing.display_name if ing else str(id), have, need])
 		if r.gold > 0:
-			parts.append("[color=%s]%d зол.[/color]" % ["#2e5a1e" if hero.gold >= r.gold else "#8a2a1e", r.gold])
+			parts.append(tr("[color=%s]%d зол.[/color]") % ["#2e5a1e" if hero.gold >= r.gold else "#8a2a1e", r.gold])
 		var text := RichTextLabel.new()
 		text.bbcode_enabled = true
 		text.fit_content = true
@@ -368,10 +368,10 @@ func _refresh_crafting() -> void:
 			text.add_theme_font_size_override(k, 6)
 		text.text = "[b]%s%s[/b]\n%s" % [item.display_name, " ×%d" % r.count if r.count > 1 else "", ", ".join(parts)]
 		row.add_child(text)
-		var b := BookPageScreen.button("Создать", func() -> void:
+		var b := BookPageScreen.button(tr("Создать"), func() -> void:
 			if Crafting.craft(hero, r):
 				AudioManager.play_ui(&"ui_equip")
-				EventBus.message.emit("Создано: %s" % item.display_name)
+				EventBus.message.emit(tr("Создано: %s") % item.display_name)
 			_refresh_crafting())
 		b.add_theme_font_size_override("font_size", 6)
 		b.disabled = not Crafting.can_craft(hero, r)
@@ -391,11 +391,11 @@ func _refresh_inventory() -> void:
 		for st in hero.inventory.slots:
 			if st != null:
 				used += 1
-		_capacity_label.text = "Занято: %d / %d" % [used, hero.inventory.capacity()]
+		_capacity_label.text = tr("Занято: %d / %d") % [used, hero.inventory.capacity()]
 	if _pouch:
 		for c in _pouch.get_children():
 			c.queue_free()
-		var head := UIStyle.label("Мешок:" if not hero.inventory.pouch.is_empty() else "Мешок материалов пуст", 7, UIStyle.INK_SOFT)
+		var head := UIStyle.label(tr("Мешок:") if not hero.inventory.pouch.is_empty() else tr("Мешок материалов пуст"), 7, UIStyle.INK_SOFT)
 		_pouch.add_child(head)
 		for st in hero.inventory.pouch:
 			var cell := HBoxContainer.new()
@@ -430,16 +430,16 @@ func _refresh_stats() -> void:
 		var labels: Array = _stat_labels[key]
 		match key:
 			"level":
-				labels[0].text = "Уровень"
+				labels[0].text = tr("Уровень")
 				labels[1].text = "%d (%d/%d XP)" % [hero.level, hero.xp, hero.xp_to_next()]
 			"hp":
-				labels[0].text = "Здоровье"
+				labels[0].text = tr("Здоровье")
 				labels[1].text = "%d / %d" % [st.hp, st.max_hp()]
 			"mana":
-				labels[0].text = "Мана"
+				labels[0].text = tr("Мана")
 				labels[1].text = "%d / %d" % [st.mana, st.max_mana()]
 			"resist":
-				labels[0].text = "Огонь/Лёд/Яд/Магия"
+				labels[0].text = tr("Огонь/Лёд/Яд/Магия")
 				var parts: Array[String] = []
 				for r in StatTypes.RESISTANCES:
 					parts.append(str(roundi(st.get_value(r) * 100.0)))

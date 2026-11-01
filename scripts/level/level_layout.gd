@@ -19,6 +19,9 @@ var specials: Array[Dictionary] = []
 ## Where the floor's note lies (Vector2i(-1, -1) = none).
 var lore_cell := Vector2i(-1, -1)
 var is_arena := false
+## A road event's room (LevelGenerator.generate_event_room): the scenery of
+## the event in the middle, the way in on the left, the exit on the right.
+var is_event_room := false
 ## Boss arenas: lasting hazards {"style": BossHazard.Style, "x0", "x1" (cells),
 ## "row" (the cell row they lie on), "h" (px), "damage" (true/false)}.
 var arena_hazards: Array[Dictionary] = []
@@ -30,6 +33,10 @@ var is_town := false
 var secret_walls: Array = []
 ## Array of {"tex": String, "cell": Vector2i, "z": int, "lamp": bool}.
 var town_props: Array[Dictionary] = []
+## Town of the expedition loop: building foundations {"id", "cell"} and the
+## residents standing in the street {"id", "cell"} (TownBuilder.build_hub).
+var town_buildings: Array[Dictionary] = []
+var town_people: Array[Dictionary] = []
 
 
 func _init(w: int, h: int, fill: int = Tile.BRICK) -> void:

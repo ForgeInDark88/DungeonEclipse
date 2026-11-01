@@ -180,7 +180,9 @@ func _watch_game() -> void:
 				var e: Enemy = ns.enemies[id]
 				# The farthest mob: wounding a nearby one aggro's it onto the
 				# idle test heroes and can end the run mid-check.
-				if is_instance_valid(e) and not e.is_dead() and e.hp > 20:
+				# Plain mobs only: a regenerating elite or a squad healer would
+				# undo the wound before the guest looks.
+				if is_instance_valid(e) and not e.is_dead() and e.hp > 10 and e.elite == null and e.role == null:
 					var d: float = e.global_position.distance_to(origin2)
 					if d > best:
 						best = d
@@ -288,6 +290,33 @@ func _watch_game() -> void:
 		if is_instance_valid(trap):
 			trap.spring_shared(mine.global_position if mine else trap.global_position)
 		await get_tree().create_timer(1.0).timeout
+	# --- warnings and defence phase: the host's red circle reaches the guest,
+	# the guest's guard reaches the host.
+	if is_host:
+		Telegraph.circle(level.entities, level.start_position() + Vector2(0, -6), 30.0, 3.0)
+		var seen := false
+		for i in 30:
+			await get_tree().create_timer(0.1).timeout
+			var pz := _their_puppet(multiplayer.get_unique_id())
+			if pz and pz.has_meta("net_defend_seen"):
+				seen = true
+				break
+		check(seen, "host: sees the guest's defence")
+		await get_tree().create_timer(2.4).timeout  # stay in step with the guest's phase
+	else:
+		var circles := 0
+		for i in 25:
+			await get_tree().create_timer(0.1).timeout
+			for n in level.entities.get_children():
+				if n is Telegraph:
+					circles += 1
+			if circles > 0:
+				break
+		check(circles > 0, "client: sees the host's warning circle (%d)" % circles)
+		if mine:
+			mine._defend_cd = 0.0
+			mine.defend()  # the guest is a mage: a blink
+		await get_tree().create_timer(2.5).timeout
 	# --- phantom loot phase: the host drops an item and it vanishes there
 	# without anyone picking it up; the guest's copy must vanish too.
 	if is_host:

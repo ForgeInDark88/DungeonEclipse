@@ -1,0 +1,23 @@
+{
+" (не все готовы)": " (not everyone is ready)",
+"%s поднимает %s.": "%s raises %s.",
+"Enter — чат · F1 — закрыть · G — метка · F5–F8 — эмоции": "Enter — chat · F1 — close · G — mark · F5–F8 — emotes",
+"Вас подняли на ноги!": "You were raised to your feet!",
+"Выбор делает хост: исход получат все.": "The host makes the choice: everyone gets the outcome.",
+"Голос отдан. Ждём остальных…": "Vote cast. Waiting for the others…",
+"Огонь по своим: %s": "Friendly fire: %s",
+"Отряд выбрал путь.": "The party chose the path.",
+"Поднять союзника: %s": "Raise ally: %s",
+"Помогите!": "Help!",
+"Путь: %s": "Path: %s",
+"Строят: %s": "Who builds: %s",
+"Сюда!": "Over here!",
+"Хост выбрал": "The host chose",
+"Я готов идти дальше": "I'm ready to move on",
+"Я готов идти дальше ✓": "I'm ready to move on ✓",
+"бомбы": "bombs",
+"все": "everyone",
+"голосование": "vote",
+"пинг %d мс": "ping %d ms",
+"хост": "host"
+}

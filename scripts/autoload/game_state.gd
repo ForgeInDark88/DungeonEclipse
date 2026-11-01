@@ -25,6 +25,8 @@ var run_stats: Dictionary = {}
 var pacts: Array[RunPactData] = []
 ## Difficulty of this run (data/difficulties).
 var difficulty: DifficultyData
+## Level of the Eclipse of this run (0 = none, see EclipseLevels).
+var eclipse_level := 0
 ## Pet of this run (null = none).
 var pet: PetData
 ## Combo: kills in a row, each within COMBO_WINDOW of the previous one,
@@ -39,6 +41,17 @@ var quests := QuestLog.new()
 ## The floor the hero left mid-run to visit the town; the town gate leads
 ## back to it (regenerated fresh). 0 = the hero has not left a floor.
 var town_return_floor: int = 0
+## The town-and-expedition loop (GameFlow) is on: single-player games. A LAN
+## co-op run keeps the classic floor-after-floor descent (expedition false).
+var expedition := false
+## Where the hero stands (GameFlow): {} in a classic run, else
+## {"type": town / level / elite / special / rescue / lair / boss, "depth",
+##  "biome", "seed", "boss", "sub", "node"}. Its depth is `floor_number`.
+var location: Dictionary = {}
+## The current expedition (null in town between expeditions).
+var run: RunState
+## The town and everything that persists between expeditions.
+var town: TownState
 
 
 func _ready() -> void:
@@ -55,12 +68,17 @@ func _ready() -> void:
 
 ## `seed_value` >= 0 makes the whole run reproducible (tests, network runs).
 func start_new_run(race: RaceData, class_data: ClassData, seed_value: int = -1, female := false,
-		difficulty_id: StringName = &"normal") -> void:
+		difficulty_id: StringName = &"normal", eclipse := 0) -> void:
 	SaveManager.clear_run()  # a new run replaces any saved one
+	expedition = false
+	location = {}
+	run = null
 	difficulty = ItemDatabase.difficulty(difficulty_id)
+	eclipse_level = clampi(eclipse, 0, EclipseLevels.MAX)
 	hero = Hero.new(race, class_data, ItemDatabase.equipment_layout)
 	hero.female = female
 	hero.give_starting_kit()
+	apply_eclipse(hero)
 	hero.skills.add_points(1)  # the run opens with a choice: the first learned skill commits the branch
 	MetaProgress.apply_to(hero, true)
 	floor_number = TOWN_FLOOR
@@ -129,6 +147,8 @@ func add_pact(pact: RunPactData) -> void:
 ## the difficulty (DifficultyData.effects).
 func run_effect(key: String) -> float:
 	var v := float(difficulty.effects.get(key, 0.0)) if difficulty else 0.0
+	if eclipse_level > 0 and key in ["enemy_hp", "enemy_damage", "boss_hp"]:
+		v += EclipseLevels.value(eclipse_level, key)
 	for p in pacts:
 		v += float(p.effects.get(key, 0.0))
 	return v
@@ -136,27 +156,63 @@ func run_effect(key: String) -> float:
 
 ## Difficulty multipliers that are not run effects (1.0 without a run).
 func elite_chance_mult() -> float:
-	return difficulty.elite_chance_mult if difficulty else 1.0
+	return (difficulty.elite_chance_mult if difficulty else 1.0) * EclipseLevels.value(eclipse_level, "elite_mult") \
+			* float(location_mod("elite", 1.0))
 
 
 func seal_share() -> float:
-	return difficulty.seal_share if difficulty else 0.6
+	return minf(0.95, (difficulty.seal_share if difficulty else 0.6) + EclipseLevels.value(eclipse_level, "seal_add"))
 
 
 func trap_damage_mult() -> float:
-	return difficulty.trap_damage_mult if difficulty else 1.0
+	return (difficulty.trap_damage_mult if difficulty else 1.0) * EclipseLevels.value(eclipse_level, "trap_mult")
+
+
+## The Eclipse's trials that live on the hero: weaker healing, no potions.
+func apply_eclipse(h: Hero) -> void:
+	if h == null:
+		return
+	h.stats.eclipse_heal = EclipseLevels.value(eclipse_level, "heal_mult")
+	if EclipseLevels.value(eclipse_level, "no_potions") > 0.0:
+		for id in [&"health_potion", &"mana_crystal", &"mana_potion"]:
+			var n: int = h.inventory.count_of(id)
+			if n > 0:
+				h.inventory.remove_by_id(id, n)
 
 
 ## Seed of the current floor: each run and each floor is different.
 func floor_seed() -> int:
+	if location.has("seed"):
+		return int(location["seed"])
 	return hash([run_seed, floor_number])
+
+
+## Depth of the current location: every difficulty multiplier and loot
+## table reads it (it is `floor_number`, the expedition sets it per node).
+func depth() -> int:
+	return floor_number
+
+
+## A rule of the current location (ExpeditionMap.MODS): `default` when the
+## location has none (classic runs, the town).
+func location_mod(key: String, default: Variant = 0) -> Variant:
+	return (location.get("mods", {}) as Dictionary).get(key, default)
+
+
+## Type of the current location (&"" in a classic run).
+func location_type() -> StringName:
+	return StringName(location.get("type", &""))
 
 
 ## Network: a client entering a hosted run. The hero is built per player
 ## inside the game scene from the race/class each peer registered with Net.
-func begin_network_run(seed_value: int, difficulty_id: StringName, start_floor := TOWN_FLOOR) -> void:
+func begin_network_run(seed_value: int, difficulty_id: StringName, start_floor := TOWN_FLOOR, eclipse := 0) -> void:
 	SaveManager.clear_run()
+	expedition = false
+	location = {}
+	run = null
 	difficulty = ItemDatabase.difficulty(difficulty_id)
+	eclipse_level = clampi(eclipse, 0, EclipseLevels.MAX)
 	hero = null
 	floor_number = start_floor
 	kills = 0
@@ -182,17 +238,25 @@ func net_set_floor(f: int, town_return: int = -1) -> void:
 
 
 func is_boss_floor(f: int = -1) -> bool:
+	if not location.is_empty():
+		# Expedition: only a guardian's node is an arena, whatever its depth.
+		return (f < 0 or f == floor_number) and location_type() in [&"boss", &"lair"]
 	var n := floor_number if f < 0 else f
 	return n > TOWN_FLOOR and n % BOSS_EVERY == 0
 
 
 func is_town() -> bool:
+	if not location.is_empty():
+		return location_type() == &"town"
 	return floor_number == TOWN_FLOOR
 
 
 func current_biome() -> BiomeData:
 	if is_town():
 		return load(AssetPaths.TOWN_BIOME) as BiomeData
+	var b := ItemDatabase.biome_by_id(StringName(location.get("biome", &"")))
+	if b:
+		return b
 	return ItemDatabase.biome_for_floor(floor_number)
 
 
@@ -222,6 +286,9 @@ func resume_from_town() -> void:
 ## false when there is no save or it cannot be read.
 func continue_run() -> bool:
 	var d := SaveManager.run_data()
+	expedition = false
+	location = {}
+	run = null
 	if d.is_empty() or not RunCodec.load_run(d):
 		SaveManager.clear_run()
 		return false
@@ -245,6 +312,9 @@ func end_run() -> Dictionary:
 
 
 func go_to_menu() -> void:
+	if expedition:
+		GameFlow.quit_to_menu()
+		return
 	# Leaving through the pause menu keeps the between-floors snapshot, so the
 	# run can be continued from the main menu. Death ends it (end_run there).
 	if not (run_active and hero != null and hero.stats.hp > 0):

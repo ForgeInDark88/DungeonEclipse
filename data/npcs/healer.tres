@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="NpcData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/npc_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/npc/healer.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/portraits/npc_healer.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+id = &"healer"
+display_name = "Мира"
+profession = "Травница"
+order = 2
+resident_from_start = false
+home = &"temple"
+sprite = ExtResource("2")
+portrait = ExtResource("3")
+discount = 0.0
+build_discount = 0.0
+depth_min = 2
+rescue_text = "Мою тетрадь растащили по пещерам... Спасибо, что пришёл. Я умею лечить — дай мне крышу над головой, и в храме снова будут молиться."
+dialogs = Array[Dictionary]([{"id": "intro", "when": "", "once": true, "text": "Грибы под городом растут на свете, который падает вниз. Я писала об этом, пока меня не схватили. Если найдёшь листы моей тетради — читай их Летописцу.", "options": [{"text": "Я поищу.", "reply": "И принеси трав: в храме всегда нужны бинты и отвары."}]}, {"id": "idle", "when": "", "once": false, "text": "Раны лечатся, проклятия снимаются. Только не приходи с проклятием на сердце.", "options": []}])

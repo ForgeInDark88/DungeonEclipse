@@ -43,7 +43,7 @@ func describe(level: int) -> String:
 	for k in stat_bonuses:
 		parts.append("%s %s" % [StatTypes.label(k), StatTypes.format_value(k, float(stat_bonuses[k]) * level, true)])
 	if start_gold > 0:
-		parts.append("+%d золота на старте" % (start_gold * level))
+		parts.append(tr("+%d золота на старте") % (start_gold * level))
 	for item_id: StringName in starting_items:
 		var item := ItemDatabase.get_item(item_id)
 		parts.append("+%d %s" % [int(starting_items[item_id]) * level, item.display_name if item else String(item_id)])

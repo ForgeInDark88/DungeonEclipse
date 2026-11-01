@@ -106,7 +106,7 @@ func xp_to_next() -> int:
 
 
 func add_xp(amount: int) -> void:
-	xp += amount
+	xp += roundi(amount * Buildings.xp_mult())
 	while xp >= xp_to_next():
 		xp -= xp_to_next()
 		level += 1
@@ -152,7 +152,7 @@ func unequip_to_inventory(slot_id: StringName, index: int = -1) -> bool:
 		inventory.put_at(index, ItemStack.new(item, 1))
 		return true
 	if inventory.free_space_for(item) <= 0:
-		EventBus.message.emit("Рюкзак полон")
+		EventBus.message.emit(tr("Рюкзак полон"))
 		return false
 	equipment.unequip(slot_id)
 	inventory.add_item(item, 1)
@@ -177,7 +177,15 @@ func weapon() -> WeaponItemData:
 
 
 ## Seconds between attacks with the current weapon (class penalty included).
+## Relics (the war drum): attacks this much faster.
+var attack_speed_mult := 1.0
+
+
 func attack_interval() -> float:
+	return _base_attack_interval() / maxf(0.1, attack_speed_mult)
+
+
+func _base_attack_interval() -> float:
 	var w := weapon()
 	if w == null:
 		return class_data.attack_cooldown
@@ -207,10 +215,10 @@ func _wear(item: EquipmentItemData, amount: int) -> void:
 		return
 	item.durability = maxi(0, item.durability - amount)
 	if item.durability == 0:
-		EventBus.message.emit("%s ломается! Нужен ремонт." % item.display_name)
+		EventBus.message.emit(tr("%s ломается! Нужен ремонт.") % item.display_name)
 		equipment.changed.emit()
 	elif item.durability == item.max_durability / 5:
-		EventBus.message.emit("%s почти сломан(а)" % item.display_name)
+		EventBus.message.emit(tr("%s почти сломан(а)") % item.display_name)
 
 
 func _on_equipment_changed() -> void:
@@ -242,6 +250,10 @@ func apply_passive_hits(attacker: Node, target: Node, damage: int) -> void:
 		var p := s.effect as PassiveSkill
 		if p.hit_effect and randf() < p.chance_for(skills.rank(s), s.power_with(w)):
 			p.hit_effect.on_hit(attacker, target, damage)
+	# Relic powers react to every confirmed hit (melee, shots, the host's ok).
+	var pl := attacker as Player
+	if pl and pl.relic_powers and target is Enemy:
+		pl.relic_powers.on_hit(target, damage)
 
 
 # ------------------------------------------------------------------- sets
@@ -302,6 +314,6 @@ func try_second_chance() -> bool:
 			inventory.remove_by_id(r.id, 1)
 			stats.hp = maxi(1, roundi(stats.max_hp() * r.revive_percent))
 			stats.hp_changed.emit(stats.hp, stats.max_hp())
-			EventBus.message.emit("%s сгорает — вы снова на ногах!" % r.display_name)
+			EventBus.message.emit(tr("%s сгорает — вы снова на ногах!") % r.display_name)
 			return true
 	return false

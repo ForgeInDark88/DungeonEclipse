@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="BuildingData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/building_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/town/warehouse.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"warehouse"
+display_name = "Склад"
+description = "Вещи на складе не уходят в поход и не теряются."
+order = 7
+slot = 91
+width = 5
+start_level = 0
+max_level = 3
+costs = Array[Dictionary]([{"gold": 50, "wood": 6}, {"gold": 150, "wood": 8, "iron": 3}, {"gold": 300, "wood": 10, "iron": 6}])
+requires_resident = &""
+requires_boss = &""
+boss_level = 0
+blueprint_level = 0
+level_texts = Array[String](["Сейф на 4 предмета: они переживут гибель героя.", "Сейф на 8 предметов.", "Сейф на 12 предметов."])
+action = &"warehouse"
+texture = ExtResource("2")
+chimney = Vector2(0, 0)
+prosperity = 3

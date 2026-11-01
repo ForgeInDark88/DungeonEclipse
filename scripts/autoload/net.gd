@@ -10,9 +10,7 @@ const DISCOVERY_PORT := 24566
 const PROBE := "eclipse-probe"
 const ANNOUNCE := "eclipse-host"
 const MAX_PLAYERS := 4
-## Difficulty grows with the party: enemy HP/damage multiplier.
-const HP_PER_EXTRA := 0.8
-const DAMAGE_PER_EXTRA := 0.5
+## Difficulty grows with the party: data/coop/rules.tres (CoopRules).
 
 signal player_joined(info: Dictionary)
 signal player_left(peer_id: int)
@@ -22,9 +20,20 @@ signal host_closed
 
 var active := false            # a network session exists (host or client)
 var is_host := false
+## A world session (WorldNet: the town and expeditions of a save slot)
+## rather than the classic floor-after-floor co-op run.
+var world_session := false
+## Seats of this session (host included), at most MAX_PLAYERS.
+var max_players := MAX_PLAYERS
 var players := {}              # peer_id -> {"name", "race", "cls", "female"}
 ## Race/class ids each peer picked, stored until the run starts.
-var my_info := {"name": "Игрок", "race": &"human", "cls": &"warrior", "female": false}
+var my_info := {"name": tr("Игрок"), "race": &"human", "cls": &"warrior", "female": false}
+
+## World sessions: which scene each machine has loaded (a token of the
+## location: "" = no game scene). Frequent world messages go only to the
+## machines that stand in the same place (Net.send).
+var scene_token := ""
+var peer_tokens := {}  # peer id -> token
 
 var _udp := PacketPeerUDP.new()
 var _udp_open := false
@@ -58,12 +67,16 @@ func _process(delta: float) -> void:
 			var names := ", ".join(_names_list())
 			# reply straight to the sender's source address and port
 			_udp.set_dest_address(_udp.get_packet_ip(), _udp.get_packet_port())
-			_udp.put_packet(("%s;%d;%s" % [ANNOUNCE, players.size(), names]).to_utf8_buffer())
+			var extra := WorldNet.announce_extra() if world_session else ""
+			_udp.put_packet(("%s;%d;%s%s" % [ANNOUNCE, players.size(), names, extra]).to_utf8_buffer())
 		elif _discovering and txt.begins_with(ANNOUNCE):
 			var parts := txt.split(";")
 			if parts.size() >= 3:
-				_found[_udp.get_packet_ip()] = {"ip": _udp.get_packet_ip(),
-					"count": int(parts[1]), "names": parts[2]}
+				var entry := {"ip": _udp.get_packet_ip(), "count": int(parts[1]), "names": parts[2]}
+				if parts.size() >= 8:  # a world session: name, seats, lock, protocol, port
+					entry.merge({"world": parts[3], "max": int(parts[4]), "locked": parts[5] == "1",
+							"protocol": int(parts[6]), "port": int(parts[7])})
+				_found[_udp.get_packet_ip()] = entry
 
 
 func _names_list() -> Array[String]:
@@ -71,6 +84,50 @@ func _names_list() -> Array[String]:
 	for id in players:
 		out.append(String(players[id]["name"]))
 	return out
+
+
+# ---------------------------------------------------------- scene routing
+## Calls `method` as an RPC on `node` for every peer - in a world session
+## only for the peers whose loaded scene is ours (a guest still on the map
+## must not get the fight of a location it has not loaded: it receives the
+## whole state with net_hello once it has).
+func send(node: Node, method: StringName, args: Array = []) -> void:
+	if not world_session:
+		node.callv("rpc", [method] + args)
+		return
+	for p in scene_peers():
+		node.callv("rpc_id", [p, method] + args)
+
+
+func scene_peers() -> Array[int]:
+	var out: Array[int] = []
+	if multiplayer.multiplayer_peer == null:
+		return out
+	for p in multiplayer.get_peers():
+		if scene_token != "" and peer_tokens.get(p, "") == scene_token:
+			out.append(p)
+	return out
+
+
+## This machine loaded (or left) a game scene: tell everyone.
+func set_scene_token(token: String) -> void:
+	scene_token = token
+	if active and world_session and multiplayer.multiplayer_peer != null:
+		announce_token.rpc(token, true)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func announce_token(token: String, reply: bool) -> void:
+	var peer := multiplayer.get_remote_sender_id()
+	var known := peer_tokens.has(peer)
+	peer_tokens[peer] = token
+	if reply and not known:
+		announce_token.rpc_id(peer, scene_token, false)  # a new face: it learns ours
+
+
+## Whether `peer` has the same scene loaded as this machine.
+func peer_in_scene(peer: int) -> bool:
+	return scene_token != "" and peer_tokens.get(peer, "") == scene_token
 
 
 # ------------------------------------------------------------- host / join
@@ -81,9 +138,11 @@ func game_port() -> int:
 	return int(env) if env != "" else GAME_PORT
 
 
-func host_game() -> bool:
+func host_game(port := -1, seats := MAX_PLAYERS, discoverable := true) -> bool:
 	var peer := ENetMultiplayerPeer.new()
-	if peer.create_server(game_port(), MAX_PLAYERS - 1) != OK:
+	max_players = clampi(seats, 2, MAX_PLAYERS)
+	# One extra connection slot: a full session still answers «мир полон».
+	if peer.create_server(port if port > 0 else game_port(), max_players) != OK:
 		return false
 	multiplayer.multiplayer_peer = peer
 	active = true
@@ -92,14 +151,14 @@ func host_game() -> bool:
 	players[1] = my_info.duplicate(true)
 	# UDP responder for discovery
 	_udp.close()
-	_udp_open = _udp.bind(DISCOVERY_PORT) == OK
+	_udp_open = discoverable and _udp.bind(DISCOVERY_PORT) == OK
 	players_changed.emit()
 	return true
 
 
-func join_game(ip: String) -> bool:
+func join_game(ip: String, port := -1) -> bool:
 	var peer := ENetMultiplayerPeer.new()
-	if peer.create_client(ip, game_port()) != OK:
+	if peer.create_client(ip, port if port > 0 else game_port()) != OK:
 		return false
 	multiplayer.multiplayer_peer = peer
 	active = true
@@ -115,6 +174,9 @@ func leave(reason := "") -> void:
 	multiplayer.multiplayer_peer = null
 	active = false
 	is_host = false
+	world_session = false
+	scene_token = ""
+	peer_tokens.clear()
 	players.clear()
 	_stop_udp()
 	_discovering = false
@@ -132,7 +194,7 @@ func register_player(info: Dictionary) -> void:
 	players[id] = info
 	broadcast_players()
 	player_joined.emit(info)
-	EventBus.message.emit("%s присоединился" % info.get("name", "Игрок"))
+	EventBus.message.emit(tr("%s присоединился") % info.get("name", tr("Игрок")))
 
 
 ## Host: keep everyone's player list in sync.
@@ -156,13 +218,13 @@ func send_full_state(peer_id: int) -> void:
 # ------------------------------------------------------------------ run
 ## Host presses "start": every client enters the game with the same seed.
 @rpc("authority", "call_remote", "reliable")
-func start_run(seed_value: int, difficulty_id: StringName) -> void:
-	GameState.begin_network_run(seed_value, difficulty_id)
+func start_run(seed_value: int, difficulty_id: StringName, eclipse := 0) -> void:
+	GameState.begin_network_run(seed_value, difficulty_id, GameState.TOWN_FLOOR, eclipse)
 
 
 func rpc_start_run(seed_value: int, difficulty_id: StringName) -> void:
 	if is_host:
-		start_run.rpc(seed_value, difficulty_id)
+		start_run.rpc(seed_value, difficulty_id, GameState.eclipse_level)
 
 
 ## Host moved everyone to another floor (or the town).
@@ -178,27 +240,53 @@ func rpc_set_floor(floor_number: int, town_return: int = -1) -> void:
 
 ## Host pushes its run state to a peer that joined mid-run.
 @rpc("authority", "call_remote", "reliable")
-func late_join(floor_number: int, seed_value: int, difficulty_id: StringName) -> void:
-	GameState.begin_network_run(seed_value, difficulty_id, floor_number)
+func late_join(floor_number: int, seed_value: int, difficulty_id: StringName, eclipse := 0) -> void:
+	GameState.begin_network_run(seed_value, difficulty_id, floor_number, eclipse)
 
 
 func rpc_late_join(peer_id: int) -> void:
 	if is_host:
 		late_join.rpc_id(peer_id, GameState.floor_number, GameState.run_seed,
-				GameState.difficulty.id if GameState.difficulty else &"normal")
+				GameState.difficulty.id if GameState.difficulty else &"normal", GameState.eclipse_level)
 
 
 # ------------------------------------------------------------ difficulty
+const RULES_PATH := "res://data/coop/rules.tres"
+var _rules: CoopRules
+
+
+## The party's rules (data/coop/rules.tres).
+func rules() -> CoopRules:
+	if _rules == null:
+		_rules = load(RULES_PATH) as CoopRules if ResourceLoader.exists(RULES_PATH) else CoopRules.new()
+	return _rules
+
+
+## Extra players in the party (0 alone).
+func extra_players() -> int:
+	if not active:
+		return 0
+	return maxi(0, mini(players.size(), MAX_PLAYERS) - 1)
+
+
 func enemy_hp_mult() -> float:
-	if not active or players.size() <= 1:
-		return 1.0
-	return 1.0 + HP_PER_EXTRA * (mini(players.size(), MAX_PLAYERS) - 1)
+	return 1.0 + rules().hp_per_extra * extra_players()
 
 
 func enemy_damage_mult() -> float:
-	if not active or players.size() <= 1:
-		return 1.0
-	return 1.0 + DAMAGE_PER_EXTRA * (mini(players.size(), MAX_PLAYERS) - 1)
+	return 1.0 + rules().damage_per_extra * extra_players()
+
+
+func boss_hp_mult() -> float:
+	return 1.0 + rules().boss_hp_per_extra * extra_players()
+
+
+func monster_count_mult() -> float:
+	return 1.0 + rules().monsters_per_extra * extra_players()
+
+
+func reward_mult() -> float:
+	return 1.0 + rules().reward_per_extra * extra_players()
 
 
 # -------------------------------------------------------------- discovery
@@ -232,17 +320,22 @@ func _stop_udp() -> void:
 
 # ------------------------------------------------------- connection events
 func _on_peer_connected(id: int) -> void:
+	if world_session:
+		return  # WorldNet: the handshake comes first
 	if is_host:
 		send_full_state(id)
 		if GameState.run_active:
 			# A friend arrived mid-run: pull them straight into the dungeon.
 			late_join.rpc_id(id, GameState.floor_number, GameState.run_seed,
-					GameState.difficulty.id if GameState.difficulty else &"normal")
+					GameState.difficulty.id if GameState.difficulty else &"normal", GameState.eclipse_level)
 
 
 func _on_peer_disconnected(id: int) -> void:
+	if world_session:
+		WorldNet.on_peer_left(id)
+		return
 	if is_host and players.has(id):
-		EventBus.message.emit("%s вышел" % players[id].get("name", "Игрок"))
+		EventBus.message.emit(tr("%s вышел") % players[id].get("name", tr("Игрок")))
 		players.erase(id)
 		broadcast_players()
 		player_left.emit(id)
@@ -251,15 +344,24 @@ func _on_peer_disconnected(id: int) -> void:
 
 
 func _on_connected() -> void:
+	if world_session:
+		WorldNet.on_connected()
+		return
 	register_player.rpc_id(1, my_info)
 
 
 func _on_connect_failed() -> void:
+	var world := world_session
 	leave()
-	EventBus.message.emit("Не удалось подключиться")
+	EventBus.message.emit(tr("Не удалось подключиться"))
+	if world:
+		WorldNet.fail("unreachable")
 
 
 func _on_server_disconnected() -> void:
-	leave("Хост покинул игру")
+	if world_session:
+		WorldNet.on_host_lost()
+		return
+	leave(tr("Хост покинул игру"))
 	get_tree().paused = false
 	get_tree().change_scene_to_file(GameState.MAIN_MENU)

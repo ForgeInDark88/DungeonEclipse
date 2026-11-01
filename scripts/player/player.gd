@@ -38,6 +38,11 @@ var _net_timer := 0.0
 ## Shell extrapolation: speed and age of the last snapshot.
 var _net_vel := Vector2.ZERO
 var _net_last := 0.0
+## A mini-game holds the hero (fishing): no walking, jumping, attacks or
+## interactions until it ends. Co-op does not pause the tree, so this does.
+var busy := false
+## Relics that change the fight (local hero only).
+var relic_powers: RelicPowers
 ## Co-op copy of someone else's hero: buffered snapshot interpolation.
 var _interp := NetInterp.new()
 ## Co-op: damage variance/crit dice for the host's authoritative recompute.
@@ -70,6 +75,10 @@ const PARRY_WINDOW := 0.22
 const PARRY_STUN := 1.6
 const ROLL_SPEED := 250.0
 const ROLL_TIME := 0.3
+## Mage / necromancer «blink»: a short magic dash.
+const BLINK_SPEED := 300.0
+const BLINK_TIME := 0.18
+const BLINK_COOLDOWN := 1.6
 var _parry_time := 0.0
 var _defend_cd := 0.0
 var _afterimage_timer := 0.0
@@ -114,6 +123,11 @@ func setup(p_hero: Hero, p_level: DungeonLevel) -> void:
 		hero.leveled_up.connect(_on_leveled_up)
 	if not hero.equipment.changed.is_connected(_on_equipment_changed):
 		hero.equipment.changed.connect(_on_equipment_changed)
+	if not puppet and relic_powers == null:
+		relic_powers = RelicPowers.new()
+		relic_powers.name = "RelicPowers"
+		add_child(relic_powers)
+		relic_powers.setup(self)
 
 
 func apply_biome(biome: BiomeData) -> void:
@@ -269,7 +283,7 @@ func _physics_process(delta: float) -> void:
 		_aura_timer = 0.4
 		_update_synergy_auras()
 	_tick_timers(delta)
-	var input_x := Input.get_axis("move_left", "move_right")
+	var input_x := 0.0 if busy else Input.get_axis("move_left", "move_right")
 	if input_x != 0.0 and not animator.is_busy():
 		facing = signf(input_x)
 		visual.facing = facing
@@ -316,7 +330,7 @@ func _physics_process(delta: float) -> void:
 			Fx.dust(get_parent(), global_position - Vector2(facing * 5.0, 0))
 	animator.update(delta, is_on_floor(), velocity, climbing, false)
 	# Holding the attack button (mouse or key) keeps attacking at the weapon's rate.
-	if Input.is_action_pressed("attack"):
+	if not busy and Input.is_action_pressed("attack"):
 		attack()
 	_net_broadcast(delta)
 	_update_interact_hint()
@@ -334,6 +348,8 @@ func _step_sound() -> StringName:
 
 
 func _on_landed(fall_speed: float) -> void:
+	if relic_powers:
+		relic_powers.on_land(fall_speed)
 	if fall_speed < 60.0:
 		return
 	AudioManager.play_sfx(&"land", global_position, -4.0)
@@ -435,7 +451,7 @@ func _stop_climbing() -> void:
 func _climb(input_x: float) -> void:
 	var dir_y := Input.get_axis("move_up", "move_down")
 	velocity = Vector2(input_x * CLIMB_SPEED * 0.7, dir_y * CLIMB_SPEED)
-	if Input.is_action_just_pressed("jump") and not Input.is_action_pressed("move_up"):
+	if not busy and Input.is_action_just_pressed("jump") and not Input.is_action_pressed("move_up"):
 		_stop_climbing()
 		velocity.y = JUMP_VELOCITY * 0.8
 	elif dir_y > 0.0 and is_on_floor() and not level.is_ladder_at(global_position + Vector2(0, 4)):
@@ -484,7 +500,7 @@ func _input(event: InputEvent) -> void:
 	# _unhandled_input, so gameplay keys are handled here, before the GUI -
 	# but only while the game is actually running (no book is open).
 	# Puppets never take input: only the local hero owns the keyboard.
-	if puppet or not (event is InputEventKey) or hero == null or dead or status.is_stunned():
+	if busy or puppet or not (event is InputEventKey) or hero == null or dead or status.is_stunned():
 		return
 	if get_tree().paused or get_viewport().gui_is_dragging():
 		return
@@ -537,7 +553,7 @@ func face_aim_to(aim: Vector2) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if puppet or hero == null or dead or status.is_stunned():
+	if busy or puppet or hero == null or dead or status.is_stunned():
 		return
 	if event.is_action_pressed("interact") and try_interact():
 		get_viewport().set_input_as_handled()
@@ -570,6 +586,8 @@ func _unhandled_input(event: InputEvent) -> void:
 # ------------------------------------------------------------------ combat
 func roll_damage(multiplier := 1.0) -> Dictionary:
 	var dmg := hero.stats.damage() * multiplier * skill_power * _net_dice.randf_range(0.85, 1.15)
+	if relic_powers:
+		dmg *= relic_powers.damage_mult()
 	var crit := _net_dice.randf() < hero.stats.crit_chance()
 	if crit:
 		dmg *= 2.0
@@ -729,9 +747,9 @@ func _shoot(w: WeaponItemData, dir: float) -> void:
 	if Net.active and w.projectile_texture:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns and w.projectile_texture.resource_path != "":
-			ns.projectile_fx.rpc(w.projectile_texture.resource_path, origin, aim,
+			Net.send(ns, &"projectile_fx", [w.projectile_texture.resource_path, origin, aim,
 					w.projectile_speed, w.reach / maxf(1.0, w.projectile_speed) + 0.4,
-					w.damage_color())
+					w.damage_color()])
 
 
 ## Called by enemies, enemy projectiles and traps. Elemental damage
@@ -743,14 +761,14 @@ func _net_broadcast(delta: float) -> void:
 	_net_timer -= delta
 	if _net_timer <= 0.0:
 		_net_timer = 0.05
-		net_state.rpc(global_position, facing, hero.stats.hp if hero else 0,
-				hero.stats.max_hp() if hero else 0, dead, _net_costume(), NetInterp.now())
+		Net.send(self, &"net_state", [global_position, facing, hero.stats.hp if hero else 0,
+				hero.stats.max_hp() if hero else 0, dead, _net_costume(), NetInterp.now()])
 
 
 @rpc("any_peer", "call_remote", "unreliable")
 func net_state(pos: Vector2, p_facing: float, hp: int, max_hp: int, is_dead: bool,
 		costume: Dictionary = {}, sent_at := -1.0) -> void:
-	if not puppet or multiplayer.get_remote_sender_id() != peer_id:
+	if not is_inside_tree() or not puppet or multiplayer.get_remote_sender_id() != peer_id:
 		return
 	_interp.push(sent_at if sent_at >= 0.0 else NetInterp.now(), pos)
 	var now := Time.get_ticks_msec() / 1000.0
@@ -824,6 +842,11 @@ func take_damage(amount: int, from_pos: Vector2 = Vector2.INF, damage_type: int 
 	if _parry_time > 0.0:
 		_parry_success(from_pos)
 		return
+	if relic_powers:
+		if relic_powers.dodge():
+			_invulnerable = 0.25
+			return
+		amount = roundi(amount * relic_powers.hurt_mult())
 	if damage_type > 0:
 		amount = roundi(amount * (1.0 - hero.stats.resistance(damage_type)))
 	if status.has(&"curse"):
@@ -832,9 +855,11 @@ func take_damage(amount: int, from_pos: Vector2 = Vector2.INF, damage_type: int 
 	if amount <= 0:
 		visual.flash(Color(0.6, 0.8, 1.0), 0.12)
 		_invulnerable = INVULNERABLE_TIME * 0.5
-		EventBus.floating_text.emit(global_position + Vector2(0, -26), "Поглощено", Color(0.6, 0.8, 1.0))
+		EventBus.floating_text.emit(global_position + Vector2(0, -26), tr("Поглощено"), Color(0.6, 0.8, 1.0))
 		return
 	var lost := hero.stats.take_damage(amount)
+	if relic_powers and lost > 0:
+		relic_powers.on_hurt(lost, from_pos)
 	hero.wear_armor(1)
 	EventBus.damage_dealt.emit(global_position + Vector2(0, -24), lost, false, true)
 	_invulnerable = INVULNERABLE_TIME
@@ -1016,13 +1041,13 @@ func push(impulse: Vector2) -> void:
 func defend() -> void:
 	if hero == null or _defend_cd > 0.0 or climbing or status.is_stunned():
 		return
+	if relic_powers and hero.class_data.defense_move != &"":
+		relic_powers.on_defend()
 	match hero.class_data.defense_move:
 		&"parry":
 			_parry_time = PARRY_WINDOW
 			_defend_cd = 0.75
-			animator.play_action(&"attack_thrust", 0.25)
-			visual.flash(Color(0.7, 0.85, 1.0), 0.2)
-			AudioManager.play_sfx(&"cast_shield", global_position, -4.0)
+			_defend_visual(&"parry")
 		&"roll":
 			var dir := Input.get_axis("move_left", "move_right")
 			if dir != 0.0:
@@ -1031,8 +1056,51 @@ func defend() -> void:
 			_defend_cd = 0.85
 			status.remove(&"invisible")
 			dash(ROLL_SPEED, ROLL_TIME)
+			_defend_visual(&"roll")
+		&"blink":
+			# Mage / necromancer: a short magic dash (untouchable while it
+			# lasts), shorter than the rogue's roll and slower to recharge.
+			var dirb := Input.get_axis("move_left", "move_right")
+			if dirb != 0.0:
+				facing = signf(dirb)
+				visual.facing = facing
+			_defend_cd = BLINK_COOLDOWN
+			status.remove(&"invisible")
+			dash(BLINK_SPEED, BLINK_TIME)
+			_defend_visual(&"blink")
+		_:
+			return
+	# Co-op: the others see the guard / the roll on this hero's copy.
+	if Net.active and not puppet:
+		Net.send(self, &"net_defend", [hero.class_data.defense_move, facing])
+
+
+## The look of the class defence (here and on the teammates' screens).
+func _defend_visual(kind: StringName) -> void:
+	match kind:
+		&"parry":
+			animator.play_action(&"attack_thrust", 0.25)
+			visual.flash(Color(0.7, 0.85, 1.0), 0.2)
+			AudioManager.play_sfx(&"cast_shield", global_position, -4.0)
+		&"roll":
 			visual.squash_to(Vector2(1.3, 0.6), ROLL_TIME)
 			Fx.dust(get_parent(), global_position, false)
+			Fx.afterimage(visual, get_parent())
+		&"blink":
+			var col := Color(0.55, 1.0, 0.65) if hero and hero.class_data and hero.class_data.id == &"necromancer" else Color(0.7, 0.55, 1.0)
+			Fx.afterimage(visual, get_parent())
+			Fx.sparks(get_parent(), global_position + Vector2(0, -12), col, 12, 80.0)
+			AudioManager.play_sfx(&"cast_bolt", global_position, -8.0)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func net_defend(kind: StringName, p_facing: float) -> void:
+	if not is_inside_tree() or not puppet or multiplayer.get_remote_sender_id() != peer_id:
+		return
+	facing = p_facing
+	visual.facing = p_facing
+	set_meta("net_defend_seen", kind)  # (net test)
+	_defend_visual(kind)
 
 
 ## A hit landed inside the parry window: no damage, the attacker is stunned
@@ -1042,7 +1110,7 @@ func _parry_success(from_pos: Vector2) -> void:
 	_defend_cd = 0.0
 	_invulnerable = 0.3
 	var at := from_pos if from_pos != Vector2.INF else global_position
-	EventBus.floating_text.emit(global_position + Vector2(0, -30), "Парирование!", Color(0.75, 0.9, 1.0))
+	EventBus.floating_text.emit(global_position + Vector2(0, -30), tr("Парирование!"), Color(0.75, 0.9, 1.0))
 	Fx.sparks(get_parent(), global_position + Vector2(facing * 8.0, -14), Color(1.0, 0.95, 0.7), 14, 120.0)
 	EventBus.screen_shake.emit(2.5)
 	AudioManager.play_sfx(&"hit_crit", global_position)
@@ -1105,7 +1173,7 @@ func use_skill(index: int) -> void:
 	if not skills.is_ready(index):
 		return
 	if hero.stats.mana < skill.mana_cost:
-		EventBus.message.emit("Недостаточно маны")
+		EventBus.message.emit(tr("Недостаточно маны"))
 		return
 	_casting_icon = skill.icon
 	face_aim()  # skills that act in front of the hero turn to the cursor too
@@ -1116,6 +1184,9 @@ func use_skill(index: int) -> void:
 	if fired:
 		hero.stats.spend_mana(skill.mana_cost)
 		skills.start_cooldown(index)
+		if relic_powers:
+			relic_powers.on_skill()
+		EventBus.hero_cast.emit()
 		if skill.cast_animation != &"":
 			animator.play_action(skill.cast_animation, 0.4)
 		var snd := skill.cast_sound if skill.cast_sound != &"" else &"skill_cast"
@@ -1137,7 +1208,7 @@ func use_item(item: ItemData) -> bool:
 	if dead:
 		return false
 	if hero.inventory.count_of(item.id) <= 0:
-		EventBus.message.emit("Нет предмета: %s" % item.display_name)
+		EventBus.message.emit(tr("Нет предмета: %s") % item.display_name)
 		return false
 	if item is EquipmentItemData:
 		return hero.equip_from_inventory(hero.inventory.find_item(item))
@@ -1149,6 +1220,7 @@ func use_item(item: ItemData) -> bool:
 	if not usable.use(self):
 		return false
 	_item_cooldowns[item.id] = usable.cooldown
+	EventBus.hero_used_item.emit(item)
 	AudioManager.play_sfx(usable.use_sound, global_position)
 	if usable.use_animation != &"":
 		animator.play_action(usable.use_animation, 0.45)

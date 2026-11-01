@@ -24,7 +24,7 @@ func execute(caster: Node, level: int) -> bool:
 
 
 func describe(level: int) -> String:
-	var text := "Рывок на %d пикс., неуязвимость во время рывка" % roundi(speed * (duration + duration_per_level * (level - 1)))
+	var text := tr("Рывок на %d пикс., неуязвимость во время рывка") % roundi(speed * (duration + duration_per_level * (level - 1)))
 	if damage_multiplier > 0.0:
-		text += ", урон %d%% по пути" % roundi(damage_multiplier * 100)
+		text += tr(", урон %d%% по пути") % roundi(damage_multiplier * 100)
 	return text

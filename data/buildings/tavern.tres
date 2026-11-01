@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="BuildingData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/building_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/town/tavern.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"tavern"
+display_name = "Таверна"
+description = "Хельга слышит всё, что говорят путники."
+order = 3
+slot = 47
+width = 7
+start_level = 0
+max_level = 3
+costs = Array[Dictionary]([{"gold": 60, "wood": 8}, {"gold": 180, "wood": 10, "stone": 4}, {"gold": 380, "wood": 12, "iron": 4}])
+requires_resident = &"innkeeper"
+requires_boss = &""
+boss_level = 0
+blueprint_level = 0
+level_texts = Array[String](["Слухи: знаки на всей карте следующего похода.", "Найм спутника на поход.", "Слухи бесплатно, спутники дешевле."])
+action = &"tavern"
+texture = ExtResource("2")
+chimney = Vector2(20, 6)
+prosperity = 3

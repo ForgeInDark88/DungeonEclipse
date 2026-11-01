@@ -67,7 +67,7 @@ func _build() -> void:
 	left.size = Vector2(page_w, BOOK_SIZE.y - MARGIN * 2)
 	left.add_theme_constant_override("separation", 3)
 	root.add_child(left)
-	var title := UIStyle.label("Кузница", 11)
+	var title := UIStyle.label(tr("Кузница"), 11)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	left.add_child(title)
 	_wallet = UIStyle.label("", 7, UIStyle.INK_SOFT)
@@ -86,13 +86,13 @@ func _build() -> void:
 	_btn_smelt = _service(left, _do_smelt)
 	_btn_repair = _service(left, _do_repair)
 	_btn_smelt_junk = _service(left, _do_smelt_junk)
-	left.add_child(BookPageScreen.button("Уйти", close))
+	left.add_child(BookPageScreen.button(tr("Уйти"), close))
 
 	var right := VBoxContainer.new()
 	right.position = Vector2(BOOK_SIZE.x / 2.0 + 8, MARGIN)
 	right.size = Vector2(page_w, BOOK_SIZE.y - MARGIN * 2)
 	root.add_child(right)
-	var rt := UIStyle.label("Снаряжение (надетое и в рюкзаке)", 9)
+	var rt := UIStyle.label(tr("Снаряжение (надетое и в рюкзаке)"), 9)
 	rt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	right.add_child(rt)
 	_grid = GridContainer.new()
@@ -113,7 +113,7 @@ func _refresh() -> void:
 	var ore := hero.inventory.count_of(&"iron_ore")
 	var gold_ore := hero.inventory.count_of(&"gold_ore")
 	var ess := hero.inventory.count_of(&"ember_essence") + hero.inventory.count_of(&"frost_essence") + hero.inventory.count_of(&"moon_crystal")
-	_wallet.text = "Золото: %d · железная руда: %d · золотая руда: %d · эссенции: %d" % [hero.gold, ore, gold_ore, ess]
+	_wallet.text = tr("Золото: %d · железная руда: %d · золотая руда: %d · эссенции: %d") % [hero.gold, ore, gold_ore, ess]
 	for c in _grid.get_children():
 		c.queue_free()
 	for item: EquipmentItemData in hero.equipment.items.values():
@@ -127,7 +127,7 @@ func _refresh() -> void:
 			if st.junk:
 				junk += 1
 	_show()
-	_btn_smelt_junk.text = "Переплавить весь мусор (%d)" % junk if junk > 0 else "Мусор: Ctrl+ЛКМ в рюкзаке"
+	_btn_smelt_junk.text = tr("Переплавить весь мусор (%d)") % junk if junk > 0 else tr("Мусор: Ctrl+ЛКМ в рюкзаке")
 	_btn_smelt_junk.disabled = junk == 0
 
 
@@ -167,38 +167,38 @@ func _cell(item: ItemData, index: int) -> Control:
 func _show() -> void:
 	var it := _sel_item
 	if it == null:
-		_info.text = "Выберите предмет справа.\n\nУлучшение: +15% к бонусам и +12% к урону оружия за уровень (до +5).\nЗачарование: случайный бонус, по одному на предмет.\nПереплавка: руда и немного золота."
+		_info.text = tr("Выберите предмет справа.\n\nУлучшение: +15% к бонусам и +12% к урону оружия за уровень (до +5).\nЗачарование: случайный бонус, по одному на предмет.\nПереплавка: руда и немного золота.")
 		for b in [_btn_upgrade, _btn_enchant, _btn_smelt, _btn_repair]:
 			b.text = "—"
 			b.disabled = true
 		return
 	_info.text = TooltipText.item(it, hero, _sel_index < 0)
 	if it.upgrade_level >= Smithing.MAX_UPGRADE:
-		_btn_upgrade.text = "Улучшение: максимум"
+		_btn_upgrade.text = tr("Улучшение: максимум")
 		_btn_upgrade.disabled = true
 	else:
 		var uc := Smithing.upgrade_cost(it)
-		_btn_upgrade.text = "Улучшить до +%d: %s" % [it.upgrade_level + 1, Smithing.cost_text(uc)]
+		_btn_upgrade.text = tr("Улучшить до +%d: %s") % [it.upgrade_level + 1, Smithing.cost_text(uc)]
 		_btn_upgrade.disabled = not Smithing.can_afford(hero, uc)
 	var ess := Smithing.available_essence(hero)
 	if not it.enchant_bonuses.is_empty():
-		_btn_enchant.text = "Уже зачаровано"
+		_btn_enchant.text = tr("Уже зачаровано")
 		_btn_enchant.disabled = true
 	elif ess == &"":
-		_btn_enchant.text = "Зачаровать: нужна эссенция или лунный кристалл"
+		_btn_enchant.text = tr("Зачаровать: нужна эссенция или лунный кристалл")
 		_btn_enchant.disabled = true
 	else:
 		var ec := Smithing.enchant_cost(it, ess)
-		_btn_enchant.text = "Зачаровать: %s" % Smithing.cost_text(ec)
+		_btn_enchant.text = tr("Зачаровать: %s") % Smithing.cost_text(ec)
 		_btn_enchant.disabled = not Smithing.can_afford(hero, ec)
 	if _sel_index < 0:
-		_btn_smelt.text = "Переплавка: сначала снимите предмет"
+		_btn_smelt.text = tr("Переплавка: сначала снимите предмет")
 		_btn_smelt.disabled = true
 	else:
-		_btn_smelt.text = "Переплавить → %s" % Smithing.cost_text(Smithing.smelt_result(it))
+		_btn_smelt.text = tr("Переплавить → %s") % Smithing.cost_text(Smithing.smelt_result(it))
 		_btn_smelt.disabled = false
 	var rc := Smithing.repair_cost(it)
-	_btn_repair.text = "Починить: %s" % Smithing.cost_text(rc) if int(rc["gold"]) > 0 else "Ремонт не нужен"
+	_btn_repair.text = tr("Починить: %s") % Smithing.cost_text(rc) if int(rc["gold"]) > 0 else tr("Ремонт не нужен")
 	_btn_repair.disabled = int(rc["gold"]) <= 0 or not Smithing.can_afford(hero, rc)
 
 
@@ -214,14 +214,14 @@ func _do_upgrade() -> void:
 	var res := Smithing.upgrade(hero, _sel_item)
 	if res:
 		_sel_item = res
-	_done(res != null, "Готово: %s" % (res.display_name if res else ""))
+	_done(res != null, tr("Готово: %s") % (res.display_name if res else ""))
 
 
 func _do_enchant() -> void:
 	var res := Smithing.enchant(hero, _sel_item)
 	if res:
 		_sel_item = res
-	_done(res != null, "Предмет зачарован")
+	_done(res != null, tr("Предмет зачарован"))
 
 
 ## Every smithable item marked as junk becomes ore and a little gold.
@@ -236,15 +236,15 @@ func _do_smelt_junk() -> void:
 				n += 1
 	_sel_item = null
 	_sel_index = -1
-	_done(n > 0, "Переплавлено предметов: %d" % n)
+	_done(n > 0, tr("Переплавлено предметов: %d") % n)
 
 
 func _do_smelt() -> void:
 	var ok := Smithing.smelt(hero, _sel_index)
 	_sel_item = null
 	_sel_index = -1
-	_done(ok, "Переплавлено")
+	_done(ok, tr("Переплавлено"))
 
 
 func _do_repair() -> void:
-	_done(Smithing.repair(hero, _sel_item), "Починено")
+	_done(Smithing.repair(hero, _sel_item), tr("Починено"))

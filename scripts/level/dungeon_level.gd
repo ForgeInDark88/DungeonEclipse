@@ -109,6 +109,12 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	if layout.is_town:
 		_spawn_town()
 		return
+	if layout.is_event_room:
+		_spawn_door()
+		_spawn_specials()
+		_spawn_ambience()
+		_spawn_decorations()
+		return
 	if layout.is_arena:
 		_spawn_boss()
 		_spawn_lore()
@@ -145,7 +151,7 @@ func _spawn_town() -> void:
 			var light := PointLight2D.new()
 			light.texture = AssetPaths.tex(AssetPaths.LIGHT)
 			light.color = Color(1.0, 0.8, 0.5)
-			light.energy = 1.1
+			light.energy = 1.1 * (1.7 if Buildings.is_night() else 1.0)
 			light.texture_scale = 0.7
 			light.position = Vector2(0, -tex.get_height() + 6)
 			s.add_child(light)
@@ -155,6 +161,19 @@ func _spawn_town() -> void:
 				light.energy = fbase + sin(phase) * 0.06 + sin(phase * 2.3) * 0.04,
 				0.0, TAU, randf_range(1.8, 2.6)).set_trans(Tween.TRANS_LINEAR)
 	_spawn_specials()
+	# The expedition loop's town: buildings on their foundations, its people.
+	for info in layout.town_buildings:
+		var bd := ItemDatabase.building(StringName(info["id"]))
+		if bd:
+			var tb := TownBuilding.new()
+			tb.setup(bd)
+			add_entity(tb, cell_bottom(info["cell"]))
+	for info in layout.town_people:
+		var nd: NpcData = ItemDatabase.npcs.get(StringName(info["id"]))
+		if nd:
+			var npc := TownNpc.new()
+			npc.setup(nd)
+			add_entity(npc, cell_bottom(info["cell"]))
 	var gate := DungeonGate.new()
 	add_entity(gate, cell_bottom(layout.exit_cell))
 	for dx in [-28, 28]:
@@ -197,8 +216,18 @@ func _on_seal_kill(_d: EnemyData, _p: Vector2) -> void:
 	if Net.active and Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.seal_state.rpc(seal_kills)
+			Net.send(ns, &"seal_state", [seal_kills])
 	_seal_progress()
+
+
+## A fight started on purpose (a road event): the exit stays sealed until
+## these `count` monsters are dead.
+func seal_for_fight(count: int) -> void:
+	seal_required = count
+	seal_kills = 0
+	if not EventBus.enemy_killed.is_connected(_on_seal_kill):
+		EventBus.enemy_killed.connect(_on_seal_kill)
+	_emit_seal()
 
 
 ## Clients: the host's count (late join, kills the client did not see).
@@ -211,7 +240,7 @@ func set_seal_kills(kills: int) -> void:
 func _seal_progress() -> void:
 	_emit_seal()
 	if not is_sealed():
-		EventBus.message.emit("Печать снята! Выход открыт.")
+		EventBus.message.emit(tr("Печать снята! Выход открыт."))
 		AudioManager.play_sfx(&"portal")
 
 
@@ -272,8 +301,19 @@ func _on_boss_defeated(_boss: BossData, _pos: Vector2) -> void:
 	if spot.x < 0:
 		spot = layout.start_cell
 	add_entity(chest, cell_bottom(spot))
+	# The relic altar beside the chest: a choice of one relic from three
+	# (personal - every machine builds its own).
+	if not _boss.final:
+		var altar_cell := Vector2i(-1, -1)
+		for dx in [3, -3, 4, -4, 5, -5, 2, -2, 6, -6]:
+			var c := Vector2i(spot.x + dx, spot.y)
+			if layout.get_tile(c.x, c.y) == LevelLayout.Tile.EMPTY and LevelLayout.is_solid(layout.get_tile(c.x, c.y + 1)):
+				altar_cell = c
+				break
+		if altar_cell.x >= 0:
+			add_entity(RelicAltar.new(), cell_bottom(altar_cell))
 	Fx.sparks(entities, cell_bottom(layout.exit_cell) + Vector2(0, -16), Color(0.7, 0.4, 1.0), 30, 120.0)
-	EventBus.message.emit("Затмение рассеяно! Свет возвращается в подземелья." if _boss.final else "Страж повержен! Открылся проход.")
+	EventBus.message.emit(tr("Затмение рассеяно! Свет возвращается в подземелья.") if _boss.final else tr("Страж повержен! Открылся проход."))
 
 
 ## Deterministic 0..3 variant per cell.
@@ -307,7 +347,7 @@ func _near_solid(cell: Vector2i) -> bool:
 
 func _place_ore() -> void:
 	ore_cells.clear()
-	var chance := biome.ore_chance if biome else 0.04
+	var chance := (biome.ore_chance if biome else 0.04) * float(GameState.location_mod("ore", 1.0))
 	for y in range(1, layout.height - 1):
 		for x in range(1, layout.width - 1):
 			if layout.get_tile(x, y) != T.BRICK:
@@ -410,7 +450,7 @@ func _physics_process(delta: float) -> void:
 	if _nav_timer <= 0.0:
 		_nav_dirty = false
 		nav.update_area(_nav_area)
-		AIDebug.log_event(self, "nav", "граф навигации обновлён (v%d)" % nav.version)
+		AIDebug.log_event(self, "nav", tr("граф навигации обновлён (v%d)") % nav.version)
 
 
 func _mark_nav_dirty(cell: Vector2i) -> void:
@@ -515,12 +555,14 @@ func break_tile(cell: Vector2i, effects := true) -> bool:
 	if Net.active and Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.tile_broken.rpc(cell)
+			Net.send(ns, &"tile_broken", [cell])
 	if was_ore:
 		var ore := ItemDatabase.get_item(biome.ore_item if biome else &"iron_ore")
 		if ore:
 			EventBus.spawn_items.emit(cell_center(cell), [{"item": ore, "count": rng.randi_range(1, 2)}])
 		Fx.sparks(entities, cell_center(cell), Color(1.0, 0.85, 0.4), 12, 90.0)
+		# An expedition carries the vein's stone and iron home to the town.
+		GameFlow.gain_resource(&"iron" if rng.randf() < 0.45 else &"stone", 1, cell_center(cell))
 	if effects:
 		AudioManager.play_sfx(&"dig", cell_center(cell))
 		_debris(cell_center(cell))
@@ -587,7 +629,7 @@ func place_rope(cell: Vector2i, max_length: int) -> int:
 	if count > 0 and Net.active and Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 		if ns:
-			ns.ropes_placed.rpc(placed)
+			Net.send(ns, &"ropes_placed", [placed])
 	return count
 
 
@@ -688,6 +730,8 @@ func _spawn_lore() -> void:
 
 ## Stairs back to town near the floor entrance (every normal floor).
 func _spawn_return_stairs() -> void:
+	if GameState.expedition:
+		return  # an expedition goes home through a camp or after a guardian
 	var cell := _free_cell_near(layout.start_cell)
 	if cell.x < 0:
 		return
@@ -713,6 +757,8 @@ func _spawn_specials() -> void:
 			&"merchant":
 				var m: Merchant = (load(MERCHANT_SCENE) as PackedScene).instantiate()
 				m.floor_number = maxi(1, floor_number)  # the town shop sells first-floor goods
+				if GameState.expedition and layout.is_town:
+					m.floor_number = Buildings.shop_depth()  # the regions the town has opened
 				_net_seq_node(m)
 				add_entity(m, cell_bottom(info["cell"]))
 			&"smith":
@@ -729,8 +775,30 @@ func _spawn_specials() -> void:
 				var dummy: Enemy = (load(ENEMY_SCENE) as PackedScene).instantiate()
 				dummy.setup(load(AssetPaths.TRAINING_DUMMY) as EnemyData, maxi(1, floor_number))
 				add_entity(dummy, cell_bottom(info["cell"]))
+			&"road_event":
+				var spot := EventSpot.new()
+				spot.level = self
+				for c in info["cells"]:
+					spot.fight_cells.append(c)
+				add_entity(spot, cell_bottom(info["cell"]))
+			&"rescue":
+				var cage := RescueCage.new()
+				cage.level = self
+				cage.npc_id = StringName(GameState.location.get("npc", &"refugee"))
+				add_entity(cage, cell_bottom(info["cell"]))
+				var cells: Array[Vector2i] = []
+				for c in info["cells"]:
+					cells.append(c)
+				if cells.is_empty():
+					cells.append(info["cell"])
+				if Net.active and not Net.is_host:
+					cage.remote = true  # the guards are the host's (they arrive as shells)
+				else:
+					cage.guard(spawn_ambush_wave(cells, 3 + floor_number / 8, true))
 			&"miniboss":
 				_spawn_miniboss(info)
+			&"ambush":
+				_spawn_ambush(info)
 
 
 ## The floor guardian: the toughest monster of the floor as a boosted elite
@@ -765,6 +833,8 @@ func _spawn_miniboss(info: Dictionary) -> void:
 		guest_gate.level = self
 		guest_gate.champion = null
 		guest_gate.room_cells = info["room"]
+		guest_gate.gate_id = _gate_seq
+		_gate_seq += 1
 		add_child(guest_gate)
 		return  # RNG already burned; the champion shell arrives via spawn_enemy
 	var champion := (load(ENEMY_SCENE) as PackedScene).instantiate()
@@ -777,7 +847,47 @@ func _spawn_miniboss(info: Dictionary) -> void:
 	gate.level = self
 	gate.champion = champion
 	gate.room_cells = info["room"]
+	gate.gate_id = _gate_seq
+	_gate_seq += 1
 	add_child(gate)
+
+
+## Gates of this floor in build order (the same on every machine): their ids.
+var _gate_seq := 0
+
+
+func _spawn_ambush(info: Dictionary) -> void:
+	var gate := MinibossGate.new()
+	gate.level = self
+	gate.ambush = true
+	gate.networked = Net.active and not Net.is_host
+	gate.champion = null
+	gate.room_cells = info["room"]
+	gate.gate_id = _gate_seq
+	_gate_seq += 1
+	for c in info["cells"]:
+		gate.ambush_cells.append(c)
+	add_child(gate)
+
+
+## Host: one wave of an ambush (the last one brings an elite).
+func spawn_ambush_wave(cells: Array[Vector2i], count: int, with_elite: bool) -> Array[Enemy]:
+	var out: Array[Enemy] = []
+	var pool := ItemDatabase.enemies_for_floor(floor_number, biome.id if biome else &"")
+	if pool.is_empty() or cells.is_empty():
+		return out
+	for k in count:
+		var data: EnemyData = pool[randi() % pool.size()]
+		var elite: EliteAffixData = null
+		if with_elite and k == 0:
+			var ok := ItemDatabase.elites.filter(func(a: EliteAffixData) -> bool: return a.min_floor <= floor_number)
+			if not ok.is_empty():
+				elite = ok[randi() % ok.size()]
+		var e := _spawn_floor_enemy(data, elite, cells[k % cells.size()], null)
+		if e:
+			e.global_position.x += (k / cells.size()) * 6.0
+			out.append(e)
+	return out
 
 
 func _spawn_event(info: Dictionary) -> void:
@@ -1094,7 +1204,7 @@ func _spawn_enemies() -> void:
 			_spawn_floor_enemy(m[0], null, m[1], null)
 
 
-func _spawn_floor_enemy(data: EnemyData, elite: EliteAffixData, cell: Vector2i, role: SquadRoleData) -> void:
+func _spawn_floor_enemy(data: EnemyData, elite: EliteAffixData, cell: Vector2i, role: SquadRoleData) -> Enemy:
 	var enemy := (load(ENEMY_SCENE) as PackedScene).instantiate()
 	enemy.setup(data, floor_number, elite)
 	if role:
@@ -1105,6 +1215,7 @@ func _spawn_floor_enemy(data: EnemyData, elite: EliteAffixData, cell: Vector2i, 
 		pos.y -= TILE * 2
 	add_entity(enemy, pos)
 	_net_broadcast_enemy(enemy, elite, false)
+	return enemy
 
 
 ## A free standable cell next to a squad leader for companion `k` (1-3 cells
@@ -1128,8 +1239,8 @@ func _net_broadcast_enemy(e: Enemy, elite: EliteAffixData, champion: bool, held 
 		return
 	var ns := get_tree().get_first_node_in_group("net_game") as NetSync
 	if ns:
-		ns.spawn_enemy.rpc(e.net_id, String(e.data.id), e.global_position,
-				elite.id if elite else StringName(), champion, held, e.hp, e.role.id if e.role else StringName())
+		Net.send(ns, &"spawn_enemy", [e.net_id, String(e.data.id), e.global_position,
+				elite.id if elite else StringName(), champion, held, e.hp, e.role.id if e.role else StringName()])
 
 
 ## Cracks over a secret wall cell: a jagged dark crack, a faint draft of light
@@ -1149,7 +1260,7 @@ class SecretCrack extends Node2D:
 		_t += delta
 		if level == null or level.layout.get_tile(cell.x, cell.y) != LevelLayout.Tile.BRICK:
 			if first and level != null:
-				EventBus.message.emit("Открыт тайный проход!")
+				EventBus.message.emit(tr("Открыт тайный проход!"))
 				AudioManager.play_sfx(&"chest_open", global_position)
 			queue_free()
 			return

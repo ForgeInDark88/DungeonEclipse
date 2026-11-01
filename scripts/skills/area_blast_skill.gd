@@ -63,7 +63,7 @@ func _net_blast_fx(caster: Node, center: Vector2, r: float) -> void:
 	var ns = caster.get_tree().get_first_node_in_group("net_game")
 	if ns == null:
 		return
-	ns.blast_fx.rpc(center, r, vfx, color)
+	Net.send(ns, &"blast_fx", [center, r, vfx, color])
 
 
 
@@ -98,9 +98,9 @@ func _blast_now(caster: Node, center: Vector2, r: float, mult: float) -> void:
 
 
 func describe(level: int) -> String:
-	var text := "Удар по области (радиус %d), урон %d%%" % [roundi(radius + radius_per_level * (level - 1)), roundi((damage_multiplier + damage_per_level * (level - 1)) * 100)]
+	var text := tr("Удар по области (радиус %d), урон %d%%") % [roundi(radius + radius_per_level * (level - 1)), roundi((damage_multiplier + damage_per_level * (level - 1)) * 100)]
 	if stun_time > 0.0:
-		text += ", оглушает на %.1f сек." % stun_time
+		text += tr(", оглушает на %.1f сек.") % stun_time
 	if breaks_tiles:
-		text += ", ломает кирпич"
+		text += tr(", ломает кирпич")
 	return text

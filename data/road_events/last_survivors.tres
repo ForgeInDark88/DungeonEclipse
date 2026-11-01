@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"last_survivors"
+title = "Последние выжившие"
+text = "В пещере прячутся люди: женщина, старик, двое детей. Они не видели солнца много лет."
+regions = Array[StringName]([&"eclipse"])
+min_depth = 26
+max_depth = 99
+weight = 1.0
+prop = &"survivors"
+options = Array[Dictionary]([{"text": "Вывести их к городу.", "requires": "", "hint": "", "outcomes": [{"chance": 0.7, "text": "Дорога наверх отнимает силы, но они в безопасности и ждут вас в городе.", "effects": {"hp_pct": -10, "rescue": "refugee", "flag": "helped_survivors"}}, {"chance": 0.3, "text": "На полпути вас настигает погоня. Отбейтесь — и люди спасены.", "effects": {"fight": "level", "rescue": "refugee", "flag": "helped_survivors"}}]}, {"text": "Отдать им припасы.", "requires": "item:health_potion", "hint": "зелье здоровья", "outcomes": [{"chance": 1.0, "text": "Они благодарят и обещают дождаться. Слух о вашей щедрости дойдёт до города.", "effects": {"take_item": "health_potion", "flag": "helped_survivors", "xp": 40}}]}, {"text": "Пройти мимо.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы идёте дальше, ничего не потеряв и ничего не найдя.", "effects": {}}]}])

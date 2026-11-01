@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="RelicItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/relic_item_data.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/greed_idol.png" id="e2"]
+
+[resource]
+script = ExtResource("e1")
+heal_on_kill = 0
+second_chance = false
+revive_percent = 0.5
+power = &"greed_idol"
+power_a = 0.0
+power_b = 1.25
+id = &"greed_idol"
+display_name = "Идол жадности"
+description = "Золото +60%, но враги бьют на 25% сильнее."
+icon = ExtResource("e2")
+item_type = 3
+rarity = 1
+item_level = 3
+unique = true
+max_stack = 1
+stat_bonuses = {
+"gold_find": 0.6
+}
+price = 120
+currency_value = 0

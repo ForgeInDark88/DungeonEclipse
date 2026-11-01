@@ -28,7 +28,7 @@ func can_interact() -> bool:
 
 
 func get_prompt() -> String:
-	return "Потянуть рычаг"
+	return tr("Потянуть рычаг")
 
 
 func interact(player: Node) -> void:

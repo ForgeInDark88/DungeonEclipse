@@ -88,6 +88,11 @@ func buy_price() -> int:
 	return maxi(1, p)
 
 
+## What a shop asks: the buy price with the town's discounts (Buildings).
+func shop_price() -> int:
+	return maxi(1, roundi(buy_price() * Buildings.price_mult()))
+
+
 func sell_price() -> int:
 	var mult := (0.5 if unidentified else 1.0) * (0.5 if cursed else 1.0)
 	return maxi(1, roundi(buy_price() * SELL_FACTOR * mult))
@@ -127,11 +132,11 @@ func rarity_color() -> Color:
 
 
 func rarity_name() -> String:
-	return RARITY_NAMES[rarity]
+	return TranslationServer.translate(RARITY_NAMES[rarity])
 
 
 func type_name() -> String:
-	return TYPE_NAMES[item_type]
+	return TranslationServer.translate(TYPE_NAMES[item_type])
 
 
 ## Text shown under the item name in tooltips (overridden by subclasses).

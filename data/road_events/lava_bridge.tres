@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EventData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"lava_bridge"
+title = "Лавовый мост"
+text = "Узкий каменный мост над лавой. На той стороне — сундук кузнеца. Мост качается от каждого шага."
+regions = Array[StringName]([&"ruins"])
+min_depth = 8
+max_depth = 20
+weight = 1.0
+prop = &"lava_chest"
+options = Array[Dictionary]([{"text": "Перебежать быстро.", "requires": "", "hint": "", "outcomes": [{"chance": 0.65, "text": "Вы проскакиваете за миг до того, как камень уходит в лаву. Сундук ваш!", "effects": {"loot": "special"}}, {"chance": 0.35, "text": "Камень рушится под ногой: жар опаляет вас, но сундук всё-таки ваш.", "effects": {"loot": "special", "hp_pct": -30}}]}, {"text": "Укрепить мост досками (3 дерева).", "requires": "run_resource:wood:3", "hint": "3 дерева из этого похода", "outcomes": [{"chance": 1.0, "text": "Доски держат. Вы спокойно забираете сундук.", "effects": {"resource": {"wood": -3}, "loot": "special", "xp": 20}}]}, {"text": "Пройти мимо.", "requires": "", "hint": "", "outcomes": [{"chance": 1.0, "text": "Вы идёте дальше, ничего не потеряв и ничего не найдя.", "effects": {}}]}])

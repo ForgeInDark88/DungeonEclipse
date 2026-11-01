@@ -126,12 +126,12 @@ static func event_text(ev: InputEvent) -> String:
 	if ev is InputEventMouseButton:
 		match (ev as InputEventMouseButton).button_index:
 			MOUSE_BUTTON_LEFT:
-				return "ЛКМ"
+				return TranslationServer.translate("ЛКМ")
 			MOUSE_BUTTON_RIGHT:
-				return "ПКМ"
+				return TranslationServer.translate("ПКМ")
 			MOUSE_BUTTON_MIDDLE:
-				return "СКМ"
-		return "Мышь %d" % (ev as InputEventMouseButton).button_index
+				return TranslationServer.translate("СКМ")
+		return TranslationServer.translate("Мышь %d") % (ev as InputEventMouseButton).button_index
 	return "?"
 
 

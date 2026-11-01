@@ -59,11 +59,11 @@ const LABELS := {
 
 ## Element of a resistance key for "weak to ...": огонь, лёд, яд, магия.
 static func element_name(res_key: String) -> String:
-	return {RES_FIRE: "огонь", RES_ICE: "лёд", RES_POISON: "яд", RES_MAGIC: "магия"}.get(res_key, res_key)
+	return {RES_FIRE: TranslationServer.translate("огонь"), RES_ICE: TranslationServer.translate("лёд"), RES_POISON: TranslationServer.translate("яд"), RES_MAGIC: TranslationServer.translate("магия")}.get(res_key, res_key)
 
 
 static func label(stat: String) -> String:
-	return LABELS.get(stat, stat)
+	return TranslationServer.translate(LABELS.get(stat, stat))
 
 
 ## Formats a value for UI: crit chance is stored as 0..1 and shown as percent.

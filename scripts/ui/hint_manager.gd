@@ -18,7 +18,8 @@ const HINTS := {
 	&"merchant": "Торговец: покупайте за золото, продавайте вещи из рюкзака.",
 	&"defend_parry": "{defend} — поднять щит: удар в этот миг парируется, враг оглушён.",
 	&"defend_roll": "{defend} — перекат: пока катитесь, вас не задеть.",
-	&"defend_none": "{defend} — защитный приём вашего класса (у мага и некроманта его нет — держите дистанцию).",
+	&"defend_none": "{defend} — защитный приём вашего класса.",
+	&"defend_blink": "{defend} — скачок: короткий рывок, во время которого вас не задеть. Перезарядка 1,6 с.",
 	&"skill_use": "Навыки — на клавишах {skill_1}–{skill_4} (панель внизу). Тратят ману, у каждого своя перезарядка.",
 	&"seal": "Печать выхода: дверь на следующий этаж откроется, когда убьёте нужное число монстров (счётчик слева вверху).",
 	&"trap": "Ловушка! Подойдите и нажмите {interact}, чтобы обезвредить. Неудача — сработает. Шанс выше с ловкостью.",
@@ -68,13 +69,13 @@ func setup(player: Player) -> void:
 	EventBus.shop_requested.connect(func(_m: Node, _p: Node) -> void: show_hint(&"merchant"))
 	# First floor basics, one after another after «move».
 	var move: StringName = hero.class_data.defense_move if hero.class_data else &""
-	show_hint.call_deferred({&"parry": &"defend_parry", &"roll": &"defend_roll"}.get(move, &"defend_none"))
+	show_hint.call_deferred({&"parry": &"defend_parry", &"roll": &"defend_roll", &"blink": &"defend_blink"}.get(move, &"defend_none"))
 	show_hint.call_deferred(&"skill_use")
 	EventBus.seal_changed.connect(func(kills: int, _req: int) -> void:
 		if kills >= 1:
 			show_hint(&"seal"))
 	player.interact_hint_changed.connect(func(t: String) -> void:
-		if t.contains("Обезвредить"):
+		if t.contains(tr("Обезвредить")):
 			show_hint(&"trap"))
 	var picked := [0]
 	EventBus.item_collected.connect(func(_i: ItemData, _p: Vector2) -> void:
@@ -105,7 +106,7 @@ func _next() -> void:
 		return
 	_busy = true
 	var id: StringName = _queue.pop_front()
-	_label.text = format(HINTS[id])
+	_label.text = format(tr(HINTS[id]))
 	_card.size.y = maxf(30.0, _label.get_minimum_size().y + 10.0)
 	var tw := create_tween()
 	tw.tween_property(_card, "modulate:a", 1.0, 0.25)

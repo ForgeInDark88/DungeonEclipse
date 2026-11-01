@@ -14,7 +14,7 @@ func _ready() -> void:
 
 
 func get_prompt() -> String:
-	return "Кузница"
+	return tr("Кузница")
 
 
 func interact(player: Node) -> void:

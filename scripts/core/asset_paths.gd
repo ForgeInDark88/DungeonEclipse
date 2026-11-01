@@ -9,6 +9,10 @@ const SPRITES_DIR := "res://assets/sprites/"
 
 # --- UI (book style) ---
 const BOOK := UI_DIR + "book.png"
+## Expedition map (tools/gen_placeholders.py loop): node icons
+## node_<type>.png / node_<special>.png, signs hint_<kind>.png, the hero.
+const MAP_DIR := UI_DIR + "map/"
+const MAP_HERO := MAP_DIR + "hero_marker.png"
 const BOOK_PANEL := UI_DIR + "book_panel.png"
 const SLOT := UI_DIR + "slot.png"
 const SLOT_EMPTY := UI_DIR + "slot_empty.png"
@@ -42,7 +46,8 @@ const BLACKSMITH_SHEET := SPRITES_DIR + "npc/blacksmith_sheet.png"
 const PORTRAITS_DIR := SPRITES_DIR + "portraits/"
 const HERO_PORTRAIT_SIZE := 64
 const HERO_PORTRAIT_FRAMES: Array[StringName] = [&"neutral0", &"neutral1", &"blink_half", &"blink", &"glance",
-		&"hurt0", &"hurt1", &"wounded0", &"wounded1", &"fierce0", &"fierce1"]
+		&"hurt0", &"hurt1", &"wounded0", &"wounded1", &"fierce0", &"fierce1",
+		&"neutral2", &"neutral3", &"smile0", &"smile1", &"cast0", &"cast1", &"drink", &"resolve", &"dead"]
 ## Pets: one sheet per pet (PetData.sheet), shared frame layout.
 const PET_SCENE := "res://scenes/pets/pet.tscn"
 const PET_LAYOUT := "res://data/animations/pet_layout.tres"
@@ -273,3 +278,25 @@ static func tex(path: String) -> Texture2D:
 		return load(path) as Texture2D
 	push_warning("Missing texture: %s" % path)
 	return null
+
+
+## Icon of an expedition map node (type or special kind; "unknown" = fog).
+static func map_icon(kind: StringName) -> Texture2D:
+	var path := MAP_DIR + "node_%s.png" % kind
+	return tex(path) if ResourceLoader.exists(path) else tex(MAP_DIR + "node_unknown.png")
+
+
+static func map_hint(kind: StringName) -> Texture2D:
+	return tex(MAP_DIR + "hint_%s.png" % kind)
+
+
+## Icon of a town building (tools/gen_town_loop_art.py): ui/buildings/<id>.png.
+static func building_icon(id: StringName) -> Texture2D:
+	var path := UI_DIR + "buildings/%s.png" % id
+	return tex(path) if ResourceLoader.exists(path) else null
+
+
+## Two idle frames of a townsperson (npc/<id>_idle.png), null when none.
+static func npc_sheet(id: StringName) -> Texture2D:
+	var path := SPRITES_DIR + "npc/%s_idle.png" % id
+	return tex(path) if ResourceLoader.exists(path) else null

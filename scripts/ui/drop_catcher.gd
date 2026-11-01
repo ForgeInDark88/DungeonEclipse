@@ -8,7 +8,9 @@ var hero: Hero
 
 
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
-	return data is Dictionary and data.get("type") == "item_slot"
+	# Off the dungeon (the expedition map, a camp) there is no floor to throw on.
+	return data is Dictionary and data.get("type") == "item_slot" \
+			and get_tree().get_first_node_in_group("player") != null
 
 
 func _drop_data(_at_position: Vector2, data: Variant) -> void:
@@ -33,8 +35,13 @@ func _throw(player: Player, stack: ItemStack) -> void:
 		var ns = get_tree().get_first_node_in_group("net_game")
 		if ns:
 			ns.request_drop.rpc_id(1, RunCodec.item_to_dict(stack.item), stack.count)
-		EventBus.message.emit("Выброшено: %s" % stack.item.display_name)
+		EventBus.message.emit(tr("Выброшено: %s") % stack.item.display_name)
 		return
-	EventBus.spawn_items.emit(player.global_position + Vector2(player.facing * 10.0, -12.0),
-			[{"item": stack.item, "count": stack.count}])
-	EventBus.message.emit("Выброшено: %s" % stack.item.display_name)
+	var game := get_tree().current_scene
+	if Net.world_session and game and game.has_method("spawn_shared"):
+		# thrown items are shared: anyone in the party may pick them up
+		game.spawn_shared(player.global_position + Vector2(player.facing * 10.0, -12.0), [{"item": stack.item, "count": stack.count}])
+	else:
+		EventBus.spawn_items.emit(player.global_position + Vector2(player.facing * 10.0, -12.0),
+				[{"item": stack.item, "count": stack.count}])
+	EventBus.message.emit(tr("Выброшено: %s") % stack.item.display_name)
