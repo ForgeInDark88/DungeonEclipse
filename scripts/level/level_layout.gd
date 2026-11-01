@@ -37,6 +37,17 @@ var town_props: Array[Dictionary] = []
 ## residents standing in the street {"id", "cell"} (TownBuilder.build_hub).
 var town_buildings: Array[Dictionary] = []
 var town_people: Array[Dictionary] = []
+## The open surface of a location (SurfaceGenerator): sky instead of the
+## back wall, no exit seal.
+var is_surface := false
+## Portal id -> cell of the portals between the layers of a location
+## (LocationInstance portals; LocationBuilder fills them).
+var portal_cells: Dictionary = {}
+## A location of several layers stacked into one level (LocationBuilder):
+## [{layer: int, rect: Rect2i (cells), origin: Vector2i, layout: LevelLayout,
+##   depth: int, biome: BiomeData, kind: LocationInstance.Kind}]. Empty for
+## an ordinary level.
+var bands: Array = []
 
 
 func _init(w: int, h: int, fill: int = Tile.BRICK) -> void:

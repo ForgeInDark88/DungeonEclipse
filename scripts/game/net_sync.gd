@@ -119,10 +119,16 @@ func _spawn_shell(net_id: int, enemy_id: String, pos: Vector2, elite_id: StringN
 	game.level.add_entity(e, pos)
 
 
+## Net ids of the monsters this guest got news of (tests: a guest hears
+## only about the layer it stands in).
+var heard: Dictionary = {}
+
+
 ## Host → clients: periodic snapshot of enemy positions, hp and AI state.
 @rpc("authority", "call_remote", "unreliable")
 func enemy_state(states: Array, sent_at := -1.0) -> void:
 	for st: Array in states:
+		heard[int(st[0])] = true
 		var e: Enemy = enemies.get(int(st[0]))
 		if e == null or not is_instance_valid(e):
 			continue
@@ -144,8 +150,45 @@ func _broadcast_enemy_state() -> void:
 					ai_state = Enemy.State.ATTACK
 			states.append([id, e.global_position.x, e.global_position.y, e.hp,
 					e.is_dead(), ai_state, e._attack_anim_left, e.max_hp])
-	if not states.is_empty():
+	if states.is_empty():
+		return
+	var game := get_tree().current_scene
+	var lvl: DungeonLevel = game.level if game != null and "level" in game else null
+	if lvl == null or not lvl.location_mode:
 		Net.send(self, &"enemy_state", [states, NetInterp.now()])
+		return
+	# A location of layers: every guest hears only about its own layer.
+	var by_band := {}
+	for st in states:
+		var bi := lvl.band_index_at(Vector2(st[1], st[2]))
+		if not by_band.has(bi):
+			by_band[bi] = []
+		by_band[bi].append(st)
+	for peer in (Net.scene_peers() if Net.world_session else Array(multiplayer.get_peers())):
+		var hero := _hero_node(peer)
+		if hero == null:
+			continue
+		var list: Array = by_band.get(lvl.band_index_at(hero.global_position), [])
+		if not list.is_empty():
+			enemy_state.rpc_id(peer, list, NetInterp.now())
+
+
+## Guest → host: call the party through a portal of the location.
+@rpc("any_peer", "call_remote", "reliable")
+func request_pull(to: StringName) -> void:
+	if not Net.is_host:
+		return
+	var lm := get_tree().get_first_node_in_group("location_manager") as LocationManager
+	if lm:
+		lm.on_pull_request(multiplayer.get_remote_sender_id(), to)
+
+
+## Host → everyone: the party goes through portal `to` of the location.
+@rpc("authority", "call_remote", "reliable")
+func pull_party(to: StringName) -> void:
+	var lm := get_tree().get_first_node_in_group("location_manager") as LocationManager
+	if lm:
+		lm.travel(to)
 
 
 # --------------------------------------------------------------- combat

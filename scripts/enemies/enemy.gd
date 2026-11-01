@@ -368,6 +368,9 @@ func _nearest_alive_player() -> Player:
 		var pl := n as Player
 		if pl == null or pl.dead:
 			continue
+		var lvl := _level()
+		if lvl and lvl.location_mode and not lvl.same_band(global_position, pl.global_position):
+			continue  # another layer of the location: out of reach
 		var d := global_position.distance_to(pl.global_position)
 		if d < best_d:
 			best_d = d

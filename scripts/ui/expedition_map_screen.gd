@@ -160,6 +160,13 @@ func _build_map() -> void:
 		b.focus_exited.connect(func() -> void: Tooltip.hide_tip(b))
 		_canvas.add_child(b)
 		_buttons[id] = b
+		# Several ways down (a location of layers): a small mark under the node.
+		var plan := LocationInstance.plan(n) if is_revealed(id) else null
+		if plan and plan.portals.filter(func(p: Dictionary) -> bool: return StringName(p["kind"]) == LocationInstance.SIDE).size() > 0:
+			var ways := UIStyle.outlined_label("▼▼", 5, Color(0.45, 0.3, 0.2))
+			ways.position = node_pos(id) + Vector2(-5, 7)
+			ways.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			_canvas.add_child(ways)
 		if state == &"open":
 			var tw := b.create_tween().set_loops()
 			tw.tween_property(b, "scale", Vector2(1.12, 1.12), 0.5).set_trans(Tween.TRANS_SINE)
@@ -293,6 +300,18 @@ func _tooltip(id: int) -> String:
 	var lines: Array[String] = ["[b]%s[/b]" % name, ExpeditionMap.type_description(type)]
 	var biome := ItemDatabase.biome_by_id(StringName(n["biome"]))
 	lines.append(tr("%s · глубина %d") % [biome.display_name if biome else (reg.display_name if reg else ""), int(n["depth"])])
+	var plan := LocationInstance.plan(n)
+	if plan:
+		# A location of layers: the surface, the ways down, the floors.
+		var ways := plan.portals.filter(func(p: Dictionary) -> bool:
+			return StringName(p["kind"]) in [LocationInstance.ENTRANCE, LocationInstance.SIDE]).size()
+		var def: LocationDefinition = ItemDatabase.locations[type]
+		lines.append(tr("Локация: %s") % tr(def.display_name))
+		lines.append((tr("Поверхность и подземелье: этажей %d") if plan.has_surface() else tr("Подземелье: этажей %d")) % plan.floors())
+		if ways > 1:
+			lines.append(tr("Входов вниз: %d %s") % [ways, "▼".repeat(ways)])
+		if def.rewards_hint != "":
+			lines.append(tr("Можно найти: %s") % tr(def.rewards_hint))
 	if type in [&"boss", &"lair"]:
 		var bd := ItemDatabase.boss_by_id(StringName(n["boss"]))
 		if bd:

@@ -3,6 +3,7 @@ extends Node
 ## picked up just by dropping a .tres file into the right folder.
 
 const REGION_DIR := "res://data/regions"
+const LOCATION_DIR := "res://data/locations"
 const BUILDING_DIR := "res://data/buildings"
 const NPC_DIR := "res://data/npcs"
 const ROAD_EVENT_DIR := "res://data/road_events"
@@ -27,6 +28,8 @@ const LORE_DIR := "res://data/lore"
 const EQUIPMENT_LAYOUT := "res://data/equipment_layout.tres"
 
 var items: Dictionary = {}  # StringName -> ItemData
+## Node type -> LocationDefinition (data/locations).
+var locations: Dictionary = {}
 var races: Array[RaceData] = []
 var classes: Array[ClassData] = []
 var enemies: Array[EnemyData] = []
@@ -75,6 +78,10 @@ func reload() -> void:
 	pacts.clear()
 	pets.clear()
 	difficulties.clear()
+	locations.clear()
+	for res in load_dir(LOCATION_DIR):
+		if res is LocationDefinition:
+			locations[res.id] = res
 	regions.clear()
 	for res in load_dir(REGION_DIR):
 		if res is RegionData:
@@ -213,7 +220,8 @@ func boss_for_floor(floor_number: int) -> BossData:
 		return null
 	# An expedition node names its own guardian (region boss or lair).
 	var loc_boss := StringName(GameState.location.get("boss", ""))
-	if loc_boss != &"" and floor_number == GameState.floor_number:
+	# (A location of layers: its arena lies deeper than the node's depth.)
+	if loc_boss != &"" and (floor_number == GameState.floor_number or GameState.location.has("instance")):
 		var b := boss_by_id(loc_boss)
 		if b:
 			return b

@@ -323,11 +323,20 @@ func _resume_expedition() -> bool:
 	GameState.kills = int(d.get("kills", 0))
 	GameState.run_stats = d.get("stats", {})
 	GameState.run_stats["start_ms"] = Time.get_ticks_msec()
-	match String(d.get("at", "map")):
+	var at := String(d.get("at", "map"))
+	if at == "location" and (d.get("location", {}) as Dictionary).has("instance"):
+		at = "layers"
+	match at:
 		"camp":
 			GameState.location = d.get("location", {})
 			GameState.floor_number = int(GameState.location.get("depth", 1))
 			change_scene(CAMP_SCENE, State.LOCATION)
+		"layers":
+			# A location of layers: rebuilt from its seed with what changed,
+			# the hero at its last save point.
+			GameState.location = d.get("location", {})
+			GameState.floor_number = int(GameState.location.get("depth", 1))
+			change_scene(GameState.GAME, State.LOCATION)
 		"location":
 			GameState.location = {}
 			GameState.run.flags["fled"] = int(GameState.run.flags.get("fled", 0)) + 1
@@ -347,7 +356,13 @@ func save_and_quit() -> void:
 		WorldNet.close_session()
 		_leave_to_menu()
 		return
-	if GameState.run != null:
+	var game := get_tree().current_scene
+	var lm: LocationManager = game.location if game and "location" in game else null
+	if GameState.run != null and lm != null:
+		# A location of layers: the hero comes back to this way in or out.
+		lm.instance.save_portal = lm.nearest_portal(game.player)
+		lm.save_point()
+	elif GameState.run != null:
 		save_expedition("camp" if GameState.location_type() == &"camp" else "map")
 	else:
 		save_town()
@@ -481,6 +496,10 @@ func enter_node(id: int) -> bool:
 	var hero := GameState.hero
 	run.loc = {"gold": hero.gold if hero else 0, "kills": GameState.kills, "shards": _shards(),
 			"finds": [], "picked": 0, "resources": {}, "cleared": false}
+	# A location of layers: the surface, the ways down, the floors below.
+	var li := LocationInstance.plan(n) if StringName(n["type"]) in PLATFORMER_TYPES else null
+	if li:
+		GameState.location["instance"] = li.to_dict()
 	EventBus.floor_changed.emit(GameState.floor_number)
 	var type := StringName(n["type"])
 	if type in PLATFORMER_TYPES:

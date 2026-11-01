@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="LocationDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/location_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"special"
+display_name = "Особое место"
+floors_min = 2
+floors_max = 2
+side_entrances_min = 1
+side_entrances_max = 2
+boss_arena = false
+reward_room = true
+danger = 2
+rewards_hint = "Тайники, руда или склеп"

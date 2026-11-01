@@ -212,7 +212,11 @@ func set_level(p_level: DungeonLevel) -> void:
 	level = p_level
 	velocity = Vector2.ZERO
 	climbing = false
-	var b := level.bounds_px()
+	set_camera_rect(level.bounds_px())
+
+
+## The camera stays inside `b` (a level, or the layer of a location).
+func set_camera_rect(b: Rect2) -> void:
 	camera.limit_left = int(b.position.x)
 	camera.limit_top = int(b.position.y)
 	camera.limit_right = int(b.end.x)

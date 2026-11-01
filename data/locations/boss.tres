@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="LocationDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/location_definition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"boss"
+display_name = "Владения стража региона"
+floors_min = 3
+floors_max = 3
+side_entrances_min = 1
+side_entrances_max = 1
+boss_arena = true
+reward_room = false
+danger = 5
+rewards_hint = "Страж региона, путь дальше"

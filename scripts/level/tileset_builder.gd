@@ -26,6 +26,28 @@ static func clear_cache() -> void:
 
 
 static func _build(texture: Texture2D) -> TileSet:
+	var ts := _new_set()
+	_add_source(ts, texture, SOURCE_ID)
+	return ts
+
+
+## One TileSet for a location of several layers: atlas source `i` is the
+## tileset of textures[i] (same rows and collisions in every source).
+static func get_tileset_multi(textures: Array) -> TileSet:
+	var keys := []
+	for t: Texture2D in textures:
+		keys.append(t.resource_path if t else "")
+	var key := "multi:" + "|".join(keys)
+	if not _cache.has(key):
+		var ts := _new_set()
+		for i in textures.size():
+			var t: Texture2D = textures[i] if textures[i] else AssetPaths.tex(AssetPaths.TILES)
+			_add_source(ts, t, i)
+		_cache[key] = ts
+	return _cache[key]
+
+
+static func _new_set() -> TileSet:
 	var ts := TileSet.new()
 	ts.tile_size = Vector2i(TILE, TILE)
 	ts.add_physics_layer()
@@ -34,11 +56,14 @@ static func _build(texture: Texture2D) -> TileSet:
 	ts.add_physics_layer()
 	ts.set_physics_layer_collision_layer(1, 2)
 	ts.set_physics_layer_collision_mask(1, 0)
+	return ts
 
+
+static func _add_source(ts: TileSet, texture: Texture2D, id: int) -> void:
 	var src := TileSetAtlasSource.new()
 	src.texture = texture
 	src.texture_region_size = Vector2i(TILE, TILE)
-	ts.add_source(src, SOURCE_ID)
+	ts.add_source(src, id)
 	var rows := int(texture.get_height()) / TILE
 	for y in rows:
 		for x in COLUMNS:
@@ -60,4 +85,3 @@ static func _build(texture: Texture2D) -> TileSet:
 		td.add_collision_polygon(1)
 		td.set_collision_polygon_points(1, 0, thin)
 		td.set_collision_polygon_one_way(1, 0, true)
-	return ts

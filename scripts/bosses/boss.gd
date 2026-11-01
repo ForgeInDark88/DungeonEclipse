@@ -202,7 +202,7 @@ func _clamp_to_arena() -> void:
 	var lvl := _level()
 	if lvl == null:
 		return
-	var b := lvl.bounds_px().grow(-float(DungeonLevel.TILE))
+	var b := lvl.band_rect_px(global_position).grow(-float(DungeonLevel.TILE))
 	var half := data.collision_size.x * 0.5 + 2.0
 	var p := global_position
 	var lo := Vector2(b.position.x + half, b.position.y + data.collision_size.y + 2.0)
@@ -326,7 +326,7 @@ func _choose_attack() -> void:
 				var t := Telegraph.circle(parent, spot, _attack.radius, _attack.windup + 0.3)
 				t.color = Color(0.9, 0.85, 0.6)
 		BossAttack.Kind.FIRE_WALL:
-			var b := lvl.bounds_px() if lvl else Rect2(global_position - Vector2(300, 200), Vector2(600, 400))
+			var b := lvl.band_rect_px(global_position) if lvl else Rect2(global_position - Vector2(300, 200), Vector2(600, 400))
 			var ground := _ground_below(global_position + Vector2(0, -20), lvl)
 			# The wall rolls out from the boss's side of the arena toward the heroes.
 			var from_left := global_position.x < _player.global_position.x
@@ -343,7 +343,7 @@ func _choose_attack() -> void:
 			t2.color = Color(0.8, 0.5, 1.0)
 		BossAttack.Kind.QUAKE:
 			_rain_spots.clear()
-			var b := lvl.bounds_px() if lvl else Rect2(global_position - Vector2(300, 200), Vector2(600, 400))
+			var b := lvl.band_rect_px(global_position) if lvl else Rect2(global_position - Vector2(300, 200), Vector2(600, 400))
 			for p in _alive_heroes():
 				_rain_spots.append(_ground_below(p.global_position + Vector2(0, -20), lvl))
 			while _rain_spots.size() < _attack.count:
@@ -874,7 +874,7 @@ func _summon_at(a: BossAttack, spots: Array[Vector2]) -> void:
 ## (or a well-timed jump over a low lick of flame) are safe.
 func _fire_walls(a: BossAttack, dmg: int) -> void:
 	var lvl := _level()
-	var b := lvl.bounds_px() if lvl else Rect2(global_position - Vector2(300, 200), Vector2(600, 400))
+	var b := lvl.band_rect_px(global_position) if lvl else Rect2(global_position - Vector2(300, 200), Vector2(600, 400))
 	var dir := 1.0 if _target_pos.x < b.get_center().x else -1.0
 	var life := (b.size.x - 48.0) / maxf(40.0, a.speed)
 	_hazard(BossHazard.Style.FIRE, _target_pos, Vector2(16, 30), life, Vector2(dir * a.speed, 0), dmg, a.damage_type)
@@ -914,7 +914,7 @@ func _mirror_swap(a: BossAttack, dmg: int) -> void:
 ## Drowned Bell: rolling rings of sound along the floor, both ways.
 func _toll(a: BossAttack, dmg: int) -> void:
 	var ground := _ground_below(global_position + Vector2(0, -20), _level())
-	var b := _level().bounds_px() if _level() else Rect2(global_position - Vector2(300, 200), Vector2(600, 400))
+	var b := _level().band_rect_px(global_position) if _level() else Rect2(global_position - Vector2(300, 200), Vector2(600, 400))
 	var life := b.size.x / maxf(40.0, a.speed) * 0.6
 	for i in maxi(1, a.count):
 		var me: WeakRef = weakref(self)

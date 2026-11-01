@@ -57,6 +57,17 @@ var seal_required := 0
 ## top left) - two copies of the tile layer, black, offset down-right.
 var _shadows: Array[TileMapLayer] = []
 var seal_kills := 0
+## A location of several layers (LocationBuilder): the bands of the level.
+var location_mode := false
+## While a band is being built: its origin in cells (cell_bottom / cell_center
+## shift band cells to the level) and its own layout in `layout`.
+var _origin := Vector2i.ZERO
+var _composite: LevelLayout
+## Row -> band index (-1: the rock between two bands).
+var _row_band := PackedInt32Array()
+## Nodes that read the level's layout in _ready (gates) wait for the end of
+## the build (the layout is the band's while a band is built).
+var _late: Array[Node] = []
 
 
 func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeData = null) -> void:
@@ -101,7 +112,7 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 		for x in layout.width:
 			var cell := Vector2i(x, y)
 			if not layout.is_town and (noise.get_noise_2d(x, y) > -0.25 or _near_solid(cell)):
-				back.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(_back_variant(cell), AssetPaths.TILE_ROW_BACKWALL))
+				back.set_cell(cell, _src(cell), Vector2i(_back_variant(cell), AssetPaths.TILE_ROW_BACKWALL))
 			_apply_tile(cell, layout.get_tile(x, y))
 	for y in layout.height:
 		for x in layout.width:
@@ -134,6 +145,208 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	_spawn_decorations()
 	_spawn_traps()
 	nav._apply_dangers()
+
+
+# ---------------------------------------------------------------- location
+## A location of several layers in one level (LocationBuilder.build): the
+## tiles of every band at once (each with its biome's tileset), then each
+## band's things with its own depth, biome and rules, as if it were a level
+## of its own. Portals between the bands come from layout.portal_cells.
+func build_location(p_layout: LevelLayout, seed_value: int) -> void:
+	layout = p_layout
+	_composite = p_layout
+	location_mode = true
+	var first: Dictionary = layout.bands[0]
+	floor_number = int(first["depth"])
+	biome = first["biome"]
+	rng.seed = seed_value
+	_row_band.resize(layout.height)
+	_row_band.fill(-1)
+	var texs := []
+	var deep: BiomeData = null
+	for i in layout.bands.size():
+		var b: Dictionary = layout.bands[i]
+		var bb: BiomeData = b["biome"]
+		texs.append(bb.tileset_texture if bb else null)
+		var r: Rect2i = b["rect"]
+		for y in range(r.position.y, r.end.y):
+			_row_band[y] = i
+		if deep == null and int(b["kind"]) != LocationInstance.Kind.SURFACE:
+			deep = bb
+	var ts := TilesetBuilder.get_tileset_multi(texs)
+	for l: TileMapLayer in [back, tiles, glow, back_detail, detail]:
+		l.tile_set = ts
+	if deep:
+		var dm := deep.back_wall_modulate * Color(0.86, 0.86, 0.88, 1.0)
+		back.modulate = dm
+		back_detail.modulate = dm
+	for k in 2:
+		var sh := TileMapLayer.new()
+		sh.name = "BlockShadow%d" % k
+		sh.tile_set = ts
+		sh.collision_enabled = false
+		sh.navigation_enabled = false
+		sh.z_index = -3
+		sh.position = [Vector2(1, 1), Vector2(3, 4)][k]
+		sh.modulate = Color(0, 0, 0, [0.32, 0.26][k])
+		add_child(sh)
+		move_child(sh, tiles.get_index())
+		_shadows.append(sh)
+	explored.resize(layout.width * layout.height)
+	explored.fill(0)
+	_place_ore()
+	nav = LevelNav.new(layout)
+	var noise := FastNoiseLite.new()
+	noise.seed = seed_value
+	noise.frequency = 0.08
+	for y in layout.height:
+		var bi := _row_band[y]
+		var open_sky := bi < 0 or int(layout.bands[bi]["kind"]) == LocationInstance.Kind.SURFACE
+		for x in layout.width:
+			var cell := Vector2i(x, y)
+			if not open_sky and (noise.get_noise_2d(x, y) > -0.25 or _near_solid(cell)):
+				back.set_cell(cell, _src(cell), Vector2i(_back_variant(cell), AssetPaths.TILE_ROW_BACKWALL))
+			_apply_tile(cell, layout.get_tile(x, y))
+	for y in layout.height:
+		for x in layout.width:
+			_apply_detail(Vector2i(x, y))
+	for i in layout.bands.size():
+		_build_band(i, seed_value)
+	for n in _late:
+		add_child(n)
+	_late.clear()
+	nav._apply_dangers()
+
+
+func _build_band(i: int, seed_value: int) -> void:
+	_enter_band(i)
+	rng.seed = hash([seed_value, i])
+	match int(layout_band(i)["kind"]):
+		LocationInstance.Kind.ARENA:
+			_spawn_boss()
+			_spawn_lore()
+			_spawn_ambience()
+			_spawn_decorations()
+		LocationInstance.Kind.SURFACE:
+			_spawn_specials()
+			_spawn_chests()
+			_spawn_enemies()
+		_:
+			_spawn_specials()
+			_spawn_chests()
+			_spawn_secret_walls()
+			_spawn_lore()
+			_spawn_fishing()
+			_spawn_enemies()
+			_spawn_ambience()
+			_spawn_decorations()
+			_spawn_traps()
+	_exit_band()
+
+
+## The band dictionary (LevelLayout.bands) of index i.
+func layout_band(i: int) -> Dictionary:
+	return _composite.bands[i] if _composite and i >= 0 and i < _composite.bands.size() else {}
+
+
+## While band i is built: its layout, depth and biome; cells shift by its
+## origin. _exit_band() returns to the whole level.
+func _enter_band(i: int) -> void:
+	var b := layout_band(i)
+	layout = b["layout"]
+	_origin = b["origin"]
+	floor_number = int(b["depth"])
+	biome = b["biome"]
+
+
+func _exit_band() -> void:
+	layout = _composite
+	_origin = Vector2i.ZERO
+	var first := layout_band(0)
+	floor_number = int(first["depth"])
+	biome = first["biome"]
+
+
+## Depth and biome of the band of a level cell for a spawn at play time
+## (an ambush wave, a mimic); returns what to restore.
+func _rules_at(cell: Vector2i) -> Array:
+	var keep := [floor_number, biome]
+	if location_mode:
+		var b := layout_band(band_index_at_cell(cell))
+		if not b.is_empty():
+			floor_number = int(b["depth"])
+			biome = b["biome"]
+	return keep
+
+
+func _restore_rules(keep: Array) -> void:
+	floor_number = keep[0]
+	biome = keep[1]
+
+
+func _shift_rect(r: Rect2i) -> Rect2i:
+	return Rect2i(r.position + _origin, r.size)
+
+
+func _add_late(n: Node) -> void:
+	if _origin != Vector2i.ZERO or (location_mode and layout != _composite):
+		_late.append(n)
+	else:
+		add_child(n)
+
+
+## Atlas source of a cell: its band's tileset (0 for an ordinary level).
+func _src(cell: Vector2i) -> int:
+	if not location_mode or cell.y < 0 or cell.y >= _row_band.size():
+		return TilesetBuilder.SOURCE_ID
+	var bi := _row_band[cell.y]
+	if bi < 0:
+		# The rock between two bands: the lower band's stone.
+		for y in range(cell.y, _row_band.size()):
+			if _row_band[y] >= 0:
+				return _row_band[y]
+		return 0
+	return bi
+
+
+func biome_at_cell(cell: Vector2i) -> BiomeData:
+	if not location_mode:
+		return biome
+	var b := layout_band(band_index_at_cell(cell))
+	return b["biome"] if not b.is_empty() else biome
+
+
+func has_bands() -> bool:
+	return location_mode
+
+
+## Band index of a level cell / world position (-1: in the rock between).
+func band_index_at_cell(cell: Vector2i) -> int:
+	if not location_mode:
+		return 0
+	if cell.y < 0 or cell.y >= _row_band.size():
+		return -1
+	return _row_band[cell.y]
+
+
+func band_index_at(p: Vector2) -> int:
+	var c := to_local(p)
+	return band_index_at_cell(Vector2i(floori(c.x / TILE), floori(c.y / TILE)))
+
+
+## The band's rectangle in world px (the whole level without bands).
+func band_rect_px(p: Vector2) -> Rect2:
+	if not location_mode:
+		return bounds_px()
+	var b := layout_band(band_index_at(p))
+	if b.is_empty():
+		return bounds_px()
+	var r: Rect2i = b["rect"]
+	return Rect2(to_global(Vector2(r.position * TILE)), Vector2(r.size * TILE))
+
+
+func same_band(a: Vector2, b: Vector2) -> bool:
+	return not location_mode or band_index_at(a) == band_index_at(b)
 
 
 ## Town: buildings and props along the street, lamps, the merchant and the
@@ -283,7 +496,21 @@ func _spawn_arena_hazards() -> void:
 func _on_boss_defeated(_boss: BossData, _pos: Vector2) -> void:
 	if not is_inside_tree():
 		return
+	if location_mode:
+		var bi := band_index_at(_pos)
+		for i in layout.bands.size():
+			if int(layout.bands[i]["kind"]) == LocationInstance.Kind.ARENA:
+				bi = i
+		_enter_band(bi)
+		_boss_reward(_boss)
+		_exit_band()
+		get_tree().call_group("location_manager", "on_boss_beaten")
+		return
 	_spawn_door()
+	_boss_reward(_boss)
+
+
+func _boss_reward(_boss: BossData) -> void:
 	var chest: Chest = (load(CHEST_SCENE) as PackedScene).instantiate()
 	chest.tier = 2
 	chest.floor_number = floor_number
@@ -312,7 +539,8 @@ func _on_boss_defeated(_boss: BossData, _pos: Vector2) -> void:
 				break
 		if altar_cell.x >= 0:
 			add_entity(RelicAltar.new(), cell_bottom(altar_cell))
-	Fx.sparks(entities, cell_bottom(layout.exit_cell) + Vector2(0, -16), Color(0.7, 0.4, 1.0), 30, 120.0)
+	if layout.exit_cell.x >= 0:
+		Fx.sparks(entities, cell_bottom(layout.exit_cell) + Vector2(0, -16), Color(0.7, 0.4, 1.0), 30, 120.0)
 	EventBus.message.emit(tr("Затмение рассеяно! Свет возвращается в подземелья.") if _boss.final else tr("Страж повержен! Открылся проход."))
 
 
@@ -334,7 +562,7 @@ func _rim_back_gap(cell: Vector2i) -> void:
 	const COLS: Array[int] = [1, 0, 3, 2]  # atlas column: wall above, below, left, right
 	for k in DIRS.size():
 		if back.get_cell_source_id(cell + DIRS[k]) >= 0:
-			back_detail.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(COLS[k], AssetPaths.TILE_ROW_BACK_EDGE))
+			back_detail.set_cell(cell, _src(cell), Vector2i(COLS[k], AssetPaths.TILE_ROW_BACK_EDGE))
 			return
 
 
@@ -357,7 +585,9 @@ func _place_ore() -> void:
 			for d in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
 				if not LevelLayout.is_solid(layout.get_tile(x + d.x, y + d.y)):
 					exposed = true
-			if exposed and rng.randf() < chance:
+			var bb := biome_at_cell(Vector2i(x, y))
+			var c_here := chance if not location_mode else (bb.ore_chance if bb else 0.04) * float(GameState.location_mod("ore", 1.0))
+			if exposed and rng.randf() < c_here:
 				ore_cells[Vector2i(x, y)] = true
 
 
@@ -370,12 +600,12 @@ func _apply_tile(cell: Vector2i, kind: int) -> void:
 		T.EMPTY:
 			tiles.erase_cell(cell)
 		T.BEDROCK:
-			tiles.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(v, AssetPaths.TILE_ROW_BEDROCK))
+			tiles.set_cell(cell, _src(cell), Vector2i(v, AssetPaths.TILE_ROW_BEDROCK))
 		T.BRICK:
 			var coords: Vector2i
 			if ore_cells.has(cell):
 				coords = AssetPaths.TILE_ORE
-				glow.set_cell(cell, TilesetBuilder.SOURCE_ID, AssetPaths.TILE_ORE_GLOW)
+				glow.set_cell(cell, _src(cell), AssetPaths.TILE_ORE_GLOW)
 			elif not LevelLayout.is_solid(layout.get_tile(cell.x, cell.y - 1)):
 				coords = Vector2i(v, AssetPaths.TILE_ROW_BRICK_TOP)
 			elif not LevelLayout.is_solid(layout.get_tile(cell.x, cell.y + 1)):
@@ -383,7 +613,7 @@ func _apply_tile(cell: Vector2i, kind: int) -> void:
 			else:
 				# Mostly plain bricks, sometimes cracked.
 				coords = Vector2i(2 if v == 3 else v % 2, AssetPaths.TILE_ROW_BRICK)
-			tiles.set_cell(cell, TilesetBuilder.SOURCE_ID, coords)
+			tiles.set_cell(cell, _src(cell), coords)
 		T.PLATFORM:
 			var left := layout.get_tile(cell.x - 1, cell.y) == T.PLATFORM
 			var right := layout.get_tile(cell.x + 1, cell.y) == T.PLATFORM
@@ -392,16 +622,16 @@ func _apply_tile(cell: Vector2i, kind: int) -> void:
 				c = AssetPaths.TILE_PLATFORM_LEFT
 			elif not right:
 				c = AssetPaths.TILE_PLATFORM_RIGHT
-			tiles.set_cell(cell, TilesetBuilder.SOURCE_ID, c)
+			tiles.set_cell(cell, _src(cell), c)
 		T.LADDER:
-			tiles.set_cell(cell, TilesetBuilder.SOURCE_ID, AssetPaths.TILE_LADDER, 0)
+			tiles.set_cell(cell, _src(cell), AssetPaths.TILE_LADDER, 0)
 		T.LADDER_TOP:
-			tiles.set_cell(cell, TilesetBuilder.SOURCE_ID, AssetPaths.TILE_LADDER, TilesetBuilder.LADDER_TOP_ALT)
+			tiles.set_cell(cell, _src(cell), AssetPaths.TILE_LADDER, TilesetBuilder.LADDER_TOP_ALT)
 	for sh in _shadows:
 		if kind == T.EMPTY or kind == T.LADDER or kind == T.LADDER_TOP:
 			sh.erase_cell(cell)
 		else:
-			sh.set_cell(cell, TilesetBuilder.SOURCE_ID, tiles.get_cell_atlas_coords(cell))
+			sh.set_cell(cell, _src(cell), tiles.get_cell_atlas_coords(cell))
 
 
 ## Settings → «Тени блоков».
@@ -421,15 +651,16 @@ func _apply_detail(cell: Vector2i) -> void:
 	var h := absi(hash(cell * 17 + Vector2i(floor_number, 5)))
 	var roll := float(h % 1000) / 1000.0
 	var v := (h / 1000) % 4
-	var floor_k := biome.floor_fringe if biome else 0.45
-	var ceil_k := biome.ceiling_fringe if biome else 0.3
-	var wall_k := biome.wall_details if biome else 0.03
+	var bb := biome_at_cell(cell)
+	var floor_k := bb.floor_fringe if bb else 0.45
+	var ceil_k := bb.ceiling_fringe if bb else 0.3
+	var wall_k := bb.wall_details if bb else 0.03
 	if layout.get_tile(cell.x, cell.y + 1) == T.BRICK and roll < floor_k:
-		detail.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(v, AssetPaths.TILE_ROW_FLOOR_FRINGE))
+		detail.set_cell(cell, _src(cell), Vector2i(v, AssetPaths.TILE_ROW_FLOOR_FRINGE))
 	elif LevelLayout.is_solid(layout.get_tile(cell.x, cell.y - 1)) and roll < ceil_k:
-		detail.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(v, AssetPaths.TILE_ROW_CEIL_FRINGE))
+		detail.set_cell(cell, _src(cell), Vector2i(v, AssetPaths.TILE_ROW_CEIL_FRINGE))
 	elif back.get_cell_source_id(cell) >= 0 and roll > 1.0 - wall_k:
-		back_detail.set_cell(cell, TilesetBuilder.SOURCE_ID, Vector2i(v, AssetPaths.TILE_ROW_WALL_DETAIL))
+		back_detail.set_cell(cell, _src(cell), Vector2i(v, AssetPaths.TILE_ROW_WALL_DETAIL))
 
 
 ## Re-picks the tile of a cell and its neighbours (after digging).
@@ -497,10 +728,12 @@ func world_to_cell(p: Vector2) -> Vector2i:
 
 ## World position of the bottom-center of a cell (where feet stand).
 func cell_bottom(cell: Vector2i) -> Vector2:
+	cell += _origin
 	return to_global(Vector2(cell.x * TILE + TILE / 2.0, (cell.y + 1) * TILE))
 
 
 func cell_center(cell: Vector2i) -> Vector2:
+	cell += _origin
 	return to_global(Vector2(cell.x * TILE + TILE / 2.0, cell.y * TILE + TILE / 2.0))
 
 
@@ -666,6 +899,9 @@ func _spawn_door() -> void:
 
 ## Co-op: deterministic identity for shops and chests (same order everywhere).
 func _net_seq_node(node: Node) -> void:
+	# The location's own id (saved layer state: opened, disarmed...), always.
+	loc_seq += 1
+	node.set_meta(&"loc", loc_seq)
 	if not Net.active:
 		return
 	net_seq += 1
@@ -676,10 +912,16 @@ func _net_seq_node(node: Node) -> void:
 ## on the host, so sharing net_seq with world nodes would shift every
 ## chest/merchant/trap number on the client).
 var enemy_seq := 0
+## Ids of the location's things in build order (every machine, net or not):
+## the saved layer state names chests, traps and the fallen by them.
+var loc_seq := 0
+var loc_enemy := 0
 
 
 ## Co-op: hand out the next net id; clients get puppets instead of AI.
 func _net_tag(e: Enemy) -> void:
+	loc_enemy += 1
+	e.set_meta(&"loc", loc_enemy)
 	if not Net.active:
 		return
 	enemy_seq += 1
@@ -832,10 +1074,10 @@ func _spawn_miniboss(info: Dictionary) -> void:
 		guest_gate.networked = true
 		guest_gate.level = self
 		guest_gate.champion = null
-		guest_gate.room_cells = info["room"]
+		guest_gate.room_cells = _shift_rect(info["room"])
 		guest_gate.gate_id = _gate_seq
 		_gate_seq += 1
-		add_child(guest_gate)
+		_add_late(guest_gate)
 		return  # RNG already burned; the champion shell arrives via spawn_enemy
 	var champion := (load(ENEMY_SCENE) as PackedScene).instantiate()
 	champion.setup(champ_data, floor_number, elite, true)
@@ -846,10 +1088,10 @@ func _spawn_miniboss(info: Dictionary) -> void:
 	var gate := MinibossGate.new()
 	gate.level = self
 	gate.champion = champion
-	gate.room_cells = info["room"]
+	gate.room_cells = _shift_rect(info["room"])
 	gate.gate_id = _gate_seq
 	_gate_seq += 1
-	add_child(gate)
+	_add_late(gate)
 
 
 ## Gates of this floor in build order (the same on every machine): their ids.
@@ -862,16 +1104,25 @@ func _spawn_ambush(info: Dictionary) -> void:
 	gate.ambush = true
 	gate.networked = Net.active and not Net.is_host
 	gate.champion = null
-	gate.room_cells = info["room"]
+	gate.room_cells = _shift_rect(info["room"])
 	gate.gate_id = _gate_seq
 	_gate_seq += 1
 	for c in info["cells"]:
-		gate.ambush_cells.append(c)
-	add_child(gate)
+		gate.ambush_cells.append(c + _origin)
+	_add_late(gate)
 
 
 ## Host: one wave of an ambush (the last one brings an elite).
 func spawn_ambush_wave(cells: Array[Vector2i], count: int, with_elite: bool) -> Array[Enemy]:
+	var out: Array[Enemy] = []
+	if not cells.is_empty():
+		var keep := _rules_at(cells[0])
+		out = _ambush_wave(cells, count, with_elite)
+		_restore_rules(keep)
+	return out
+
+
+func _ambush_wave(cells: Array[Vector2i], count: int, with_elite: bool) -> Array[Enemy]:
 	var out: Array[Enemy] = []
 	var pool := ItemDatabase.enemies_for_floor(floor_number, biome.id if biome else &"")
 	if pool.is_empty() or cells.is_empty():
@@ -923,16 +1174,24 @@ func _spawn_chests() -> void:
 # ------------------------------------------------------------ secrets
 ## cell -> wall index into layout.secret_walls.
 var _secret_cells := {}
+var _secret_lists: Array = []
 
 
 func _spawn_secret_walls() -> void:
-	_secret_cells.clear()
+	if not location_mode:
+		_secret_cells.clear()
+		_secret_lists.clear()
 	for i in layout.secret_walls.size():
+		var wall: Array[Vector2i] = []
 		for cell: Vector2i in layout.secret_walls[i]:
-			_secret_cells[cell] = i
+			wall.append(cell + _origin)
+		var k := _secret_lists.size()
+		_secret_lists.append(wall)
+		for cell: Vector2i in layout.secret_walls[i]:
+			_secret_cells[cell + _origin] = k
 			var crack := SecretCrack.new()
 			crack.level = self
-			crack.cell = cell
+			crack.cell = cell + _origin
 			crack.first = cell == layout.secret_walls[i][0]
 			add_entity(crack, cell_center(cell))
 
@@ -945,8 +1204,22 @@ func is_secret_wall(cell: Vector2i) -> bool:
 func break_secret(cell: Vector2i) -> void:
 	if not _secret_cells.has(cell):
 		return
-	for c: Vector2i in layout.secret_walls[_secret_cells[cell]]:
+	for c: Vector2i in _secret_lists[_secret_cells[cell]]:
 		break_tile(c, true)
+
+
+## Host: a monster comes back at a world position (surface respawns).
+func spawn_enemy_at(data: EnemyData, pos: Vector2) -> Enemy:
+	if data == null:
+		return null
+	var keep := _rules_at(world_to_cell(pos + Vector2(0, -2)))
+	var e := (load(ENEMY_SCENE) as PackedScene).instantiate() as Enemy
+	e.setup(data, floor_number)
+	_restore_rules(keep)
+	_net_tag(e)
+	add_entity(e, pos)
+	_net_broadcast_enemy(e, null, false)
+	return e
 
 
 ## A mimic jumps out of a chest (host / single player; guests get it as an
@@ -956,7 +1229,9 @@ func spawn_mimic(pos: Vector2) -> void:
 	if data == null:
 		return
 	var e: Enemy = (load(ENEMY_SCENE) as PackedScene).instantiate()
+	var keep := _rules_at(world_to_cell(pos))
 	e.setup(data, floor_number)
+	_restore_rules(keep)
 	_net_tag(e)
 	add_entity(e, pos)
 	_net_broadcast_enemy(e, null, false)
@@ -1112,7 +1387,7 @@ func _place_trap(data: TrapData, used: Dictionary) -> Trap:
 			if not floor_found:
 				trap.free()
 				return null
-			pos = to_global(Vector2(cell.x * TILE + TILE / 2.0, cell.y * TILE))
+			pos = cell_bottom(cell) - Vector2(0, TILE)
 		TrapData.Kind.ARROW_WALL:
 			# Mounted in front of a wall, on the floor level of a corridor.
 			if below != T.BRICK:
@@ -1134,6 +1409,17 @@ func _place_trap(data: TrapData, used: Dictionary) -> Trap:
 
 ## Tells the monster navigation where this trap hurts.
 func _mark_trap_danger(data: TrapData, cell: Vector2i, facing: float) -> void:
+	if _origin != Vector2i.ZERO:
+		# nav covers the whole level: band cells shift to it.
+		var keep := layout
+		layout = _composite
+		_mark_trap_danger_at(data, cell + _origin, facing)
+		layout = keep
+		return
+	_mark_trap_danger_at(data, cell, facing)
+
+
+func _mark_trap_danger_at(data: TrapData, cell: Vector2i, facing: float) -> void:
 	match data.kind:
 		TrapData.Kind.SPIKES, TrapData.Kind.ACID_POOL, TrapData.Kind.PRESSURE_PLATE:
 			nav.set_danger(cell, LevelNav.Danger.FORBIDDEN, 50.0)

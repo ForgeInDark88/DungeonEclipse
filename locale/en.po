@@ -87,6 +87,10 @@ msgstr " (offline)"
 msgid " (проклят)"
 msgstr " (cursed)"
 
+#: scripts/game/location_manager.gd
+msgid " · Shift+E — позвать отряд"
+msgstr " · Shift+E — call the party"
+
 #: scripts/ui/hud.gd
 msgid " · Затмение %d"
 msgstr " · Eclipse %d"
@@ -98,6 +102,10 @@ msgstr " · choice of path: the first branch you invest in becomes yours"
 #: scripts/ui/session_hud.gd
 msgid " · готов"
 msgstr " · ready"
+
+#: scripts/game/location_manager.gd
+msgid " · отряд здесь: %d из %d"
+msgstr " · party here: %d of %d"
 
 #: scripts/world/exit_door.gd
 msgid " · отряд у выхода: %d из %d"
@@ -210,6 +218,10 @@ msgstr "%s left"
 #: scripts/game/net_sync.gd
 msgid "%s ждёт у выхода. Подойдите: %s"
 msgstr "%s is waiting at the exit. Come over: %s"
+
+#: scripts/game/location_manager.gd
+msgid "%s зовёт отряд: %s. F2 — согласиться."
+msgstr "%s calls the party: %s. F2 — agree."
 
 #: scripts/autoload/trade_net.gd
 msgid "%s и %s обменялись."
@@ -354,6 +366,10 @@ msgstr "(a location is only saved at its exit: leave now and you flee it without
 #: scripts/game/game.gd
 msgid "(забег продолжится с начала этажа)"
 msgstr "(the run will continue from the start of the floor)"
+
+#: scripts/game/game.gd
+msgid "(сохранить и выйти можно у входа, выхода или костра; иначе продолжите с последней точки сохранения)"
+msgstr "(you can save and quit at an entrance, an exit or a camp fire; otherwise you continue from the last save point)"
 
 #: scripts/data/eclipse_levels.gd
 msgid "+ %s%s · осколков ×%.1f"
@@ -879,6 +895,10 @@ msgstr "Divine Shield"
 msgid "Бой и защита"
 msgstr "Combat and defence"
 
+#: scripts/game/location_manager.gd
+msgid "Боковой лаз вниз: %s"
+msgstr "Side passage down: %s"
+
 #: data
 msgid "Болотный плевун"
 msgstr "Bog Spitter"
@@ -1212,6 +1232,10 @@ msgid "Вихрь осколков рвёт всех вокруг."
 msgstr "A whirl of shards tears everyone around."
 
 #: data
+msgid "Владения стража региона"
+msgstr "Domain of the region's guardian"
+
+#: data
 msgid "Владычица зовёт стаю!"
 msgstr "The Mistress calls her pack!"
 
@@ -1391,6 +1415,10 @@ msgstr "Second Wind"
 msgid "Второй шанс: при гибели вы восстанете, а перо сгорит."
 msgstr "A second chance: when you die you rise again and the feather burns away."
 
+#: scripts/ui/expedition_map_screen.gd
+msgid "Входов вниз: %d %s"
+msgstr "Ways down: %d %s"
+
 #: scripts/autoload/game_flow.gd
 msgid "Вы бежали из локации: она пройдена без награды."
 msgstr "You fled the location: it counts as passed, without a reward."
@@ -1410,6 +1438,10 @@ msgstr "You have not played in other people's worlds yet."
 #: scripts/ui/building_book.gd
 msgid "Вы здоровы"
 msgstr "You're healthy"
+
+#: scripts/game/location_manager.gd
+msgid "Вы зовёте отряд. Ждём согласия хоста…"
+msgstr "You call the party. Waiting for the host to agree…"
 
 #: data
 msgid "Вы идёте дальше, ничего не потеряв и ничего не найдя."
@@ -1942,6 +1974,10 @@ msgstr "Home with the loot"
 #: scripts/core/stat_types.gd
 msgid "Доп. прыжки"
 msgstr "Extra jumps"
+
+#: scripts/game/location_manager.gd
+msgid "Дорога закрыта: сначала одолейте стража"
+msgstr "The road is closed: defeat the guardian first"
 
 #: data
 msgid "Дорога наверх отнимает силы, но они в безопасности и ждут вас в городе."
@@ -3508,6 +3544,10 @@ msgid "Лагерь"
 msgstr "Camp"
 
 #: data
+msgid "Лагерь тюремщиков"
+msgstr "Jailers' camp"
+
+#: data
 msgid "Латные рукавицы"
 msgstr "Gauntlets"
 
@@ -3727,9 +3767,17 @@ msgstr "Guardian's Lair"
 msgid "Логово элиты"
 msgstr "Elite Lair"
 
+#: scripts/core/expedition_map.gd
+msgid "Локация"
+msgstr "Location"
+
 #: scripts/game/game.gd
 msgid "Локация пройдена"
 msgstr "Location cleared"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "Локация: %s"
+msgstr "Location: %s"
 
 #: data
 msgid "Лопата Олдрика"
@@ -4018,6 +4066,10 @@ msgstr "Repeating Crossbow"
 #: data
 msgid "Можно вскрыть запертый сундук — если повезёт."
 msgstr "Can pick a locked chest — with some luck."
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "Можно найти: %s"
+msgstr "May hold: %s"
 
 #: data
 msgid "Можно оттолкнуться от воздуха ещё раз."
@@ -4763,10 +4815,6 @@ msgstr "Search the crates."
 msgid "Обычная"
 msgstr "Common"
 
-#: scripts/core/expedition_map.gd
-msgid "Обычная вылазка: враги, сундуки, выход в конце."
-msgstr "An ordinary venture: enemies, chests, an exit at the end."
-
 #: scripts/data/item_data.gd
 msgid "Обычный"
 msgstr "Common"
@@ -4878,6 +4926,10 @@ msgstr "An awakened guardian of the ruins. Armor like a cliff, a blow like a roc
 #: data
 msgid "Око Затмения"
 msgstr "Eye of the Eclipse"
+
+#: data
+msgid "Окрестности и подземелье"
+msgstr "Wilds and dungeon"
 
 #: scripts/ui/secret_ending.gd
 msgid "Олдрик — могильщик, дважды поднятый из праха. Илара, что хотела зажечь новое солнце. Пип, спрятавшийся в зеркалах. Каменный — сердце горы. Брат Оствин и его колокол."
@@ -5551,6 +5603,10 @@ msgstr "Cloak of Embers"
 msgid "Пленник"
 msgstr "Prisoner"
 
+#: data
+msgid "Пленник, который придёт в город"
+msgstr "A prisoner who will come to the town"
+
 #: scripts/world/rescue_cage.gd
 msgid "Пленный горожанин"
 msgstr "A captive townsman"
@@ -5603,6 +5659,14 @@ msgstr "Lord of Shadows"
 msgid "Поверженная статуя короля Аурелии. В глазницах — рубины, на постаменте — надпись: «Свет вернётся к тем, кто помнит»."
 msgstr "A toppled statue of the king of Aurelia. Rubies in its eye sockets, and on the pedestal an inscription: \"The light will return to those who remember.\""
 
+#: scripts/ui/expedition_map_screen.gd
+msgid "Поверхность и подземелье: этажей %d"
+msgstr "Surface and dungeon: %d floors"
+
+#: scripts/core/expedition_map.gd
+msgid "Поверхность под открытым небом и подземелье под ней: враги, сундуки, ресурсы."
+msgstr "Open land under the sky and a dungeon below it: enemies, chests, resources."
+
 #: data
 msgid "Повозка с пленниками"
 msgstr "The Prisoner Cart"
@@ -5631,10 +5695,6 @@ msgstr "Sets enemies on fire."
 msgid "Поджигает всё в радиусе взрыва. Стены не ломает."
 msgstr "Ignites everything in the blast radius. Doesn't break walls."
 
-#: scripts/core/expedition_map.gd
-msgid "Подземелье"
-msgstr "Dungeon"
-
 #: scripts/core/quest_log.gd
 msgid "Подземелье кишит тварями. Убей 10 монстров — пусть затмение знает, что в городе есть кому постоять за себя."
 msgstr "The dungeon teems with creatures. Kill 10 monsters — let the eclipse know the town can stand up for itself."
@@ -5642,6 +5702,10 @@ msgstr "The dungeon teems with creatures. Kill 10 monsters — let the eclipse k
 #: data
 msgid "Подземелье, как оно задумано."
 msgstr "The dungeon as it was meant to be."
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "Подземелье: этажей %d"
+msgstr "Dungeon: %d floors"
 
 #: data
 msgid "Подземные воды поднялись. Своды затопило по колено, потом по пояс. Братья ушли. Я привязал себя к колоколу. Вода холодная, но звон под водой слышен дальше — его чувствуют даже камни. Пусть слышит. Пусть не спит."
@@ -5674,6 +5738,14 @@ msgstr "Raise Skeleton"
 #: scripts/world/revive_spot.gd
 msgid "Поднять союзника: %s"
 msgstr "Raise ally: %s"
+
+#: scripts/game/location_manager.gd
+msgid "Подняться на поверхность"
+msgstr "Climb to the surface"
+
+#: scripts/game/location_manager.gd
+msgid "Подняться: %s"
+msgstr "Go up: %s"
 
 #: scripts/game/game.gd
 msgid "Подобрано"
@@ -6242,6 +6314,10 @@ msgstr "Jump"
 #: scripts/ui/fishing_game.gd
 msgid "Пусто."
 msgstr "Nothing."
+
+#: scripts/game/location_manager.gd
+msgid "Пути нет, пока жив страж"
+msgstr "No way out while the guardian lives"
 
 #: data
 msgid "Путники болтают, а я слушаю. Кто где видел клетку, где блестело золото, где лучше не ходить — всё через мою стойку."
@@ -6979,6 +7055,10 @@ msgstr "Strong healing and protection."
 msgid "Сильные враги и награда получше."
 msgstr "Strong enemies and a better reward."
 
+#: data
+msgid "Сильные враги, сундуки получше"
+msgstr "Strong enemies, better chests"
+
 #: scripts/ui/tooltip_text.gd
 msgid "Сильный отброс"
 msgstr "Strong knockback"
@@ -7375,6 +7455,10 @@ msgstr "Descend to floor 3. No newcomer gets past the first stairway — prove y
 msgid "Спуститься в подземелье"
 msgstr "Descend into the dungeon"
 
+#: scripts/game/location_manager.gd
+msgid "Спуститься в подземелье: %s"
+msgstr "Go down into the dungeon: %s"
+
 #: scripts/game/game.gd
 msgid "Спуститься глубже (бесконечный режим)"
 msgstr "Descend deeper (endless mode)"
@@ -7386,6 +7470,10 @@ msgstr "Descend deeper (floor %d)"
 #: scripts/world/dungeon_gate.gd
 msgid "Спуститься на этаж %d"
 msgstr "Descend to floor %d"
+
+#: scripts/game/location_manager.gd
+msgid "Спуститься: %s"
+msgstr "Go down: %s"
 
 #: scripts/ui/building_book.gd
 msgid "Спутники на поход"
@@ -7483,9 +7571,17 @@ msgstr "The guardian has fallen — the doors are open"
 msgid "Страж повержен! Открылся проход."
 msgstr "The guardian is defeated! A passage has opened."
 
+#: scripts/game/location_manager.gd
+msgid "Страж повержен! Путь наверх открыт."
+msgstr "The guardian has fallen! The way up is open."
+
 #: scripts/core/expedition_map.gd
 msgid "Страж региона"
 msgstr "Region Guardian"
+
+#: data
+msgid "Страж региона, путь дальше"
+msgstr "The region's guardian, the road onward"
 
 #: scripts/ui/hint_manager.gd
 msgid "Страж этажа! Красные зоны на полу — сигнал атаки: уходите из них."
@@ -7494,6 +7590,10 @@ msgstr "A floor guardian! Red zones on the floor warn of an attack: get out of t
 #: scripts/enemies/enemy.gd
 msgid "Страж этажа: %s"
 msgstr "Floor guardian: %s"
+
+#: data
+msgid "Страж, реликвия, редкая добыча"
+msgstr "A guardian, a relic, rare loot"
 
 #: scripts/ui/expedition_map_screen.gd
 msgid "Страж: %s"
@@ -7615,6 +7715,10 @@ msgstr "The chest is locked. You need a key."
 msgid "Сундук, который кусается. Иногда крышка вздрагивает сама по себе - присмотритесь, прежде чем открывать."
 msgstr "A chest that bites. Sometimes its lid twitches on its own — take a close look before opening."
 
+#: data
+msgid "Сундуки, ресурсы, добыча этажей"
+msgstr "Chests, resources, loot of the floors"
+
 #: scripts/ui/info_book.gd
 msgid "Сундуки, тайные стены, алтари судьбы, фонтаны, пленники и записки Летописи разбросаны по этажу. "
 msgstr "Chests, secret walls, altars of fate, fountains, prisoners and Chronicle notes are scattered across each floor. "
@@ -7662,6 +7766,10 @@ msgstr "Coin Stash"
 #: scripts/core/expedition_map.gd
 msgid "Тайник, шахта или склеп."
 msgstr "A cache, a mine or a crypt."
+
+#: data
+msgid "Тайники, руда или склеп"
+msgstr "Caches, ore or a crypt"
 
 #: scripts/ui/codex_book.gd
 msgid "Тайное достижение. Продолжайте спускаться."
@@ -9127,6 +9235,10 @@ msgstr "flies"
 msgid "ловкости"
 msgstr "of Agility"
 
+#: scripts/game/location_manager.gd
+msgid "логово стража"
+msgstr "guardian's lair"
+
 #: scripts/data/class_data.gd
 msgid "любое"
 msgstr "any"
@@ -9230,6 +9342,10 @@ msgstr "ping %d ms"
 #: scripts/autoload/meta_progress.gd
 msgid "победа над Затмением: %d"
 msgstr "victory over the Eclipse: %d"
+
+#: scripts/game/location_manager.gd
+msgid "поверхность"
+msgstr "surface"
 
 #: scripts/ui/building_book.gd
 msgid "пока нет (их хранят стражи и логова)"
@@ -9366,6 +9482,10 @@ msgstr "walks on the ground"
 #: scripts/ui/session_hud.gd
 msgid "хост"
 msgstr "host"
+
+#: scripts/game/location_manager.gd
+msgid "этаж %d"
+msgstr "floor %d"
 
 #: scripts/core/stat_types.gd
 msgid "яд"

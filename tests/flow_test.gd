@@ -181,7 +181,7 @@ func _initialize() -> void:
 	flow.enter_node(bid)
 	await wait_scene(flow.State.LOCATION)
 	var bosses := current_scene.get_tree().get_nodes_in_group("bosses")
-	check(current_scene.level.layout.is_arena, "a lair node is a boss arena")
+	check(current_scene.level.location_mode and int(current_scene.level.layout.bands[-1]["kind"]) == 2, "a lair node ends in a boss arena")
 	check(bosses.size() == 1 and bosses[0].boss.id == &"illusionist", "the lair's own guardian waits there")
 	check(gs.current_biome().id == &"mirror_halls", "the arena stands in the node's biome")
 	flow.hero_died()
@@ -213,18 +213,64 @@ func _initialize() -> void:
 	await wait_scene(flow.State.TOWN)
 	check(gs.run == null and gs.hero.gold == 0 and not gs.town.expedition_active, "a used expedition save is lost, not replayed")
 	check(int(gs.town.stats.get("lost", 0)) == 1, "the town remembers the lost expedition")
-	# quitting inside a location: the hero fled it (counted, no reward)
+	# a location of layers: down a portal, a chest, a monster, save and back
 	flow.open_map()
 	await wait_scene(flow.State.EXPEDITION_MAP)
-	var fled_node: int = gs.run.next_choices()[0]
-	gs.run.map.nodes[fled_node]["type"] = &"level"
-	flow.enter_node(fled_node)
+	var lnode: int = gs.run.next_choices()[0]
+	gs.run.map.nodes[lnode]["type"] = &"level"
+	flow.enter_node(lnode)
 	await wait_scene(flow.State.LOCATION)
+	var lm = current_scene.location
+	check(lm != null and current_scene.level.location_mode, "a level node is a location of layers")
+	if lm:
+		check(lm.band == 0 and current_scene.level.layout.bands[0]["kind"] == 0, "the hero starts on the surface")
+		check(current_scene.get_tree().get_nodes_in_group("layer_portals").size() >= 4, "the portals between the layers stand")
+		lm.travel(&"f1_up")
+		await create_timer(1.0).timeout
+		check(lm.band == 1, "the main entrance leads to the first floor")
+		check(lm.instance.save_portal == &"f1_up", "a portal is a save point")
+		var chest_id := -1
+		for c in current_scene.get_tree().get_nodes_in_group("chests"):
+			if current_scene.level.band_index_at(c.global_position) == 1 and not c.opened:
+				c.open()
+				chest_id = int(c.get_meta(&"loc"))
+				break
+		var foe_id := -1
+		for e in current_scene.get_tree().get_nodes_in_group("enemies"):
+			if current_scene.level.band_index_at(e.global_position) == 1 and e.has_meta(&"loc"):
+				foe_id = int(e.get_meta(&"loc"))
+				e.remove_from_group("enemies")
+				e.queue_free()
+				break
+		await create_timer(0.8).timeout
+		var node_l: int = gs.run.node_id
+		flow.save_and_quit()
+		await wait_scene(flow.State.MAIN_MENU)
+		check(flow.continue_game(1), "continue loads the world inside a location")
+		await wait_scene(flow.State.LOCATION)
+		var lm2 = current_scene.location
+		check(lm2 != null and gs.run.node_id == node_l, "back in the same location")
+		if lm2:
+			check(lm2.band == 1, "the hero is back at the last save point, down on the first floor")
+			var reopened := false
+			for c in current_scene.get_tree().get_nodes_in_group("chests"):
+				if c.has_meta(&"loc") and int(c.get_meta(&"loc")) == chest_id:
+					reopened = c.opened
+			check(chest_id < 0 or reopened, "the opened chest stays open after the load")
+			var back := false
+			for e in current_scene.get_tree().get_nodes_in_group("enemies"):
+				if e.has_meta(&"loc") and int(e.get_meta(&"loc")) == foe_id:
+					back = true
+			check(foe_id < 0 or not back, "the fallen monster of the dungeon stays dead")
+			lm2.travel(&"main")
+			await create_timer(1.0).timeout
+			check(lm2.band == 0, "the way up leads to the entrance it went down")
 	flow._leave_to_menu()
 	await wait_scene(flow.State.MAIN_MENU)
 	flow.continue_game(1)
-	await wait_scene(flow.State.EXPEDITION_MAP)
-	check(gs.run != null and gs.run.node_id == fled_node and int(gs.run.flags.get("fled", 0)) == 1, "a quit inside a location: the hero fled it, back on the map")
+	await wait_scene(flow.State.LOCATION)
+	check(gs.run != null and current_scene.location != null and current_scene.location.band == 0,
+			"a quit without saving: back at the last save point (the main entrance)")
 	flow.retreat()
 	await wait_scene(flow.State.RUN_RESULT)
 	check(not sm.has_expedition(), "the end of an expedition deletes its save")
