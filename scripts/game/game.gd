@@ -339,7 +339,7 @@ func _toggle_pause() -> void:
 		return
 	get_tree().paused = true
 	overlay.clear()
-	overlay.set_panel_size(Vector2(220, 220))
+	overlay.set_panel_size(Vector2(220, 280 if GameState.expedition else 220))
 	overlay.add_text(tr("Пауза"), 12)
 	overlay.add_button(tr("Продолжить"), _toggle_pause).grab_focus()
 	overlay.add_button(tr("Как играть"), func() -> void: add_child(InfoBook.how_to_play()))
@@ -350,6 +350,13 @@ func _toggle_pause() -> void:
 			var j := JournalBook.new()
 			add_child(j)
 			j.open())
+		if GameState.is_town():
+			# Safe zones only: the town's overview (buildings and resources).
+			overlay.add_button(tr("Город"), func() -> void:
+				_toggle_pause()
+				var jt := JournalBook.new()
+				add_child(jt)
+				jt.open(JournalBook.Tab.BUILDINGS))
 	overlay.add_button(tr("Дерево навыков"), func() -> void:
 		_toggle_pause()
 		skill_tree.open())

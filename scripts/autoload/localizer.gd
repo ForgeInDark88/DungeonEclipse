@@ -141,19 +141,20 @@ func _collect(res: Resource, seen: Dictionary) -> void:
 		if name.begins_with("metadata/"):
 			continue
 		var v: Variant = res.get_meta(META + name) if res.has_meta(META + name) else res.get(name)
-		if v is String and _cyr.search(v):
+		_collect_value(v, seen)
+
+
+## Strings anywhere inside a value: nested dictionaries and arrays too
+## (talks of the town's people, answers of the road events).
+func _collect_value(v: Variant, seen: Dictionary) -> void:
+	if v is String:
+		if _cyr.search(v):
 			seen[v] = true
-		elif v is Dictionary:
-			for k in v:
-				if v[k] is String and _cyr.search(v[k]):
-					seen[v[k]] = true
-				elif v[k] is Resource:
-					_collect(v[k], seen)
-		elif v is Array or v is PackedStringArray:
-			for e in v:
-				if e is String and _cyr.search(e):
-					seen[e] = true
-				elif e is Resource:
-					_collect(e, seen)
-		elif v is Resource:
-			_collect(v, seen)
+	elif v is Dictionary:
+		for k in v:
+			_collect_value(v[k], seen)
+	elif v is Array or v is PackedStringArray:
+		for e in v:
+			_collect_value(e, seen)
+	elif v is Resource:
+		_collect(v, seen)

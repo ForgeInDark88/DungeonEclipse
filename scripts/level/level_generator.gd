@@ -476,7 +476,8 @@ func _place_enemies(floor_number: int) -> void:
 	# of a carpet of mobs to mow through (it was ~70 places on floor 22).
 	var horde := (1.0 + EclipseLevels.value(GameState.eclipse_level, "monster_count")) \
 			* float(GameState.location_mod("monsters", 1.0))
-	var count := mini(roundi(MAX_MONSTERS * horde), roundi((4 + roundi(floor_number * 0.75) + rooms.size() / 4) * horde))
+	var per_depth := 0.5 if GameState.expedition else 0.75  # compact locations: fewer, not denser
+	var count := mini(roundi(MAX_MONSTERS * horde), roundi((4 + roundi(floor_number * per_depth) + rooms.size() / 4) * horde))
 	_shuffle(rooms)
 	var lairs := rooms.slice(0, clampi(ceili(count / 4.0), 1, rooms.size()))
 	var placed := 0

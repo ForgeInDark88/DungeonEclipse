@@ -225,15 +225,15 @@ func _assign_types(ri: int, reg: RegionData, layers: Array, options: Dictionary)
 			if type == &"":
 				if s == 0:
 					type = &"level"
-				elif s == steps - 2 and i == ids.size() / 2:
-					type = &"camp"  # a fire before every guardian
+				elif s == steps - 2:
+					type = &"camp"  # the last fire before the guardian, on every road
 				elif s == lair_step and i == 0:
 					type = &"lair"
 				else:
 					type = _roll_type(weights, s)
-			if type == &"camp":
+			if type == &"camp" and s != steps - 2:
 				if has_camp:
-					type = &"level"
+					type = &"level"  # one camp per step elsewhere
 				has_camp = true
 			n["type"] = type
 			# depth: from the region's first depth to one below its boss

@@ -95,6 +95,14 @@ msgstr " · party at the exit: %d of %d"
 msgid " · путь: «%s»"
 msgstr " · path: \"%s\""
 
+#: scripts/ui/journal_book.gd
+msgid " · скидка в лавках %d%%"
+msgstr " · %d%% off in shops"
+
+#: scripts/ui/journal_book.gd
+msgid " · стройка дешевле на %d%%"
+msgstr " · building %d%% cheaper"
+
 #: scripts/ui/tooltip_text.gd
 msgid " — СЛОМАНО (нужен ремонт)"
 msgstr " — BROKEN (needs repairs)"
@@ -106,6 +114,10 @@ msgstr " — done!"
 #: scripts/ui/fishing_game.gd
 msgid "! ! !  Клюёт — подсекай!"
 msgstr "! ! !  A bite — strike!"
+
+#: scripts/core/event_runner.gd
+msgid "%+d маны"
+msgstr "%+d mana"
 
 #: scripts/core/smithing.gd
 msgid "%d з."
@@ -147,9 +159,21 @@ msgstr "%s\nNot found yet."
 msgid "%s %s · уровень %d"
 msgstr "%s %s · level %d"
 
+#: scripts/world/town_building.gd
+msgid "%s (руины) — построить"
+msgstr "%s (ruins) — build"
+
 #: scripts/ui/tooltip_text.gd
 msgid "%s · %s · ур. %d"
 msgstr "%s · %s · lv. %d"
+
+#: scripts/game/game.gd
+msgid "%s · %s. Ворота похода — в конце улицы."
+msgstr "%s · %s. The expedition gate is at the end of the street."
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "%s · глубина %d"
+msgstr "%s · depth %d"
 
 #: scripts/ui/skill_tree_book.gd
 msgid "%s · закрыто"
@@ -191,6 +215,14 @@ msgstr "A %s handles this weapon poorly: −%d%% damage, −%d%% speed"
 msgid "%s повержен: +1 очко навыка"
 msgstr "%s defeated: +1 skill point"
 
+#: scripts/autoload/game_flow.gd
+msgid "%s позади. Дорога ведёт дальше."
+msgstr "%s lies behind. The road leads on."
+
+#: scripts/ui/building_book.gd
+msgid "%s пойдёт с вами в поход."
+msgstr "%s will join you on the expedition."
+
 #: scripts/core/hero.gd
 msgid "%s почти сломан(а)"
 msgstr "%s is almost broken"
@@ -210,6 +242,22 @@ msgstr "%s burns away — you're back on your feet!"
 #: scripts/effects/hatch_pet_effect.gd
 msgid "%s уже с вами"
 msgstr "%s is already with you"
+
+#: scripts/ui/building_book.gd
+msgid "%s — %d з."
+msgstr "%s — %d g"
+
+#: scripts/ui/camp_screen.gd
+msgid "%s — %d оск."
+msgstr "%s — %d shards"
+
+#: scripts/ui/journal_book.gd
+msgid "%s — убито %d · с глубины %d"
+msgstr "%s — %d slain · from depth %d"
+
+#: scripts/world/town_building.gd
+msgid "%s, ур. %d"
+msgstr "%s, lv. %d"
 
 #: scripts/game/game.gd
 msgid "%s. Вход в подземелье — в конце улицы."
@@ -231,6 +279,18 @@ msgstr "%s: jump and turn (%s, cell %s, step %s)"
 msgid "%s: телепорт %s → %s (pos %s, level %s)"
 msgstr "%s: teleport %s → %s (pos %s, level %s)"
 
+#: scripts/ui/building_book.gd
+msgid "%s: уровень %d!"
+msgstr "%s: level %d!"
+
+#: scripts/game/game.gd
+msgid "(выход посреди похода — поход провален)"
+msgstr "(leaving mid-expedition fails the expedition)"
+
+#: scripts/game/game.gd
+msgid "(город сохраняется)"
+msgstr "(the town is saved)"
+
 #: scripts/game/game.gd
 msgid "(забег продолжится с начала этажа)"
 msgstr "(the run will continue from the start of the floor)"
@@ -251,17 +311,37 @@ msgstr "+%d in the branches: %s"
 msgid "+%d з."
 msgstr "+%d g"
 
+#: scripts/core/event_runner.gd
+msgid "+%d здоровья"
+msgstr "+%d health"
+
+#: scripts/core/event_runner.gd
+msgid "+%d золота"
+msgstr "+%d gold"
+
 #: scripts/data/meta_upgrade_data.gd
 msgid "+%d золота на старте"
 msgstr "+%d gold at the start"
+
+#: scripts/core/event_runner.gd
+msgid "+%d опыта"
+msgstr "+%d experience"
 
 #: scripts/ui/chronicler_book.gd
 msgid "+%d оск., +%d з."
 msgstr "+%d shards, +%d g"
 
+#: scripts/core/event_runner.gd
+msgid "+%d осколков Затмения"
+msgstr "+%d Eclipse shards"
+
 #: data
 msgid "+0.6 HP в секунду"
 msgstr "+0.6 HP per second"
+
+#: data
+msgid "+10% опыта в походах."
+msgstr "+10% experience on expeditions."
 
 #: data
 msgid "+10% урона, сильный отброс, оглушение"
@@ -387,13 +467,41 @@ msgstr "10% of your blows deal triple damage."
 msgid "15% вражеских ударов проходят мимо."
 msgstr "15% of enemy blows miss you."
 
+#: data
+msgid "3 дерева из этого похода"
+msgstr "3 wood from this expedition"
+
+#: data
+msgid "3 места для трофеев."
+msgstr "3 trophy places."
+
 #: scripts/core/quest_log.gd
 msgid "30 монстров. Гильдия платит за счёт — и щедро платит тем, кто возвращается."
 msgstr "30 monsters. The guild pays by the head — and pays well to those who come back."
 
 #: data
+msgid "40 золота"
+msgstr "40 gold"
+
+#: data
+msgid "50 золота"
+msgstr "50 gold"
+
+#: data
+msgid "6 мест для трофеев."
+msgstr "6 trophy places."
+
+#: data
 msgid "8% нанесённого урона возвращается здоровьем."
 msgstr "8% of the damage you deal returns as health."
+
+#: data
+msgid "9 мест для трофеев."
+msgstr "9 trophy places."
+
+#: scripts/ui/journal_book.gd
+msgid "??? — %s. Томится в плену где-то на глубине %d+."
+msgstr "??? — %s. Held captive somewhere at depth %d+."
 
 #: scripts/ui/info_book.gd
 msgid "DungeonEclipse — версия %s.\n\nИдея, дизайн и тестирование — команда DungeonEclipse и друзья, "
@@ -487,6 +595,10 @@ msgstr "{skill_1}–{skill_8} — skills, {quick_1}–{quick_7} — quick slots.
 msgid "«Спасибо, глупец!» — это была ловушка!"
 msgstr "\"Thank you, fool!\" — it was a trap!"
 
+#: data
+msgid "А башня?"
+msgstr "And the tower?"
+
 #: scripts/ui/secret_ending.gd
 msgid "А где-то в катакомбах кости Олдрика наконец ложатся в землю."
 msgstr "And somewhere in the catacombs, Oldric's bones finally settle into the earth."
@@ -535,6 +647,10 @@ msgstr "Altar of fate: choose a gift"
 msgid "Алтарь угас"
 msgstr "The altar has faded"
 
+#: data
+msgid "Алхимик"
+msgstr "Alchemist"
+
 #: scripts/data/equipment_item_data.gd
 msgid "Амулет"
 msgstr "Amulet"
@@ -550,6 +666,10 @@ msgstr "Leech Charm"
 #: scripts/data/weapon_item_data.gd
 msgid "Арбалет"
 msgstr "Crossbow"
+
+#: scripts/core/expedition_map.gd
+msgid "Арена одного из стражей Затмения. Опасно, но щедро."
+msgstr "The arena of one of the Eclipse's guardians. Dangerous, but generous."
 
 #: data
 msgid "Армия мёртвых"
@@ -591,9 +711,21 @@ msgstr "The barrier dissolves!"
 msgid "Бастион"
 msgstr "Bastion"
 
+#: data
+msgid "Бах! Проход открыт, руда лежит россыпью."
+msgstr "Boom! The way is open, and ore lies scattered about."
+
+#: data
+msgid "Башня разведчиков"
+msgstr "Scout Tower"
+
 #: scripts/data/eclipse_levels.gd
 msgid "Без Затмения"
 msgstr "No Eclipse"
+
+#: data
+msgid "Без горна я просто сильный парень с молотом."
+msgstr "Without a forge I'm just a strong guy with a hammer."
 
 #: scripts/data/eclipse_levels.gd
 msgid "Без испытаний Затмения."
@@ -623,9 +755,33 @@ msgstr "Berserker"
 msgid "Бестиарий"
 msgstr "Bestiary"
 
+#: scripts/ui/building_book.gd
+msgid "Бестиарий и находки"
+msgstr "Bestiary and finds"
+
+#: data
+msgid "Бестиарий и энциклопедия находок."
+msgstr "A bestiary and an encyclopedia of finds."
+
+#: data
+msgid "Библиотека"
+msgstr "Library"
+
 #: data
 msgid "Благословение"
 msgstr "Blessing"
+
+#: scripts/core/event_runner.gd
+msgid "Благословение: %s"
+msgstr "Blessing: %s"
+
+#: data
+msgid "Благословение: +10% здоровья в каждом походе."
+msgstr "Blessing: +10% health on every expedition."
+
+#: scripts/core/expedition_map.gd
+msgid "Блеск золота"
+msgstr "A glint of gold"
 
 #: data
 msgid "Блестит даже без света."
@@ -664,6 +820,14 @@ msgid "Болт пробивает двоих и отбрасывает."
 msgstr "The bolt pierces two and knocks them back."
 
 #: data
+msgid "Больше железа — лучше кузня. На третьем уровне нужен чертёж отца: стражи держат такие у себя."
+msgstr "More iron, a better forge. The third level needs my father's blueprint: the guardians keep such things."
+
+#: data
+msgid "Больше зелий, редкие эликсиры."
+msgstr "More potions, rare elixirs."
+
+#: data
 msgid "Больше маны для навыков."
 msgstr "More mana for your skills."
 
@@ -686,6 +850,14 @@ msgstr "Bearded Axe"
 #: data
 msgid "Браво... Это был... ты настоящий."
 msgstr "Bravo... That was... the real you."
+
+#: data
+msgid "Брам"
+msgstr "Bram"
+
+#: data
+msgid "Брам, сын Торна, раздувает отцовский горн."
+msgstr "Bram, Thorn's son, stokes his father's forge."
 
 #: data
 msgid "Брат Оствин, звонарь"
@@ -767,21 +939,53 @@ msgstr "Fast and deadly, relies on crits. Damage depends on Agility. Roll (RMB /
 msgid "Бьёт туда, где больнее всего."
 msgstr "It strikes where it hurts most."
 
+#: scripts/ui/event_screen.gd
+msgid "В бой!"
+msgstr "To battle!"
+
 #: scripts/game/game.gd
 msgid "В главное меню"
 msgstr "To the main menu"
+
+#: scripts/ui/run_result_screen.gd
+msgid "В город"
+msgstr "To the town"
+
+#: scripts/autoload/game_flow.gd
+msgid "В город переехал(а) %s."
+msgstr "%s moved into the town."
+
+#: scripts/autoload/game_flow.gd
+msgid "В город пришёл спасённый горожанин."
+msgstr "A rescued townsman came to the town."
 
 #: data
 msgid "В навершии пульсирует фиолетовый огонь."
 msgstr "A violet fire pulses in the pommel."
 
+#: data
+msgid "В пещере прячутся люди: женщина, старик, двое детей. Они не видели солнца много лет."
+msgstr "People are hiding in the cave: a woman, an old man, two children. They haven't seen the sun in years."
+
 #: scripts/ui/character_creation.gd
 msgid "В подземелье!"
 msgstr "Into the dungeon!"
 
+#: data
+msgid "В сумке золото и пара полезных мелочей. Разведчик смотрит вам вслед — молча."
+msgstr "The bag holds gold and a couple of useful trinkets. The scout watches you go — in silence."
+
+#: scripts/ui/building_book.gd
+msgid "В сумке:"
+msgstr "In the bag:"
+
 #: scripts/ui/net_host_screen.gd
 msgid "Ваш адрес: %s (порт %d)"
 msgstr "Your address: %s (port %d)"
+
+#: scripts/ui/event_screen.gd
+msgid "Ваш выбор"
+msgstr "Your choice"
 
 #: scripts/ui/net_join_screen.gd
 msgid "Ваш герой"
@@ -831,7 +1035,7 @@ msgstr "A fan of steel there's no escaping."
 msgid "Верните свет вместо того, чтобы разбить солнце."
 msgstr "Return the light instead of shattering the sun."
 
-#: scripts/world/return_stairs.gd
+#: scripts/ui/expedition_map_screen.gd
 msgid "Вернуться в город"
 msgstr "Return to town"
 
@@ -851,6 +1055,10 @@ msgstr "Rope"
 msgid "Верёвка вверх до %d клеток — по ней можно лазать"
 msgstr "A rope up to %d cells — you can climb it"
 
+#: scripts/core/buildings.gd
+msgid "Вечер"
+msgstr "Evening"
+
 #: data
 msgid "Вечная мерзлота"
 msgstr "Permafrost"
@@ -862,6 +1070,10 @@ msgstr "Eternal rest guards its master."
 #: scripts/ui/info_book.gd
 msgid "Вещи"
 msgstr "Items"
+
+#: data
+msgid "Вещи на складе не уходят в поход и не теряются."
+msgstr "Items in the warehouse never leave on expeditions and are never lost."
 
 #: scripts/core/input_bindings.gd
 msgid "Взаимодействие"
@@ -891,9 +1103,13 @@ msgstr "Bursts into flame on impact."
 msgid "Взрывается при попадании."
 msgstr "Explodes on impact."
 
-#: scripts/ui/relic_choice_book.gd
+#: scripts/ui/building_book.gd
 msgid "Взять"
 msgstr "Take"
+
+#: data
+msgid "Взять только припасы и уйти."
+msgstr "Take only the supplies and leave."
 
 #: data
 msgid "Видал лучшие времена, но всё ещё режет."
@@ -964,6 +1180,14 @@ msgid "Вода смывает раны и проклятия"
 msgstr "The water washes away wounds and curses"
 
 #: data
+msgid "Вода тянет вниз. Вы выбираетесь пустым и продрогшим."
+msgstr "The water pulls you down. You climb out empty-handed and chilled to the bone."
+
+#: scripts/ui/run_result_screen.gd
+msgid "Возвращение домой"
+msgstr "Homecoming"
+
+#: data
 msgid "Возгорание"
 msgstr "Combustion"
 
@@ -979,6 +1203,10 @@ msgstr "Revival on the next floor..."
 msgid "Воин"
 msgstr "Warrior"
 
+#: scripts/ui/building_book.gd
+msgid "Войти в святилище (%d оск.)"
+msgstr "Enter the Sanctum (%d shards)"
+
 #: scripts/world/miniboss_gate.gd
 msgid "Волна %d из %d"
 msgstr "Wave %d of %d"
@@ -986,6 +1214,10 @@ msgstr "Wave %d of %d"
 #: data
 msgid "Волнистое лезвие оставляет рваные раны."
 msgstr "The wavy blade leaves ragged wounds."
+
+#: data
+msgid "Ворота — в конце улицы. Береги себя."
+msgstr "The gate is at the end of the street. Take care of yourself."
 
 #: scripts/effects/mana_effect.gd
 msgid "Восстанавливает %d маны"
@@ -1011,6 +1243,10 @@ msgstr "Time"
 msgid "Время замедляется: точность и скорость."
 msgstr "Time slows down: precision and speed."
 
+#: scripts/ui/building_book.gd
+msgid "Все знаки на карте следующего похода будут понятны."
+msgstr "Every sign on the next expedition's map will be clear."
+
 #: scripts/ui/quest_book.gd
 msgid "Все приказы исполнены"
 msgstr "All orders fulfilled"
@@ -1035,6 +1271,10 @@ msgstr "A flash of light around the paladin stuns enemies."
 msgid "Вспышка света сокрушает и оглушает всех вокруг."
 msgstr "A flash of light crushes and stuns everyone around."
 
+#: scripts/core/expedition_map.gd
+msgid "Встреча на дороге и выбор с риском."
+msgstr "An encounter on the road and a risky choice."
+
 #: scripts/ui/codex_book.gd
 msgid "Встречается: %d этаж, после всех стражей"
 msgstr "Found on: floor %d, after all the guardians"
@@ -1047,6 +1287,10 @@ msgstr "Found on: every %d-th floor"
 msgid "Встречается: с %d этажа%s"
 msgstr "Found from floor %d%s"
 
+#: scripts/ui/journal_book.gd
+msgid "Встречено событий: %d из %d"
+msgstr "Events met: %d of %d"
+
 #: data
 msgid "Всё замирает. Совсем."
 msgstr "Everything freezes. Completely."
@@ -1054,6 +1298,10 @@ msgstr "Everything freezes. Completely."
 #: scripts/data/eclipse_levels.gd
 msgid "Всё злее: монстры +25% здоровья и урона, стражи ещё +30%"
 msgstr "Everything angrier: monsters +25% health and damage, guardians another +30%"
+
+#: scripts/ui/building_book.gd
+msgid "Всё опознано."
+msgstr "Everything identified."
 
 #: scripts/ui/sanctum.gd
 msgid "Всё уже доступно"
@@ -1067,17 +1315,49 @@ msgstr "Second Wind"
 msgid "Второй шанс: при гибели вы восстанете, а перо сгорит."
 msgstr "A second chance: when you die you rise again and the feather burns away."
 
-#: scripts/ui/shop_book.gd
+#: data
+msgid "Вы бросаетесь в бой. Победите — и пленники свободны!"
+msgstr "You charge into battle. Win, and the prisoners are free!"
+
+#: scripts/ui/run_result_screen.gd
+msgid "Вы вернулись живым, и всё найденное — ваше."
+msgstr "You came back alive, and everything you found is yours."
+
+#: scripts/ui/building_book.gd
 msgid "Вы здоровы"
 msgstr "You're healthy"
+
+#: data
+msgid "Вы идёте дальше, ничего не потеряв и ничего не найдя."
+msgstr "You walk on, having lost nothing and found nothing."
+
+#: data
+msgid "Вы не отвечаете — вы слушаете. Мана наполняет вас до краёв."
+msgstr "You don't answer — you listen. Mana fills you to the brim."
 
 #: scripts/game/game.gd
 msgid "Вы пали"
 msgstr "You have fallen"
 
+#: data
+msgid "Вы проскакиваете за миг до того, как камень уходит в лаву. Сундук ваш!"
+msgstr "You dash across a moment before the stone sinks into the lava. The chest is yours!"
+
+#: data
+msgid "Вы срезаете шляпки, не дыша."
+msgstr "You cut the caps without breathing."
+
+#: data
+msgid "Вы стоите у статуи. Где-то глубоко внутри откликается тепло."
+msgstr "You stand by the statue. Somewhere deep inside, warmth answers."
+
 #: scripts/ui/smith_book.gd
 msgid "Выберите предмет справа.\n\nУлучшение: +15% к бонусам и +12% к урону оружия за уровень (до +5).\nЗачарование: случайный бонус, по одному на предмет.\nПереплавка: руда и немного золота."
 msgstr "Choose an item on the right.\n\nUpgrade: +15% to bonuses and +12% to weapon damage per level (up to +5).\nEnchant: a random bonus, one per item.\nSmelt: ore and a little gold."
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "Выберите соседний узел.\nНазад по карте пути нет."
+msgstr "Pick a neighbouring node.\nThere is no way back on the map."
 
 #: scripts/core/skill_set.gd
 msgid "Выбран другой путь: %s"
@@ -1091,6 +1371,14 @@ msgstr "Choose a hero and start"
 msgid "Выброшено: %s"
 msgstr "Dropped: %s"
 
+#: scripts/ui/journal_book.gd
+msgid "Вывели выживших из глубин"
+msgstr "Led the survivors out of the depths"
+
+#: data
+msgid "Вывести их к городу."
+msgstr "Lead them to the town."
+
 #: data
 msgid "Выгоревшая оболочка культиста. Швыряет тлеющие сгустки пепла."
 msgstr "The burnt-out husk of a cultist. Hurls smouldering clots of ash."
@@ -1103,6 +1391,10 @@ msgstr "Forged on a day when the sun still shone into the dungeon."
 msgid "Выкован в час, когда погасло солнце."
 msgstr "Forged in the hour the sun went out."
 
+#: data
+msgid "Выковырять рубины."
+msgstr "Pry out the rubies."
+
 #: scripts/ui/shop_book.gd
 msgid "Вылечить — %d з."
 msgstr "Heal — %d g"
@@ -1111,9 +1403,29 @@ msgstr "Heal — %d g"
 msgid "Вылупляется питомец: %s. %s"
 msgstr "Hatches a pet: %s. %s"
 
+#: data
+msgid "Выменять зелье (40 золота)."
+msgstr "Trade for a potion (40 gold)."
+
 #: scripts/core/stat_types.gd
 msgid "Выносливость"
 msgstr "Vitality"
+
+#: scripts/ui/journal_book.gd
+msgid "Выслушали призрака могильщика"
+msgstr "Listened to the gravedigger's ghost"
+
+#: data
+msgid "Выслушать его."
+msgstr "Listen to him."
+
+#: data
+msgid "Высокое зеркало в золочёной раме. Ваше отражение подмигивает вам на мгновение раньше, чем вы моргнули."
+msgstr "A tall mirror in a gilded frame. Your reflection winks at you a moment before you blink."
+
+#: scripts/ui/building_book.gd
+msgid "Выставить"
+msgstr "Display"
 
 #: scripts/ui/main_menu.gd
 msgid "Выход"
@@ -1127,6 +1439,10 @@ msgstr "The exit is sealed: %d of %d killed"
 msgid "Выход открыт"
 msgstr "Exit open"
 
+#: scripts/world/exit_door.gd
+msgid "Выход: вернуться на карту похода"
+msgstr "Exit: back to the expedition map"
+
 #: data
 msgid "ГОРА... ПРОСЫПАЕТСЯ."
 msgstr "THE MOUNTAIN... AWAKENS."
@@ -1134,6 +1450,10 @@ msgstr "THE MOUNTAIN... AWAKENS."
 #: scripts/game/game.gd
 msgid "Героиня погибла"
 msgstr "The heroine has died"
+
+#: scripts/ui/run_result_screen.gd
+msgid "Герой пал"
+msgstr "The hero has fallen"
 
 #: scripts/game/game.gd
 msgid "Герой погиб"
@@ -1179,6 +1499,22 @@ msgstr "A sip to make it to the next room."
 msgid "Глубже"
 msgstr "Deeper"
 
+#: scripts/ui/run_result_screen.gd
+msgid "Глубина"
+msgstr "Depth"
+
+#: scripts/ui/hud.gd
+msgid "Глубина %d · %s"
+msgstr "Depth %d · %s"
+
+#: scripts/game/game.gd
+msgid "Глубина %d — %s · %s"
+msgstr "Depth %d — %s · %s"
+
+#: data
+msgid "Глубины Затмения"
+msgstr "Depths of the Eclipse"
+
 #: scripts/game/game.gd
 msgid "Глубины зовут дальше. Награда за победу сохранится."
 msgstr "The depths call further. The victory reward is kept."
@@ -1204,12 +1540,24 @@ msgid "Говорят, его чешуя — расплавленные моне
 msgstr "They say its scales are the melted coins of the drowned. Merchants pay generously."
 
 #: data
+msgid "Говорят, ты дал покой призраку могильщика. Олдрик хоронил наших отцов... Может, теперь и он отдохнёт."
+msgstr "They say you gave the gravedigger's ghost peace. Oldric buried our fathers... Maybe now he'll rest too."
+
+#: data
 msgid "Годы в забое сделали тело крепче."
 msgstr "Years at the coalface made the body tougher."
+
+#: data
+msgid "Голова кружится, к горлу подступает тошнота. Зря."
+msgstr "Your head spins and nausea rises in your throat. A mistake."
 
 #: scripts/data/eclipse_levels.gd
 msgid "Голод"
 msgstr "Hunger"
+
+#: data
+msgid "Голос замолкает обиженно. Но вы узнали о нём что-то важное."
+msgstr "The voice falls silent, offended. But you learned something important about it."
 
 #: data
 msgid "Голос снизу говорит со мной каждую ночь. Тёплый, ласковый, как солнце в детстве. Обещает: собери мне трон из костей, Олдрик, — и станешь королём над всеми, кого хоронил. Короля наверху больше никто не видел, люди бегут к ущелью. А мёртвые... мёртвые меня слушаются. Я спускаюсь."
@@ -1227,7 +1575,11 @@ msgstr "Burning"
 msgid "Гори, как горели все до тебя!"
 msgstr "Burn, as all before you burned!"
 
-#: scripts/ui/hud.gd
+#: data
+msgid "Горн горит. Неси руду — и железо станет оружием."
+msgstr "The forge is burning. Bring ore — and iron will become weapons."
+
+#: scripts/game/game.gd
 msgid "Город"
 msgstr "Town"
 
@@ -1238,6 +1590,18 @@ msgstr "The town of Aurelia lives under an eternal Eclipse. Descend through 35 f
 #: data
 msgid "Город Затмения"
 msgstr "Town of the Eclipse"
+
+#: data
+msgid "Город оживает: снова дымят трубы. Чем больше построек и жителей, тем щедрее купцы и тем больше узнаёшь о дороге."
+msgstr "The town is coming alive: the chimneys smoke again. The more buildings and people, the more generous the merchants and the more you learn about the road."
+
+#: scripts/world/dungeon_gate.gd
+msgid "Городские ворота: отправиться в поход"
+msgstr "Town gate: set out on an expedition"
+
+#: scripts/world/rescue_cage.gd
+msgid "Горожанин благодарит, отдаёт %d золота и обещает прийти в город."
+msgstr "The townsman thanks you, gives you %d gold and promises to come to the town."
 
 #: data
 msgid "Горькая настойка трав."
@@ -1276,6 +1640,10 @@ msgid "Грибные пещеры"
 msgstr "Fungal Caves"
 
 #: data
+msgid "Грибы под городом растут на свете, который падает вниз. Я писала об этом, пока меня не схватили. Если найдёшь листы моей тетради — читай их Летописцу."
+msgstr "The mushrooms under the town grow on the light that falls down. I was writing about it before they caught me. If you find pages of my notebook, read them to the Chronicler."
+
+#: data
 msgid "Гроза подземелий"
 msgstr "Terror of the Dungeons"
 
@@ -1299,6 +1667,10 @@ msgstr "Thick and red, like a sunset."
 msgid "Да вернётся солнце над Аурелией."
 msgstr "May the sun rise over Aurelia again."
 
+#: scripts/ui/journal_book.gd
+msgid "Дали покой призраку могильщика"
+msgstr "Gave the gravedigger's ghost peace"
+
 #: scripts/ui/tooltip_text.gd
 msgid "Дальность"
 msgstr "Reach"
@@ -1307,9 +1679,13 @@ msgstr "Reach"
 msgid "Дальность выстрела"
 msgstr "Range"
 
-#: scripts/ui/secret_ending.gd
+#: scripts/ui/dialog_book.gd
 msgid "Дальше"
 msgstr "Next"
+
+#: scripts/ui/event_screen.gd
+msgid "Дальше по дороге"
+msgstr "On down the road"
 
 #: scripts/events/event_altar.gd
 msgid "Дар алтаря: %s +2 до конца забега"
@@ -1346,6 +1722,14 @@ msgstr "Two skeletons burst from the ground for a while."
 #: scripts/ui/tooltip_text.gd
 msgid "Действует, пока лежит в рюкзаке"
 msgstr "Works while it's in the backpack"
+
+#: scripts/core/buildings.gd
+msgid "День"
+msgstr "Day"
+
+#: scripts/data/town_resources.gd
+msgid "Дерево"
+msgstr "Wood"
 
 #: scripts/core/input_bindings.gd
 msgid "Дерево навыков"
@@ -1391,6 +1775,10 @@ msgstr "Long"
 msgid "Длинный лук"
 msgstr "Longbow"
 
+#: scripts/game/game.gd
+msgid "Для города: %s"
+msgstr "For the town: %s"
+
 #: data
 msgid "Дневник могильщика, последняя страница"
 msgstr "The gravedigger's diary, the last page"
@@ -1423,6 +1811,18 @@ msgstr "Reach floor 5."
 msgid "Добро пожаловать на представление. Финал вам не понравится."
 msgstr "Welcome to the show. You won't like the finale."
 
+#: data
+msgid "Добыть кристалл."
+msgstr "Mine the crystal."
+
+#: scripts/ui/camp_screen.gd
+msgid "Добыча для города: %s"
+msgstr "Loot for the town: %s"
+
+#: scripts/game/game.gd
+msgid "Добыча едет с вами, пока вы живы: дома она станет вашей."
+msgstr "The loot travels with you while you live: at home it becomes yours."
+
 #: scripts/core/stat_types.gd
 msgid "Добыча золота"
 msgstr "Gold find"
@@ -1435,9 +1835,33 @@ msgstr "Rain of Blades"
 msgid "Дойди до 10-го этажа. Ниже десяти лестниц не спускался даже тот, кто вырезал первую карту."
 msgstr "Reach floor 10. Not even the one who carved the first map went below ten stairways."
 
+#: scripts/ui/camp_screen.gd
+msgid "Домой с добычей"
+msgstr "Home with the loot"
+
 #: scripts/core/stat_types.gd
 msgid "Доп. прыжки"
 msgstr "Extra jumps"
+
+#: data
+msgid "Дорога наверх отнимает силы, но они в безопасности и ждут вас в городе."
+msgstr "The road up costs you strength, but they are safe and waiting for you in the town."
+
+#: data
+msgid "Дорога никогда не бывает прямой. Особенно под землёй."
+msgstr "The road is never straight. Especially underground."
+
+#: scripts/ui/run_result_screen.gd
+msgid "Дорога пройдена до конца. Свет возвращается."
+msgstr "The road has been walked to its end. The light returns."
+
+#: data
+msgid "Доска заданий"
+msgstr "Quest Board"
+
+#: data
+msgid "Доски держат. Вы спокойно забираете сундук."
+msgstr "The planks hold. You calmly take the chest."
 
 #: data
 msgid "Доспех Затмения"
@@ -1454,6 +1878,10 @@ msgstr "Achievement: "
 #: scripts/ui/codex_book.gd
 msgid "Достижения"
 msgstr "Achievements"
+
+#: scripts/ui/building_book.gd
+msgid "Достойно витрины (редкое и лучше):"
+msgstr "Worthy of display (rare and better):"
 
 #: data
 msgid "Дракончик"
@@ -1575,6 +2003,10 @@ msgstr "Iron chest"
 msgid "Железный шлем"
 msgstr "Iron Helm"
 
+#: scripts/data/town_resources.gd
+msgid "Железо"
+msgstr "Iron"
+
 #: scripts/ui/character_creation.gd
 msgid "Женщина"
 msgstr "Female"
@@ -1587,9 +2019,17 @@ msgstr "A living mountain: it raises crystals from the ground and melts everythi
 msgid "Живучесть"
 msgstr "Toughness"
 
+#: scripts/ui/journal_book.gd
+msgid "Жители"
+msgstr "People"
+
 #: data
 msgid "Жрец Утопленных"
 msgstr "Priest of the Drowned"
+
+#: scripts/game/game.gd
+msgid "Журнал"
+msgstr "Journal"
 
 #: data
 msgid "Журнал рудокопа, последняя смена"
@@ -1603,6 +2043,14 @@ msgstr "Miner's log, shift 112"
 msgid "Журнал рудокопа, смена 140"
 msgstr "Miner's log, shift 140"
 
+#: data
+msgid "За кружку и пару монет — конечно. Заходи в таверну перед походом."
+msgstr "For a mug and a couple of coins — of course. Drop by the tavern before an expedition."
+
+#: data
+msgid "За перевёрнутой бочкой сидит человек в лохмотьях и трясёт кости. «Сыграем? Ставка — полсотни. Выиграешь — получишь втрое»."
+msgstr "Behind an overturned barrel sits a man in rags, shaking dice. \"Care for a game? The stake is fifty. Win, and you get three times that.\""
+
 #: scripts/game/game.gd
 msgid "Забег завершён победой"
 msgstr "The run ended in victory"
@@ -1615,13 +2063,41 @@ msgstr "The run starts without potions"
 msgid "Забрало в форме львиной пасти."
 msgstr "A visor shaped like a lion's maw."
 
+#: data
+msgid "Забрать его лопату."
+msgstr "Take his spade."
+
+#: scripts/core/expedition_map.gd
+msgid "Заброшенная шахта"
+msgstr "Abandoned Mine"
+
+#: data
+msgid "Забытое святилище"
+msgstr "Forgotten Shrine"
+
 #: scripts/game/game.gd
 msgid "Завершить забег"
 msgstr "End the run"
 
+#: scripts/game/game.gd
+msgid "Завершить поход"
+msgstr "End the expedition"
+
+#: data
+msgid "Загляни в здания: каждое можно улучшить, если хватит материалов."
+msgstr "Look into the buildings: each can be upgraded if you have the materials."
+
 #: scripts/core/quest_log.gd
 msgid "Задание выполнено: «%s» — к глашатаю в город!"
 msgstr "Quest complete: \"%s\" — return to the herald in town!"
+
+#: scripts/ui/building_book.gd
+msgid "Задания гильдии"
+msgstr "Guild quests"
+
+#: data
+msgid "Задания гильдии с наградами."
+msgstr "Guild quests with rewards."
 
 #: data
 msgid "Зажигательная склянка"
@@ -1647,9 +2123,17 @@ msgstr "Spell: "
 msgid "Закрепите над головой и лезьте вверх."
 msgstr "Fasten it overhead and climb up."
 
-#: scripts/ui/chronicler_book.gd
+#: scripts/ui/building_book.gd
 msgid "Закрыть"
 msgstr "Close"
+
+#: data
+msgid "Зал славы"
+msgstr "Hall of Fame"
+
+#: scripts/ui/building_book.gd
+msgid "Зал славы: %d / %d"
+msgstr "Hall of Fame: %d / %d"
 
 #: scripts/combat/status_effects.gd
 msgid "Замедление"
@@ -1724,6 +2208,10 @@ msgid "Затмение — Чёрное солнце"
 msgstr "The Eclipse — the Black Sun"
 
 #: data
+msgid "Затопленные глубины"
+msgstr "Flooded Depths"
+
+#: data
 msgid "Затопленные своды"
 msgstr "Drowned Vaults"
 
@@ -1756,6 +2244,10 @@ msgid "Звенит от каждого удара, но держит."
 msgstr "It rings with every blow, but it holds."
 
 #: data
+msgid "Звон будит утопленников. Но и сокровища поднимаются вместе с ними."
+msgstr "The toll wakes the drowned. But treasure rises along with them."
+
+#: data
 msgid "Звон... затихает..."
 msgstr "The tolling... fades..."
 
@@ -1779,9 +2271,29 @@ msgstr "The stars on the brim form runes."
 msgid "Здесь жарко, Эльза, как в горне. Глубинный огонь не гаснет даже без солнца, и король приказал ковать для стражей оружие, что не боится тьмы. Платят щедро. Не волнуйся, я вернусь до зимы. Если зима ещё бывает там, наверху."
 msgstr "It's hot down here, Elsa, like in a forge. The deep fire doesn't go out even without the sun, and the king ordered weapons for the guards that don't fear the dark. The pay is generous. Don't worry, I'll be back before winter. If there still are winters up there."
 
+#: scripts/ui/building_book.gd
+msgid "Здесь пока руины. Постройте здание, чтобы им пользоваться."
+msgstr "Only ruins here for now. Build the building to use it."
+
 #: scripts/core/stat_types.gd
 msgid "Здоровье"
 msgstr "Health"
+
+#: scripts/ui/camp_screen.gd
+msgid "Здоровье %d / %d · Мана %d / %d"
+msgstr "Health %d / %d · Mana %d / %d"
+
+#: scripts/ui/event_screen.gd
+msgid "Здоровье %d/%d · Золото %d"
+msgstr "Health %d/%d · Gold %d"
+
+#: scripts/core/event_runner.gd
+msgid "Здоровье восстановлено"
+msgstr "Health restored"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "Здоровье: %d / %d"
+msgstr "Health: %d / %d"
 
 #: scripts/ui/codex_book.gd
 msgid "Здоровье: %d · Урон: %d · Броня: %d"
@@ -1794,6 +2306,10 @@ msgstr "Health: [b]%d / %d[/b]"
 #: data
 msgid "Зелье защиты"
 msgstr "Potion of Protection"
+
+#: data
+msgid "Зелье здоровья в дорогу перед каждым походом."
+msgstr "A health potion for the road before every expedition."
 
 #: data
 msgid "Зелье лечения"
@@ -1832,6 +2348,10 @@ msgid "Зеркала разбиваются!"
 msgstr "The mirrors shatter!"
 
 #: data
+msgid "Зеркало шута"
+msgstr "The Jester's Mirror"
+
+#: data
 msgid "Зеркальные чертоги"
 msgstr "Mirror Halls"
 
@@ -1850,6 +2370,14 @@ msgstr "The serpent bites its own tail — and fears no poison."
 #: data
 msgid "Знак смерти выжигает всё вокруг."
 msgstr "The sign of death sears everything around."
+
+#: scripts/core/event_runner.gd
+msgid "Знаки на карте теперь понятны"
+msgstr "The signs on the map are clear now"
+
+#: scripts/core/expedition_map.gd
+msgid "Знаки опасности"
+msgstr "Signs of danger"
 
 #: data
 msgid "Знаменосец"
@@ -1871,6 +2399,14 @@ msgstr "Gold Coin"
 msgid "Золотая руда"
 msgstr "Gold Ore"
 
+#: scripts/game/game.gd
+msgid "Золото"
+msgstr "Gold"
+
+#: scripts/ui/camp_screen.gd
+msgid "Золото %d · Осколки %d"
+msgstr "Gold %d · Shards %d"
+
 #: data
 msgid "Золото +60%, но враги бьют на 25% сильнее."
 msgstr "Gold +60%, but enemies hit 25% harder."
@@ -1878,6 +2414,14 @@ msgstr "Gold +60%, but enemies hit 25% harder."
 #: scripts/game/game.gd
 msgid "Золото собрано"
 msgstr "Gold collected"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "Золото: %d"
+msgstr "Gold: %d"
+
+#: scripts/ui/building_book.gd
+msgid "Золото: %d · %s"
+msgstr "Gold: %d · %s"
 
 #: scripts/ui/smith_book.gd
 msgid "Золото: %d · железная руда: %d · золотая руда: %d · эссенции: %d"
@@ -1890,6 +2434,18 @@ msgstr "Golden Carp"
 #: scripts/world/chest.gd
 msgid "Золотой сундук"
 msgstr "Golden chest"
+
+#: data
+msgid "Золотые зубы и кольца — неплохая добыча."
+msgstr "Gold teeth and rings — not bad loot."
+
+#: data
+msgid "И правильно."
+msgstr "Quite right."
+
+#: data
+msgid "И принеси трав: в храме всегда нужны бинты и отвары."
+msgstr "And bring herbs: the temple always needs bandages and brews."
 
 #: scripts/ui/net_join_screen.gd
 msgid "Игр не найдено. Хост должен нажать «Создать игру»."
@@ -1923,6 +2479,10 @@ msgstr "Network game — host"
 msgid "Игрок"
 msgstr "Player"
 
+#: data
+msgid "Игрок в кости"
+msgstr "The Dice Player"
+
 #: scripts/ui/net_host_screen.gd
 msgid "Игроки в лобби:"
 msgstr "Players in the lobby:"
@@ -1935,9 +2495,29 @@ msgstr "Games on the network:"
 msgid "Идол жадности"
 msgstr "Idol of Greed"
 
+#: scripts/ui/camp_screen.gd
+msgid "Идти дальше"
+msgstr "Go on"
+
+#: scripts/world/rescue_cage.gd
+msgid "Идём, город ждёт."
+msgstr "Come, the town is waiting."
+
 #: data
 msgid "Из земли встаёт скелет-воин и бьётся за вас."
 msgstr "A skeleton warrior rises from the ground and fights for you."
+
+#: data
+msgid "Из темноты выходят хозяева этих мест. Придётся драться!"
+msgstr "The masters of this place step out of the dark. You'll have to fight!"
+
+#: data
+msgid "Из чаши тянет холодом: здесь молились не солнцу. На вас ложится тень."
+msgstr "Cold breathes from the bowl: it was not the sun they prayed to here. A shadow falls on you."
+
+#: data
+msgid "Из чёрной воды доносится звон. На дне что-то блестит — то ли сундук, то ли кости в доспехах."
+msgstr "A toll rings out of the black water. Something glints on the bottom — a chest, or bones in armor."
 
 #: scripts/effects/hatch_pet_effect.gd
 msgid "Из яйца вылупился питомец: %s"
@@ -2047,6 +2627,10 @@ msgstr "Heals and briefly reinforces your armor."
 msgid "Исчезновение"
 msgstr "Vanish"
 
+#: scripts/ui/run_result_screen.gd
+msgid "Итоги для города"
+msgstr "What the town gets"
+
 #: scripts/ui/net_join_screen.gd
 msgid "Ищем хостов..."
 msgstr "Looking for hosts..."
@@ -2100,6 +2684,14 @@ msgid "Каждый новый герой рождается крепче."
 msgstr "Every new hero is born tougher."
 
 #: data
+msgid "Каждый новый дом — новая надежда. Возвращайся с добычей."
+msgstr "Every new house is new hope. Come back with loot."
+
+#: scripts/ui/building_book.gd
+msgid "Каждый трофей: +%d к здоровью и +%d к урону."
+msgstr "Every trophy: +%d health and +%d damage."
+
+#: data
 msgid "Каждый удар звенит, как колокол."
 msgstr "Every blow rings like a bell."
 
@@ -2118,6 +2710,10 @@ msgstr "Execution"
 #: scripts/combat/relic_powers.gd
 msgid "Казнь!"
 msgstr "Execution!"
+
+#: data
+msgid "Как и все мы. Спасибо."
+msgstr "Like all of us. Thank you."
 
 #: scripts/game/game.gd
 msgid "Как играть"
@@ -2144,6 +2740,18 @@ msgid "Каменный оплот"
 msgstr "Stone Bulwark"
 
 #: data
+msgid "Каменщик"
+msgstr "Mason"
+
+#: scripts/data/town_resources.gd
+msgid "Камень"
+msgstr "Stone"
+
+#: data
+msgid "Камень рушится под ногой: жар опаляет вас, но сундук всё-таки ваш."
+msgstr "The stone gives way underfoot: the heat scorches you, but the chest is yours all the same."
+
+#: data
 msgid "Камень тяготения"
 msgstr "Gravity Stone"
 
@@ -2154,6 +2762,10 @@ msgstr "The stone is warm to the touch."
 #: data
 msgid "Камень... крошится..."
 msgstr "The stone... crumbles..."
+
+#: data
+msgid "Камни поддаются. Королю они больше ни к чему."
+msgstr "The stones give way. The king has no use for them anymore."
 
 #: data
 msgid "Капюшон странника"
@@ -2170,6 +2782,10 @@ msgstr "Punishing the foe, it heals itself."
 #: scripts/core/input_bindings.gd
 msgid "Карта"
 msgstr "Map"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "Карта похода — %s"
+msgstr "Expedition map — %s"
 
 #: data
 msgid "Карта этажа"
@@ -2188,8 +2804,32 @@ msgid "Карта этажа раскрыта (M)"
 msgstr "The floor map is revealed (M)"
 
 #: data
+msgid "Картограф"
+msgstr "Cartographer"
+
+#: data
+msgid "Карты! Мои карты целы? Я Рен, картограф. Я знаю дороги под городом лучше, чем свои пять пальцев — и теперь все знаки на карте ваши."
+msgstr "My maps! Are my maps intact? I'm Ren, the cartographer. I know the roads under the town better than the back of my hand — and now every sign on the map is yours."
+
+#: data
 msgid "Катакомбы"
 msgstr "Catacombs"
+
+#: data
+msgid "Катакомбы у ворот"
+msgstr "Catacombs by the Gate"
+
+#: data
+msgid "Каталог чертежей и бесплатное опознание."
+msgstr "A catalogue of blueprints and free identification."
+
+#: data
+msgid "Квинт"
+msgstr "Quint"
+
+#: data
+msgid "Квинт варит зелья из трав, что вы приносите."
+msgstr "Quint brews potions from the herbs you bring."
 
 #: scripts/data/weapon_item_data.gd
 msgid "Кинжал"
@@ -2219,6 +2859,10 @@ msgstr "Treasure Hunter"
 msgid "Класс"
 msgstr "Class"
 
+#: scripts/world/rescue_cage.gd
+msgid "Клетка заперта: охрана ещё жива (%d)"
+msgstr "The cage is locked: the guards are still alive (%d)"
+
 #: scripts/ui/settings_book.gd
 msgid "Клик по клавише — переназначить. Геймпад работает всегда."
 msgstr "Click a key to rebind it. A gamepad always works."
@@ -2244,6 +2888,10 @@ msgid "Клинок павшего паладина."
 msgstr "The blade of a fallen paladin."
 
 #: data
+msgid "Клинья, распорки, точный удар — и три кристалла без единой трещины."
+msgstr "Wedges, props, a precise blow — and three crystals without a single crack."
+
+#: data
 msgid "Клык вампира"
 msgstr "Vampire Fang"
 
@@ -2259,6 +2907,10 @@ msgstr "Monster Fang"
 msgid "Ключ"
 msgstr "Key"
 
+#: scripts/world/rescue_cage.gd
+msgid "Ключ у тюремщика: сначала разберитесь с охраной."
+msgstr "The jailer has the key: deal with the guards first."
+
 #: data
 msgid "Клюёт врагов."
 msgstr "Pecks at enemies."
@@ -2270,6 +2922,10 @@ msgstr "An oath stronger than any armor."
 #: data
 msgid "Когда тьма легла на город, король собрал четверых: придворную чародейку, шута, каменного стража горы и звонаря храма. Они поклялись спуститься вниз и запечатать то, что упало. Но первым вниз ушёл тот, кого никто не звал: старый могильщик Олдрик. Говорят, его позвало само Затмение."
 msgstr "When darkness fell over the town, the king gathered four: the court sorceress, the jester, the stone guardian of the mountain and the temple's bell-ringer. They swore to go down and seal what had fallen. But the first to go down was someone nobody had called: old Oldric the gravedigger. They say the Eclipse itself called him."
+
+#: scripts/core/expedition_map.gd
+msgid "Кого-то держат под стражей. Освободи, и он придёт в город."
+msgstr "Someone is held under guard. Free them, and they'll come to the town."
 
 #: data
 msgid "Кожа крепче камня подземелий."
@@ -2310,6 +2966,10 @@ msgstr "The bell of the Temple of the Sun rang at dawn for a thousand years. Now
 #: data
 msgid "Колокол отлили из меди первого храмового купола. Пока он звонит — Затмение не спит. Я утонул, но колокол помнит мои руки. Не останавливай его до конца. Хотя... может быть, пора дать нам обоим тишину."
 msgstr "The bell was cast from the copper of the first temple dome. While it rings, the Eclipse doesn't sleep. I drowned, but the bell remembers my hands. Don't stop it until the end. Although... perhaps it's time to give us both silence."
+
+#: data
+msgid "Колокол под водой"
+msgstr "The Bell Underwater"
 
 #: data
 msgid "Колокол треснул — вода кипит!"
@@ -2359,6 +3019,10 @@ msgstr "Ring of Fortune"
 msgid "Кольчуга"
 msgstr "Chainmail"
 
+#: data
+msgid "Колёса скрипят во тьме. Вы запоминаете этот звук."
+msgstr "The wheels creak in the dark. You remember the sound."
+
 #: scripts/ui/hud.gd
 msgid "Комбо ×%d  +%d%% опыта и золота"
 msgstr "Combo ×%d  +%d%% XP and gold"
@@ -2396,6 +3060,10 @@ msgid "Корни мира"
 msgstr "World Roots"
 
 #: data
+msgid "Корни мира, обсидиан и сердце чёрного солнца."
+msgstr "The roots of the world, obsidian and the heart of the black sun."
+
+#: data
 msgid "Королевский указ, обугленный"
 msgstr "A royal decree, charred"
 
@@ -2410,6 +3078,10 @@ msgstr "The king ordered everyone buried in the old catacombs, deep down. He sai
 #: data
 msgid "Король костей"
 msgstr "Bone King"
+
+#: data
+msgid "Король костей пал! Люди шепчутся об этом у колодца. Теперь можно строить Зал славы: пусть все видят, что тьму можно бить."
+msgstr "The Bone King has fallen! People whisper about it at the well. Now we can build the Hall of Fame: let everyone see that the dark can be beaten."
 
 #: data
 msgid "Король костей призывает свиту!"
@@ -2452,12 +3124,24 @@ msgid "Кости вырываются из пола и сковывают вр�
 msgstr "Bones burst from the floor and bind the enemies."
 
 #: data
+msgid "Кости ложатся не в вашу пользу. Игрок довольно щурится."
+msgstr "The dice don't fall your way. The player squints with satisfaction."
+
+#: data
+msgid "Кости поднимаются. Вы разбудили стражей склепа!"
+msgstr "The bones rise. You've woken the crypt's guardians!"
+
+#: data
 msgid "Кости смыкаются вокруг тела."
 msgstr "Bones close around the body."
 
 #: data
 msgid "Кости трещат от ярости!"
 msgstr "The bones crack with fury!"
+
+#: data
+msgid "Костница"
+msgstr "Ossuary"
 
 #: data
 msgid "Костный мозг"
@@ -2494,6 +3178,10 @@ msgstr "Bone Golem"
 #: data
 msgid "Костяной доспех"
 msgstr "Bone Armor"
+
+#: scripts/core/expedition_map.gd
+msgid "Костёр, отдых, торговец. Отсюда можно вернуться домой."
+msgstr "A fire, rest, a trader. From here you can go home."
 
 #: data
 msgid "Который из нас настоящий?"
@@ -2540,12 +3228,20 @@ msgid "Кристалл маны"
 msgstr "Mana Crystal"
 
 #: data
+msgid "Кристалл поддаётся."
+msgstr "The crystal gives way."
+
+#: data
 msgid "Кристаллы поют!"
 msgstr "The crystals are singing!"
 
 #: data
 msgid "Кристаллы растут обратно за ночь. И растут не куда попало — к одному месту, к сердцу горы. Там ходит Каменный. Огромный, кристаллы торчат из спины. Нас не трогает, пока мы не трогаем сердце. Король приказал добыть сердце."
 msgstr "The crystals grow back overnight. And not just anywhere — toward one place, the heart of the mountain. The Stone One walks there. Huge, with crystals jutting from his back. He leaves us alone as long as we leave the heart alone. The king ordered us to mine the heart."
+
+#: data
+msgid "Кристальная жила"
+msgstr "Crystal Vein"
 
 #: data
 msgid "Кристальные глубины"
@@ -2623,9 +3319,17 @@ msgstr "Wings"
 msgid "Кто ест их каждый день, начинает видеть во сне чёрное солнце. Оно не светит — оно смотрит. Сегодня мой ученик не проснулся. Под его кожей светились те же голубые жилки, что в шляпках. Я сожгла запасы. Город меня проклял."
 msgstr "Those who eat them every day begin to dream of a black sun. It doesn't shine — it watches. Today my apprentice didn't wake up. Under his skin glowed the same blue veins as in the caps. I burned the stores. The town cursed me."
 
+#: data
+msgid "Кузнец"
+msgstr "Blacksmith"
+
 #: scripts/npc/blacksmith.gd
 msgid "Кузница"
 msgstr "Forge"
+
+#: scripts/ui/building_book.gd
+msgid "Кузня: ремонт, улучшение, зачарование"
+msgstr "Forge: repair, upgrade, enchant"
 
 #: data
 msgid "Кулак в них — уже оружие."
@@ -2638,6 +3342,10 @@ msgstr "Eclipse Cultist"
 #: data
 msgid "Купите 10 товаров у торговцев."
 msgstr "Buy 10 goods from merchants."
+
+#: scripts/ui/camp_screen.gd
+msgid "Куплено: %s"
+msgstr "Bought: %s"
 
 #: data
 msgid "Купол из чистой маны поглощает урон."
@@ -2655,6 +3363,18 @@ msgstr "A piece the miners chipped off the Stone One's heart. It still beats —
 msgid "ЛКМ"
 msgstr "LMB"
 
+#: data
+msgid "Лавка"
+msgstr "Shop"
+
+#: scripts/ui/building_book.gd
+msgid "Лавка зелий"
+msgstr "Potion shop"
+
+#: data
+msgid "Лавка зелий и эликсиров."
+msgstr "A shop of potions and elixirs."
+
 #: scripts/ui/shop_book.gd
 msgid "Лавка странствующего торговца"
 msgstr "The wandering merchant's shop"
@@ -2662,6 +3382,14 @@ msgstr "The wandering merchant's shop"
 #: data
 msgid "Лавовые глубины"
 msgstr "Lava Depths"
+
+#: data
+msgid "Лавовый мост"
+msgstr "Lava Bridge"
+
+#: scripts/core/expedition_map.gd
+msgid "Лагерь"
+msgstr "Camp"
 
 #: data
 msgid "Латные рукавицы"
@@ -2775,9 +3503,21 @@ msgstr "The Chronicler spoke of another way... (guardians' notes: %d of %d)"
 msgid "Летописец двора"
 msgstr "Court Chronicler"
 
+#: data
+msgid "Летописец захочет об этом услышать."
+msgstr "The Chronicler will want to hear about it."
+
+#: data
+msgid "Летописец собирает знания о подземельях."
+msgstr "The Chronicler gathers knowledge of the dungeons."
+
 #: scripts/npc/chronicler.gd
 msgid "Летописец: награды за главы (%d)"
 msgstr "Chronicler: chapter rewards (%d)"
+
+#: scripts/ui/building_book.gd
+msgid "Летопись"
+msgstr "Chronicle"
 
 #: scripts/ui/main_menu.gd
 msgid "Летопись (%d/%d)"
@@ -2798,6 +3538,14 @@ msgstr "The Chronicle: bestiary, items, achievements, the history of the world."
 #: data
 msgid "Летучая мышь"
 msgstr "Bat"
+
+#: scripts/ui/building_book.gd
+msgid "Лечение (бесплатно)"
+msgstr "Healing (free)"
+
+#: data
+msgid "Лечение бесплатно, снятие проклятий за золото."
+msgstr "Free healing, curses lifted for gold."
 
 #: scripts/data/eclipse_levels.gd
 msgid "Лечение слабее на 25%"
@@ -2855,6 +3603,18 @@ msgstr "Traps hit twice as hard"
 msgid "Ловушки можно обезвредить ({interact}) — неудача их запускает. Кирпичи можно ломать, руду — добывать.\n\n"
 msgstr "Traps can be disarmed ({interact}) — failing sets them off. Bricks can be broken and ore mined.\n\n"
 
+#: scripts/core/expedition_map.gd
+msgid "Логово стража"
+msgstr "Guardian's Lair"
+
+#: scripts/core/expedition_map.gd
+msgid "Логово элиты"
+msgstr "Elite Lair"
+
+#: scripts/game/game.gd
+msgid "Локация пройдена"
+msgstr "Location cleared"
+
 #: data
 msgid "Лопата Олдрика"
 msgstr "Oldric's Spade"
@@ -2867,9 +3627,13 @@ msgstr "Bow"
 msgid "Лунный амулет"
 msgstr "Moon Amulet"
 
-#: data
+#: scripts/data/town_resources.gd
 msgid "Лунный кристалл"
 msgstr "Moon Crystal"
+
+#: data
+msgid "Лунный кристалл светится в трещине. Если ударить неосторожно, свод может не выдержать."
+msgstr "Moon crystal glows in a crack. Strike carelessly, and the vault may give way."
 
 #: data
 msgid "Луч кары"
@@ -2890,6 +3654,14 @@ msgstr "Best floor: %d\nRuns: %d\nTotal kills: %d"
 #: data
 msgid "Любопытство"
 msgstr "Curiosity"
+
+#: data
+msgid "Люди в серых плащах сидят кругом и поют. Их лица в пепле. «Присоединяйся, путник. Затмение милостиво к тем, кто поёт»."
+msgstr "People in grey cloaks sit in a circle and sing. Their faces are covered in ash. \"Join us, traveller. The Eclipse is merciful to those who sing.\""
+
+#: data
+msgid "Люди, которых ты вывел из глубин, рассказывают о тебе всем подряд. Дети рисуют солнце на стенах — впервые за много лет."
+msgstr "The people you led out of the depths tell everyone about you. Children draw the sun on the walls — for the first time in years."
 
 #: data
 msgid "Лёгкая"
@@ -2975,6 +3747,10 @@ msgstr "Mana"
 msgid "Мана течёт свободнее."
 msgstr "Mana flows more freely."
 
+#: scripts/ui/expedition_map_screen.gd
+msgid "Мана: %d / %d"
+msgstr "Mana: %d / %d"
+
 #: scripts/ui/tooltip_text.gd
 msgid "Мана: [b]%d / %d[/b]"
 msgstr "Mana: [b]%d / %d[/b]"
@@ -3004,6 +3780,10 @@ msgid "Мгновенное перемещение вперёд."
 msgstr "An instant move forward."
 
 #: data
+msgid "Медитировать (интеллект)."
+msgstr "Meditate (intelligence)."
+
+#: data
 msgid "Медленная сфера взрывается чистой магией."
 msgstr "A slow sphere bursts with pure magic."
 
@@ -3018,6 +3798,10 @@ msgstr "Copper Ring"
 #: scripts/ui/info_book.gd
 msgid "Между забегами — город Аурелия: торговец, кузнец, квестодатель, Летописец (награды за собранные "
 msgstr "Between runs there is the town of Aurelia: the merchant, the blacksmith, the quest giver, the Chronicler (rewards for collected "
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "Меню"
+msgstr "Menu"
 
 #: data
 msgid "Меня звали Пип. Я смешил короля. Потом прятал солнце в зеркалах. Теперь зеркала прячут меня. Если победишь — разбей последнее зеркало. Может быть, в нём я."
@@ -3068,6 +3852,18 @@ msgid "Мимо!"
 msgstr "Miss!"
 
 #: data
+msgid "Мира"
+msgstr "Mira"
+
+#: data
+msgid "Мира лечит раны и снимает проклятия с вещей."
+msgstr "Mira heals wounds and lifts curses from items."
+
+#: data
+msgid "Мира показывала, какие брать. Сумка полна целебных трав."
+msgstr "Mira showed you which ones to take. The bag is full of healing herbs."
+
+#: data
 msgid "Мира, травница"
 msgstr "Mira, the herbalist"
 
@@ -3088,6 +3884,10 @@ msgid "Можно оттолкнуться от воздуха ещё раз."
 msgstr "You can push off the air once more."
 
 #: data
+msgid "Молитва храма: при гибели вы встанете с 40% здоровья, а свиток рассыплется пеплом. Продаётся в храме города."
+msgstr "A temple prayer: on death you rise with 40% health, and the scroll crumbles to ash. Sold at the town's temple."
+
+#: data
 msgid "Молитва, записанная святым отшельником."
 msgstr "A prayer written down by a holy hermit."
 
@@ -3102,6 +3902,10 @@ msgstr "Lightning pierces several enemies."
 #: data
 msgid "Молот света"
 msgstr "Hammer of Light"
+
+#: data
+msgid "Монеты исчезают без звука, а свечи вспыхивают. Благословение принято."
+msgstr "The coins vanish without a sound, and the candles flare up. The blessing is granted."
 
 #: data
 msgid "Монеты так и липнут к рукам."
@@ -3162,6 +3966,10 @@ msgstr "The necromancer's power grows, blows find their mark more often."
 #: data
 msgid "Мощь титана"
 msgstr "Titan's Might"
+
+#: data
+msgid "Мою тетрадь растащили по пещерам... Спасибо, что пришёл. Я умею лечить — дай мне крышу над головой, и в храме снова будут молиться."
+msgstr "They scattered my notebook all over the caves... Thank you for coming. I know how to heal — give me a roof over my head, and the temple will hear prayers again."
 
 #: data
 msgid "Мудрость"
@@ -3227,6 +4035,14 @@ msgstr "The dead rise as a squad and follow you."
 msgid "НОВЫЙ УРОВЕНЬ!"
 msgstr "LEVEL UP!"
 
+#: data
+msgid "На 2 шага дальше."
+msgstr "2 steps further."
+
+#: data
+msgid "На 3 шага дальше."
+msgstr "3 steps further."
+
 #: scripts/ui/hint_manager.gd
 msgid "На вас статус — значки над панелью. Противоядие лечит яд и кровотечение."
 msgstr "You have a status — icons above the panel. An antidote cures poison and bleeding."
@@ -3238,6 +4054,22 @@ msgstr "Deep down the very stone changes: ash and crystal. Reach floor 16 and te
 #: data
 msgid "На дне"
 msgstr "At the Bottom"
+
+#: scripts/ui/building_book.gd
+msgid "На карте похода типы мест видны на %d шагов вперёд."
+msgstr "On the expedition map, place types are visible %d steps ahead."
+
+#: scripts/game/game.gd
+msgid "На карту похода"
+msgstr "To the expedition map"
+
+#: data
+msgid "На полпути вас настигает погоня. Отбейтесь — и люди спасены."
+msgstr "Halfway there the pursuers catch up. Fight them off, and the people are saved."
+
+#: scripts/ui/building_book.gd
+msgid "На склад"
+msgstr "To the warehouse"
 
 #: data
 msgid "Набор исследователя"
@@ -3315,6 +4147,10 @@ msgstr "Reward: "
 msgid "Награда: %d осколков Затмения"
 msgstr "Reward: %d Eclipse shards"
 
+#: scripts/ui/expedition_map_screen.gd
+msgid "Награда: %s"
+msgstr "Reward: %s"
+
 #: scripts/data/equipment_item_data.gd
 msgid "Нагрудник"
 msgstr "Chest"
@@ -3322,6 +4158,10 @@ msgstr "Chest"
 #: scripts/ui/secret_ending.gd
 msgid "Над деревней у ущелья впервые за долгие годы встаёт солнце. Летописец закрывает книгу: история дописана."
 msgstr "Over the village by the gorge the sun rises for the first time in many years. The Chronicler closes the book: the story is finished."
+
+#: data
+msgid "Надеюсь."
+msgstr "I hope so."
 
 #: data
 msgid "Надпись помадой на стекле"
@@ -3339,7 +4179,7 @@ msgstr "Pressure Plate"
 msgid "Нажмите клавишу или кнопку мыши (Esc — отмена)"
 msgstr "Press a key or a mouse button (Esc — cancel)"
 
-#: scripts/ui/character_creation.gd
+#: scripts/ui/building_book.gd
 msgid "Назад"
 msgstr "Back"
 
@@ -3351,9 +4191,17 @@ msgstr "Found in the walls of the dungeon."
 msgid "Найдено %d из %d предметов"
 msgstr "%d of %d items found"
 
+#: scripts/ui/expedition_map_screen.gd
+msgid "Найдено для города:"
+msgstr "Found for the town:"
+
 #: scripts/ui/codex_book.gd
 msgid "Найдено записей: %d из %d"
 msgstr "Notes found: %d of %d"
+
+#: scripts/core/event_runner.gd
+msgid "Найдено: %s"
+msgstr "Found: %s"
 
 #: data
 msgid "Найдите 30 разных предметов."
@@ -3364,12 +4212,28 @@ msgid "Найдите эпический предмет."
 msgstr "Find an epic item."
 
 #: data
+msgid "Найм спутника на поход."
+msgstr "Hire a companion for the expedition."
+
+#: data
+msgid "Наконец-то! Ульф, каменщик. Меня заставляли таскать камни для их алтарей. Теперь буду таскать для нас — и дешевле, чем кто-либо."
+msgstr "At last! Ulf, the mason. They made me haul stones for their altars. Now I'll haul them for us — and cheaper than anyone."
+
+#: data
 msgid "Наконец... покой в пепле."
 msgstr "At last... peace in the ashes."
 
 #: data
 msgid "Наконечник выкован из драконьей чешуи."
 msgstr "The tip is forged from dragon scale."
+
+#: scripts/ui/building_book.gd
+msgid "Нанять спутника на поход"
+msgstr "Hire a companion for the expedition"
+
+#: data
+msgid "Напасть на охрану."
+msgstr "Attack the guards."
 
 #: scripts/game/game.gd
 msgid "Настройки"
@@ -3382,6 +4246,10 @@ msgstr "Onslaught"
 #: scripts/game/game.gd
 msgid "Находки"
 msgstr "Finds"
+
+#: scripts/game/game.gd
+msgid "Находки: %s"
+msgstr "Finds: %s"
 
 #: data
 msgid "Нашли жилу лунного кристалла. Светится сам, без факела. Звенит, если стукнуть. Старики говорят, это слёзы горы — она плачет, с тех пор как в неё упало чёрное солнце. Платят втрое. Копаем."
@@ -3399,6 +4267,10 @@ msgstr "Keep the hilt from chafing your hands."
 msgid "Не до рыбалки!"
 msgstr "No time for fishing!"
 
+#: data
+msgid "Не нюхайте синюю колбу. Просто не нюхайте."
+msgstr "Don't sniff the blue flask. Just don't."
+
 #: scripts/ui/net_host_screen.gd
 msgid "Не удалось открыть порт (занят?)"
 msgstr "Could not open the port (in use?)"
@@ -3410,6 +4282,10 @@ msgstr "Could not connect"
 #: scripts/ui/shop_book.gd
 msgid "Не хватает золота"
 msgstr "Not enough gold"
+
+#: scripts/core/buildings.gd
+msgid "Не хватает: %s"
+msgstr "Missing: %s"
 
 #: data
 msgid "Небеса падают на нечестивых."
@@ -3426,6 +4302,14 @@ msgstr "Invisibility"
 #: scripts/player/player.gd
 msgid "Недостаточно маны"
 msgstr "Not enough mana"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "Недоступно: не соседний узел"
+msgstr "Unavailable: not a neighbouring node"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "Неизвестно"
+msgstr "Unknown"
 
 #: data
 msgid "Неизвестный"
@@ -3480,6 +4364,10 @@ msgid "Несгибаемая стойкость."
 msgstr "Unbending resilience."
 
 #: data
+msgid "Неси камень — и город встанет."
+msgstr "Bring stone — and the town will rise."
+
+#: data
 msgid "Несокрушимый"
 msgstr "Indomitable"
 
@@ -3507,6 +4395,10 @@ msgstr "Nothing to cure"
 msgid "Ник:"
 msgstr "Nickname:"
 
+#: data
+msgid "Ниша в стене, свечи давно погасли. На алтаре — чаша для подношений и выцветший знак солнца."
+msgstr "A niche in the wall, the candles long gone out. On the altar — an offering bowl and a faded sign of the sun."
+
 #: scripts/data/eclipse_levels.gd
 msgid "Нищета"
 msgstr "Poverty"
@@ -3514,6 +4406,10 @@ msgstr "Poverty"
 #: scripts/world/lore_note.gd
 msgid "Новая запись в Летописи: «%s»"
 msgstr "A new note in the Chronicle: \"%s\""
+
+#: scripts/ui/main_menu.gd
+msgid "Новая игра"
+msgstr "New game"
 
 #: scripts/bosses/boss.gd
 msgid "Новая фаза!"
@@ -3523,9 +4419,13 @@ msgstr "New phase!"
 msgid "Новое солнце зажглось, Эльза. На один миг. А потом чёрное его выпило, как воду, и чародейка закричала так, что треснули наковальни. Она не умерла. Она горит до сих пор и не может сгореть. Не жди меня."
 msgstr "The new sun lit up, Elsa. For one moment. Then the black one drank it like water, and the sorceress screamed so that the anvils cracked. She didn't die. She is burning still and cannot burn away. Don't wait for me."
 
-#: scripts/ui/main_menu.gd
-msgid "Новый забег"
-msgstr "New run"
+#: scripts/game/game.gd
+msgid "Новости города"
+msgstr "Town news"
+
+#: scripts/ui/run_result_screen.gd
+msgid "Новый житель: %s, %s"
+msgstr "New resident: %s, %s"
 
 #: scripts/ui/hint_manager.gd
 msgid "Новый уровень: {skill_tree} — дерево навыков, клик по слоту навыка — улучшить его."
@@ -3539,13 +4439,37 @@ msgstr "Your feet carry you faster than the wind."
 msgid "Ноги сами несут вперёд."
 msgstr "Your feet carry you forward on their own."
 
+#: scripts/core/buildings.gd
+msgid "Ночь"
+msgstr "Night"
+
+#: scripts/core/buildings.gd
+msgid "Нужен мастер: %s (%s). Ищите пленников в походах."
+msgstr "Needs a master: %s (%s). Look for prisoners on expeditions."
+
 #: scripts/core/skill_set.gd
 msgid "Нужен уровень героя %d"
 msgstr "Requires hero level %d"
 
+#: scripts/core/buildings.gd
+msgid "Нужен чертёж (его хранят стражи и логова)"
+msgstr "Needs a blueprint (guardians and lairs keep them)"
+
+#: data
+msgid "Нужны дерево и железо. И немного золота на уголь."
+msgstr "We need wood and iron. And a little gold for coal."
+
+#: data
+msgid "Нырнуть за блеском."
+msgstr "Dive for the glint."
+
 #: data
 msgid "Ныряльщик"
 msgstr "Diver"
+
+#: data
+msgid "Обвал"
+msgstr "Cave-in"
 
 #: scripts/ui/hint_manager.gd
 msgid "Обезвредить"
@@ -3592,6 +4516,10 @@ msgid "Обожжённое на огне остриё."
 msgstr "A fire-hardened point."
 
 #: data
+msgid "Обойти стороной."
+msgstr "Go around."
+
+#: data
 msgid "Обрывки кожи"
 msgstr "Leather Scraps"
 
@@ -3599,13 +4527,29 @@ msgstr "Leather Scraps"
 msgid "Обсидиановая бездна"
 msgstr "Obsidian Abyss"
 
+#: data
+msgid "Обход долгий, но безопасный."
+msgstr "The detour is long, but safe."
+
 #: scripts/ui/settings_book.gd
 msgid "Общая"
 msgstr "Master"
 
 #: data
+msgid "Обыскать его сумку, пока он слаб."
+msgstr "Search his bag while he's weak."
+
+#: data
+msgid "Обыскать ящики."
+msgstr "Search the crates."
+
+#: data
 msgid "Обычная"
 msgstr "Common"
+
+#: scripts/core/expedition_map.gd
+msgid "Обычная вылазка: враги, сундуки, выход в конце."
+msgstr "An ordinary venture: enemies, chests, an exit at the end."
 
 #: scripts/data/item_data.gd
 msgid "Обычный"
@@ -3724,8 +4668,32 @@ msgid "Олдрик?"
 msgstr "Oldric?"
 
 #: data
+msgid "Он даже не заметил подмены. Кошель сам прыгает к вам в руки."
+msgstr "He didn't even notice the swap. The purse jumps into your hands by itself."
+
+#: data
+msgid "Он оказался не так уж слаб: удар кинжалом, и он ковыляет прочь. Удача отвернулась от вас."
+msgstr "He wasn't so weak after all: a dagger strike, and he hobbles away. Luck has turned its back on you."
+
+#: data
+msgid "Он рассказывает о третьем дне без солнца и о тёплой земле. Вы узнаёте больше, чем хотели бы."
+msgstr "He tells of the third day without sun and of the warm earth. You learn more than you would like."
+
+#: data
+msgid "Они благодарят и обещают дождаться. Слух о вашей щедрости дойдёт до города."
+msgstr "They thank you and promise to wait. Word of your generosity will reach the town."
+
+#: data
+msgid "Они заслужили свет."
+msgstr "They deserve the light."
+
+#: data
 msgid "Оно было солнцем. Оно устало светить для тех, кто не смотрел вверх, и упало вниз, чтобы его наконец увидели. Оно звало слуг и выжимало их до пепла — могильщика оно подняло дважды. Ты прошёл сквозь всех. Теперь посмотри ему в глаз и реши, достаточно ли в тебе света."
 msgstr "It was the sun. It grew tired of shining for those who never looked up, and fell down so that it would finally be seen. It called servants and wrung them to ash — the gravedigger it raised twice. You have passed through them all. Now look it in the eye and decide whether there is enough light in you."
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "Опасность: %s"
+msgstr "Danger: %s"
 
 #: scripts/effects/identify_effect.gd
 msgid "Опознавать нечего"
@@ -3734,6 +4702,10 @@ msgstr "Nothing to identify"
 #: scripts/core/equipment.gd
 msgid "Опознано: %s"
 msgstr "Identified: %s"
+
+#: scripts/ui/building_book.gd
+msgid "Опознать всё (%d)"
+msgstr "Identify everything (%d)"
 
 #: scripts/ui/shop_book.gd
 msgid "Опознать всё — %d з."
@@ -3759,9 +4731,25 @@ msgstr "Weapon"
 msgid "Освободить узника"
 msgstr "Free the prisoner"
 
+#: scripts/world/rescue_cage.gd
+msgid "Освободить: %s"
+msgstr "Free: %s"
+
+#: scripts/game/game.gd
+msgid "Осколки"
+msgstr "Shards"
+
 #: scripts/ui/sanctum.gd
 msgid "Осколки Затмения падают с элитных монстров и стражей. Печати Стража стоят 5 осколков. После забега осколки из рюкзака, глубина и четверть собранного золота уходят сюда."
 msgstr "Eclipse shards drop from elite monsters and guardians. Guardian seals are worth 5 shards. After a run, the shards in your backpack, your depth and a quarter of the gold you gathered come here."
+
+#: data
+msgid "Осколки Затмения превращаются здесь в силу."
+msgstr "Here Eclipse shards turn into power."
+
+#: data
+msgid "Осколки звенят. Среди них — тёмные кристаллы."
+msgstr "The shards ring. Among them — dark crystals."
 
 #: data
 msgid "Осколки костей"
@@ -3791,9 +4779,25 @@ msgstr "A shard of someone else's reflection. Passes through walls and cuts with
 msgid "Особенности: "
 msgstr "Traits: "
 
+#: scripts/core/expedition_map.gd
+msgid "Особое место"
+msgstr "Special Place"
+
+#: data
+msgid "Оставить 50 золота в чаше."
+msgstr "Leave 50 gold in the bowl."
+
+#: data
+msgid "Оставить в чаше кость."
+msgstr "Leave a bone in the bowl."
+
 #: data
 msgid "Осталась от скелета."
 msgstr "Left behind by a skeleton."
+
+#: data
+msgid "Осторожнее с этими колбами! Ах, это вы меня освободили... Квинт, алхимик. Мне нужна лаборатория и травы — много трав."
+msgstr "Careful with those flasks! Ah, it's you who freed me... Quint, alchemist. I need a laboratory and herbs — lots of herbs."
 
 #: data
 msgid "Острая"
@@ -3827,9 +4831,45 @@ msgstr "No one escapes it."
 msgid "От шара тянет холодом."
 msgstr "The orb breathes cold."
 
+#: scripts/core/event_runner.gd
+msgid "Отдано: %s"
+msgstr "Given away: %s"
+
+#: data
+msgid "Отдать ему монеты на погребение (40)."
+msgstr "Give him coins for a burial (40)."
+
+#: data
+msgid "Отдать зелье здоровья."
+msgstr "Give a health potion."
+
+#: data
+msgid "Отдать им припасы."
+msgstr "Give them supplies."
+
+#: scripts/ui/camp_screen.gd
+msgid "Отдохнуть (бесплатно)"
+msgstr "Rest (free)"
+
+#: scripts/ui/camp_screen.gd
+msgid "Отдохнуть ещё (%d з.)"
+msgstr "Rest again (%d g)"
+
+#: data
+msgid "Отец писал матери письма, которые так и не отправил. Я нашёл одно в руинах. Он верил, что чародейка зажжёт новое солнце. Я верю в железо."
+msgstr "Father wrote letters to mother that he never sent. I found one in the ruins. He believed the sorceress would light a new sun. I believe in iron."
+
+#: scripts/ui/journal_book.gd
+msgid "Отказались от дара чёрного солнца"
+msgstr "Refused the black sun's gift"
+
 #: scripts/ui/pact_book.gd
 msgid "Отказаться"
 msgstr "Refuse"
+
+#: data
+msgid "Отказаться и слушать дальше."
+msgstr "Refuse and keep listening."
 
 #: data
 msgid "Откройте 25 сундуков."
@@ -3855,6 +4895,10 @@ msgstr "Unlocks starting items: a floor map and bombs."
 msgid "Открывается в Святилище Затмения"
 msgstr "Unlocked in the Sanctum of the Eclipse"
 
+#: scripts/ui/run_result_screen.gd
+msgid "Открыт регион: %s"
+msgstr "Region opened: %s"
+
 #: scripts/level/dungeon_level.gd
 msgid "Открыт тайный проход!"
 msgstr "A secret passage is open!"
@@ -3875,6 +4919,10 @@ msgstr "Open with a key (%s)"
 msgid "Открыть проклятый сундук (риск!)"
 msgstr "Open the cursed chest (risky!)"
 
+#: scripts/ui/building_book.gd
+msgid "Открыть склад (%d / %d)"
+msgstr "Open the warehouse (%d / %d)"
+
 #: scripts/world/chest.gd
 msgid "Открыть: %s"
 msgstr "Open: %s"
@@ -3882,6 +4930,10 @@ msgstr "Open: %s"
 #: data
 msgid "Отлит из языка колокола Храма Солнца. Брат Оствин звонил им, пока вода не сомкнулась над головой."
 msgstr "Cast from the clapper of the Sun Temple's bell. Brother Ostwin rang it until the water closed over his head."
+
+#: data
+msgid "Отлично."
+msgstr "Excellent."
 
 #: scripts/ui/settings_book.gd
 msgid "Отменено"
@@ -3896,6 +4948,10 @@ msgid "Отмычка сломалась"
 msgstr "The lockpick broke"
 
 #: data
+msgid "Отпустить повозку."
+msgstr "Let the cart go."
+
+#: data
 msgid "Отравленный дротик"
 msgstr "Poisoned Dart"
 
@@ -3907,6 +4963,14 @@ msgstr "Poisons"
 msgid "Отражение Иллюзиониста. Исчезает от первого удара и ничего не оставляет — но бьёт по-настоящему."
 msgstr "A reflection of the Illusionist. Vanishes at the first blow and leaves nothing behind — but its hits are real."
 
+#: data
+msgid "Отражение выходит из рамы. И оно вооружено."
+msgstr "The reflection steps out of the frame. And it is armed."
+
+#: data
+msgid "Отражение кивает и отдаёт вам частицу себя: взгляд становится острее."
+msgstr "The reflection nods and gives you a part of itself: your eyes grow sharper."
+
 #: scripts/combat/legend_hit_effect.gd
 msgid "Отражение повторяет удар (%d%% урона)%s"
 msgstr "A reflection repeats the blow (%d%% damage)%s"
@@ -3914,6 +4978,10 @@ msgstr "A reflection repeats the blow (%d%% damage)%s"
 #: scripts/game/game.gd
 msgid "Отряд пал"
 msgstr "The party has fallen"
+
+#: data
+msgid "Ох, свобода! Я Хельга. Была у меня таверна — была, пока не пришли эти твари. Отстрой её, и у тебя будет лучшая похлёбка и самые свежие слухи."
+msgstr "Oh, freedom! I'm Helga. I had a tavern — I had one, until those creatures came. Rebuild it, and you'll have the best stew and the freshest rumours."
 
 #: data
 msgid "Охотник на элиту"
@@ -3968,6 +5036,10 @@ msgid "Палач"
 msgstr "Executioner"
 
 #: data
+msgid "Паломник протягивает пузырёк и не берёт сдачи."
+msgstr "The pilgrim hands over a vial and takes no change."
+
+#: data
 msgid "Пальцы не дрожат никогда."
 msgstr "The fingers never tremble."
 
@@ -4016,8 +5088,16 @@ msgid "Пепел поднимается!"
 msgstr "The ashes rise!"
 
 #: data
+msgid "Пепел, кристаллы и чёрная вода, в которой звонит колокол."
+msgstr "Ash, crystals and black water in which a bell tolls."
+
+#: data
 msgid "Пепельная страница"
 msgstr "Ash Page"
+
+#: data
+msgid "Пепельные паломники"
+msgstr "Ash Pilgrims"
 
 #: data
 msgid "Пепельные чертоги"
@@ -4042,6 +5122,14 @@ msgstr "Ash Ravager"
 #: scripts/core/quest_log.gd
 msgid "Первая кровь"
 msgstr "First Blood"
+
+#: data
+msgid "Перебежать быстро."
+msgstr "Dash across."
+
+#: data
+msgid "Перевёрнутые повозки, разбросанные ящики. Те, кто их тащил, лежат рядом. То, что их убило, может быть ещё близко."
+msgstr "Overturned carts, scattered crates. Those who pulled them lie nearby. Whatever killed them may still be close."
 
 #: scripts/effects/teleport_effect.gd
 msgid "Переносит в случайное безопасное место этажа"
@@ -4103,6 +5191,14 @@ msgstr "Sorcerer's Gloves"
 msgid "Перья шестопёра мнут любые латы."
 msgstr "The flanges of the mace crush any plate."
 
+#: data
+msgid "Песня проникает слишком глубоко. Что-то в вас поёт до сих пор."
+msgstr "The song goes too deep. Something in you is singing still."
+
+#: data
+msgid "Песня успокаивает: силы возвращаются."
+msgstr "The song soothes: strength returns."
+
 #: scripts/data/eclipse_levels.gd
 msgid "Печати выхода нужно на 15% больше убийств"
 msgstr "The exit seal needs 15% more kills"
@@ -4148,6 +5244,10 @@ msgid "Пещерный паук"
 msgstr "Cave Spider"
 
 #: data
+msgid "Пиво сегодня тёмное, как Затмение. Шучу. Почти."
+msgstr "The beer is dark as the Eclipse today. Just kidding. Almost."
+
+#: data
 msgid "Пиромания"
 msgstr "Pyromania"
 
@@ -4187,9 +5287,21 @@ msgstr "The flame... fades..."
 msgid "Плащ углей"
 msgstr "Cloak of Embers"
 
+#: scripts/core/expedition_map.gd
+msgid "Пленник"
+msgstr "Prisoner"
+
+#: scripts/world/rescue_cage.gd
+msgid "Пленный горожанин"
+msgstr "A captive townsman"
+
 #: data
 msgid "Плюётся липкой грязью: попавший в неё еле переставляет ноги."
 msgstr "Spits sticky mud: whoever it hits can barely move their feet."
+
+#: scripts/ui/run_result_screen.gd
+msgid "Победа над Затмением!"
+msgstr "Victory over the Eclipse!"
 
 #: data
 msgid "Победите 5 боссов."
@@ -4207,6 +5319,10 @@ msgstr "Defeat the first boss."
 msgid "Побеждено: [b]%d[/b]"
 msgstr "Defeated: [b]%d[/b]"
 
+#: scripts/ui/run_result_screen.gd
+msgid "Побеждён страж: %s"
+msgstr "Guardian defeated: %s"
+
 #: scripts/ui/codex_book.gd
 msgid "Повадки: %s"
 msgstr "Habits: %s"
@@ -4223,9 +5339,25 @@ msgstr "Master of the dead: raises skeletons, sends plague and hides behind bone
 msgid "Повелитель теней"
 msgstr "Lord of Shadows"
 
+#: data
+msgid "Поверженная статуя короля Аурелии. В глазницах — рубины, на постаменте — надпись: «Свет вернётся к тем, кто помнит»."
+msgstr "A toppled statue of the king of Aurelia. Rubies in its eye sockets, and on the pedestal an inscription: \"The light will return to those who remember.\""
+
+#: data
+msgid "Повозка с пленниками"
+msgstr "The Prisoner Cart"
+
 #: scripts/player/player.gd
 msgid "Поглощено"
 msgstr "Absorbed"
+
+#: scripts/world/town_npc.gd
+msgid "Поговорить: %s"
+msgstr "Talk: %s"
+
+#: data
+msgid "Под досками — уцелевший товар и кошель."
+msgstr "Under the boards — intact goods and a purse."
 
 #: data
 msgid "Подбирается в кошелёк. Тратится у торговца."
@@ -4238,6 +5370,10 @@ msgstr "Sets enemies on fire."
 #: data
 msgid "Поджигает всё в радиусе взрыва. Стены не ломает."
 msgstr "Ignites everything in the blast radius. Doesn't break walls."
+
+#: scripts/core/expedition_map.gd
+msgid "Подземелье"
+msgstr "Dungeon"
 
 #: scripts/core/quest_log.gd
 msgid "Подземелье кишит тварями. Убей 10 монстров — пусть затмение знает, что в городе есть кому постоять за себя."
@@ -4259,6 +5395,10 @@ msgstr "Connected! Waiting for the host to start the run..."
 msgid "Подключиться"
 msgstr "Connect"
 
+#: data
+msgid "Подменить кости (ловкость рук)."
+msgstr "Swap the dice (sleight of hand)."
+
 #: scripts/skills/summon_skill.gd
 msgid "Поднимает %d %s на %d с (урон %d%%, не больше %d)"
 msgstr "Raises %d %s for %d s (%d%% damage, at most %d)"
@@ -4267,9 +5407,17 @@ msgstr "Raises %d %s for %d s (%d%% damage, at most %d)"
 msgid "Поднять скелета"
 msgstr "Raise Skeleton"
 
+#: scripts/game/game.gd
+msgid "Подобрано"
+msgstr "Picked up"
+
 #: scripts/world/item_pickup.gd
 msgid "Подобрать: "
 msgstr "Pick up: "
+
+#: data
+msgid "Подорвать бомбой."
+msgstr "Blow it up with a bomb."
 
 #: scripts/ui/settings_book.gd
 msgid "Подсказки"
@@ -4307,9 +5455,17 @@ msgstr "Later"
 msgid "Поймал «%s», но рюкзак полон — пришлось отпустить."
 msgstr "Caught \"%s\", but the backpack is full — had to let it go."
 
+#: data
+msgid "Пока я в городе, любая стройка обходится на пятую часть дешевле. Камень я знаю: где класть, где тесать, где не трогать."
+msgstr "While I'm in town, every building costs a fifth less. I know stone: where to lay it, where to cut it, where to leave it be."
+
 #: scripts/ui/shop_book.gd
 msgid "Покупка не удалась: изменились условия"
 msgstr "The purchase failed: the terms changed"
+
+#: scripts/ui/journal_book.gd
+msgid "Полный бестиарий с описаниями — в библиотеке города."
+msgstr "The full bestiary with descriptions is in the town's library."
 
 #: scripts/ui/settings_book.gd
 msgid "Полный экран"
@@ -4335,6 +5491,18 @@ msgstr "Earned %d of %d"
 msgid "Получено очко навыка — K: дерево навыков, клик по слоту: улучшить."
 msgstr "Skill point earned — K: skill tree, click a slot: upgrade."
 
+#: scripts/core/event_runner.gd
+msgid "Получено: %s"
+msgstr "Received: %s"
+
+#: data
+msgid "Поляна голубых грибов. Они светятся тем же светом, что и чёрное солнце внизу, и пахнут мёдом."
+msgstr "A glade of blue mushrooms. They glow with the same light as the black sun below and smell of honey."
+
+#: data
+msgid "Помолиться."
+msgstr "Pray."
+
 #: data
 msgid "Поножи стража"
 msgstr "Guardian Greaves"
@@ -4358,6 +5526,18 @@ msgstr "After a defence (parry, roll, blink) a ghostly double strikes in front o
 #: data
 msgid "После навыка следующий удар наносит двойной урон."
 msgstr "After a skill, your next hit deals double damage."
+
+#: data
+msgid "Последние выжившие"
+msgstr "The Last Survivors"
+
+#: scripts/ui/building_book.gd
+msgid "Послушать слухи (%d з.)"
+msgstr "Listen to rumours (%d g)"
+
+#: data
+msgid "Посмотреть в глаза отражению."
+msgstr "Look your reflection in the eye."
 
 #: scripts/data/weapon_item_data.gd
 msgid "Посох"
@@ -4388,8 +5568,48 @@ msgid "Посох, внутри которого бьётся ледяное с�
 msgstr "A staff with an icy heart beating inside."
 
 #: data
+msgid "Поставить 50 золота."
+msgstr "Bet 50 gold."
+
+#: data
+msgid "Постоянные улучшения за осколки Затмения."
+msgstr "Permanent upgrades for Eclipse shards."
+
+#: data
 msgid "Постоянный клиент"
 msgstr "Regular Customer"
+
+#: scripts/core/buildings.gd
+msgid "Построено полностью"
+msgstr "Fully built"
+
+#: scripts/core/buildings.gd
+msgid "Построено: %s, уровень %d"
+msgstr "Built: %s, level %d"
+
+#: data
+msgid "Построим кузню."
+msgstr "Let's build a forge."
+
+#: scripts/ui/building_book.gd
+msgid "Построить"
+msgstr "Build"
+
+#: scripts/ui/journal_book.gd
+msgid "Постройки"
+msgstr "Buildings"
+
+#: data
+msgid "Постройте башню разведчиков — и вы увидите, какие места ждут на несколько шагов дальше."
+msgstr "Build a scout tower — and you'll see which places lie a few steps further ahead."
+
+#: data
+msgid "Постройте лабораторию — и я обеспечу вас зельями на любой поход."
+msgstr "Build a laboratory — and I'll keep you in potions for any expedition."
+
+#: scripts/ui/run_result_screen.gd
+msgid "Потеряно: %s"
+msgstr "Lost: %s"
 
 #: data
 msgid "Поток маны"
@@ -4403,6 +5623,14 @@ msgstr "Pull the lever"
 msgid "Похищение жизни"
 msgstr "Life Steal"
 
+#: scripts/ui/camp_screen.gd
+msgid "Поход закончится: всё найденное и спасённые доберутся до города."
+msgstr "The expedition will end: everything you found and everyone you saved will reach the town."
+
+#: scripts/ui/run_result_screen.gd
+msgid "Поход окончен"
+msgstr "The expedition is over"
+
 #: scripts/ui/smith_book.gd
 msgid "Починено"
 msgstr "Repaired"
@@ -4411,9 +5639,21 @@ msgstr "Repaired"
 msgid "Починить всё — %d з."
 msgstr "Repair all — %d g"
 
+#: scripts/ui/camp_screen.gd
+msgid "Починить снаряжение (%d з.)"
+msgstr "Repair gear (%d g)"
+
 #: scripts/ui/smith_book.gd
 msgid "Починить: %s"
 msgstr "Repair: %s"
+
+#: scripts/ui/journal_book.gd
+msgid "Почтили статую короля"
+msgstr "Honoured the king's statue"
+
+#: data
+msgid "Почтить память короля."
+msgstr "Honour the king's memory."
 
 #: data
 msgid "Праведный гнев"
@@ -4476,6 +5716,10 @@ msgid "Призрак"
 msgstr "Ghost"
 
 #: data
+msgid "Призрак могильщика"
+msgstr "The Gravedigger's Ghost"
+
+#: data
 msgid "Призрачный клинок"
 msgstr "Ghost Blade"
 
@@ -4499,9 +5743,17 @@ msgstr "Sacrifice: −%d%% health for a gift"
 msgid "Принять"
 msgstr "Accept"
 
+#: data
+msgid "Принять дар."
+msgstr "Accept the gift."
+
 #: scripts/ui/main_menu.gd
 msgid "Присоединиться (LAN)"
 msgstr "Join (LAN)"
+
+#: data
+msgid "Присоединиться к пению."
+msgstr "Join the singing."
 
 #: data
 msgid "Пробивает врагов и морозит."
@@ -4527,17 +5779,41 @@ msgstr "Sold: %s (+%d g)"
 msgid "Продать мусор: %d шт. (+%d з.)"
 msgstr "Sell junk: %d pcs (+%d g)"
 
+#: data
+msgid "Продаёт свитки воскрешения."
+msgstr "Sells scrolls of resurrection."
+
 #: scripts/game/game.gd
 msgid "Продолжить"
 msgstr "Continue"
 
 #: scripts/ui/main_menu.gd
-msgid "Продолжить — %s, ур. %d, этаж %d"
-msgstr "Continue — %s, lv. %d, floor %d"
+msgid "Продолжить — %s, ур. %d"
+msgstr "Continue — %s, lv. %d"
+
+#: scripts/core/expedition_map.gd
+msgid "Происшествие"
+msgstr "Encounter"
+
+#: scripts/ui/run_result_screen.gd
+msgid "Пройденный путь"
+msgstr "The road walked"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "Пройдено"
+msgstr "Passed"
 
 #: data
 msgid "Пройдите 10 случайных событий."
 msgstr "Complete 10 random events."
+
+#: data
+msgid "Пройти мимо."
+msgstr "Walk past."
+
+#: scripts/game/game.gd
+msgid "Пройтись по городу"
+msgstr "Walk through the town"
 
 #: scripts/ui/tooltip_text.gd
 msgid "Проклят: нельзя снять. Проклятие снимает торговец."
@@ -4559,9 +5835,17 @@ msgstr "Cursed! %s can't be removed — the merchant can lift it"
 msgid "Проклятие! Из тьмы лезут твари"
 msgstr "A curse! Creatures crawl out of the dark"
 
+#: scripts/core/event_runner.gd
+msgid "Проклятие: %s"
+msgstr "Curse: %s"
+
 #: scripts/ui/shop_book.gd
 msgid "Проклятий нет"
 msgstr "No curses"
+
+#: scripts/ui/building_book.gd
+msgid "Проклятия сняты."
+msgstr "The curses are lifted."
 
 #: scripts/ui/shop_book.gd
 msgid "Проклятия сняты: %d"
@@ -4596,8 +5880,20 @@ msgid "Противоядие"
 msgstr "Antidote"
 
 #: data
+msgid "Проход завален. Среди камней блестят жилы железа, но потолок над завалом трещит."
+msgstr "The passage is blocked. Veins of iron glint among the stones, but the ceiling above the rubble is cracking."
+
+#: data
 msgid "Проходит сквозь врагов, раня их."
 msgstr "Passes through enemies, wounding them."
+
+#: scripts/ui/run_result_screen.gd
+msgid "Процветание города: %d → %d"
+msgstr "Town prosperity: %d → %d"
+
+#: scripts/ui/journal_book.gd
+msgid "Процветание: %d · %s"
+msgstr "Prosperity: %d · %s"
 
 #: data
 msgid "Прочитайте 10 записей Летописи."
@@ -4615,6 +5911,10 @@ msgstr "Sturdy cloth from an abandoned storeroom."
 msgid "Прочность: %d / %d"
 msgstr "Durability: %d / %d"
 
+#: scripts/autoload/game_flow.gd
+msgid "Прошлый поход прерван: снаряжение похода потеряно."
+msgstr "The last expedition was cut short: its gear is lost."
+
 #: scripts/core/input_bindings.gd
 msgid "Прыжок"
 msgstr "Jump"
@@ -4622,6 +5922,10 @@ msgstr "Jump"
 #: scripts/ui/fishing_game.gd
 msgid "Пусто."
 msgstr "Nothing."
+
+#: data
+msgid "Путники болтают, а я слушаю. Кто где видел клетку, где блестело золото, где лучше не ходить — всё через мою стойку."
+msgstr "Travellers talk and I listen. Who saw a cage where, where gold glinted, where it's better not to go — it all passes over my counter."
 
 #: scripts/core/skill_set.gd
 msgid "Путь выбран: «%s»"
@@ -4635,9 +5939,33 @@ msgstr "Path chosen: \"%s\""
 msgid "Пять ножей веером."
 msgstr "Five knives in a fan."
 
+#: data
+msgid "Работа кузнеца на 15% дешевле."
+msgstr "The smith's work is 15% cheaper."
+
+#: data
+msgid "Работа кузнеца на 30% дешевле."
+msgstr "The smith's work is 30% cheaper."
+
+#: data
+msgid "Работать, как учил Ульф."
+msgstr "Work the way Ulf taught you."
+
 #: scripts/effects/dig_effect.gd
 msgid "Разбивает %s (с S/↓ — под ногами, с W/↑ — над головой)"
 msgstr "Breaks %s (with S/↓ — below you, with W/↑ — above you)"
+
+#: data
+msgid "Разбитый караван"
+msgstr "The Broken Caravan"
+
+#: data
+msgid "Разбить зеркало."
+msgstr "Smash the mirror."
+
+#: data
+msgid "Разбить черепа и забрать украшения."
+msgstr "Smash the skulls and take the jewellery."
 
 #: data
 msgid "Разбойник"
@@ -4646,6 +5974,14 @@ msgstr "Rogue"
 #: scripts/ui/info_book.gd
 msgid "Разбойник делает перекат и неуязвим, пока катится. Маг и некромант делают скачок — короткий неуязвимый рывок (перезарядка дольше).\n\n"
 msgstr "The rogue rolls and is invulnerable while rolling. The mage and the necromancer blink — a short invulnerable dash (longer cooldown).\n\n"
+
+#: data
+msgid "Развалины Аурелии, лавовые кузни и зеркальные залы шута."
+msgstr "The ruins of Aurelia, the lava forges and the jester's mirror halls."
+
+#: data
+msgid "Разведчик оживает и в благодарность отмечает на вашей карте все знаки: теперь вы читаете дорогу, как он."
+msgstr "The scout revives and in gratitude marks every sign on your map: now you read the road as he does."
 
 #: scripts/combat/relic_powers.gd
 msgid "Разгон!"
@@ -4664,8 +6000,16 @@ msgid "Размер панели"
 msgstr "Panel size"
 
 #: data
+msgid "Разобрать завал руками."
+msgstr "Clear the rubble by hand."
+
+#: data
 msgid "Разрушитель Затмения"
 msgstr "Eclipse Breaker"
+
+#: data
+msgid "Раненый разведчик"
+msgstr "The Wounded Scout"
 
 #: scripts/ui/fishing_game.gd
 msgid "Рано! Рыбу спугнул."
@@ -4678,6 +6022,14 @@ msgstr "Wounds close before your eyes."
 #: data
 msgid "Раны затягиваются сами."
 msgstr "Wounds close on their own."
+
+#: scripts/ui/building_book.gd
+msgid "Раны затянулись."
+msgstr "The wounds have closed."
+
+#: data
+msgid "Раны лечатся, проклятия снимаются. Только не приходи с проклятием на сердце."
+msgstr "Wounds heal, curses lift. Just don't come with a curse on your heart."
 
 #: scripts/ui/character_creation.gd
 msgid "Раса"
@@ -4698,6 +6050,10 @@ msgstr "Dawn over Aurelia"
 #: data
 msgid "Рассечение"
 msgstr "Cleave"
+
+#: data
+msgid "Расскажешь мне?"
+msgstr "Will you tell me?"
 
 #: data
 msgid "Растворяется в тенях: враги теряют из виду."
@@ -4743,9 +6099,17 @@ msgstr "Regenerating"
 msgid "Регенерирующий"
 msgstr "Regenerating"
 
+#: data
+msgid "Редкие товары и скидка 10%."
+msgstr "Rare goods and a 10% discount."
+
 #: scripts/data/item_data.gd
 msgid "Редкий"
 msgstr "Rare"
+
+#: scripts/ui/camp_screen.gd
+msgid "Редкое за осколки"
+msgstr "Rare goods for shards"
 
 #: scripts/ui/tooltip_text.gd
 msgid "Реликвии: "
@@ -4771,13 +6135,29 @@ msgstr "Crafting"
 msgid "Ремонт не нужен"
 msgstr "No repairs needed"
 
+#: data
+msgid "Ремонт, улучшение, зачарование, переплавка."
+msgstr "Repair, upgrade, enchant, smelt."
+
+#: data
+msgid "Рен"
+msgstr "Ren"
+
 #: scripts/data/item_data.gd
 msgid "Ресурс"
 msgstr "Material"
 
+#: scripts/core/event_runner.gd
+msgid "Ресурсы: %s"
+msgstr "Resources: %s"
+
 #: scripts/ui/inventory_book.gd
 msgid "Рецептов нет"
 msgstr "No recipes"
+
+#: scripts/ui/journal_book.gd
+msgid "Решения"
+msgstr "Decisions"
 
 #: data
 msgid "Ржавые доспехи"
@@ -4804,8 +6184,16 @@ msgid "Рубиновое кольцо"
 msgstr "Ruby Ring"
 
 #: data
+msgid "Рубины выпадают — и вместе с ними что-то тёмное из глазниц. Проклятие ложится на вас."
+msgstr "The rubies fall out — and something dark comes out of the sockets with them. A curse falls upon you."
+
+#: scripts/ui/building_book.gd
 msgid "Руины"
 msgstr "Ruins"
+
+#: data
+msgid "Руины и пламя"
+msgstr "Ruins and Flame"
 
 #: data
 msgid "Рукавицы стража"
@@ -4899,6 +6287,14 @@ msgstr "No locked chest nearby"
 msgid "Рёв оглушает всех врагов рядом."
 msgstr "A roar stuns all nearby enemies."
 
+#: scripts/ui/building_book.gd
+msgid "С вами пойдёт: %s"
+msgstr "Coming with you: %s"
+
+#: data
+msgid "С вершины видно, что ждёт на дороге."
+msgstr "From the top you can see what waits on the road."
+
 #: scripts/ui/info_book.gd
 msgid "С каждым уровнем — очки характеристик и навыков. {skill_tree} — дерево навыков: три ветви, "
 msgstr "Every level brings stat and skill points. {skill_tree} — the skill tree: three branches, "
@@ -4906,6 +6302,10 @@ msgstr "Every level brings stat and skill points. {skill_tree} — the skill tre
 #: scripts/core/input_bindings.gd
 msgid "СКМ"
 msgstr "MMB"
+
+#: data
+msgid "Самое нужное: зелья, бомбы, свитки."
+msgstr "The essentials: potions, bombs, scrolls."
 
 #: scripts/data/equipment_item_data.gd
 msgid "Сапоги"
@@ -4940,8 +6340,16 @@ msgid "Сбросить навыки — %d з."
 msgstr "Reset skills — %d g"
 
 #: data
+msgid "Сваришь мне зелий?"
+msgstr "Will you brew me potions?"
+
+#: data
 msgid "Сверхновая"
 msgstr "Supernova"
+
+#: data
+msgid "Сверху падает глыба. Камень вы всё-таки достали, но дорого."
+msgstr "A boulder falls from above. You got the stone after all, but at a price."
 
 #: scripts/traps/trap.gd
 msgid "Сверху сыплются камни!"
@@ -4952,12 +6360,20 @@ msgid "Свет"
 msgstr "Light"
 
 #: data
+msgid "Свет Затмения меняет травы: они растут быстрее и лечат сильнее. Опасно? Безусловно. Полезно? Чрезвычайно."
+msgstr "The Eclipse's light changes herbs: they grow faster and heal better. Dangerous? Certainly. Useful? Extremely."
+
+#: data
 msgid "Свет гаснет. Солнце смотрит на вас."
 msgstr "The light fades. The sun is watching you."
 
 #: data
 msgid "Свет защищает от тёмной магии и пламени."
 msgstr "Light protects against dark magic and flame."
+
+#: data
+msgid "Свет здесь течёт вниз, как вода. Голос внутри головы: «Возьми мою силу. Мне не жалко. Мне так одиноко»."
+msgstr "Light flows down here like water. A voice inside your head: \"Take my power. I don't mind. I'm so lonely.\""
 
 #: data
 msgid "Свет исцеляет и облекает в броню."
@@ -5000,6 +6416,10 @@ msgid "Светится мягким голубым светом."
 msgstr "Glows with a soft blue light."
 
 #: data
+msgid "Светящиеся грибы"
+msgstr "Glowing Mushrooms"
+
+#: data
 msgid "Светящийся угорь"
 msgstr "Glowing Eel"
 
@@ -5007,9 +6427,21 @@ msgstr "Glowing Eel"
 msgid "Свечение"
 msgstr "Bloom"
 
+#: scripts/ui/building_book.gd
+msgid "Свиток в сумке."
+msgstr "The scroll is in your bag."
+
 #: data
 msgid "Свиток возврата"
 msgstr "Scroll of Return"
+
+#: data
+msgid "Свиток воскрешения"
+msgstr "Scroll of Resurrection"
+
+#: scripts/ui/building_book.gd
+msgid "Свиток воскрешения (%d з.)"
+msgstr "Scroll of Resurrection (%d g)"
 
 #: data
 msgid "Свиток исцеления"
@@ -5036,6 +6468,10 @@ msgid "Свиток телепорта"
 msgstr "Scroll of Teleport"
 
 #: data
+msgid "Свод трещит и осыпается. Кристалл вы спасли, а плечи — нет."
+msgstr "The vault cracks and crumbles. You saved the crystal, but not your shoulders."
+
+#: data
 msgid "Святилище"
 msgstr "Sanctum"
 
@@ -5051,6 +6487,10 @@ msgstr "Sanctum of the Eclipse (%d shards)"
 msgid "Святилище Затмения: +%d осколков, +%d золота"
 msgstr "Sanctum of the Eclipse: +%d shards, +%d gold"
 
+#: scripts/ui/run_result_screen.gd
+msgid "Святилище: +%d осколков, +%d золота"
+msgstr "Sanctum: +%d shards, +%d gold"
+
 #: data
 msgid "Святой"
 msgstr "Saint"
@@ -5062,6 +6502,10 @@ msgstr "Holy Light"
 #: data
 msgid "Священный удар"
 msgstr "Holy Strike"
+
+#: data
+msgid "Сгорбленная тень с лопатой копает яму, которой нет конца. «Ещё одна... ещё одна...» — бормочет она и не замечает вас."
+msgstr "A hunched shadow with a spade digs a pit that has no end. \"One more... one more...\" it mutters, not noticing you."
 
 #: data
 msgid "Сгусток заразы отравляет врага."
@@ -5091,9 +6535,25 @@ msgstr "Quests can only be turned in to the herald in town"
 msgid "Сделано на Godot Engine (godotengine.org). Шрифт интерфейса — Noto Sans (SIL Open Font License), "
 msgstr "Made with Godot Engine (godotengine.org). The interface font is Noto Sans (SIL Open Font License), "
 
+#: data
+msgid "Сейф на 12 предметов."
+msgstr "A safe for 12 items."
+
+#: data
+msgid "Сейф на 4 предмета: они переживут гибель героя."
+msgstr "A safe for 4 items: they survive the hero's death."
+
+#: data
+msgid "Сейф на 8 предметов."
+msgstr "A safe for 8 items."
+
 #: scripts/ui/sanctum.gd
 msgid "Сейчас: "
 msgstr "Now: "
+
+#: scripts/ui/building_book.gd
+msgid "Сейчас: %s"
+msgstr "Now: %s"
 
 #: data
 msgid "Секира палача"
@@ -5148,6 +6608,14 @@ msgid "Сила"
 msgstr "Strength"
 
 #: data
+msgid "Сила бьёт в виски — и вместе с ней что-то холодное."
+msgstr "Power pounds at your temples — and with it something cold."
+
+#: data
+msgid "Сила бьёт в виски — чистая, без примеси. Солнце и правда было щедрым."
+msgstr "Power pounds at your temples — pure, unmixed. The sun really was generous."
+
+#: data
 msgid "Сила и выносливость великана."
 msgstr "The strength and stamina of a giant."
 
@@ -5162,6 +6630,10 @@ msgstr "Bites hard and sets things on fire."
 #: data
 msgid "Сильное исцеление и защита."
 msgstr "Strong healing and protection."
+
+#: scripts/core/expedition_map.gd
+msgid "Сильные враги и награда получше."
+msgstr "Strong enemies and a better reward."
 
 #: scripts/ui/tooltip_text.gd
 msgid "Сильный отброс"
@@ -5196,6 +6668,18 @@ msgid "Скелет-лучник"
 msgstr "Skeleton Archer"
 
 #: data
+msgid "Склад"
+msgstr "Warehouse"
+
+#: data
+msgid "Склад, библиотеку и башню можно ставить хоть сейчас. Кузню, храм, таверну и лавку зелий — только когда вернутся их мастера. Ищи пленников на карте похода."
+msgstr "The warehouse, the library and the tower can go up right now. The forge, the temple, the tavern and the potion shop — only when their masters return. Look for prisoners on the expedition map."
+
+#: scripts/ui/building_book.gd
+msgid "Склад: %d / %d"
+msgstr "Warehouse: %d / %d"
+
+#: scripts/core/expedition_map.gd
 msgid "Склеп"
 msgstr "Crypt"
 
@@ -5223,9 +6707,17 @@ msgstr "Weak spots are visible from afar."
 msgid "След. ур.: "
 msgstr "Next lv.: "
 
+#: data
+msgid "Следующая кружка за счёт заведения."
+msgstr "The next mug is on the house."
+
 #: scripts/ui/quest_book.gd
 msgid "Следующий приказ откроется позже"
 msgstr "The next order opens later"
+
+#: scripts/core/expedition_map.gd
+msgid "Следы крови"
+msgstr "Traces of blood"
 
 #: data
 msgid "Слепая и бледная, зато сытная. Жареная — лечит."
@@ -5242,6 +6734,10 @@ msgstr "Slime"
 #: data
 msgid "Слизь"
 msgstr "Slime Goo"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "Слишком далеко: разведчики не видят, что там."
+msgstr "Too far: the scouts can't see what's there."
 
 #: scripts/events/event_altar.gd
 msgid "Слишком мало крови для жертвы"
@@ -5260,12 +6756,28 @@ msgid "Слот свободен"
 msgstr "Empty slot"
 
 #: data
+msgid "Слуги Затмения гонят повозку с клеткой. Внутри — люди из города. Охраны немного, но она настороже."
+msgstr "Servants of the Eclipse drive a cart with a cage. Inside are people from the town. The guards are few, but alert."
+
+#: data
 msgid "Служитель Затмения с чёрным солнцем вместо лица. Гасит свет вокруг и бросает сгустки тьмы."
 msgstr "A servant of the Eclipse with a black sun for a face. Snuffs out the light around it and hurls bolts of darkness."
 
 #: data
 msgid "Служитель Затмения. Держится на расстоянии и мечет тёмные сгустки."
 msgstr "A servant of the Eclipse. Keeps its distance and hurls dark bolts."
+
+#: data
+msgid "Слухи бесплатно, спутники дешевле."
+msgstr "Free rumours, cheaper companions."
+
+#: scripts/ui/building_book.gd
+msgid "Слухи уже собраны"
+msgstr "Rumours already gathered"
+
+#: data
+msgid "Слухи: знаки на всей карте следующего похода."
+msgstr "Rumours: the signs on the whole map of the next expedition."
 
 #: data
 msgid "Слышишь звон? Это звонят по тебе."
@@ -5291,6 +6803,18 @@ msgstr "Equipment"
 msgid "Снаряжение (надетое и в рюкзаке)"
 msgstr "Equipment (worn and in the backpack)"
 
+#: scripts/ui/camp_screen.gd
+msgid "Снаряжение в порядке"
+msgstr "Gear is in good shape"
+
+#: scripts/ui/run_result_screen.gd
+msgid "Снаряжение и добыча похода потеряны. Город, жители и склад остались."
+msgstr "The expedition's gear and loot are lost. The town, its people and the warehouse remain."
+
+#: scripts/ui/camp_screen.gd
+msgid "Снаряжение как новое."
+msgstr "Gear good as new."
+
 #: scripts/effects/repair_effect.gd
 msgid "Снаряжение отремонтировано"
 msgstr "Equipment repaired"
@@ -5307,6 +6831,10 @@ msgstr "Learn first: "
 msgid "Сначала найдите игру в списке"
 msgstr "Find a game in the list first"
 
+#: scripts/core/buildings.gd
+msgid "Сначала победите стража: %s"
+msgstr "First defeat the guardian: %s"
+
 #: scripts/effects/cure_effect.gd
 msgid "Снимает: "
 msgstr "Removes: "
@@ -5315,9 +6843,17 @@ msgstr "Removes: "
 msgid "Снова ты. Солнце не дало мне лечь в землю... и тебе не даст."
 msgstr "You again. The sun wouldn't let me lie in the earth... and it won't let you either."
 
+#: scripts/ui/building_book.gd
+msgid "Снять"
+msgstr "Take down"
+
 #: scripts/ui/shop_book.gd
 msgid "Снять проклятия — %d з."
 msgstr "Lift curses — %d g"
+
+#: scripts/ui/building_book.gd
+msgid "Снять проклятия: %d шт. (%d з.)"
+msgstr "Lift curses: %d (%d g)"
 
 #: data
 msgid "Соберите 1000 золота за все забеги."
@@ -5330,6 +6866,18 @@ msgstr "Collect the whole Chronicle of Aurelia."
 #: scripts/core/quest_log.gd
 msgid "Собиратель тени"
 msgstr "Shadow Collector"
+
+#: data
+msgid "Собрать немного на травы."
+msgstr "Gather a few for herbs."
+
+#: data
+msgid "Собрать, как учила Мира."
+msgstr "Gather them the way Mira taught you."
+
+#: scripts/ui/journal_book.gd
+msgid "События"
+msgstr "Events"
 
 #: data
 msgid "Советник Вэлдр"
@@ -5407,6 +6955,10 @@ msgstr "Nearby allies are faster and hit 25% harder."
 msgid "Союзники рядом получают на 40% меньше урона, пока он жив."
 msgstr "Nearby allies take 40% less damage while it lives."
 
+#: scripts/ui/expedition_map_screen.gd
+msgid "Спасено: %d"
+msgstr "Rescued: %d"
+
 #: scripts/ui/info_book.gd
 msgid "Спасибо"
 msgstr "Thanks"
@@ -5414,6 +6966,26 @@ msgstr "Thanks"
 #: scripts/ui/info_book.gd
 msgid "Спасибо всем, кто спускался в подземелье Затмения, находил ошибки и возвращался снова.\n\n"
 msgstr "Thanks to everyone who descended into the Eclipse's dungeon, found bugs and came back again.\n\n"
+
+#: data
+msgid "Спасибо, Гвен."
+msgstr "Thank you, Gwen."
+
+#: scripts/ui/run_result_screen.gd
+msgid "Спасён горожанин"
+msgstr "A townsman rescued"
+
+#: scripts/core/event_runner.gd
+msgid "Спасён: %s"
+msgstr "Rescued: %s"
+
+#: scripts/game/game.gd
+msgid "Спасён: %s — придёт в город, если вы вернётесь живым."
+msgstr "Rescued: %s — they'll come to the town if you return alive."
+
+#: scripts/ui/journal_book.gd
+msgid "Спасённых горожан: %d"
+msgstr "Townsfolk rescued: %d"
 
 #: data
 msgid "Спорыш"
@@ -5447,6 +7019,10 @@ msgstr "Descend deeper (floor %d)"
 msgid "Спуститься на этаж %d"
 msgstr "Descend to floor %d"
 
+#: scripts/ui/building_book.gd
+msgid "Спутники на поход"
+msgstr "Companions for the expedition"
+
 #: scripts/ui/tooltip_text.gd
 msgid "Сравнение с: %s"
 msgstr "Compared with: %s"
@@ -5463,9 +7039,25 @@ msgstr "Steel Sabre"
 msgid "Стальные пластины на каждом пальце."
 msgstr "Steel plates on every finger."
 
+#: data
+msgid "Староста"
+msgstr "Elder"
+
+#: data
+msgid "Староста Гвен"
+msgstr "Elder Gwen"
+
 #: scripts/ui/character_creation.gd
 msgid "Стартовые предметы"
 msgstr "Starting items"
+
+#: data
+msgid "Старые захоронения под городом: кости, грибы и первые слуги Затмения."
+msgstr "Old burial grounds under the town: bones, mushrooms and the first servants of the Eclipse."
+
+#: data
+msgid "Статуя короля"
+msgstr "The King's Statue"
 
 #: data
 msgid "Стеклянное сердце"
@@ -5482,6 +7074,14 @@ msgstr "Glass Stalker"
 #: data
 msgid "Стена щитов"
 msgstr "Shield Wall"
+
+#: data
+msgid "Стены выложены черепами, а в центре — каменная чаша с тлеющими угольками. Кости тихо постукивают, будто кто-то считает."
+msgstr "The walls are lined with skulls, and in the centre stands a stone bowl of smouldering embers. The bones tap softly, as if someone were counting."
+
+#: scripts/ui/main_menu.gd
+msgid "Стереть город и начать заново?"
+msgstr "Erase the town and start over?"
 
 #: data
 msgid "Стилет"
@@ -5515,6 +7115,10 @@ msgstr "The guardian has fallen — the doors are open"
 msgid "Страж повержен! Открылся проход."
 msgstr "The guardian is defeated! A passage has opened."
 
+#: scripts/core/expedition_map.gd
+msgid "Страж региона"
+msgstr "Region Guardian"
+
 #: scripts/ui/hint_manager.gd
 msgid "Страж этажа! Красные зоны на полу — сигнал атаки: уходите из них."
 msgstr "A floor guardian! Red zones on the floor warn of an attack: get out of them."
@@ -5522,6 +7126,14 @@ msgstr "A floor guardian! Red zones on the floor warn of an attack: get out of t
 #: scripts/enemies/enemy.gd
 msgid "Страж этажа: %s"
 msgstr "Floor guardian: %s"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "Страж: %s"
+msgstr "Guardian: %s"
+
+#: scripts/ui/journal_book.gd
+msgid "Страж: ???"
+msgstr "Guardian: ???"
 
 #: scripts/ui/codex_book.gd
 msgid "Стражи"
@@ -5576,6 +7188,10 @@ msgid "Стужа"
 msgstr "Frost"
 
 #: data
+msgid "Стук стихает. Мёртвые признают вас своим и делятся тем, что хранили."
+msgstr "The tapping stops. The dead accept you as one of their own and share what they kept."
+
+#: data
 msgid "Суд"
 msgstr "Judgement"
 
@@ -5591,9 +7207,21 @@ msgstr "Fate: "
 msgid "Сумерки укрывают и ускоряют."
 msgstr "Twilight hides and quickens you."
 
+#: scripts/ui/expedition_map_screen.gd
+msgid "Сумка (I)"
+msgstr "Bag (I)"
+
+#: scripts/ui/camp_screen.gd
+msgid "Сумка и ремесло (I)"
+msgstr "Bag and crafting (I)"
+
 #: data
 msgid "Сумка лекаря"
 msgstr "Healer's Bag"
+
+#: scripts/ui/building_book.gd
+msgid "Сумка полна."
+msgstr "The bag is full."
 
 #: scripts/data/eclipse_levels.gd
 msgid "Сумрак"
@@ -5612,8 +7240,16 @@ msgid "Сундуки, тайные стены, алтари судьбы, фо�
 msgstr "Chests, secret walls, altars of fate, fountains, prisoners and Chronicle notes are scattered across each floor. "
 
 #: data
+msgid "Сухари и чистая вода: силы возвращаются."
+msgstr "Hardtack and clean water: your strength returns."
+
+#: data
 msgid "Счастливая монета"
 msgstr "Lucky Coin"
+
+#: data
+msgid "Съесть парочку."
+msgstr "Eat a couple."
 
 #: data
 msgid "Сыграйте 10 забегов."
@@ -5624,12 +7260,24 @@ msgid "Сыр"
 msgstr "Cheese"
 
 #: data
+msgid "Таверна"
+msgstr "Tavern"
+
+#: data
 msgid "Тайная сфера"
 msgstr "Arcane Orb"
+
+#: scripts/core/expedition_map.gd
+msgid "Тайник"
+msgstr "Cache"
 
 #: data
 msgid "Тайник с монетами"
 msgstr "Coin Stash"
+
+#: scripts/core/expedition_map.gd
+msgid "Тайник, шахта или склеп."
+msgstr "A cache, a mine or a crypt."
 
 #: scripts/ui/codex_book.gd
 msgid "Тайное достижение. Продолжайте спускаться."
@@ -5650,6 +7298,10 @@ msgstr "A dance after which no one applauds."
 #: data
 msgid "Твёрдая рука"
 msgstr "Steady Hand"
+
+#: data
+msgid "Тебе спасибо."
+msgstr "Thank you."
 
 #: data
 msgid "Тела вокруг взрываются зелёным пламенем."
@@ -5680,6 +7332,30 @@ msgid "Тень"
 msgstr "Shadow"
 
 #: data
+msgid "Тень впервые поднимает голову. «Спасибо...» — и рассыпается пылью. На её месте — свет."
+msgstr "For the first time the shadow raises its head. \"Thank you...\" — and it crumbles to dust. In its place — light."
+
+#: data
+msgid "Тень не замечает пропажи. Лопата старая, но под ней — тайник могильщика."
+msgstr "The shadow doesn't notice the loss. The spade is old, but beneath it lies the gravedigger's stash."
+
+#: data
+msgid "Тень оборачивается. Земля под ногами шевелится: мёртвые встают за своего могильщика."
+msgstr "The shadow turns. The earth stirs underfoot: the dead rise for their gravedigger."
+
+#: data
+msgid "Теперь, когда я в городе, на карте похода видны все знаки: где опасность, где золото, где кровь. И что ждёт в каждом месте — я подскажу точно."
+msgstr "Now that I'm in town, every sign on the expedition map is visible: where there's danger, where there's gold, where there's blood. And I'll tell you exactly what waits in each place."
+
+#: scripts/ui/camp_screen.gd
+msgid "Тепло костра возвращает силы."
+msgstr "The warmth of the fire restores your strength."
+
+#: data
+msgid "Тепло разливается по телу: раны затягиваются, мысли ясные."
+msgstr "Warmth spreads through your body: wounds close, your thoughts are clear."
+
+#: data
 msgid "Терновый венец"
 msgstr "Crown of Thorns"
 
@@ -5704,8 +7380,20 @@ msgid "Тип урона: %s"
 msgstr "Damage type: %s"
 
 #: data
+msgid "Типы узлов видны на 1 шаг дальше."
+msgstr "Node types are visible 1 step further."
+
+#: data
 msgid "Титан затопленных сводов. Его звон глушит героев, а вода кипит от ярости."
 msgstr "Titan of the flooded vaults. Its toll deafens heroes, and the water boils with fury."
+
+#: scripts/ui/event_screen.gd
+msgid "Тихая дорога"
+msgstr "A quiet road"
+
+#: data
+msgid "Тихо открыть замок (ловкость)."
+msgstr "Quietly pick the lock (agility)."
 
 #: data
 msgid "Тканевый капюшон"
@@ -5718,6 +7406,18 @@ msgstr "Smouldering Pool"
 #: data
 msgid "Тлеющий гончий"
 msgstr "Smouldering Hound"
+
+#: data
+msgid "Товары с глубин открытых регионов."
+msgstr "Goods from the depths of the regions you've opened."
+
+#: data
+msgid "Тогда возвращайся с новыми трофеями."
+msgstr "Then come back with new trophies."
+
+#: data
+msgid "Тогда свет вернётся."
+msgstr "Then the light will return."
 
 #: data
 msgid "Толстокожие враги"
@@ -5755,6 +7455,14 @@ msgstr "Hatchet"
 msgid "Торговать"
 msgstr "Trade"
 
+#: scripts/ui/camp_screen.gd
+msgid "Торговец"
+msgstr "Trader"
+
+#: data
+msgid "Торговец покупает добычу и продаёт снаряжение."
+msgstr "The merchant buys loot and sells gear."
+
 #: scripts/ui/hint_manager.gd
 msgid "Торговец: покупайте за золото, продавайте вещи из рюкзака."
 msgstr "The merchant: buy for gold, sell things from your backpack."
@@ -5776,6 +7484,14 @@ msgid "Точные выверенные удары мечом и топором
 msgstr "Precise, measured blows with sword and axe."
 
 #: data
+msgid "Травница"
+msgstr "Herbalist"
+
+#: scripts/data/town_resources.gd
+msgid "Травы"
+msgstr "Herbs"
+
+#: data
 msgid "Трезубец"
 msgstr "Trident"
 
@@ -5795,6 +7511,14 @@ msgstr "Three fireballs in a fan."
 msgid "Три стража за один спуск. Последний приказ гильдии в этом забеге — и самый щедрый."
 msgstr "Three guardians in one descent. The guild's last order this run — and the most generous."
 
+#: scripts/ui/building_book.gd
+msgid "Трофеи (%d / %d)"
+msgstr "Trophies (%d / %d)"
+
+#: data
+msgid "Трофеи на витрине дают силу каждому походу: +4 к здоровью и +1 к урону за каждый."
+msgstr "Trophies on display empower every expedition: +4 health and +1 damage each."
+
 #: data
 msgid "Трофей утонувшего стражника."
 msgstr "A trophy from a drowned guard."
@@ -5811,6 +7535,10 @@ msgstr "The \"Mask of the Eclipse\" Troupe"
 msgid "Туман разума"
 msgstr "Mind Fog"
 
+#: data
+msgid "Ты вернулся живым — уже хорошо. Город почти пуст: кто сбежал, кого держат в клетках слуги Затмения. Приводи людей, приноси дерево, камень и железо — и мы отстроимся."
+msgstr "You came back alive — that's good already. The town is almost empty: some fled, others are kept in cages by the servants of the Eclipse. Bring people back, bring wood, stone and iron — and we'll rebuild."
+
 #: scripts/ui/secret_ending.gd
 msgid "Ты вспоминаешь их имена."
 msgstr "You remember their names."
@@ -5823,9 +7551,21 @@ msgstr "You know who the guardians were. The gravedigger, the sorceress, the jes
 msgid "Ты не разбиваешь его. Ты отпускаешь."
 msgstr "You don't shatter it. You let it go."
 
+#: data
+msgid "Ты отказался от дара чёрного солнца? Мои постояльцы спорят, храбрость это или глупость. Я ставлю на храбрость."
+msgstr "You refused the black sun's gift? My guests argue whether that was courage or folly. I'm betting on courage."
+
+#: data
+msgid "Ты открыл клетку? Я Брам, сын кузнеца Торна. Отец сгинул внизу, у лавовых кузен. Дай мне горн в городе — и я скую тебе клинок не хуже отцовского."
+msgstr "You opened the cage? I'm Bram, son of Thorn the smith. Father was lost down below, at the lava forges. Give me a forge in town — and I'll make you a blade as good as his."
+
 #: scripts/world/return_stairs.gd
 msgid "Ты поднимаешься по лестнице на поверхность..."
 msgstr "You climb the stairs to the surface..."
+
+#: data
+msgid "Ты почтил статую короля? Старики плакали, когда услышали. «Свет вернётся к тем, кто помнит» — так говорили при нём."
+msgstr "You honoured the king's statue? The old folk wept when they heard. \"The light will return to those who remember\" — so they used to say in his day."
 
 #: scripts/ui/fishing_game.gd
 msgid "Ты сматываешь удочку."
@@ -5846,6 +7586,10 @@ msgstr "Darkness is your home and your shield."
 #: data
 msgid "Тяжело натянуть, зато бьёт далеко."
 msgstr "Hard to draw, but it shoots far."
+
+#: data
+msgid "Тяжело, но вы пробиваетесь — и уносите с собой камень и руду."
+msgstr "It's hard, but you break through — and carry off stone and ore."
 
 #: data
 msgid "Тяжесть"
@@ -5915,9 +7659,17 @@ msgstr "Warm. Something is moving inside."
 msgid "Тёплый камень гасит жар."
 msgstr "A warm stone that quenches heat."
 
+#: data
+msgid "Тёплый свет касается плеч. Вы чувствуете силу старых богов."
+msgstr "A warm light touches your shoulders. You feel the power of the old gods."
+
 #: scripts/ui/info_book.gd
 msgid "У каждого оружия своя скорость и дальность. Критический удар — двойной урон.\n\n"
 msgstr "Every weapon has its own speed and reach. A critical hit deals double damage.\n\n"
+
+#: scripts/ui/camp_screen.gd
+msgid "У костра"
+msgstr "By the fire"
 
 #: scripts/ui/info_book.gd
 msgid "У монстров есть слабости: огонь, лёд, яд, магия (смотрите в Летописи). Красные зоны на полу — сигнал атаки."
@@ -5926,6 +7678,10 @@ msgstr "Monsters have weaknesses: fire, ice, poison, magic (see the Chronicle). 
 #: data
 msgid "У монстров на 25% больше здоровья"
 msgstr "Monsters have 25% more health"
+
+#: data
+msgid "У стены сидит разведчик гильдии. Нога перетянута ремнём, на коленях — исчерканная карта. «Воды... или хоть зелья», — шепчет он."
+msgstr "A guild scout sits against the wall. His leg is tied off with a strap, a scribbled map on his knees. \"Water... or at least a potion,\" he whispers."
 
 #: scripts/core/quest_log.gd
 msgid "Убей босса. Каждые несколько этажей подземелье рожает стража — убей одного и принеси гильдии его славу."
@@ -5956,6 +7712,10 @@ msgid "Убийца"
 msgstr "Assassin"
 
 #: scripts/game/game.gd
+msgid "Убито"
+msgstr "Slain"
+
+#: scripts/game/game.gd
 msgid "Убито врагов"
 msgstr "Enemies killed"
 
@@ -5978,6 +7738,10 @@ msgstr "Area strike (radius %d), %d%% damage"
 #: data
 msgid "Удар щитом"
 msgstr "Shield Bash"
+
+#: data
+msgid "Ударить в колокол на берегу."
+msgstr "Strike the bell on the shore."
 
 #: data
 msgid "Удары возвращают часть урона здоровьем."
@@ -6020,8 +7784,20 @@ msgid "Узел корней мирового древа, обретший фо�
 msgstr "A knot of the world tree's roots that took shape. Lashes with a root and entangles — your feet get stuck."
 
 #: data
+msgid "Узкий каменный мост над лавой. На той стороне — сундук кузнеца. Мост качается от каждого шага."
+msgstr "A narrow stone bridge over the lava. On the far side — a smith's chest. The bridge sways with every step."
+
+#: data
 msgid "Узкий клинок находит щели в доспехах."
 msgstr "The narrow blade finds the gaps in armor."
+
+#: scripts/ui/run_result_screen.gd
+msgid "Узлов пройдено"
+msgstr "Nodes passed"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "Узлов пройдено: %d"
+msgstr "Nodes passed: %d"
 
 #: data
 msgid "Узник"
@@ -6043,13 +7819,17 @@ msgstr "The prisoner hands over their hidden gear"
 msgid "Узы костей"
 msgstr "Bone Bonds"
 
-#: scripts/ui/shop_book.gd
+#: scripts/ui/dialog_book.gd
 msgid "Уйти"
 msgstr "Leave"
 
 #: data
 msgid "Уклонение"
 msgstr "Evasion"
+
+#: data
+msgid "Укрепить мост досками (3 дерева)."
+msgstr "Shore up the bridge with planks (3 wood)."
 
 #: scripts/ui/fishing_game.gd
 msgid "Улов: «%s»!"
@@ -6059,13 +7839,17 @@ msgstr "Catch: \"%s\"!"
 msgid "Улучшение: максимум"
 msgstr "Upgrade: maximum"
 
-#: scripts/ui/skill_tree_book.gd
+#: scripts/ui/building_book.gd
 msgid "Улучшить"
 msgstr "Upgrade"
 
 #: scripts/ui/smith_book.gd
 msgid "Улучшить до +%d: %s"
 msgstr "Upgrade to +%d: %s"
+
+#: data
+msgid "Ульф"
+msgstr "Ulf"
 
 #: data
 msgid "Упорные и разносторонние. Понемногу хороши во всём."
@@ -6091,7 +7875,7 @@ msgstr "Lv.1: "
 msgid "Уровень"
 msgstr "Level"
 
-#: scripts/ui/level_up_banner.gd
+#: scripts/ui/expedition_map_screen.gd
 msgid "Уровень %d"
 msgstr "Level %d"
 
@@ -6102,6 +7886,10 @@ msgstr "Level %d · XP %d/%d · Skill points: %d"
 #: scripts/ui/tooltip_text.gd
 msgid "Уровень %d/%d · Мана %d · Перезарядка %.1f с"
 msgstr "Level %d/%d · Mana %d · Cooldown %.1f s"
+
+#: scripts/ui/building_book.gd
+msgid "Уровень %d: %s"
+msgstr "Level %d: %s"
 
 #: scripts/core/stat_types.gd
 msgid "Урон"
@@ -6139,6 +7927,10 @@ msgstr "Drowned Bell"
 msgid "Утопленный колокол — Глас глубин"
 msgstr "The Drowned Bell — Voice of the Deep"
 
+#: scripts/core/buildings.gd
+msgid "Утро"
+msgstr "Morning"
+
 #: scripts/ui/codex_book.gd
 msgid "Уязвим к: "
 msgstr "Weak to: "
@@ -6168,6 +7960,14 @@ msgid "Хвост кометы"
 msgstr "Comet Tail"
 
 #: data
+msgid "Хельга"
+msgstr "Helga"
+
+#: data
+msgid "Хельга слышит всё, что говорят путники."
+msgstr "Helga hears everything travellers say."
+
+#: data
 msgid "Хищник лавовых жил. Угольная шерсть жжёт всё, до чего дотянется."
 msgstr "A predator of the lava veins. Its coal-black fur burns everything it can reach."
 
@@ -6178,6 +7978,22 @@ msgstr "Bread"
 #: data
 msgid "Хозяин Зеркальных чертогов. Прячется среди собственных отражений: настоящего выдаёт свечение и выстрел."
 msgstr "Master of the Mirror Halls. Hides among his own reflections: the real one is given away by his glow and his shot."
+
+#: scripts/core/expedition_map.gd
+msgid "Хозяин этих земель. Победа открывает путь дальше."
+msgstr "The master of these lands. Victory opens the way on."
+
+#: data
+msgid "Хозяйка таверны"
+msgstr "Innkeeper"
+
+#: data
+msgid "Холод сводит пальцы, но вы выныриваете с добычей."
+msgstr "The cold cramps your fingers, but you surface with the loot."
+
+#: data
+msgid "Хороший фундамент — половина дома."
+msgstr "A good foundation is half the house."
 
 #: scripts/ui/net_host_screen.gd
 msgid "Хост"
@@ -6190,6 +8006,10 @@ msgstr "The host left the game"
 #: scripts/ui/net_join_screen.gd
 msgid "Хост: %s — игроков: %d"
 msgstr "Host: %s — players: %d"
+
+#: data
+msgid "Храм"
+msgstr "Temple"
 
 #: data
 msgid "Хранитель обрядов затопленных залов. Призывает утопленников и швыряет чёрную воду."
@@ -6224,12 +8044,20 @@ msgid "Целебный фонтан"
 msgstr "Healing Fountain"
 
 #: data
+msgid "Цели на поход от гильдии."
+msgstr "Expedition goals from the guild."
+
+#: data
 msgid "Целитель"
 msgstr "Healer"
 
 #: scripts/ui/info_book.gd
 msgid "Цель"
 msgstr "Goal"
+
+#: scripts/ui/building_book.gd
+msgid "Цена: %s"
+msgstr "Cost: %s"
 
 #: data
 msgid "Цепная молния"
@@ -6260,8 +8088,20 @@ msgid "Человек"
 msgstr "Human"
 
 #: data
+msgid "Чем ещё помочь?"
+msgstr "How else can I help?"
+
+#: data
 msgid "Чем меньше здоровья, тем сильнее удар: до +90% урона."
 msgstr "The less health you have, the harder you hit: up to +90% damage."
+
+#: scripts/ui/building_book.gd
+msgid "Чертежи: %s"
+msgstr "Blueprints: %s"
+
+#: scripts/game/game.gd
+msgid "Чертёж: %s"
+msgstr "Blueprint: %s"
 
 #: data
 msgid "Четырёхлистник"
@@ -6278,6 +8118,18 @@ msgstr "Repairs worn equipment by %d%% durability"
 #: scripts/ui/settings_book.gd
 msgid "Числа урона"
 msgstr "Damage numbers"
+
+#: scripts/ui/event_screen.gd
+msgid "Что вышло"
+msgstr "What happened"
+
+#: data
+msgid "Что дальше?"
+msgstr "What next?"
+
+#: data
+msgid "Что строить первым?"
+msgstr "What should I build first?"
 
 #: data
 msgid "Чумной мешочек"
@@ -6344,6 +8196,10 @@ msgid "Шесть стражей пали. Но солнце уже не взо�
 msgstr "Six guardians have fallen. But the sun will never rise again."
 
 #: data
+msgid "Шестёрки! Он ругается и отсчитывает выигрыш."
+msgstr "Sixes! He curses and counts out your winnings."
+
+#: data
 msgid "Шипастый шар на рукояти."
 msgstr "A spiked ball on a handle."
 
@@ -6398,6 +8254,14 @@ msgstr "The Jester Who Became a Mask"
 #: data
 msgid "Шёлк, пропитанный маной."
 msgstr "Silk soaked in mana."
+
+#: data
+msgid "Шёпот чёрного солнца"
+msgstr "Whisper of the Black Sun"
+
+#: data
+msgid "Щелчок — и пленник бесшумно уходит за вами."
+msgstr "A click — and the prisoner silently follows you."
 
 #: scripts/combat/status_effects.gd
 msgid "Щит"
@@ -6523,6 +8387,10 @@ msgstr "It's a mimic!"
 msgid "Это существо ещё не встречалось вам в бою.\nПобедите его, чтобы узнать больше."
 msgstr "You haven't met this creature in battle yet.\nDefeat it to learn more."
 
+#: data
+msgid "Это только начало."
+msgstr "This is only the beginning."
+
 #: scripts/combat/relic_powers.gd
 msgid "Эхо!"
 msgstr "Echo!"
@@ -6530,6 +8398,18 @@ msgstr "Echo!"
 #: data
 msgid "Я был могильщиком. Потом — Королём костей. Меня убили, и я думал, что наконец лягу в землю. Но солнце внизу не отпускает своих. Оно выжимает из меня силу, как воду из тряпки, и каждая капля горит. Теперь я пепел в короне. И пепел помнит всех, кто меня хоронил."
 msgstr "I was a gravedigger. Then the Bone King. They killed me, and I thought I would finally lie in the earth. But the sun below does not let its own go. It wrings the strength out of me like water from a rag, and every drop burns. Now I am ash in a crown. And the ash remembers everyone who buried me."
+
+#: data
+msgid "Я поищу."
+msgstr "I'll look for them."
+
+#: data
+msgid "Я пойду."
+msgstr "I'll be going."
+
+#: data
+msgid "Я помню."
+msgstr "I remember."
 
 #: data
 msgid "Я поняла. Грибы растут не на земле — на свете, который падает вниз. Затмение не закрыло солнце. Оно его съело, и теперь свет стекает под землю, к чему-то голодному. Грибы — просто крошки с его стола."
@@ -6623,6 +8503,14 @@ msgstr "Clear Mind"
 msgid "атакует издалека"
 msgstr "attacks from afar"
 
+#: scripts/ui/building_book.gd
+msgid "бесплатно"
+msgstr "free"
+
+#: data
+msgid "бомба"
+msgstr "a bomb"
+
 #: data
 msgid "бури"
 msgstr "of Storms"
@@ -6643,6 +8531,10 @@ msgstr "is enraged!"
 msgid "встроен в движок.\n\nСписок всех сторонних компонентов и их лицензий — THIRD_PARTY_LICENSES.md."
 msgstr "built into the engine.\n\nThe list of all third-party components and their licenses is in THIRD_PARTY_LICENSES.md."
 
+#: scripts/ui/expedition_map_screen.gd
+msgid "выше обычной"
+msgstr "better than usual"
+
 #: scripts/game/game.gd
 msgid "героиня, разбившая Затмение"
 msgstr "the heroine who shattered the Eclipse"
@@ -6654,6 +8546,10 @@ msgstr "the hero who shattered the Eclipse"
 #: scripts/autoload/meta_progress.gd
 msgid "глубина: %d"
 msgstr "depth: %d"
+
+#: scripts/core/event_runner.gd
+msgid "горожанин"
+msgstr "a townsman"
 
 #: scripts/ui/codex_book.gd
 msgid "готово"
@@ -6671,6 +8567,10 @@ msgstr "up to %d bricks in a row"
 msgid "ждёт"
 msgstr "waits"
 
+#: scripts/ui/expedition_map_screen.gd
+msgid "зависит от выбора"
+msgstr "depends on your choice"
+
 #: scripts/ui/info_book.gd
 msgid "записки) и тренировочный манекен.\n\nСвятилище Затмения: осколки → постоянные усиления и новые классы. "
 msgstr "notes) and the training dummy.\n\nThe Sanctum of the Eclipse: shards → permanent upgrades and new classes. "
@@ -6679,9 +8579,33 @@ msgstr "notes) and the training dummy.\n\nThe Sanctum of the Eclipse: shards →
 msgid "застрял %d"
 msgstr "stuck %d"
 
+#: data
+msgid "зелье здоровья"
+msgstr "a health potion"
+
+#: scripts/core/buildings.gd
+msgid "золото %d"
+msgstr "gold %d"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "золото, снаряжение, немного ресурсов"
+msgstr "gold, gear, some resources"
+
+#: data
+msgid "интеллект 10"
+msgstr "intelligence 10"
+
+#: data
+msgid "каменщик Ульф в городе"
+msgstr "Ulf the mason in town"
+
 #: scripts/effects/dig_effect.gd
 msgid "кирпич рядом"
 msgstr "an adjacent brick"
+
+#: data
+msgid "кость"
+msgstr "a bone"
 
 #: scripts/skills/summon_skill.gd
 msgid "костяного голема"
@@ -6715,6 +8639,10 @@ msgstr "ice"
 msgid "магия"
 msgstr "magic"
 
+#: scripts/ui/expedition_map_screen.gd
+msgid "много сундуков и золота"
+msgstr "many chests and gold"
+
 #: data
 msgid "мудрости"
 msgstr "of Wisdom"
@@ -6739,9 +8667,29 @@ msgstr "ambushes from the ceiling"
 msgid "нет"
 msgstr "none"
 
+#: scripts/ui/run_result_screen.gd
+msgid "ничего ценного"
+msgstr "nothing of value"
+
 #: scripts/ui/info_book.gd
 msgid "но осколки Затмения останутся — тратьте их в Святилище на постоянные усиления."
 msgstr "but your Eclipse shards remain — spend them in the Sanctum on permanent upgrades."
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "новый житель города"
+msgstr "a new resident for the town"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "новый житель: %s, %s"
+msgstr "new resident: %s, %s"
+
+#: data
+msgid "нужно зелье здоровья"
+msgstr "needs a health potion"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "обычная"
+msgstr "ordinary"
 
 #: scripts/core/stat_types.gd
 msgid "огонь"
@@ -6755,6 +8703,10 @@ msgstr "turn out to be cursed. Item sets give a bonus for the full set."
 msgid "осколки и печати: %d"
 msgstr "shards and seals: %d"
 
+#: scripts/ui/expedition_map_screen.gd
+msgid "отдых, торговля, дорога домой"
+msgstr "rest, trade, the way home"
+
 #: scripts/autoload/meta_progress.gd
 msgid "открыт уровень Затмения %d «%s»"
 msgstr "Eclipse level %d \"%s\" unlocked"
@@ -6762,6 +8714,14 @@ msgstr "Eclipse level %d \"%s\" unlocked"
 #: scripts/autoload/meta_progress.gd
 msgid "победа над Затмением: %d"
 msgstr "victory over the Eclipse: %d"
+
+#: scripts/ui/building_book.gd
+msgid "пока нет (их хранят стражи и логова)"
+msgstr "none yet (guardians and lairs keep them)"
+
+#: scripts/ui/journal_book.gd
+msgid "пока ни одного судьбоносного выбора"
+msgstr "no fateful choices yet"
 
 #: scripts/ui/chronicler_book.gd
 msgid "получено"
@@ -6787,13 +8747,37 @@ msgstr "passes through walls"
 msgid "прошедшие с нами не один забег.\n\nВся графика, музыка и звуки сгенерированы скриптами проекта (папка tools)."
 msgstr "who went through many runs with us.\n\nAll graphics, music and sounds are generated by the project's scripts (the tools folder)."
 
+#: data
+msgid "разбойник"
+msgstr "rogue"
+
 #: scripts/autoload/meta_progress.gd
 msgid "рассвет над Аурелией: %d"
 msgstr "dawn over Aurelia: %d"
 
+#: scripts/ui/expedition_map_screen.gd
+msgid "редкие предметы, осколки"
+msgstr "rare items, shards"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "реликвии и проклятое добро"
+msgstr "relics and cursed goods"
+
+#: scripts/ui/building_book.gd
+msgid "ресурсов нет"
+msgstr "no resources"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "руда и камень для города"
+msgstr "ore and stone for the town"
+
 #: scripts/ui/info_book.gd
 msgid "с платформы, {move_up} / {move_down} — лестницы.\n{attack} — атака (держите — атакует сам), прицел — мышью.\n"
 msgstr "from a platform, {move_up} / {move_down} — ladders.\n{attack} — attack (hold — keeps attacking), aim with the mouse.\n"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "сид %d (F5 — новая карта)"
+msgstr "seed %d (F5 — new map)"
 
 #: data
 msgid "силы"
@@ -6806,6 +8790,10 @@ msgstr "skeleton warrior(s)"
 #: scripts/skills/summon_skill.gd
 msgid "скелета-лучника"
 msgstr "skeleton archer(s)"
+
+#: scripts/ui/journal_book.gd
+msgid "следующий уровень: %s"
+msgstr "next level: %s"
 
 #: scripts/autoload/meta_progress.gd
 msgid "сложность «%s»: %+d"
@@ -6831,6 +8819,18 @@ msgstr "guardians: %d"
 msgid "точности"
 msgstr "of Precision"
 
+#: data
+msgid "травница Мира в городе"
+msgstr "Mira the herbalist in town"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "трофей региона, путь дальше"
+msgstr "the region's trophy, the way on"
+
+#: scripts/ui/expedition_map_screen.gd
+msgid "трофей стража, реликвия"
+msgstr "the guardian's trophy, a relic"
+
 #: scripts/enemies/enemy.gd
 msgid "фланг"
 msgstr "flank"
@@ -6854,6 +8854,14 @@ msgstr "• Second chance: on death restores %d%% health and burns away"
 #: scripts/ui/tooltip_text.gd
 msgid "• При попадании: "
 msgstr "• On hit: "
+
+#: scripts/core/event_runner.gd
+msgid "−%d здоровья"
+msgstr "−%d health"
+
+#: scripts/core/event_runner.gd
+msgid "−%d золота"
+msgstr "−%d gold"
 
 #: data
 msgid "−12 к скорости"

@@ -424,7 +424,7 @@ func _fill_companions() -> void:
 		_right.add_child(_wrap(tr("С вами пойдёт: %s") % GameState.pet.display_name, 7))
 	for id in ItemDatabase.pets:
 		var p: PetData = ItemDatabase.pets[id]
-		var b := _action("%s — %d з." % [p.display_name, price], func() -> void:
+		var b := _action(tr("%s — %d з.") % [p.display_name, price], func() -> void:
 			if hero.spend_gold(price):
 				GameState.set_pet(p)
 				_say(tr("%s пойдёт с вами в поход.") % p.display_name)

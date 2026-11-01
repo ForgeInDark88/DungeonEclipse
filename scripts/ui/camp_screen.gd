@@ -83,7 +83,7 @@ func _refresh() -> void:
 		right_page.add_child(UIStyle.label(tr("Редкое за осколки"), 8, UIStyle.INK_SOFT))
 		for it in _shard_offers:
 			var cost := shard_price(it)
-			var b := _action("%s — %d оск." % [it.display_name, cost], func() -> void: _buy_for_shards(it))
+			var b := _action(tr("%s — %d оск.") % [it.display_name, cost], func() -> void: _buy_for_shards(it))
 			b.disabled = h.inventory.count_of(MetaProgress.SHARD_ITEM) < cost or h.inventory.free_space_for(it) <= 0
 	var fill := Control.new()
 	fill.size_flags_vertical = Control.SIZE_EXPAND_FILL

@@ -41,3 +41,4 @@
 |---|---|---|
 | `ui/res/wood.png`, `stone.png`, `iron.png`, `herbs.png`, `crystal.png` | 10×10 | Значки ресурсов города |
 | `sprites/items/revive_scroll.png` | 16×16 | Свиток воскрешения (храм) |
+| `sprites/world/cage.png` | 28×36 | Клетка пленника (узел «Пленник») |
