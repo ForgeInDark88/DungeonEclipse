@@ -559,11 +559,19 @@ func _process(delta: float) -> void:
 	_step_night()
 
 
+## Every hero of the party (alone: just this machine's, the co-op party
+## list is empty without a network).
+func _heroes() -> Array:
+	var list: Array = game.party() if game.has_method("party") else []
+	if list.is_empty() and game.player:
+		list = [game.player]
+	return list
+
+
 ## Bands with a living hero in them (the host simulates only these).
 func active_bands() -> Array[int]:
 	var out: Array[int] = []
-	var list: Array = game.party() if game.has_method("party") else [game.player]
-	for p in list:
+	for p in _heroes():
 		var pl := p as Player
 		if pl and is_instance_valid(pl):
 			var bi := level.band_index_at(pl.global_position)
@@ -678,7 +686,7 @@ func _spawn_night() -> void:
 
 
 func _hero_near(pos: Vector2, dist: float) -> bool:
-	for p in (game.party() if game.has_method("party") else [game.player]):
+	for p in _heroes():
 		if is_instance_valid(p) and (p as Node2D).global_position.distance_to(pos) < dist:
 			return true
 	return false
@@ -691,7 +699,7 @@ func _step_respawns(dt: float) -> void:
 			continue
 		var pos: Vector2 = r["pos"]
 		var near := false
-		for p in (game.party() if game.has_method("party") else [game.player]):
+		for p in _heroes():
 			if is_instance_valid(p) and (p as Node2D).global_position.distance_to(pos) < definition.respawn_min_distance:
 				near = true
 		if near:
