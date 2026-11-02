@@ -35,7 +35,10 @@
 Генераторы: `python3 tools/gen_surface_art.py` (фоны, пропы, вызывает и
 тайлы) и `python3 tools/gen_surface_tiles.py` (только тайлы: природная
 земля, трава, мох, песок, снег, камень, брёвна и доски, верёвочные
-лестницы, цветы и грибы в бахроме). Шесть биомов поверхности
+лестницы, цветы и грибы в бахроме). Земля и скала рисуются как кирпичи
+данжа: комья (бесшовная мозаика), у каждого свой тон, зерно по
+пикселям, светлая кромка сверху-слева и тёмная трещина справа-снизу.
+Шесть биомов поверхности
 (`data/surface/*.tres`): `forest`, `hills`, `swamp`, `ruins`,
 `mountains`, `wasteland`.
 
@@ -62,19 +65,22 @@
 тумана используется `fx/light.png`.
 
 ## Враги поверхности — `assets/sprites/enemies/` (этап 16)
-Генератор: `python3 tools/gen_surface_monsters.py`. Строки листа:
-idle 4, walk 6, windup 4, attack 3, hurt 2, death 6 кадров. Иконка
-`<id>.png` — первый кадр.
+Генератор: `python3 tools/gen_surface_monsters.py`. Рисуется так же, как
+монстры данжа (`tools/gen_monsters.py`): объём с освещением сверху-слева
+в четыре тона с дизерингом, материалы, контур, рассыпание при смерти.
+Строки листа: idle 4, walk 6, windup 3, attack 3, hurt 2, death 6 кадров.
+Иконка `<id>.png` — первый кадр.
 
-| Файл | Кадр | Раскладка | Кто |
+| Файл | Кадр | Раскладка (`data/animations/`) | Кто |
 |---|---|---|---|
-| `wolf_sheet.png`, `boar_sheet.png`, `snake_sheet.png` | 32×22 | `data/animations/beast_layout.tres` | волк, кабан, змея |
+| `wolf_sheet.png`, `boar_sheet.png` | 32×22 | `beast_layout.tres` | волк, кабан |
 | `deer_sheet.png` | 32×26 | `deer_layout.tres` | олень (мирный) |
-| `bandit_sheet.png`, `bandit_archer_sheet.png`, `thief_sheet.png`, `goblin_sheet.png`, `ghoul_sheet.png` | 24×28 | `cultist_layout.tres` | бандиты, вор, гоблин, упырь (ночной) |
+| `snake_sheet.png` | 28×14 | `snake_layout.tres` | змея |
+| `bandit_sheet.png`, `bandit_archer_sheet.png`, `thief_sheet.png`, `goblin_sheet.png`, `ghoul_sheet.png` | 24×28 | `surface_human_layout.tres` | бандит-мечник, лучник, вор, гоблин, упырь |
 | `ogre_sheet.png` | 36×40 | `ogre_layout.tres` | огр |
 
-Лесной паук, ночной призрак и ворон пока используют листы паука,
-призрака и летучей мыши, перекрашенные через `tint`.
+Лесной паук, ночной призрак и ворон используют листы паука, призрака
+и летучей мыши из данжа, перекрашенные через `tint`.
 
 ## Добыча на поверхности — `assets/sprites/surface/`
 | Файл | Размер | Что это |

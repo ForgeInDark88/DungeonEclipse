@@ -70,23 +70,54 @@ def root(im, x, y, soil_dark, rnd, down=True, length=5):
         x += rnd.choice((-1, 0, 0, 1))
 
 
+def clods(im, x0, y0, base, rnd, seeds=7, stones=0, rock=None, var=0.10, edge=True):
+    """Earth like the dungeon's bricks: a tile split into clods (a Voronoi
+    that wraps around the tile, so it tiles with itself), each clod its own
+    tone, per-pixel grain, a lit upper-left rim and a dark crack on the
+    lower right; `stones` of them are pebbles of `rock`."""
+    pts = [(rnd.uniform(0, T), rnd.uniform(0, T)) for _ in range(seeds)]
+    tone = [rnd.uniform(0.86, 1.1) for _ in range(seeds)]
+    stone = set(rnd.sample(range(seeds), min(stones, seeds)))
+    owner = [[0] * T for _ in range(T)]
+    for y in range(T):
+        for x in range(T):
+            best, bi = 1e9, 0
+            for i, (px, py) in enumerate(pts):
+                dx = min(abs(x - px), T - abs(x - px))
+                dy = min(abs(y - py), T - abs(y - py))
+                dd = dx * dx + dy * dy * 1.3
+                if dd < best:
+                    best, bi = dd, i
+            owner[y][x] = bi
+    pix = im.load()
+    for y in range(T):
+        for x in range(T):
+            i = owner[y][x]
+            # a pebble: the earth's own hue mixed with the rock (not a grey slab)
+            c = tuple((r + 2 * e) / 3 for r, e in zip(rock[:3], base[:3])) if i in stone and rock else base
+            k = tone[i] * (1.0 + rnd.uniform(-var, var))
+            if edge:
+                up = owner[(y - 1) % T][x] != i or owner[y][(x - 1) % T] != i
+                down = owner[(y + 1) % T][x] != i or owner[y][(x + 1) % T] != i
+                if up:
+                    k *= 1.22 if i in stone else 1.12
+                elif down:
+                    k *= 0.62 if i in stone else 0.72
+            pix[x0 + x, y0 + y] = tuple(clamp(v * k) for v in c[:3]) + (255,)
+
+
 def tile_soil(im, cx, cy, b, rnd, kind="plain"):
     top, light, soil, dark, rock = b[0], b[1], b[2], b[3], b[4]
     x0, y0 = cx * T, cy * T
-    noise_fill(im, x0, y0, soil, dark, rnd)
-    # plain earth stays quiet (it repeats over whole hills): one pebble at
-    # most in one variant; the rocky variant carries the stones
-    if kind == "plain" and cx == 1:
-        pebble(im, x0 + rnd.randint(2, T - 6), y0 + rnd.randint(3, T - 5), rock, rnd)
-    elif kind == "rocky":
-        for _ in range(4):
-            pebble(im, x0 + rnd.randint(1, T - 5), y0 + rnd.randint(1, T - 4), rock, rnd)
+    stones = {"plain": 0, "rocky": 1, "ore": 0}[kind]
+    clods(im, x0, y0, soil, rnd, seeds=7 if kind != "rocky" else 9, stones=stones, rock=rock)
     if kind == "ore":
         d = ImageDraw.Draw(im)
-        for _ in range(6):
-            x, y = rnd.randint(2, T - 3), rnd.randint(2, T - 3)
-            d.rectangle((x0 + x, y0 + y, x0 + x + 1, y0 + y), fill=(214, 140, 70, 255))
-            d.point((x0 + x, y0 + y - 1), fill=(250, 200, 130, 255))
+        for _ in range(5):
+            x, y = rnd.randint(2, T - 4), rnd.randint(2, T - 4)
+            d.rectangle((x0 + x, y0 + y, x0 + x + 1, y0 + y + 1), fill=(196, 120, 60, 255))
+            d.point((x0 + x, y0 + y), fill=(255, 210, 140, 255))
+            d.point((x0 + x + 1, y0 + y + 1), fill=(120, 70, 36, 255))
 
 
 def tile_top(im, cx, cy, b, style, rnd):
@@ -94,37 +125,36 @@ def tile_top(im, cx, cy, b, style, rnd):
     tile_soil(im, cx, cy, b, rnd)
     x0, y0 = cx * T, cy * T
     d = ImageDraw.Draw(im)
-    if style == "sand":
+    pix = im.load()
+    if style in ("sand", "snow"):
+        cover = top if style == "sand" else (232, 236, 244)
+        hi = light if style == "sand" else (255, 255, 255)
         for x in range(T):
-            h = 4 + (1 if (x * 7 + cx) % 5 == 0 else 0)
-            d.line((x0 + x, y0, x0 + x, y0 + h), fill=mix(top, 1.0 - 0.04 * ((x + cx) % 3)))
-            d.point((x0 + x, y0), fill=mix(light, 1.0))
+            h = 4 + ((x * 3 + cx) % 4 == 0) + ((x * 7 + cx) % 5 == 0) + (1 if style == "snow" else 0)
+            for y in range(h):
+                k = (1.08 if y == 0 else 1.0 - 0.05 * y) * (1.0 + rnd.uniform(-0.04, 0.04))
+                pix[x0 + x, y0 + y] = tuple(clamp(v * k) for v in (hi if y == 0 else cover)[:3]) + (255,)
+            pix[x0 + x, y0 + h] = tuple(clamp(v * 0.72) for v in cover[:3]) + (255,)  # rim shadow
         return
-    if style == "snow":
-        for x in range(T):
-            h = 5 + ((x * 3 + cx) % 4 == 0) + ((x * 7 + cx) % 5 == 0)
-            d.line((x0 + x, y0, x0 + x, y0 + h), fill=(236, 240, 246, 255))
-            d.point((x0 + x, y0), fill=(255, 255, 255, 255))
-            d.point((x0 + x, y0 + h), fill=(176, 188, 206, 255))
-            if (x + cx) % 4 == 1:
-                d.point((x0 + x, y0 + 2), fill=(214, 222, 236, 255))
-        return
-    # grass / moss: a mat 4–6 px deep with a ragged lower edge and blades
+    # a mat of grass (moss): shaded blades on top, a ragged lower edge whose
+    # tufts hang over the earth, a dark shadow line under it
+    depth = [4 + ((x * 5 + cx * 3) % 3) + (1 if style == "moss" else 0) for x in range(T)]
     for x in range(T):
-        h = 4 + ((x * 5 + cx * 3) % 3)
-        if style == "moss":
-            h += 1
-        d.line((x0 + x, y0, x0 + x, y0 + h), fill=mix(top, 1.0))
-        d.point((x0 + x, y0 + h + 1), fill=mix(dark, 0.9))  # shadow under the mat
+        for y in range(depth[x] + 1):
+            k = 1.0 - 0.06 * y + rnd.uniform(-0.07, 0.07)
+            pix[x0 + x, y0 + y] = tuple(clamp(v * k) for v in top[:3]) + (255,)
+        pix[x0 + x, y0 + depth[x] + 1] = tuple(clamp(v * 0.55) for v in dark[:3]) + (255,)
+        if rnd.random() < 0.3:  # a tuft hangs over the edge
+            pix[x0 + x, y0 + depth[x] + 1] = tuple(clamp(v * 0.8) for v in top[:3]) + (255,)
+            pix[x0 + x, y0 + depth[x] + 2] = tuple(clamp(v * 0.5) for v in dark[:3]) + (255,)
+    for x in range(0, T):  # lit blade tips along the top
+        if (x + cx) % 2 == 0:
+            pix[x0 + x, y0] = tuple(clamp(v) for v in light[:3]) + (255,)
         if rnd.random() < 0.35:
-            d.point((x0 + x, y0 + h), fill=mix(top, 0.8))
-    for x in range(0, T, 2):
-        d.point((x0 + x, y0), fill=mix(light, 1.0))
-        if rnd.random() < 0.5:
-            d.point((x0 + x + 1, y0 + 1), fill=mix(light, 0.9))
-    for _ in range(3):
+            pix[x0 + x, y0 + 1] = tuple(clamp(v * 0.95) for v in light[:3]) + (255,)
+    for _ in range(4):  # darker blades inside the mat
         x = rnd.randint(0, T - 1)
-        d.line((x0 + x, y0 + 2, x0 + x, y0 + 4), fill=mix(top, 0.75))
+        d.line((x0 + x, y0 + 1, x0 + x, y0 + 3), fill=mix(top, 0.7))
 
 
 def tile_bottom(im, cx, cy, b, rnd):
@@ -140,17 +170,9 @@ def tile_bottom(im, cx, cy, b, rnd):
 
 
 def tile_bedrock(im, cx, cy, b, rnd):
-    rock = b[4]
-    x0, y0 = cx * T, cy * T
-    d = ImageDraw.Draw(im)
-    d.rectangle((x0, y0, x0 + T - 1, y0 + T - 1), fill=mix(rock, 0.55))
-    for y in range(0, T, 5):  # strata
-        off = (y * 3 + cx * 5) % T
-        d.line((x0, y0 + y, x0 + T - 1, y0 + y), fill=mix(rock, 0.42))
-        d.line((x0 + off % T, y0 + y + 1, x0 + min(T - 1, off % T + 5), y0 + y + 1), fill=mix(rock, 0.68))
-    for _ in range(2):
-        x, y = rnd.randint(1, T - 3), rnd.randint(1, T - 3)
-        d.line((x0 + x, y0 + y, x0 + x + rnd.randint(-2, 2), y0 + y + 3), fill=mix(rock, 0.35))
+    """Layered rock: big slabs (dark) with lit rims and cracks."""
+    rock = tuple(clamp(v * 0.62) for v in b[4][:3])
+    clods(im, cx * T, cy * T, rock, rnd, seeds=5, var=0.06)
 
 
 def tile_ledge(im, cx, cy, b, kind, part):
@@ -255,7 +277,7 @@ def build(name: str, b) -> None:
         tile_soil(im, c, 1, b, rnd, ["plain", "plain", "rocky", "ore"][c])
         tile_top(im, c, 2, b, style, rnd)
         tile_bottom(im, c, 3, b, rnd)
-        noise_fill(im, c * T, 5 * T, mix(b[3], 0.7)[:3], mix(b[3], 0.5)[:3], rnd)
+        clods(im, c * T, 5 * T, mix(b[3], 0.7)[:3], rnd, seeds=6, var=0.06)
         fringe(im, c, 7, b, flowers, style, rnd, c)
         hanging(im, c, 8, b, rnd)
     for part in range(3):
