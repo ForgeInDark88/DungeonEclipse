@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1"]
 [ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="2"]
 [ext_resource type="Texture2D" path="res://assets/sprites/enemies/ghoul_sheet.png" id="3"]
-[ext_resource type="Resource" path="res://data/animations/cultist_layout.tres" id="4"]
+[ext_resource type="Resource" path="res://data/animations/surface_human_layout.tres" id="4"]
 [ext_resource type="Texture2D" path="res://assets/sprites/enemies/ghoul.png" id="5"]
 
 [resource]

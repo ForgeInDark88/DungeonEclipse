@@ -257,6 +257,30 @@ func _initialize() -> void:
 				check(e.data.habitat != &"dungeon", "a monster of the surface lives there (%s)" % e.data.id)
 				surface_foes += 1
 		check(surface_foes > 0, "the surface has its own monsters")
+		# alone (no network party): the hero's layer is alive, the others sleep;
+		# a monster near the hero moves (patrols or comes for him)
+		var target = null
+		for e in current_scene.get_tree().get_nodes_in_group("enemies"):
+			if current_scene.level.band_index_at(e.global_position) == 0 and not e.data.sleeper \
+					and not e.data.neutral and e.data.behavior == 0:
+				target = e
+				break
+		check(target != null, "a walking monster on the surface")
+		if target:
+			current_scene.player._invulnerable = 99.0
+			current_scene.player.global_position = target.global_position + Vector2(-150, -20)
+			var from: Vector2 = target.global_position
+			await create_timer(3.0).timeout
+			check(target.process_mode != Node.PROCESS_MODE_DISABLED, "alone on the surface: its monsters are awake")
+			check(is_instance_valid(target) and target.global_position.distance_to(from) > 8.0,
+					"a monster near the hero moves (%s, %s)" % [target.data.id, target.state_name() if is_instance_valid(target) else "?"])
+			current_scene.player.global_position = current_scene.level.start_position()
+		var asleep_below := 0
+		for e in current_scene.get_tree().get_nodes_in_group("enemies"):
+			if current_scene.level.band_index_at(e.global_position) > 0 and e.process_mode == Node.PROCESS_MODE_DISABLED:
+				asleep_below += 1
+		check(asleep_below > 0, "the monsters of the floors below sleep meanwhile")
+		check(asleep_below > 0, "the monsters of the floors below sleep meanwhile")
 		# a locked side entrance: no key — stays shut; a key opens it (and is spent)
 		var locked_id := &""
 		for q in lm.instance.portals:
