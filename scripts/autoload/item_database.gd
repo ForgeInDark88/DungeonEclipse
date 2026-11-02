@@ -3,6 +3,8 @@ extends Node
 ## picked up just by dropping a .tres file into the right folder.
 
 const REGION_DIR := "res://data/regions"
+const LOCATION_DIR := "res://data/locations"
+const SURFACE_DIR := "res://data/surface"
 const BUILDING_DIR := "res://data/buildings"
 const NPC_DIR := "res://data/npcs"
 const ROAD_EVENT_DIR := "res://data/road_events"
@@ -27,6 +29,10 @@ const LORE_DIR := "res://data/lore"
 const EQUIPMENT_LAYOUT := "res://data/equipment_layout.tres"
 
 var items: Dictionary = {}  # StringName -> ItemData
+## Node type -> LocationDefinition (data/locations).
+var locations: Dictionary = {}
+## Id -> SurfaceBiomeData (data/surface): the open land of the regions.
+var surface_biomes: Dictionary = {}
 var races: Array[RaceData] = []
 var classes: Array[ClassData] = []
 var enemies: Array[EnemyData] = []
@@ -75,6 +81,14 @@ func reload() -> void:
 	pacts.clear()
 	pets.clear()
 	difficulties.clear()
+	surface_biomes.clear()
+	for res in load_dir(SURFACE_DIR):
+		if res is SurfaceBiomeData:
+			surface_biomes[res.id] = res
+	locations.clear()
+	for res in load_dir(LOCATION_DIR):
+		if res is LocationDefinition:
+			locations[res.id] = res
 	regions.clear()
 	for res in load_dir(REGION_DIR):
 		if res is RegionData:
@@ -190,9 +204,15 @@ func enemy_by_id(id: StringName) -> EnemyData:
 	return null
 
 
-func enemies_for_floor(floor_number: int, biome_id: StringName = &"") -> Array[EnemyData]:
+func enemies_for_floor(floor_number: int, biome_id: StringName = &"", night := false) -> Array[EnemyData]:
 	var list: Array[EnemyData] = []
+	# the open land has its own life; the floors theirs
+	var surface := surface_biomes.has(biome_id)
 	for e in enemies:
+		if e.habitat != &"any" and (e.habitat == &"surface") != surface:
+			continue
+		if e.night_only != night:
+			continue
 		if e.min_floor <= floor_number and (e.biomes.is_empty() or biome_id == &"" or biome_id in e.biomes):
 			list.append(e)
 	return list
@@ -213,7 +233,8 @@ func boss_for_floor(floor_number: int) -> BossData:
 		return null
 	# An expedition node names its own guardian (region boss or lair).
 	var loc_boss := StringName(GameState.location.get("boss", ""))
-	if loc_boss != &"" and floor_number == GameState.floor_number:
+	# (A location of layers: its arena lies deeper than the node's depth.)
+	if loc_boss != &"" and (floor_number == GameState.floor_number or GameState.location.has("instance")):
 		var b := boss_by_id(loc_boss)
 		if b:
 			return b
@@ -247,7 +268,7 @@ func biome_by_id(id: StringName) -> BiomeData:
 	for b in biomes:
 		if b.id == id:
 			return b
-	return null
+	return surface_biomes.get(id)
 
 
 func final_floor() -> int:

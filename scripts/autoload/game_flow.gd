@@ -323,11 +323,20 @@ func _resume_expedition() -> bool:
 	GameState.kills = int(d.get("kills", 0))
 	GameState.run_stats = d.get("stats", {})
 	GameState.run_stats["start_ms"] = Time.get_ticks_msec()
-	match String(d.get("at", "map")):
+	var at := String(d.get("at", "map"))
+	if at == "location" and (d.get("location", {}) as Dictionary).has("instance"):
+		at = "layers"
+	match at:
 		"camp":
 			GameState.location = d.get("location", {})
 			GameState.floor_number = int(GameState.location.get("depth", 1))
 			change_scene(CAMP_SCENE, State.LOCATION)
+		"layers":
+			# A location of layers: rebuilt from its seed with what changed,
+			# the hero at its last save point.
+			GameState.location = d.get("location", {})
+			GameState.floor_number = int(GameState.location.get("depth", 1))
+			change_scene(GameState.GAME, State.LOCATION)
 		"location":
 			GameState.location = {}
 			GameState.run.flags["fled"] = int(GameState.run.flags.get("fled", 0)) + 1
@@ -347,7 +356,12 @@ func save_and_quit() -> void:
 		WorldNet.close_session()
 		_leave_to_menu()
 		return
-	if GameState.run != null:
+	var game := get_tree().current_scene
+	var lm: LocationManager = game.location if game and "location" in game else null
+	if GameState.run != null and lm != null:
+		# A location of layers: the hero comes back to this way in or out.
+		lm.save_where_standing(game.player)
+	elif GameState.run != null:
 		save_expedition("camp" if GameState.location_type() == &"camp" else "map")
 	else:
 		save_town()
@@ -481,6 +495,10 @@ func enter_node(id: int) -> bool:
 	var hero := GameState.hero
 	run.loc = {"gold": hero.gold if hero else 0, "kills": GameState.kills, "shards": _shards(),
 			"finds": [], "picked": 0, "resources": {}, "cleared": false}
+	# A location of layers: the surface, the ways down, the floors below.
+	var li := LocationInstance.plan(n) if StringName(n["type"]) in PLATFORMER_TYPES else null
+	if li:
+		GameState.location["instance"] = li.to_dict()
 	EventBus.floor_changed.emit(GameState.floor_number)
 	var type := StringName(n["type"])
 	if type in PLATFORMER_TYPES:
@@ -524,6 +542,11 @@ func _on_chest_opened(chest: Node) -> void:
 	if randf() < 0.4:
 		var id: StringName = [&"wood", &"stone", &"herbs"].pick_random()
 		gain_resource(id, randi_range(1, 2), (chest as Node2D).global_position)
+
+
+## A blueprint the town does not have yet, for a find on the way.
+func roll_blueprint() -> StringName:
+	return _roll_blueprint()
 
 
 ## A blueprint the town does not have yet (&"" = none left).
@@ -671,8 +694,17 @@ func end_expedition(outcome: RunState.Outcome) -> void:
 				var npc: NpcData = ItemDatabase.npcs.get(id)
 				town.news.append(tr("В город переехал(а) %s.") % (npc.display_name if npc else String(id)))
 		for k in run.flags:
-			if not k in ["nodes_done", "rumours", "events_seen", "after_fight_rescue"]:
+			if not k in ["nodes_done", "rumours", "events_seen", "after_fight_rescue", "places"]:
 				town.flags[k] = run.flags[k]
+		# places found on the surfaces: the scouts' map of the world grows
+		var places: Array = run.flags.get("places", [])
+		if not places.is_empty():
+			town.add_stat("places_found", places.size())
+			var known_places: Dictionary = town.flags.get("places_known", {})
+			for kd in places:
+				known_places[String(kd)] = int(known_places.get(String(kd), 0)) + 1
+			town.flags["places_known"] = known_places
+			town.news.append(tr("Разведчики нанесли на карту новые места: %d.") % places.size())
 		for bp in run.blueprints:
 			if not bp in town.blueprints:
 				town.blueprints.append(bp)

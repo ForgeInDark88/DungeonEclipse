@@ -46,7 +46,7 @@ func to_dict() -> Dictionary:
 		"start_region": start_region, "gold_at_start": gold_at_start, "kills_at_start": kills_at_start,
 		"resources": resources.duplicate(), "finds": Array(finds), "rescued": Array(rescued),
 		"blueprints": Array(blueprints), "bosses": Array(bosses), "flags": flags.duplicate(true),
-		"elapsed": (Time.get_ticks_msec() - start_ms) / 1000,
+		"elapsed": (Time.get_ticks_msec() - start_ms) / 1000, "loc": loc.duplicate(true),
 	}
 
 
@@ -65,6 +65,7 @@ static func from_dict(d: Dictionary) -> RunState:
 	r.blueprints.assign(d.get("blueprints", []))
 	r.bosses.assign(d.get("bosses", []))
 	r.flags = d.get("flags", {})
+	r.loc = d.get("loc", {})
 	r.start_ms = Time.get_ticks_msec() - int(d.get("elapsed", 0)) * 1000
 	return r
 

@@ -37,6 +37,30 @@ var town_props: Array[Dictionary] = []
 ## residents standing in the street {"id", "cell"} (TownBuilder.build_hub).
 var town_buildings: Array[Dictionary] = []
 var town_people: Array[Dictionary] = []
+## The open surface of a location (SurfaceGenerator): sky instead of the
+## back wall, no exit seal.
+var is_surface := false
+## Portal id -> cell of the portals between the layers of a location
+## (LocationInstance portals; LocationBuilder fills them).
+var portal_cells: Dictionary = {}
+## Portal id -> look of a way down from the surface (cave, well, crypt...).
+var portal_kinds: Dictionary = {}
+## Surface (SurfaceGenerator): props {"tex": name in assets/sprites/surface,
+## "cell", "z"}, ponds and ravines (Rect2i cells), points of interest
+## {"type", "cell", "rect"}.
+var surface_props: Array[Dictionary] = []
+var water: Array[Rect2i] = []
+var ravines: Array[Rect2i] = []
+var pois: Array[Dictionary] = []
+## Surface: things to gather {"kind": ResourceNode kind, "cell"}, barrels
+## and crates {"look", "cell"}.
+var resources: Array[Dictionary] = []
+var breakables: Array[Dictionary] = []
+## A location of several layers stacked into one level (LocationBuilder):
+## [{layer: int, rect: Rect2i (cells), origin: Vector2i, layout: LevelLayout,
+##   depth: int, biome: BiomeData, kind: LocationInstance.Kind}]. Empty for
+## an ordinary level.
+var bands: Array = []
 
 
 func _init(w: int, h: int, fill: int = Tile.BRICK) -> void:

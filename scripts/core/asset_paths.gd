@@ -177,6 +177,12 @@ const SFX := {
 const WEAPON_SFX: Array[StringName] = [&"attack_sword", &"attack_axe", &"attack_spear", &"attack_dagger", &"attack_bow", &"attack_staff", &"attack_mace", &"attack_bow", &"attack_staff"]
 const MUSIC := {
 	&"menu": MUSIC_DIR + "music_menu.ogg",
+	&"surface_forest": MUSIC_DIR + "music_surface_forest.ogg",
+	&"surface_hills": MUSIC_DIR + "music_surface_hills.ogg",
+	&"surface_swamp": MUSIC_DIR + "music_surface_swamp.ogg",
+	&"surface_ruins": MUSIC_DIR + "music_surface_ruins.ogg",
+	&"surface_mountains": MUSIC_DIR + "music_surface_mountains.ogg",
+	&"surface_wasteland": MUSIC_DIR + "music_surface_wasteland.ogg",
 	&"town": MUSIC_DIR + "music_town.ogg",
 	&"catacombs": MUSIC_DIR + "music_catacombs.ogg",
 	&"fungal": MUSIC_DIR + "music_fungal.ogg",
@@ -208,6 +214,23 @@ const MUSIC_FALLBACK := {
 	&"boss_illusionist": &"boss",
 	&"mirror_halls": &"ruins",
 	&"boss_eclipse": &"boss",
+	# The open surface: its own tracks once they exist (docs/AUDIO_LIST.md),
+	# until then the nearest mood we have.
+	&"surface_forest": &"town",
+	&"surface_hills": &"town",
+	&"surface_swamp": &"fungal",
+	&"surface_ruins": &"ruins",
+	&"surface_mountains": &"town",
+	&"surface_wasteland": &"ashen_halls",
+}
+## Ambience loops of the surface (AudioManager.play_ambience).
+const AMBIENCE_DIR := "res://assets/audio/ambience/"
+const AMBIENCE := {
+	&"amb_wind": AMBIENCE_DIR + "amb_wind.wav",
+	&"amb_birds": AMBIENCE_DIR + "amb_birds.wav",
+	&"amb_night": AMBIENCE_DIR + "amb_night.wav",
+	&"amb_frogs": AMBIENCE_DIR + "amb_frogs.wav",
+	&"amb_rain": AMBIENCE_DIR + "amb_rain.wav",
 }
 ## Tracks played once (not looped): AudioManager.play_sting().
 const MUSIC_ONE_SHOT: Array[StringName] = [&"victory", &"death", &"ending"]

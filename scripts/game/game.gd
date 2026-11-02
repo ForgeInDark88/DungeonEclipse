@@ -20,6 +20,8 @@ var player: Player
 ## LAN co-op: world replication coordinator and the shared player container.
 var net_sync: NetSync
 var net_players: Node2D
+## The layers of a location of several (null in an ordinary level).
+var location: LocationManager
 var _players_spawned := false
 var _shake := 0.0
 var _rng := RandomNumberGenerator.new()
@@ -86,7 +88,9 @@ func _ready() -> void:
 			var book := QuestBook.new()
 			add_child(book)
 			book.open())
-	EventBus.boss_spawned.connect(func(b: Node) -> void: AudioManager.play_music((b as Boss).boss.music))
+	EventBus.boss_spawned.connect(func(b: Node) -> void:
+		if location == null:  # a location of layers: its music changes per layer
+			AudioManager.play_music((b as Boss).boss.music))
 	# Boss defeated: a victory sting, then back to the floor's music.
 	EventBus.boss_defeated.connect(func(b: BossData, _p: Vector2) -> void:
 		var biome := GameState.current_biome()
@@ -107,6 +111,12 @@ func _load_floor() -> void:
 	if level:
 		world.remove_child(level)
 		level.queue_free()
+	if location:
+		location.queue_free()
+		location = null
+	if GameState.location.has("instance"):
+		_load_location()
+		return
 	var floor_number := GameState.floor_number
 	var seed_value := GameState.floor_seed()
 	var gen := LevelGenerator.new()
@@ -156,6 +166,44 @@ func _load_floor() -> void:
 		# (In co-op the host's save is the only one; taken outside this branch.)
 		if Net.is_host:
 			SaveManager.save_run()
+
+
+## A location of layers (LocationInstance): the whole of it in one level,
+## LocationManager runs the portals, the save points and the layers.
+func _load_location() -> void:
+	var li := LocationInstance.from_dict(GameState.location["instance"])
+	var layout := LocationBuilder.build(li)
+	level = LEVEL_SCENE.instantiate()
+	world.add_child(level)
+	world.move_child(level, 0)
+	level.build_location(layout, li.gen_seed)
+	player.set_level(level)
+	location = LocationManager.new()
+	add_child(location)
+	location.setup(self, level, li)
+	_sync_pet()
+	_net_on_floor_loaded()
+	location.place_player(player)
+	if not GameFlow.is_guest():
+		location.save_point()  # the first save point: the start of the location
+
+
+## LocationManager: the hero went to a layer with another biome.
+## Under the open sky the background stands still vertically (the sky fills
+## the screen, the hills sit at its bottom); underground it scrolls and
+## repeats as before.
+func apply_layer_biome(b: BiomeData) -> void:
+	_apply_biome(b)
+	var open_sky := b is SurfaceBiomeData
+	for layer in $Parallax.get_children():
+		var pl := layer as ParallaxLayer
+		if not pl.has_meta(&"scale"):
+			pl.set_meta(&"scale", pl.motion_scale)
+			pl.set_meta(&"mirror", pl.motion_mirroring)
+		var sc: Vector2 = pl.get_meta(&"scale")
+		var mi: Vector2 = pl.get_meta(&"mirror")
+		pl.motion_scale = Vector2(sc.x, 0.0) if open_sky else sc
+		pl.motion_mirroring = Vector2(mi.x, 0.0) if open_sky else mi
 
 
 ## Expedition: the exit of a location shows what it gave (gold, kills,
@@ -372,11 +420,16 @@ func _toggle_pause() -> void:
 	overlay.add_button(tr("Дерево навыков"), func() -> void:
 		_toggle_pause()
 		skill_tree.open())
-	if GameState.expedition and GameState.is_town():
+	var safe_spot := location != null and location.at_safe_spot(player)
+	if GameState.expedition and (GameState.is_town() or safe_spot):
 		overlay.add_button(tr("Сохранить и выйти"), func() -> void: GameFlow.save_and_quit())
 	else:
 		overlay.add_button(tr("В главное меню"), func() -> void: GameState.go_to_menu())
-	if GameState.expedition and not GameState.is_town():
+	if location != null and not safe_spot:
+		overlay.add_text(tr("(сохранить и выйти можно у входа, выхода или костра; иначе продолжите с последней точки сохранения)"), 6)
+	elif location != null:
+		pass
+	elif GameState.expedition and not GameState.is_town():
 		overlay.add_text(tr("(в локации сохраняется только выход из неё: выйдя сейчас, вы сбежите из неё без награды)"), 6)
 	else:
 		overlay.add_text(tr("(забег продолжится с начала этажа)"), 7)

@@ -107,3 +107,34 @@
 2. Добавьте строку в `AssetPaths.SFX`: `&"my_sound": SFX_DIR + "my_sound.ogg",`.
 3. Используйте id в данных (`UsableItemData.use_sound`, `EnemyData.sound_hurt/sound_death/sound_attack`)
    или в коде: `AudioManager.play_sfx(&"my_sound", global_position)` / `AudioManager.play_ui(&"my_sound")`.
+
+## Поверхность локаций (этап 15)
+
+### Музыка — `assets/audio/music/`
+Пока файлов нет, играет ближайшая по настроению дорожка
+(`AssetPaths.MUSIC_FALLBACK`).
+
+| Файл | Биом | Сейчас вместо него | Настроение |
+|---|---|---|---|
+| `music_surface_forest.ogg` | лес | `town` | светлая, дудочка и струнные, 90–100 BPM |
+| `music_surface_hills.ogg` | холмы | `town` | простор, тягучий пэд и мелодия |
+| `music_surface_swamp.ogg` | болото | `fungal` | вязкая, низкие кларнеты, редкие капли |
+| `music_surface_ruins.ogg` | руины | `ruins` | меланхолия, хор вдали |
+| `music_surface_mountains.ogg` | горы | `town` | холодная, рога, гулкое эхо |
+| `music_surface_wasteland.ogg` | пустошь | `ashen_halls` | сухая, перкуссия, ветер |
+
+### Атмосфера — `assets/audio/ambience/` (петли, WAV)
+Сейчас это синтез из `python3 tools/gen_ambience.py` (8 с, моно,
+22 кГц, бесшовная петля). Звучит под музыкой на шине SFX
+(`AudioManager.play_ambience`) в двух каналах: земля и погода.
+
+| Файл | Когда звучит |
+|---|---|
+| `amb_birds.wav` | день в лесу |
+| `amb_wind.wav` | день на холмах, в руинах, в горах, в пустоши; погода «ветер» |
+| `amb_frogs.wav` | день на болоте |
+| `amb_night.wav` | ночь в любом биоме (сверчки) |
+| `amb_rain.wav` | погода «дождь» |
+
+Нужны ещё (пока не используются): `amb_snow.wav` (вьюга), `amb_ash.wav`
+(шорох пепла), `amb_campfire.wav` (треск костра у малого лагеря).

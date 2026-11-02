@@ -143,6 +143,43 @@ func _exit_tree() -> void:
 		(p as AudioStreamPlayer2D).stream = null
 
 
+# --------------------------------------------------------------- ambience
+var _amb: Array[AudioStreamPlayer] = []
+var _amb_id: Array[StringName] = [&"", &""]
+
+
+## A loop of the world's air under the music (wind, birds, rain...) in one
+## of two channels (0: the land, 1: the weather); &"" fades it out.
+func play_ambience(id: StringName, channel := 0, volume_db := -10.0) -> void:
+	if _amb.is_empty():
+		for i in 2:
+			var p := AudioStreamPlayer.new()
+			p.bus = &"SFX"
+			p.volume_db = -80.0
+			add_child(p)
+			_amb.append(p)
+	if _amb_id[channel] == id:
+		return
+	_amb_id[channel] = id
+	var p := _amb[channel]
+	var tw := create_tween()
+	tw.tween_property(p, "volume_db", -80.0, 0.8)
+	if id == &"" or not AssetPaths.AMBIENCE.has(id):
+		tw.tween_callback(p.stop)
+		return
+	var stream := _stream(AssetPaths.AMBIENCE[id])
+	if stream == null:
+		return
+	if stream is AudioStreamWAV:
+		var wav := stream as AudioStreamWAV
+		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		wav.loop_end = int(wav.get_length() * wav.mix_rate)
+	tw.tween_callback(func() -> void:
+		p.stream = stream
+		p.play())
+	tw.tween_property(p, "volume_db", volume_db, 1.2)
+
+
 func play_music(id: StringName) -> void:
 	_after_sting = &""
 	_switch_music(id)

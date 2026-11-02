@@ -16,3 +16,4 @@ steps_max = 8
 boss = &"drowned_bell"
 lair_bosses = Array[StringName]([&"crystal_titan"])
 color = Color(0.2, 0.35, 0.55, 1)
+surface_biomes = Array[StringName]([&"swamp", &"mountains"])

@@ -80,6 +80,9 @@ func _host() -> void:
 	if OS.get_environment("SCENARIO") == "coop":
 		await _host_coop()
 		return
+	if OS.get_environment("SCENARIO") == "layers":
+		await _host_layers()
+		return
 	var kicked := false
 	var t := 0.0
 	var stay := float(env_int("STAY", 40))
@@ -241,6 +244,81 @@ func _host_coop() -> void:
 	wn.close_session()
 
 
+## The first locked way of the location (the same plan on every machine).
+func first_lock() -> StringName:
+	var lm = current_scene.location
+	for q in lm.instance.portals:
+		if q.get("locked", false) and q.get("lock", &"") != &"":
+			return StringName(q["id"])
+	return &""
+
+
+## The heroes of the party: peer -> band of the location.
+func party_bands() -> Dictionary:
+	var out := {}
+	var game = current_scene
+	for p in game.party():
+		out[p.peer_id] = game.level.band_index_at(p.global_position)
+	return out
+
+
+## Host side of a split party: Ann goes down, Ben stays up with the host;
+## the host simulates both layers, the empty ones sleep; then the host calls
+## everybody down to the first floor.
+func _host_layers() -> void:
+	var gs = root.get_node("GameState")
+	var t := 0.0
+	while wn.roster.size() < 3 and t < 30.0:
+		await create_timer(0.25).timeout
+		t += 0.25
+	check(wn.roster.size() == 3, "two guests joined")
+	await create_timer(2.0).timeout
+	flow.open_map()
+	await create_timer(2.5).timeout
+	var id: int = gs.run.next_choices()[0]
+	gs.run.map.nodes[id]["type"] = &"level"
+	gs.run.map.nodes[id]["sub"] = &""
+	flow.enter_node(id)
+	await create_timer(9.0).timeout
+	_make_invulnerable()
+	var game = current_scene
+	check(game.location != null, "the host built a location of layers")
+	print("HASH 0: %s" % state_hash())
+	await create_timer(8.0).timeout  # Ann goes down meanwhile
+	var bands := party_bands()
+	print("BANDS: %s" % str(bands))
+	check(bands.values().has(0) and bands.values().has(1), "the party stands in two layers at once")
+	var active: Array = game.location.active_bands()
+	check(0 in active and 1 in active and not 2 in active, "the host simulates the layers with heroes (%s)" % str(active))
+	var asleep := 0
+	var awake := 0
+	for e in game.get_tree().get_nodes_in_group("enemies"):
+		var bi: int = game.level.band_index_at(e.global_position)
+		if bi >= 2:
+			asleep += 1 if e.process_mode == Node.PROCESS_MODE_DISABLED else 0
+			awake += 0 if e.process_mode == Node.PROCESS_MODE_DISABLED else 1
+	check(asleep > 0 and awake == 0, "the monsters of the empty layers sleep (%d asleep, %d awake)" % [asleep, awake])
+	# a lock opened by the host is open for everybody
+	var lk := first_lock()
+	if lk != &"":
+		game.location.open_lock(lk, true)
+		print("LOCK OPENED: %s" % lk)
+	# everybody down: the host calls the party through the main entrance
+	game.location.request_pull(&"f1_up")
+	await create_timer(4.0).timeout
+	bands = party_bands()
+	print("BANDS AFTER PULL: %s" % str(bands))
+	check(bands.values().all(func(b): return b == 1), "the party was called down together")
+	await create_timer(4.0).timeout
+	flow.location_cleared()
+	await create_timer(3.0).timeout
+	flow.retreat()
+	await create_timer(2.5).timeout
+	flow.back_to_town()
+	await create_timer(3.0).timeout
+	wn.close_session()
+
+
 func _client() -> void:
 	var expect := OS.get_environment("EXPECT")
 	var st := {"done": false, "result": "", "kicked": false}
@@ -304,6 +382,46 @@ func _client() -> void:
 		await create_timer(3.0).timeout
 		check(wn.town_net.safe_cache.size() == 1, "my safe holds the bomb")
 		wn.close_session()
+		return
+	if OS.get_environment("SCENARIO") == "layers":
+		var tt := 0.0
+		while tt < 40.0 and not (flow.state == flow.State.LOCATION and current_scene and "location" in current_scene and current_scene.location):
+			await create_timer(0.25).timeout
+			tt += 0.25
+		check(current_scene.location != null, "the guest built the same location of layers")
+		await create_timer(5.0).timeout
+		_make_invulnerable()
+		print("HASH 0: %s" % state_hash())
+		var lm = current_scene.location
+		if nick == "Ann":
+			lm.travel(&"f1_up")
+			await create_timer(1.5).timeout
+		var ns = current_scene.get_tree().get_first_node_in_group("net_game")
+		ns.heard.clear()
+		await create_timer(4.0).timeout
+		var mine: int = lm.band
+		var other := 0
+		for nid in ns.heard:
+			var e = ns.enemies.get(nid)
+			if e and is_instance_valid(e) and current_scene.level.band_index_at(e.global_position) != mine:
+				other += 1
+		check(ns.heard.size() > 0 and other == 0, "%s hears only about its own layer %d (%d heard, %d from others)" % [nick, mine, ns.heard.size(), other])
+		check(mine == (1 if nick == "Ann" else 0), "%s stands in the layer it chose" % nick)
+		var waited := 0.0
+		while lm.band != 1 and waited < 10.0:
+			await create_timer(0.25).timeout
+			waited += 0.25
+		check(lm.band == 1, "%s came down with the party's call" % nick)
+		var lk := first_lock()
+		if lk != &"":
+			var wl := 0.0
+			while not lm.instance.is_unlocked(lk) and wl < 12.0:
+				await create_timer(0.25).timeout
+				wl += 0.25
+			check(lm.instance.is_unlocked(lk), "%s sees the lock %s opened by the host" % [nick, lk])
+		while wn.session and tt < 80.0:
+			await create_timer(0.25).timeout
+			tt += 0.25
 		return
 	if OS.get_environment("SCENARIO") == "coop":
 		if nick == "Ann":

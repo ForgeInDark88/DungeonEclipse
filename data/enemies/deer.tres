@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/deer_sheet.png" id="3"]
+[ext_resource type="Resource" path="res://data/animations/deer_layout.tres" id="4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/deer.png" id="5"]
+
+[resource]
+script = ExtResource("1")
+id = &"deer"
+display_name = "Олень"
+description = "Пугливый лесной житель. Не трогает путников, но копыта у него крепкие."
+texture = ExtResource("5")
+sheet = ExtResource("3")
+sheet_layout = ExtResource("4")
+behavior = 0
+collision_size = Vector2(18, 16)
+max_hp = 30
+damage = 6
+armor = 0
+speed = 50.0
+chase_speed = 110.0
+aggro_range = 0.0
+attack_range = 18.0
+attack_cooldown = 1.4
+jumps = true
+xp_reward = 6
+loot_table = ExtResource("2")
+loot_chance = 0.3
+gold_min = 0
+gold_max = 0
+min_floor = 1
+spawn_weight = 0.80
+biomes = Array[StringName]([&"surface_forest", &"surface_hills", &"surface_mountains"])
+habitat = &"surface"
+tint = Color(1, 1, 1, 1)
+gender = "m"
+neutral = true
+no_rewards = false

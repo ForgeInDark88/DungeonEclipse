@@ -39,6 +39,15 @@ enum Behavior { WALKER, FLYER, RANGED }
 @export var spawn_weight: float = 1.0
 ## Biome ids where it appears (empty = everywhere).
 @export var biomes: Array[StringName] = []
+## Where it lives: &"dungeon" (floors), &"surface" (the open land of
+## locations, data/surface biomes) or &"any".
+@export var habitat: StringName = &"dungeon"
+## Surface life: a neutral animal ignores the hero until hurt (deer, crows);
+## a sleeper dozes until a hero comes close or a noise wakes it; a night
+## creature comes out only at night (LocationManager).
+@export var neutral: bool = false
+@export var sleeper: bool = false
+@export var night_only: bool = false
 @export var tint: Color = Color.WHITE
 ## Russian gender of the name (m/f/n) for elite prefixes.
 @export var gender: String = "m"

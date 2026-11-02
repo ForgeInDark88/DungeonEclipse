@@ -11,6 +11,9 @@ extends Resource
 @export var order: int = 0
 ## Biomes of the region, near → far (the road walks through them in order).
 @export var biomes: Array[StringName] = []
+## The open land above its dungeons (data/surface ids without "surface_"):
+## a location's seed picks one of them.
+@export var surface_biomes: Array[StringName] = [&"forest"]
 ## Depth of the first step and of the boss (the boss fights at depth_to).
 @export var depth_from: int = 1
 @export var depth_to: int = 5

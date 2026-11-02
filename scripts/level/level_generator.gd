@@ -373,7 +373,7 @@ func _place_specials(_floor_number: int) -> void:
 	_shuffle(rooms)
 	# A rescue node: the prisoner's cage in the room before the exit, its
 	# guards around it (DungeonLevel spawns them, RescueCage opens after).
-	if GameState.location_type() == &"rescue":
+	if GameState.location_type() == &"rescue" and GameState.location.get("band_last", true):
 		var room: Vector2i = _path[maxi(1, _path.size() - 2)]
 		var cell: Variant = _take_spot(room, true)
 		if cell != null:

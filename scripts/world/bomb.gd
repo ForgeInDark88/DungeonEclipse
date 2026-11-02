@@ -71,6 +71,9 @@ func explode() -> void:
 				if st:
 					st.apply(status, status_duration, status_power)
 	_friendly_fire(center)
+	for b in get_tree().get_nodes_in_group("breakables"):
+		if (b as Node2D).global_position.distance_to(center) <= radius + 8.0:
+			b.smash()
 	var level := get_parent().get_parent() as DungeonLevel
 	if level:
 		if breaks_tiles:

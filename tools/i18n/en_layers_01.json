@@ -1,0 +1,16 @@
+{
+" · E — отпереть": " · E — unlock",
+" · E — разобрать": " · E — clear it",
+"Бомба расчистила завал.": "The bomb cleared the rubble.",
+"Вы разобрали завал киркой.": "You cleared the rubble with the pickaxe.",
+"Завал: нужна кирка или бомба": "Rubble: needs a pickaxe or a bomb",
+"Ключ подошёл: решётка открыта.": "The key fits: the grate is open.",
+"Найден короткий путь: подъёмник на поверхность.": "Shortcut found: a lift to the surface.",
+"Подъёмник вниз: %s": "Lift down: %s",
+"Подъёмник наверх: %s": "Lift up: %s",
+"Подъёмник поднят: его можно спустить только снизу": "The lift is up: it can only be called from below",
+"Решётка заперта: нужен ключ": "The grate is locked: needs a key",
+"сокровищница": "treasury",
+"старая шахта": "old mine",
+"тайник": "cache"
+}

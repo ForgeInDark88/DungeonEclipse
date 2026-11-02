@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/bat_sheet.png" id="3"]
+[ext_resource type="Resource" path="res://data/animations/bat_layout.tres" id="4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/bat.png" id="5"]
+
+[resource]
+script = ExtResource("1")
+id = &"crow"
+display_name = "Ворон"
+description = "Кружит над полями. Пока его не трогают, он не трогает."
+texture = ExtResource("5")
+sheet = ExtResource("3")
+sheet_layout = ExtResource("4")
+behavior = 1
+collision_size = Vector2(10, 8)
+max_hp = 8
+damage = 3
+armor = 0
+speed = 50.0
+chase_speed = 90.0
+aggro_range = 0.0
+attack_range = 14.0
+attack_cooldown = 1.0
+jumps = false
+xp_reward = 3
+loot_table = ExtResource("2")
+loot_chance = 0.3
+gold_min = 0
+gold_max = 0
+min_floor = 1
+spawn_weight = 0.80
+biomes = Array[StringName]([&"surface_forest", &"surface_hills", &"surface_swamp", &"surface_ruins", &"surface_mountains", &"surface_wasteland"])
+habitat = &"surface"
+tint = Color(0.35, 0.35, 0.4, 1)
+gender = "m"
+neutral = true
+no_rewards = false

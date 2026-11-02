@@ -94,6 +94,7 @@ func setup(p_hero: Hero, player: Player) -> void:
 	EventBus.boss_defeated.connect(func(_b: BossData, _p: Vector2) -> void: _boss_box.visible = false)
 	EventBus.floor_changed.connect(func(_f: int) -> void: _boss_box.visible = false)
 	EventBus.floor_changed.connect(func(_f: int) -> void: _refresh_floor())
+	EventBus.floor_changed_quiet.connect(func(_f: int) -> void: _refresh_floor())
 	player.interact_hint_changed.connect(func(t: String) -> void: _hint.text = t)
 	_hp.set_values(hero.stats.hp, hero.stats.max_hp())
 	_mana.set_values(hero.stats.mana, hero.stats.max_mana())

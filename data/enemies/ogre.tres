@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/ogre_sheet.png" id="3"]
+[ext_resource type="Resource" path="res://data/animations/ogre_layout.tres" id="4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/ogre.png" id="5"]
+
+[resource]
+script = ExtResource("1")
+id = &"ogre"
+display_name = "Огр"
+description = "Громада с дубиной. Медленный, но один удар валит с ног."
+texture = ExtResource("5")
+sheet = ExtResource("3")
+sheet_layout = ExtResource("4")
+behavior = 0
+collision_size = Vector2(22, 34)
+max_hp = 120
+damage = 20
+armor = 4
+speed = 26.0
+chase_speed = 48.0
+aggro_range = 140.0
+attack_range = 24.0
+attack_cooldown = 2.4
+jumps = false
+xp_reward = 60
+loot_table = ExtResource("2")
+loot_chance = 0.3
+gold_min = 10
+gold_max = 25
+min_floor = 6
+spawn_weight = 0.35
+biomes = Array[StringName]([&"surface_hills", &"surface_mountains", &"surface_wasteland", &"surface_swamp"])
+habitat = &"surface"
+tint = Color(1, 1, 1, 1)
+gender = "m"
+sleeper = true

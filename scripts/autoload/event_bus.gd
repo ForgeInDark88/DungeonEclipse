@@ -8,6 +8,13 @@ signal message(text: String)
 signal enemy_killed(enemy_data: EnemyData, world_pos: Vector2)
 signal player_died
 signal floor_changed(floor_number: int)
+## The hero went to another layer of the location: a new depth for the HUD,
+## nothing is rebuilt (floor_changed rebuilds the level).
+signal floor_changed_quiet(floor_number: int)
+## Something was gathered on the surface (ResourceNode kind).
+signal resource_gathered(kind: StringName)
+## A place of the surface was found (a point of interest's type).
+signal place_discovered(kind: StringName)
 ## Request to spawn items in the world (chest loot, enemy drops, dropped items).
 signal spawn_items(world_pos: Vector2, stacks: Array)
 signal inventory_toggled(open: bool)
