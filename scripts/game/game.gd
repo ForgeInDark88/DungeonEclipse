@@ -127,6 +127,9 @@ func _load_floor() -> void:
 		layout = TownBuilder.build()
 	elif GameState.is_boss_floor():
 		layout = gen.generate_arena(floor_number, seed_value)
+	elif GameState.location_type() == &"camp":
+		_load_camp()
+		return
 	elif GameState.location_type() == &"event":
 		layout = gen.generate_event_room(floor_number, seed_value)
 	else:
@@ -187,6 +190,34 @@ func _load_location() -> void:
 	location.place_player(player)
 	if not GameFlow.is_guest():
 		location.save_point()  # the first save point: the start of the location
+
+
+## A camp of the road as a place to walk (CampBuilder): forest, ruins or
+## cave by the region and the node; the town decides what stands there.
+func _load_camp() -> void:
+	var seed_value := GameState.floor_seed()
+	var sid := LocationInstance.surface_biome_for(int(GameState.location.get("region", 0)), seed_value)
+	var kind := &"forest"
+	if sid in [&"surface_ruins", &"surface_wasteland"]:
+		kind = &"ruins"
+	elif sid == &"surface_mountains" or (GameState.floor_number >= 10 and absi(seed_value) % 3 == 0):
+		kind = &"cave"
+	var biome: BiomeData = ItemDatabase.surface_biomes.get(sid) if kind != &"cave" else GameState.current_biome()
+	var companions: Array = GameState.run.rescued.duplicate() if GameState.run else []
+	var layout := CampBuilder.build(seed_value, kind, GameState.town, companions)
+	if GameState.town:
+		GameState.town.flags["camp_level"] = CampBuilder.camp_level(GameState.town)
+	level = LEVEL_SCENE.instantiate()
+	world.add_child(level)
+	world.move_child(level, 0)
+	level.build(layout, GameState.floor_number, seed_value, biome)
+	player.set_level(level)
+	player.global_position = level.start_position()
+	apply_layer_biome(biome)
+	AudioManager.play_music(&"camp")
+	_sync_pet()
+	EventBus.message.emit(tr("Лагерь · %s") % (biome.display_name if biome else ""))
+	_net_on_floor_loaded()
 
 
 ## LocationManager: the hero went to a layer with another biome.
@@ -443,7 +474,7 @@ func _toggle_pause() -> void:
 	overlay.add_button(tr("Дерево навыков"), func() -> void:
 		_toggle_pause()
 		skill_tree.open())
-	var safe_spot := location != null and location.at_safe_spot(player)
+	var safe_spot := (location != null and location.at_safe_spot(player)) or GameState.location_type() == &"camp"
 	if GameState.expedition and (GameState.is_town() or safe_spot):
 		overlay.add_button(tr("Сохранить и выйти"), func() -> void: GameFlow.save_and_quit())
 	else:

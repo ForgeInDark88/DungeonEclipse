@@ -13,7 +13,8 @@ enum State { MAIN_MENU, HERO_CREATE, TOWN, EXPEDITION_MAP, LOCATION, RUN_RESULT 
 
 const MAP_SCENE := "res://scenes/ui/expedition_map.tscn"
 const RESULT_SCENE := "res://scenes/ui/run_result.tscn"
-const CAMP_SCENE := "res://scenes/ui/camp.tscn"
+## The camp is a place to walk now (CampBuilder in the game scene).
+const CAMP_SCENE := "res://scenes/game/game.tscn"
 ## Node types played as a platformer location in the game scene.
 const PLATFORMER_TYPES := [&"level", &"elite", &"special", &"rescue", &"lair", &"boss", &"event"]
 const FADE_TIME := 0.25
@@ -653,6 +654,8 @@ func end_expedition(outcome: RunState.Outcome) -> void:
 		return
 	run.outcome = outcome
 	var hero := GameState.hero
+	if outcome != RunState.Outcome.DEATH:
+		CampSpot.unpack_stash(hero)  # the camp's chest comes home with a living hero
 	var prosperity_before := Buildings.prosperity(town)
 	var region_before := town.region_unlocked
 	var path_types: Array = []

@@ -111,7 +111,7 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	for y in layout.height:
 		for x in layout.width:
 			var cell := Vector2i(x, y)
-			if not layout.is_town and (noise.get_noise_2d(x, y) > -0.25 or _near_solid(cell)):
+			if not layout.is_town and not layout.is_surface and (noise.get_noise_2d(x, y) > -0.25 or _near_solid(cell)):
 				back.set_cell(cell, _src(cell), Vector2i(_back_variant(cell), AssetPaths.TILE_ROW_BACKWALL))
 			_apply_tile(cell, layout.get_tile(x, y))
 	for y in layout.height:
@@ -119,6 +119,9 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 			_apply_detail(Vector2i(x, y))
 	if layout.is_town:
 		_spawn_town()
+		return
+	if layout.is_camp:
+		_spawn_camp()
 		return
 	if layout.is_event_room:
 		_spawn_door()
@@ -271,6 +274,24 @@ func _spawn_surface_props() -> void:
 		if String(p["tex"]).begins_with("tree") or p["tex"] == &"reeds":
 			s.flip_h = (hash(p["cell"]) & 1) == 1
 		add_entity(s, cell_bottom(p["cell"]))
+
+
+## A camp of the road (CampBuilder): its props, its spots, the trader,
+## the companions freed on the way.
+func _spawn_camp() -> void:
+	_spawn_surface_props()
+	_spawn_specials()
+	for m in get_tree().get_nodes_in_group("merchants"):
+		if "extra_rolls" in m:
+			m.extra_rolls = Buildings.level(&"shop")
+	for info in layout.town_people:
+		var nd: NpcData = ItemDatabase.npcs.get(StringName(info["id"]))
+		if nd:
+			var npc := TownNpc.new()
+			npc.setup(nd)
+			add_entity(npc, cell_bottom(info["cell"]))
+	if layout.camp_kind == &"cave":
+		_spawn_ambience()
 
 
 ## Things to gather, barrels and crates (personal: every machine has its
@@ -1085,6 +1106,10 @@ func _spawn_specials() -> void:
 				add_entity(CampFire.new(), cell_bottom(info["cell"]))
 			&"elite_pack":
 				_spawn_elite_pack(info)
+			&"camp_spot":
+				var cs := CampSpot.new()
+				cs.kind = StringName(info["kind"])
+				add_entity(cs, cell_bottom(info["cell"]))
 			&"carriage", &"memorial", &"roof_cache", &"district_notice":
 				var ts := TownSpot.new()
 				ts.kind = StringName(info["type"])

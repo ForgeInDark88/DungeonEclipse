@@ -40,6 +40,9 @@ var town_people: Array[Dictionary] = []
 ## The open surface of a location (SurfaceGenerator): sky instead of the
 ## back wall, no exit seal.
 var is_surface := false
+## A camp of the road (CampBuilder): safe ground, the camp's spots.
+var is_camp := false
+var camp_kind: StringName = &"forest"
 ## Portal id -> cell of the portals between the layers of a location
 ## (LocationInstance portals; LocationBuilder fills them).
 var portal_cells: Dictionary = {}
