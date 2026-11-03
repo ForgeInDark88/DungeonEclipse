@@ -1092,6 +1092,9 @@ def gen_loop_map() -> None:
         save(map_hint(kind), "ui/map/hint_%s.png" % kind, do_outline=False)
     save(map_hero(), "ui/map/hero_marker.png")
     gen_loop()  # town pieces
+    # the finished art over the old placeholders (same names and sizes)
+    import gen_quality_art
+    gen_quality_art.main()
 
 
 if __name__ == "__main__":
