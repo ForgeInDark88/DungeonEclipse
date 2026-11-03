@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SurfaceBiomeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/surface_biome_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"town_sky"
+display_name = "Город"
+weather = {"none": 4.0, "rain": 1.5, "fog": 1.0}
+ambience_day = &"amb_birds"
+ambience_night = &"amb_night"

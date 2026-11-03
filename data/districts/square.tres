@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="DistrictData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/district_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"square"
+display_name = "Площадь у ворот"
+x_from = 208
+x_to = 254
+raise = 0
+open_from_start = true
+prosperity = 0
+residents = 0
+gathering = &"tavern"
+props = Array[Dictionary]([{"tex": "fountain", "x": 213, "z": -2, "lamp": false}, {"tex": "bench", "x": 219, "z": -1, "lamp": false}, {"tex": "memorial", "x": 223, "z": -2, "lamp": false}, {"tex": "lamppost", "x": 236, "z": -1, "lamp": true}, {"tex": "well", "x": 239, "z": -2, "lamp": false}, {"tex": "lamppost", "x": 243, "z": -1, "lamp": true}])
+houses = Array[int]([])

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="DistrictData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/district_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"outskirts"
+display_name = "Окраина"
+x_from = 2
+x_to = 42
+raise = 0
+open_from_start = false
+prosperity = 4
+residents = 0
+gathering = &""
+props = Array[Dictionary]([{"tex": "tree", "x": 4, "z": -3, "lamp": false}, {"tex": "tree", "x": 9, "z": -3, "lamp": false}, {"tex": "target", "x": 16, "z": -1, "lamp": false}, {"tex": "ring_post", "x": 22, "z": -1, "lamp": false}, {"tex": "ring_post", "x": 32, "z": -1, "lamp": false}, {"tex": "tree", "x": 38, "z": -3, "lamp": false}])
+houses = Array[int]([])

@@ -454,6 +454,8 @@ func _spawn_town() -> void:
 		if nd:
 			var npc := TownNpc.new()
 			npc.setup(nd)
+			for k in (info.get("schedule", {}) as Dictionary):
+				npc.schedule[k] = cell_bottom(Vector2i(int(info["schedule"][k]), info["cell"].y)).x
 			add_entity(npc, cell_bottom(info["cell"]))
 	var gate := DungeonGate.new()
 	add_entity(gate, cell_bottom(layout.exit_cell))
@@ -474,7 +476,7 @@ func _spawn_town() -> void:
 	flies.scale_amount_min = 1.0
 	flies.scale_amount_max = 2.0
 	flies.color = biome.ambient_particles if biome else Color(0.85, 1, 0.55)
-	add_entity(flies, to_global(Vector2(layout.width * TILE / 2.0, (TownBuilder.GROUND - 3) * TILE)))
+	add_entity(flies, to_global(Vector2(layout.width * TILE / 2.0, (layout.height - 8) * TILE)))
 
 
 ## Exit seal: every kill on the floor counts (each machine counts its own
@@ -1083,6 +1085,11 @@ func _spawn_specials() -> void:
 				add_entity(CampFire.new(), cell_bottom(info["cell"]))
 			&"elite_pack":
 				_spawn_elite_pack(info)
+			&"carriage", &"memorial", &"roof_cache", &"district_notice":
+				var ts := TownSpot.new()
+				ts.kind = StringName(info["type"])
+				ts.district = StringName(info.get("district", &""))
+				add_entity(ts, cell_bottom(info["cell"]))
 			&"key_drop":
 				# the key of a locked way down (personal: every machine its own)
 				var key := ItemDatabase.get_item(&"key")

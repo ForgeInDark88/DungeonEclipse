@@ -34,6 +34,33 @@ func _initialize() -> void:
 	var lib = idb.building(&"library")
 	check(Buildings.block_reason(lib) != "", "no materials: the library cannot be built")
 	check(not Buildings.build(lib), "build() refuses without materials")
+	# ------------------------------------------------ districts (stage 18)
+	var TD = load("res://scripts/core/town_districts.gd")
+	check(idb.districts.size() >= 6, "the town has its districts (%d)" % idb.districts.size())
+	var by_id := {}
+	for d in idb.districts:
+		by_id[d.id] = d
+	check(TD.is_open(by_id[&"market"], town) and TD.is_open(by_id[&"square"], town), "the market and the square are open from the start")
+	check(TD.is_open(by_id[&"temple"], town), "the temple hill is open: the Sanctum stands there from day one")
+	check(not TD.is_open(by_id[&"residential"], town) and not TD.is_open(by_id[&"crafts"], town), "the houses and the craftsmen wait for the town to grow")
+	for b in idb.buildings:
+		var bd = TD.of_building(b)
+		check(bd != null and b.slot + b.width <= bd.x_to, "%s stands inside its district" % b.id)
+	check(Buildings.block_reason(lib).contains(by_id[&"residential"].display_name) or Buildings.block_reason(lib).contains(tr(by_id[&"residential"].display_name)),
+			"a building of a closed district says which district and why (%s)" % Buildings.block_reason(lib))
+	town.prosperity = 20
+	check(TD.is_open(by_id[&"residential"], town) and TD.is_open(by_id[&"crafts"], town), "a prosperous town opens its districts")
+	var lay = load("res://scripts/level/town_builder.gd").build_hub(town)
+	check(lay.width >= 160, "the town is wide: %d cells (%.1f screens)" % [lay.width, lay.width / 40.0])
+	var raised := false
+	for x in lay.width:
+		if load("res://scripts/level/town_builder.gd").ground_at(x) < load("res://scripts/level/town_builder.gd").HUB_GROUND:
+			raised = true
+	check(raised, "the town has a terrace (several heights)")
+	var nav := LevelNav.new(lay)
+	for info in lay.town_buildings:
+		var c: Vector2i = info["cell"]
+		check(not nav.ground_path(lay.start_cell, c, 2).is_empty(), "the hero walks from the gate to %s" % info["id"])
 	gs.hero.gold = 1000
 	for r in ["wood", "stone", "iron", "herbs", "crystal"]:
 		town.add_resource(StringName(r), 30)

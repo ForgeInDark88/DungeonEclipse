@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="DistrictData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/district_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"residential"
+display_name = "Жилой квартал"
+x_from = 80
+x_to = 124
+raise = 0
+open_from_start = false
+prosperity = 10
+residents = 2
+gathering = &"home"
+props = Array[Dictionary]([{"tex": "lamppost", "x": 82, "z": -1, "lamp": true}, {"tex": "bench", "x": 122, "z": -1, "lamp": false}, {"tex": "tree", "x": 110, "z": -3, "lamp": false}, {"tex": "lamppost", "x": 120, "z": -1, "lamp": true}])
+houses = Array[int]([84, 90, 104, 112, 118])

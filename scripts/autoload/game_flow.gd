@@ -682,6 +682,13 @@ func end_expedition(outcome: RunState.Outcome) -> void:
 		r["resources"] = {}
 		r["rescued"] = []
 		r["blueprints"] = []
+		# the memorial remembers the fallen (the last 30)
+		var fallen: Array = town.flags.get("fallen", [])
+		var hero_now := GameState.hero
+		fallen.append({"name": String(SaveManager.last_name) if SaveManager.last_name != "" else tr("Безымянный герой"),
+				"class": hero_now.class_data.display_name if hero_now else "", "level": hero_now.level if hero_now else 1,
+				"depth": GameState.floor_number})
+		town.flags["fallen"] = fallen.slice(maxi(0, fallen.size() - 30))
 		town.add_stat("deaths")
 	else:
 		for k in run.resources:

@@ -144,6 +144,7 @@ func _load_floor() -> void:
 		AudioManager.play_music((b as Boss).boss.music)
 	if GameState.is_town() and GameState.expedition:
 		EventBus.message.emit(tr("%s · %s. Ворота похода — в конце улицы.") % [biome.display_name, Buildings.phase_name()])
+		_town_sky()
 		_take_thumbnail()
 		_town_news()
 	elif GameState.expedition:
@@ -245,6 +246,27 @@ func finish_location() -> void:
 	overlay.visible = true
 
 
+## The town's hour and weather (visual only: the light, the people's
+## schedule, rain or fog): the day turns on from the phase the expeditions
+## left it at (Buildings.day_phase).
+var town_sky: SurfaceSky
+
+
+func _town_sky() -> void:
+	if town_sky:
+		town_sky.queue_free()
+	var sb := load("res://data/town/town_sky.tres") as SurfaceBiomeData
+	if sb == null:
+		return
+	town_sky = SurfaceSky.new()
+	town_sky.add_to_group("town_sky")
+	add_child(town_sky)
+	town_sky.setup(sb, int(GameState.town.world_seed if GameState.town else 0) + Buildings.day_phase(),
+			$Ambient as CanvasModulate, player.camera)
+	town_sky.phase = [0.04, 0.3, 0.6, 0.8][Buildings.day_phase()]
+	town_sky.set_active(true)
+
+
 ## A miniature of the world for the load screen (taken in the street).
 func _take_thumbnail() -> void:
 	if DisplayServer.get_name() == "headless":
@@ -259,6 +281,9 @@ func _take_thumbnail() -> void:
 ## shine in the street.
 func _town_news() -> void:
 	var t := GameState.town
+	if t:
+		for d in TownDistricts.newly_open(t):
+			t.news.append(tr("Открылся новый квартал: %s.") % tr(d.display_name))
 	if t == null or (t.news.is_empty() and (t.flags.get("arrived", []) as Array).is_empty()):
 		return
 	var lines := t.news.duplicate()
@@ -335,9 +360,7 @@ func _apply_biome(biome: BiomeData) -> void:
 	# A touch below the biome's ambient: torches, ore and magic make warm
 	# pools of light instead of vanishing in a flat even light.
 	($Ambient as CanvasModulate).color = biome.ambient * Color(0.88, 0.87, 0.86, 1.0)
-	if GameState.expedition and GameState.is_town():
-		# Morning, day, evening or night in the town (Buildings.day_phase).
-		($Ambient as CanvasModulate).color *= Buildings.PHASE_TINT[Buildings.day_phase()]
+	# (the town's hour: its SurfaceSky, see _town_sky)
 	AudioManager.play_music(biome.music)
 	player.apply_biome(biome)
 	var textures := [biome.parallax_far, biome.parallax_mid, biome.parallax_near]

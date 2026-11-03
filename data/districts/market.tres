@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="DistrictData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/district_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"market"
+display_name = "Торговый ряд"
+x_from = 124
+x_to = 172
+raise = 0
+open_from_start = true
+prosperity = 0
+residents = 0
+gathering = &"market"
+props = Array[Dictionary]([{"tex": "lamppost", "x": 126, "z": -1, "lamp": true}, {"tex": "crates", "x": 141, "z": -1, "lamp": false}, {"tex": "lamppost", "x": 152, "z": -1, "lamp": true}, {"tex": "flowers", "x": 164, "z": -1, "lamp": false}])
+houses = Array[int]([168])
