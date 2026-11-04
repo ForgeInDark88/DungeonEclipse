@@ -495,6 +495,10 @@ func _parallax_life(sprite: Sprite2D, tex: Texture2D, i: int, open_sky: bool) ->
 	m.set_shader_parameter("life", SaveManager.scenery_amount())
 	m.set_shader_parameter("tex_size", Vector2(tex.get_width(), tex.get_height()))
 	m.set_shader_parameter("shimmer", 0.0 if open_sky else 0.035 - 0.008 * i)
+	var glow_path := path.replace(".png", "_glow.png")
+	var has_glow := not open_sky and ResourceLoader.exists(glow_path)
+	m.set_shader_parameter("has_glow", has_glow)
+	m.set_shader_parameter("glow_mask", load(glow_path) if has_glow else null)
 	m.set_shader_parameter("is_sky", open_sky and i == 0)
 	var stars := "res://assets/sprites/backgrounds/surface_stars.png"
 	m.set_shader_parameter("has_stars", open_sky and i == 0 and ResourceLoader.exists(stars))
@@ -719,6 +723,7 @@ func _flash_screen(color: Color) -> void:
 func _exit_tree() -> void:
 	Engine.time_scale = 1.0
 	# the wind and the birds of a location stay behind with it
+	AudioManager.set_underwater(false)
 	AudioManager.play_ambience(&"", 0)
 	AudioManager.play_ambience(&"", 1)
 	if Net.world_session:

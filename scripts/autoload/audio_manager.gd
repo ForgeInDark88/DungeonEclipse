@@ -42,6 +42,7 @@ func _ready() -> void:
 			var idx := AudioServer.bus_count - 1
 			AudioServer.set_bus_name(idx, bus_name)
 			AudioServer.set_bus_send(idx, &"Master")
+	_setup_underwater()
 	for i in WORLD_VOICES:
 		var p := AudioStreamPlayer2D.new()
 		p.bus = &"SFX"
@@ -180,6 +181,48 @@ func play_ambience(id: StringName, channel := 0, volume_db := -10.0) -> void:
 		p.stream = stream
 		p.play())
 	tw.tween_property(p, "volume_db", volume_db, 1.2)
+
+
+# ------------------------------------------------------------ under water
+## A low-pass on the Master bus while the hero's head is under water: the
+## world sounds dull and far away (Player._swim). Off by default.
+var _underwater := false
+var _uw_effect: AudioEffectLowPassFilter
+var _uw_tween: Tween
+
+
+func _setup_underwater() -> void:
+	var master := AudioServer.get_bus_index(&"Master")
+	_uw_effect = AudioEffectLowPassFilter.new()
+	_uw_effect.cutoff_hz = 20000.0
+	_uw_effect.resonance = 0.4
+	AudioServer.add_bus_effect(master, _uw_effect)
+	AudioServer.set_bus_effect_enabled(master, AudioServer.get_bus_effect_count(master) - 1, false)
+
+
+func set_underwater(on: bool) -> void:
+	if on == _underwater or _uw_effect == null:
+		return
+	_underwater = on
+	var master := AudioServer.get_bus_index(&"Master")
+	var idx := -1
+	for i in AudioServer.get_bus_effect_count(master):
+		if AudioServer.get_bus_effect(master, i) == _uw_effect:
+			idx = i
+	if idx < 0:
+		return
+	if _uw_tween:
+		_uw_tween.kill()
+	if on:
+		AudioServer.set_bus_effect_enabled(master, idx, true)
+	_uw_tween = create_tween()
+	_uw_tween.tween_property(_uw_effect, "cutoff_hz", 700.0 if on else 20000.0, 0.25)
+	if not on:
+		_uw_tween.tween_callback(func() -> void: AudioServer.set_bus_effect_enabled(master, idx, false))
+
+
+func is_underwater() -> bool:
+	return _underwater
 
 
 func play_music(id: StringName) -> void:
