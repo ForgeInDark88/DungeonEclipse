@@ -87,6 +87,38 @@ func _initialize() -> void:
 	am.set_combat(false)
 	check(not am.in_combat(), "and off")
 
+	# The combat layer follows the fight: a monster that fights near the
+	# camera switches it on; when it stops, the layer goes after COMBAT_HOLD.
+	var cam := Camera2D.new()
+	root.add_child(cam)
+	cam.make_current()
+	var foe := Node2D.new()
+	foe.set_script(load("res://tools/tests/_fighting_foe.gd"))
+	foe.add_to_group("enemies")
+	root.add_child(foe)
+	await create_timer(0.6).timeout
+	check(am.in_combat(), "a fight near the camera brings the combat layer")
+	foe.fighting = false
+	await create_timer(am.COMBAT_HOLD + 0.6).timeout
+	check(not am.in_combat(), "the layer goes after the fight")
+	foe.queue_free()
+
+	# Every place with fights has its combat layer, as long as the track.
+	for id in ap.MUSIC:
+		var sid := String(id)
+		if sid.begins_with("boss") or id in ap.MUSIC_ONE_SHOT or sid in ["menu", "town", "camp"]:
+			continue
+		var layer: AudioStream = am._combat_stream(id)
+		var track: AudioStream = load(ap.MUSIC[id])
+		check(layer != null, "%s has a combat layer" % id)
+		if layer and track:
+			check(absf(layer.get_length() - track.get_length()) < 0.05, "%s: the layer is as long as the track" % id)
+	for id in ap.MUSIC:
+		if id in ap.MUSIC_ONE_SHOT:
+			continue
+		var t: AudioStream = load(ap.MUSIC[id])
+		check(t != null and t.get_length() >= 120.0, "%s loops for 2+ minutes (%.0f s)" % [id, t.get_length() if t else 0.0])
+
 	# files
 	for id in ap.SFX:
 		check(ResourceLoader.exists(ap.SFX[id]), "sound %s: %s" % [id, ap.SFX[id]])

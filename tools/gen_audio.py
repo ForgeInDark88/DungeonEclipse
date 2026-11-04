@@ -12,6 +12,7 @@ instruments); change a line and re-run. See docs/AUDIO_LIST.md.
 """
 from __future__ import annotations
 
+import math
 import os
 import subprocess
 import tempfile
@@ -523,14 +524,39 @@ def melody(song, prog, bar_from, bars, instr, octave=1, density=0.6, gain=1.0, l
 
 
 # ---- arrangements
-def compose(spec):
-    s = Song(spec["key"], spec["scale"], spec["bpm"], spec.get("beats", 4), spec.get("bars", 16), spec.get("seed", 1))
+# Loops of at least this long (stage D: 2-4 minutes); spec "seconds" overrides.
+LONG_SECONDS = 150.0
+
+
+def song_bars(spec):
+    """Bars of a track: enough for LONG_SECONDS, a multiple of 8 (motifs)."""
+    bars = spec.get("bars", 16)
+    bar_sec = 60.0 / spec["bpm"] * spec.get("beats", 4)
+    target = spec.get("seconds", LONG_SECONDS)
+    if target:
+        bars = max(bars, int(math.ceil(target / bar_sec / 8.0)) * 8)
+    return bars
+
+
+def compose(spec, layer="main"):
+    """A looping track. layer "combat": its combat layer (same key, tempo and
+    length: heavy drums, a driving bass, brass hits) that AudioManager fades
+    in over the track while a fight is on."""
+    s = Song(spec["key"], spec["scale"], spec["bpm"], spec.get("beats", 4), song_bars(spec), spec.get("seed", 1))
     prog = spec["prog"]
+    # The bridge (the third quarter) walks the progression from its middle:
+    # a long loop gets a second harmonic colour instead of one chord cycle.
+    half = len(prog) // 2
+    prog_b = spec.get("prog_b") or (prog[half:] + prog[:half])
+    full = spec.get("full")
     B, b = s.bar, s.beat
+    if layer == "combat":
+        return _combat_layer(s, spec, prog, prog_b)
     for bar in range(s.bars):
-        d = prog[bar % len(prog)]
-        chord = s.chord(d, 0, 4 if spec.get("sevenths") else 3)
         part = bar // max(1, s.bars // 4)  # 0..3 intensity sections
+        cur = prog_b if part == 2 and not full else prog
+        d = cur[bar % len(cur)]
+        chord = s.chord(d, 0, 4 if spec.get("sevenths") else 3)
         t0 = bar * B
         # Pads / choir: whole bar.
         pad = spec.get("pad", "pad")
@@ -618,9 +644,13 @@ def compose(spec):
         inst = {"flute": i_flute, "lead": i_lead, "box": i_box, "bell": i_bell, "pluck": i_pluck}[lead]
         start = 0 if spec.get("full") else s.bars // 2
         for k, b0 in enumerate(range(start, s.bars, 8)):
-            if spec.get("full") and b0 // max(1, s.bars // 4) == 2 and k % 2 == 0:
+            part = b0 // max(1, s.bars // 4)
+            if spec.get("full") and part == 2 and k % 2 == 0:
                 continue  # breakdown: no lead for a while
-            melody(s, prog, b0, min(8, s.bars - b0), inst, spec.get("lead_octave", 1) + (1 if k == 3 else 0),
+            cur = prog_b if part == 2 and not full else prog
+            # the last quarter sings an octave higher: the loop's climax
+            octave = spec.get("lead_octave", 1) + (1 if part == 3 and k % 2 == 1 else 0)
+            melody(s, cur, b0, min(8, s.bars - b0), inst, octave,
                    spec.get("density", 0.5), spec.get("lead_gain", 1.0), seed=spec.get("seed", 1) * 10 + k)
     setup = {
         "pad": dict(hi=4000, pan=0, width=14, send=0.5, gain=0.9),
@@ -636,6 +666,51 @@ def compose(spec):
         "tom": dict(hi=4000, pan=-0.15, send=0.25, gain=0.8),
     }
     return s.render(setup)
+
+
+def _combat_layer(s, spec, prog, prog_b):
+    """The combat layer: drums that drive, the bass an octave up in eighths,
+    a brass hit every other bar; quieter than the track (it sits on top)."""
+    B, b = s.bar, s.beat
+    triple = s.beats == 3
+    for bar in range(s.bars):
+        part = bar // max(1, s.bars // 4)
+        cur = prog_b if part == 2 and not spec.get("full") else prog
+        d = cur[bar % len(cur)]
+        chord = s.chord(d, 0, 3)
+        root = s.deg(d, -1)
+        t0 = bar * B
+        for k in range(s.beats):
+            tb = t0 + k * b
+            if triple:
+                s.add("kick", tb, d_taiko(0.7) if k == 0 else d_kick(0.3), 1.0 if k == 0 else 0.6)
+                s.add("tom", tb + b / 2, d_tom(150 + 20 * k, 0.25), 0.5)
+            else:
+                if k % 2 == 0:
+                    s.add("kick", tb, d_kick(0.4, 1.1))
+                    s.add("kick", tb + b * 0.5, d_kick(0.3, 0.8), 0.5)
+                else:
+                    s.add("snare", tb, d_snare(0.2), 0.9)
+                s.add("hat", tb + b / 2, d_hat(), 0.7)
+            s.add("hat", tb, d_hat(), 0.5)
+        if bar % 4 == 3:  # a fill into the next phrase
+            for k in range(4):
+                s.add("tom", t0 + B - b + k * b / 4, d_tom(200 - 25 * k, 0.2), 0.6)
+        for k in range(s.beats * 2):
+            s.add("bass", t0 + k * b / 2, i_bass(root + 12 * (k % 2), b * 0.42, 0.5), 0.6)
+        if bar % 2 == 0:
+            for m in chord:
+                s.add("brass", t0, i_brass(m + 12, b * 0.7), 0.55)
+    setup = {
+        "bass": dict(hi=1200, pan=0, send=0.05, gain=0.9, drive=1.4),
+        "brass": dict(hi=3500, pan=-0.1, width=10, send=0.3, gain=0.7),
+        "kick": dict(hi=5000, pan=0, send=0.08, gain=1.0),
+        "snare": dict(lo=120, pan=0.05, send=0.25, gain=0.7),
+        "hat": dict(lo=5000, pan=0.3, send=0.1, gain=0.55),
+        "tom": dict(hi=4000, pan=-0.15, send=0.25, gain=0.8),
+    }
+    st = s.render(setup)
+    return st / np.max(np.abs(st)) * 0.42
 
 
 TRACKS = {
@@ -810,7 +885,8 @@ def d_swell(sec):
 
 
 def compose_eclipse():
-    s = Song("D", "harmonic", 84, 4, 40, seed=51)
+    # 54 bars (~2.6 min, stage D): the doom runs twice (bars 26-39, 40-53).
+    s = Song("D", "harmonic", 84, 4, 54, seed=51)
     B, b = s.bar, s.beat
     prog_wrath = [0, 5, 3, 4, 0, 5, 1, 4, 0, 3, 5, 4]
     prog_breath = [0, 0, 5, 5, 3, 3, 4, 4]
@@ -832,7 +908,7 @@ def compose_eclipse():
         elif bar < 26:
             sec, d, shift = "breath", prog_breath[bar - 18], 0
         else:
-            sec, d, shift = "doom", prog_doom[bar - 26], 1
+            sec, d, shift = "doom", prog_doom[(bar - 26) % len(prog_doom)], 1
         chord = [m + shift for m in s.chord(d, 0, 3)]
         root = s.deg(d, -1) + shift
         low = s.deg(d, -2) + shift
