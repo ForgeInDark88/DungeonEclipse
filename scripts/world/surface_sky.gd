@@ -172,7 +172,7 @@ func _apply_weather() -> void:
 			p.color = Color(0.55, 0.7, 0.35, 0.8)
 			p.emission_rect_extents = Vector2(420, 180)
 		&"fog":
-			p.amount = 18
+			p.amount = 10
 			p.lifetime = 10.0
 			p.texture = AssetPaths.tex(AssetPaths.LIGHT)
 			p.direction = Vector2(1, 0)
@@ -180,7 +180,7 @@ func _apply_weather() -> void:
 			p.gravity = Vector2.ZERO
 			p.initial_velocity_min = 6.0
 			p.initial_velocity_max = 14.0
-			p.color = Color(0.92, 0.94, 0.96, 0.12)
+			p.color = Color(0.92, 0.95, 0.96, 0.07)  # a veil, not a wall
 			p.scale_amount_min = 2.5
 			p.scale_amount_max = 4.0
 			p.emission_rect_extents = Vector2(420, 200)

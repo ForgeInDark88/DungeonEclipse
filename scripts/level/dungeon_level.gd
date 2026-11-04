@@ -271,9 +271,23 @@ func _spawn_surface_props() -> void:
 		s.centered = false
 		s.offset = Vector2(-floorf(tex.get_width() / 2.0), -tex.get_height())
 		s.z_index = int(p["z"])
-		if String(p["tex"]).begins_with("tree") or p["tex"] == &"reeds":
+		var name := String(p["tex"])
+		if name.begins_with("tree") or name == "reeds":
 			s.flip_h = (hash(p["cell"]) & 1) == 1
+		if name.begins_with("tree") and name != "tree_dead" or name in ["bush", "reeds", "berry_bush"]:
+			s.material = _foliage_material()  # a pixel of wind in the crowns
 		add_entity(s, cell_bottom(p["cell"]))
+
+
+static var _foliage: ShaderMaterial
+
+
+## One shared material for every plant (assets/shaders/foliage_sway.gdshader).
+static func _foliage_material() -> ShaderMaterial:
+	if _foliage == null:
+		_foliage = ShaderMaterial.new()
+		_foliage.shader = load("res://assets/shaders/foliage_sway.gdshader")
+	return _foliage
 
 
 ## A camp of the road (CampBuilder): its props, its spots, the trader,
