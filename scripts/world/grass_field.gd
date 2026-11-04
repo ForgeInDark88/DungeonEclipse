@@ -9,6 +9,8 @@ extends Node2D
 const PER_CELL := 3
 var level: DungeonLevel
 var active := true
+## Settings → «Живость мира»: 1 every blade, 0.5 every other, 0 none.
+var amount := 1.0
 var color := Color(0.45, 0.72, 0.3)
 var _blades: Dictionary = {}  # column -> Array of [x, y, height, tone]
 var _heroes: Array = []
@@ -17,14 +19,14 @@ var _heroes: Array = []
 func setup(p_level: DungeonLevel, band: int, p_color: Color, density: float, seed_value: int) -> void:
 	level = p_level
 	color = p_color
+	add_to_group("scenery")
+	amount = SaveManager.scenery_amount()
 	top_level = true
 	global_position = Vector2.ZERO
 	z_index = 3  # in front of the heroes (and their feet)
-	var b := level.layout_band(band)
-	if b.is_empty():
-		return
-	var sub: LevelLayout = b["layout"]
-	var origin: Vector2i = b["origin"]
+	var b := level.layout_band(band)  # a layer of a location, or the whole level (a camp)
+	var sub: LevelLayout = b["layout"] if not b.is_empty() else level.layout
+	var origin: Vector2i = b["origin"] if not b.is_empty() else Vector2i.ZERO
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
 	var water := {}
@@ -49,9 +51,13 @@ func setup(p_level: DungeonLevel, band: int, p_color: Color, density: float, see
 				break
 
 
+func set_amount(a: float) -> void:
+	amount = a
+
+
 func _process(_delta: float) -> void:
-	visible = active
-	if active:
+	visible = active and amount > 0.0
+	if visible:
 		_heroes = get_tree().get_nodes_in_group("player")
 		queue_redraw()
 
@@ -70,7 +76,11 @@ func _draw() -> void:
 	for col in range(c0, c1 + 1):
 		if not _blades.has(col):
 			continue
+		var k := -1
 		for bl in _blades[col]:
+			k += 1
+			if amount < 1.0 and k % 2 == 1:
+				continue  # «мало»: every other blade
 			var x: float = bl[0]
 			var y: float = bl[1]
 			var hgt: float = bl[2]

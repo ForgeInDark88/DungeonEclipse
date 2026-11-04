@@ -49,5 +49,12 @@ extends Resource
 @export_group("Audio")
 ## Music id from AssetPaths.MUSIC.
 @export var music: StringName = &"catacombs"
+## Under the open sky (the town; every SurfaceBiomeData is): full daylight,
+## drifting clouds, swaying foliage, the hour on the backgrounds.
+@export var open_sky: bool = false
+
+
+func is_open_sky() -> bool:
+	return open_sky or self is SurfaceBiomeData
 ## Footstep sound on bricks in this biome (platforms/ladders always use wood).
 @export var step_sound: StringName = &"step_stone"

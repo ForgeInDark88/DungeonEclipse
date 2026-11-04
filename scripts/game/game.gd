@@ -148,6 +148,10 @@ func _load_floor() -> void:
 	if GameState.is_town() and GameState.expedition:
 		EventBus.message.emit(tr("%s · %s. Ворота похода — в конце улицы.") % [biome.display_name, Buildings.phase_name()])
 		_town_sky()
+		# butterflies over the street, fireflies at night, birds in the trees
+		var life := SurfaceLife.new()
+		level.add_child(life)
+		life.setup(level, -1, town_sky, seed_value)
 		_take_thumbnail()
 		_town_news()
 	elif GameState.expedition:
@@ -214,6 +218,14 @@ func _load_camp() -> void:
 	player.set_level(level)
 	player.global_position = level.start_position()
 	apply_layer_biome(biome)
+	if kind != &"cave" and biome is SurfaceBiomeData:
+		# the land around the fire is alive too: grass, butterflies, birds
+		var life := SurfaceLife.new()
+		level.add_child(life)
+		life.setup(level, -1, null, seed_value)
+		var grass := GrassField.new()
+		level.add_child(grass)
+		grass.setup(level, -1, (biome as SurfaceBiomeData).grass_color, (biome as SurfaceBiomeData).grass_density, seed_value + 1)
 	AudioManager.play_music(&"camp")
 	# the fire crackles; the land around it is heard more quietly
 	AudioManager.play_ambience(&"amb_fire", 0, -12.0)
@@ -233,16 +245,6 @@ func _load_camp() -> void:
 func apply_layer_biome(b: BiomeData) -> void:
 	_apply_biome(b)
 	_front_layer(b)
-	var open_sky := b is SurfaceBiomeData
-	for layer in $Parallax.get_children():
-		var pl := layer as ParallaxLayer
-		if not pl.has_meta(&"scale"):
-			pl.set_meta(&"scale", pl.motion_scale)
-			pl.set_meta(&"mirror", pl.motion_mirroring)
-		var sc: Vector2 = pl.get_meta(&"scale")
-		var mi: Vector2 = pl.get_meta(&"mirror")
-		pl.motion_scale = Vector2(sc.x, 0.0) if open_sky else sc
-		pl.motion_mirroring = Vector2(mi.x, 0.0) if open_sky else mi
 
 
 ## Expedition: the exit of a location shows what it gave (gold, kills,
@@ -395,7 +397,7 @@ func _sync_pet() -> void:
 func _apply_biome(biome: BiomeData) -> void:
 	if biome == null:
 		return
-	var open_sky := biome is SurfaceBiomeData
+	var open_sky := biome.is_open_sky()
 	# Underground a touch below the biome's ambient: torches, ore and magic
 	# make warm pools of light. Under the open sky the daylight is full.
 	($Ambient as CanvasModulate).color = biome.ambient if open_sky else biome.ambient * Color(0.88, 0.87, 0.86, 1.0)
@@ -412,6 +414,16 @@ func _apply_biome(biome: BiomeData) -> void:
 		sprite.modulate = Color.WHITE if open_sky else biome.ambient.darkened(0.22 - 0.07 * i)
 		layers[i].visible = textures[i] != null
 		_parallax_life(sprite, textures[i], i, open_sky)
+		# Under the open sky the background stands still vertically (the sky
+		# fills the screen and does not repeat upward); underground it scrolls.
+		var pl := layers[i] as ParallaxLayer
+		if not pl.has_meta(&"scale"):
+			pl.set_meta(&"scale", pl.motion_scale)
+			pl.set_meta(&"mirror", pl.motion_mirroring)
+		var sc: Vector2 = pl.get_meta(&"scale")
+		var mi: Vector2 = pl.get_meta(&"mirror")
+		pl.motion_scale = Vector2(sc.x, 0.0) if open_sky else sc
+		pl.motion_mirroring = Vector2(mi.x, 0.0) if open_sky else mi
 	var m := ($PostFX/Rect as ColorRect).material as ShaderMaterial
 	m.set_shader_parameter("tint", biome.grade_tint)
 	m.set_shader_parameter("saturation", biome.saturation)
@@ -423,6 +435,7 @@ func _apply_biome(biome: BiomeData) -> void:
 
 
 var _front: ParallaxBackground
+var _front_wanted := false  # under the open sky (the setting may still hide it)
 
 
 ## A rare dark branch hanging over the top of the screen under the open sky
@@ -432,7 +445,8 @@ func _front_layer(b: BiomeData) -> void:
 	var path := ""
 	if b is SurfaceBiomeData and b.parallax_far:
 		path = b.parallax_far.resource_path.replace("_far.png", "_front.png")
-	if path == "" or not ResourceLoader.exists(path):
+	_front_wanted = path != "" and ResourceLoader.exists(path)
+	if not _front_wanted:
 		if _front:
 			_front.visible = false
 		return
@@ -450,7 +464,7 @@ func _front_layer(b: BiomeData) -> void:
 		_front.add_child(pl)
 		add_child(_front)
 	(_front.get_child(0).get_child(0) as Sprite2D).texture = load(path)
-	_front.visible = true
+	_front.visible = SaveManager.scenery >= 2
 
 
 ## Quiet life in the backgrounds (assets/shaders/parallax_life.gdshader):
@@ -474,7 +488,9 @@ func _parallax_life(sprite: Sprite2D, tex: Texture2D, i: int, open_sky: bool) ->
 	m.set_shader_parameter("clouds", load(clouds_path) if has_clouds else null)
 	m.set_shader_parameter("has_sway", has_sway)
 	m.set_shader_parameter("sway_mask", load(sway_path) if has_sway else null)
-	m.set_shader_parameter("sway", 1.0)
+	m.set_shader_parameter("sway", 1.0 if SaveManager.scenery > 0 else 0.0)
+	m.set_shader_parameter("cloud_speed", 0.0025 if SaveManager.scenery > 0 else 0.0)
+	m.set_shader_parameter("life", SaveManager.scenery_amount())
 	m.set_shader_parameter("tex_size", Vector2(tex.get_width(), tex.get_height()))
 	m.set_shader_parameter("shimmer", 0.0 if open_sky else 0.035 - 0.008 * i)
 	m.set_shader_parameter("is_sky", open_sky and i == 0)
@@ -498,6 +514,25 @@ func apply_graphics() -> void:
 	m.set_shader_parameter("bloom_strength", 0.55 if SaveManager.bloom else 0.0)
 	if level:
 		level.set_block_shadows(SaveManager.block_shadows)
+	_apply_scenery()
+
+
+## Settings → «Живость мира» on everything that lives quietly in the scene.
+func _apply_scenery() -> void:
+	var amount := SaveManager.scenery_amount()
+	for layer in $Parallax.get_children():
+		var spr := layer.get_child(0) as Sprite2D if layer.get_child_count() > 0 else null
+		var pm := spr.material as ShaderMaterial if spr else null
+		if pm:
+			pm.set_shader_parameter("sway", 1.0 if amount > 0.0 else 0.0)
+			pm.set_shader_parameter("cloud_speed", 0.0025 * (1.0 if amount > 0.0 else 0.0))
+			pm.set_shader_parameter("life", amount)
+	DungeonLevel._foliage_material().set_shader_parameter("amount", 1.2 * (1.0 if amount > 0.0 else 0.0))
+	if _front:
+		_front.visible = _front_wanted and amount >= 1.0
+	for n in get_tree().get_nodes_in_group("scenery"):
+		if n.has_method("set_amount"):
+			n.set_amount(amount)
 
 
 func _process(delta: float) -> void:

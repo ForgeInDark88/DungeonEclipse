@@ -289,6 +289,7 @@ static func _foliage_material() -> ShaderMaterial:
 	if _foliage == null:
 		_foliage = ShaderMaterial.new()
 		_foliage.shader = load("res://assets/shaders/foliage_sway.gdshader")
+		_foliage.set_shader_parameter("amount", 1.2 if SaveManager.scenery > 0 else 0.0)
 	return _foliage
 
 
@@ -508,6 +509,8 @@ func _spawn_town() -> void:
 		s.centered = false
 		s.offset = Vector2(-floorf(tex.get_width() / 2.0), -tex.get_height())
 		s.z_index = p["z"]
+		if String(p["tex"]) in ["tree", "flowers"]:
+			s.material = _foliage_material()  # the town's trees bend in the wind too
 		add_entity(s, cell_bottom(p["cell"]))
 		if p["lamp"]:
 			var light := PointLight2D.new()

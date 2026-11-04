@@ -81,6 +81,19 @@ func _initialize() -> void:
 		p.global_position = Vector2(pos.x - 30, pos.y + 70)
 		await frames(10)
 		check(perches[0]["birds"].is_empty() and _count(lm.life, &"bird") > 0, "a hero near: the birds take off")
+	# Settings → «Живость мира»: off hides the quiet life, full brings it back
+	var sm2 = root.get_node("SaveManager")
+	var was: int = sm2.scenery
+	sm2.scenery = 0
+	get_nodes_in_group("graphics_listeners").map(func(n): n.apply_graphics())
+	await frames(5)
+	check(not lm.life.visible and not lm.grass.visible and not front.visible, "«Живость мира: выкл» hides grass, life and the branch")
+	check(float(sky_mat.get_shader_parameter("cloud_speed")) == 0.0, "…and the clouds stand still")
+	sm2.scenery = 2
+	get_nodes_in_group("graphics_listeners").map(func(n): n.apply_graphics())
+	await frames(5)
+	check(lm.life.visible and lm.grass.visible and front.visible, "«полно» brings them back")
+	sm2.scenery = was
 	# underground the decoration sleeps and the front hides
 	lm.travel(&"f1_up")  # down onto the first floor
 	await create_timer(1.2).timeout

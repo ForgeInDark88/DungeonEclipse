@@ -86,6 +86,14 @@ func _build() -> void:
 	lang.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	extra.add_child(lang)
 	left.add_child(extra)
+	var scenery := BookPageScreen.button(_scenery_text(), func() -> void: pass)
+	scenery.pressed.connect(func() -> void:
+		SaveManager.scenery = (SaveManager.scenery + 2) % 3  # full -> a little -> off -> full
+		SaveManager.save_settings()
+		scenery.text = _scenery_text()
+		get_tree().call_group("graphics_listeners", "apply_graphics"))
+	scenery.tooltip_text = tr("Трава, живность, качание листвы, облака и лучи. На слабом компьютере — «мало» или «выкл».")
+	left.add_child(scenery)
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	left.add_child(spacer)
@@ -166,6 +174,10 @@ func _slider_row(text: String, property: String, min_v: float, max_v: float) -> 
 	slider.drag_ended.connect(func(_changed: bool) -> void: AudioManager.play_ui(&"ui_click"))
 	row.add_child(slider)
 	return row
+
+
+func _scenery_text() -> String:
+	return "%s: %s" % [tr("Живость мира"), [tr("выкл"), tr("мало"), tr("полно")][SaveManager.scenery]]
 
 
 func _check(text: String, value: bool, on_toggle: Callable) -> CheckButton:
