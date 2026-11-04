@@ -77,6 +77,7 @@ fi
 echo "== data, generation, balance"
 script_test data tools/tests/data_test.gd
 script_test assets tools/tests/asset_test.gd
+script_test audio tools/tests/audio_test.gd
 if [ $QUICK -eq 1 ]; then SEEDS=100 script_test level_gen tools/tests/level_gen_test.gd; else script_test level_gen tools/tests/level_gen_test.gd 1800; fi
 script_test combat tools/tests/combat_sim.gd
 script_test layer_balance tests/layer_balance_sim.gd
@@ -99,6 +100,10 @@ if [ $QUICK -eq 0 ]; then
 	scene_test ai_dungeon tests/ai_sim.tscn --levels=20 --seconds=20
 	scene_test ai_surface tests/ai_sim.tscn --surface --levels=20 --seconds=20
 	scene_test ai_drowned tests/ai_sim.tscn --biome=drowned_vaults --levels=10 --seconds=20
+else
+	# A short run in the quick set too: a change of the level RNG (decor,
+	# generation) can put a monster on a trap that only the engine shows.
+	scene_test ai_dungeon tests/ai_sim.tscn --levels=8 --seconds=15
 fi
 
 echo "== the game flow, locations, water, life"

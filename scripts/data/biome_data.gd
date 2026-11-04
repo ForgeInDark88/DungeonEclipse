@@ -54,6 +54,9 @@ extends Resource
 @export_group("Audio")
 ## Music id from AssetPaths.MUSIC.
 @export var music: StringName = &"catacombs"
+## Acoustics (AudioManager.SPACES): open / room / hall / cave / crypt / water.
+## Empty: open under the sky, cave underground.
+@export var acoustics: StringName = &""
 ## Under the open sky (the town; every SurfaceBiomeData is): full daylight,
 ## drifting clouds, swaying foliage, the hour on the backgrounds.
 @export var open_sky: bool = false
@@ -89,3 +92,10 @@ func all_decorations() -> Array[DecorData]:
 		if decor_pack:
 			_all_decor.append_array(decor_pack.decorations)
 	return _all_decor
+
+
+## The acoustics to use here (AudioManager.set_space).
+func space() -> StringName:
+	if acoustics != &"":
+		return acoustics
+	return &"open" if is_open_sky() else &"cave"

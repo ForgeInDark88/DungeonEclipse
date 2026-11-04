@@ -536,6 +536,11 @@ func _dissolve_away(parent: Node, pos: Vector2, color: Color) -> void:
 	tw.tween_callback(queue_free)
 
 
+## In a fight (the music's combat layer listens: AudioManager._process).
+func is_fighting() -> bool:
+	return not _dead and state in [State.CHASE, State.ATTACK, State.ALERT]
+
+
 ## The sprite's own copy of the sprite shader (flash, outline, dissolve).
 func _sprite_shader() -> ShaderMaterial:
 	var m := sprite.material as ShaderMaterial

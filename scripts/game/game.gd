@@ -405,6 +405,7 @@ func _apply_biome(biome: BiomeData) -> void:
 	($Ambient as CanvasModulate).color = biome.ambient if open_sky else biome.ambient * Color(0.88, 0.87, 0.86, 1.0)
 	# (the town's hour: its SurfaceSky, see _town_sky)
 	AudioManager.play_music(biome.music)
+	AudioManager.set_space(biome.space())
 	player.apply_biome(biome)
 	var textures := biome.parallax_textures()
 	var layers := $Parallax.get_children()

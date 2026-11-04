@@ -95,6 +95,7 @@ sway = false
 
 [resource]
 script = ExtResource("9_tpf2t")
+acoustics = &"cave"
 decor_pack = ExtResource("decor_pack")
 music = &"lava"
 step_sound = &"step_stone"

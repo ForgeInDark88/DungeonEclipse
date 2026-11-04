@@ -117,6 +117,7 @@ sway = false
 
 [resource]
 script = ExtResource("10_sa776")
+acoustics = &"crypt"
 decor_pack = ExtResource("decor_pack")
 music = &"catacombs"
 step_sound = &"step_stone"

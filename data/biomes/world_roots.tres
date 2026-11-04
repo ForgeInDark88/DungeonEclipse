@@ -84,6 +84,7 @@ sway = false
 
 [resource]
 script = ExtResource("biome_script")
+acoustics = &"cave"
 decor_pack = ExtResource("decor_pack")
 music = &"world_roots"
 step_sound = &"step_stone"

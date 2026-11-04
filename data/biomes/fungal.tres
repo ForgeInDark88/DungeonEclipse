@@ -106,6 +106,7 @@ sway = false
 
 [resource]
 script = ExtResource("9_1a17a")
+acoustics = &"cave"
 decor_pack = ExtResource("decor_pack")
 music = &"fungal"
 step_sound = &"step_soft"

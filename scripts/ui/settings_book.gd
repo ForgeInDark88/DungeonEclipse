@@ -48,7 +48,7 @@ func _build() -> void:
 	_root.add_child(right)
 
 	left.add_child(UIStyle.label(tr("Настройки"), 12))
-	for entry in [[tr("Общая"), "master_volume"], [tr("Музыка"), "music_volume"], [tr("Звуки"), "sfx_volume"], [tr("Интерфейс"), "ui_volume"]]:
+	for entry in [[tr("Общая"), "master_volume"], [tr("Музыка"), "music_volume"], [tr("Звуки"), "sfx_volume"], [tr("Интерфейс"), "ui_volume"], [tr("Окружение"), "ambient_volume"]]:
 		left.add_child(_volume_row(entry[0], entry[1]))
 	left.add_child(_slider_row(tr("Яркость"), "brightness", 0.6, 1.5))
 	left.add_child(_slider_row(tr("Размер панели"), "hud_scale", 0.6, 1.0))

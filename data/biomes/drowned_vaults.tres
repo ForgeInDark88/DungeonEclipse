@@ -117,6 +117,7 @@ sway = false
 
 [resource]
 script = ExtResource("biome_script")
+acoustics = &"water"
 decor_pack = ExtResource("decor_pack")
 flooded_pools = 3
 pool_leeches = true

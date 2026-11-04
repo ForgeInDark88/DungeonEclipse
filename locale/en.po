@@ -5227,6 +5227,10 @@ msgstr "Outskirts"
 msgid "Окрестности и подземелье"
 msgstr "Wilds and dungeon"
 
+#: scripts/ui/settings_book.gd
+msgid "Окружение"
+msgstr "Ambience"
+
 #: scripts/ui/secret_ending.gd
 msgid "Олдрик — могильщик, дважды поднятый из праха. Илара, что хотела зажечь новое солнце. Пип, спрятавшийся в зеркалах. Каменный — сердце горы. Брат Оствин и его колокол."
 msgstr "Oldric — the gravedigger, twice raised from dust. Ilara, who wanted to light a new sun. Pip, who hid in the mirrors. The Stone One — the heart of the mountain. Brother Ostwin and his bell."
