@@ -49,9 +49,9 @@ func _run_host() -> void:
 				if id != 1:
 					check(Net.players[id]["name"].begins_with("Гость"), "guest entry present")
 			print("RESULT: ", "OK" if _fails == 0 else "%d FAILURES" % _fails)
-			# Hold the door a moment so the client finishes its own checks.
-			await get_tree().create_timer(2.0).timeout
-			get_tree().quit(1 if _fails > 0 else 0))
+			# Hold the door so the client finishes its checks and leaves first.
+			var tree := get_tree()
+			tree.create_timer(4.0).timeout.connect(tree.quit.bind(1 if _fails > 0 else 0)))
 	add_child(t)
 	# Give up after 15 s.
 	get_tree().create_timer(15.0).timeout.connect(func() -> void:
@@ -81,8 +81,10 @@ func _run_client() -> void:
 			print("RESULT: ", "OK" if _fails == 0 else "%d FAILURES" % _fails)
 			# Stay connected a moment: the host polls its roster once a second,
 			# and a client that leaves at once can be gone before it looks.
-			await get_tree().create_timer(2.5).timeout
-			get_tree().quit(1 if _fails > 0 else 0))
+			# The quit hangs on the tree, not on this node: a disconnect may
+			# change the scene and free it.
+			var tree := get_tree()
+			tree.create_timer(1.5).timeout.connect(tree.quit.bind(1 if _fails > 0 else 0)))
 	add_child(t)
 	# A short delay so the host is listening first.
 	get_tree().create_timer(0.8).timeout.connect(func() -> void:
