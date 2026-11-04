@@ -5,5 +5,7 @@
 "выкл": "off",
 "мало": "a little",
 "полно": "full",
-"В браузерной версии кооператив недоступен: скачайте игру для Windows или Linux.": "Co-op is not available in the browser version: download the game for Windows or Linux."
+"В браузерной версии кооператив недоступен: скачайте игру для Windows или Linux.": "Co-op is not available in the browser version: download the game for Windows or Linux.",
+"Сделано на Godot Engine (godotengine.org). Пиксельный шрифт интерфейса — Tiny5 (Stefan Schmidt и авторы проекта Tiny5, SIL Open Font License 1.1). ": "Made with Godot Engine (godotengine.org). The pixel font of the interface is Tiny5 (Stefan Schmidt and the Tiny5 Project Authors, SIL Open Font License 1.1). ",
+"\n\nСписок всех сторонних компонентов и их лицензий — THIRD_PARTY_LICENSES.md и docs/CREDITS.md.": "\n\nAll third-party components and their licenses: THIRD_PARTY_LICENSES.md and docs/CREDITS.md."
 }

@@ -15,6 +15,10 @@ msgstr "\n\n[color=#8a2a1e][b]Curse: %s[/b]\n%s[/color]"
 msgid "\n\n[color=%s]Без проклятия[/color]"
 msgstr "\n\n[color=%s]No curse[/color]"
 
+#: scripts/ui/info_book.gd
+msgid "\n\nСписок всех сторонних компонентов и их лицензий — THIRD_PARTY_LICENSES.md и docs/CREDITS.md."
+msgstr "\n\nAll third-party components and their licenses: THIRD_PARTY_LICENSES.md and docs/CREDITS.md."
+
 #: scripts/ui/skill_tree_book.gd
 msgid "\n[color=#%s]Выбор пути: или этот навык, или %s (до сброса)[/color]"
 msgstr "\n[color=#%s]A choice of path: either this skill or %s (until a reset)[/color]"
@@ -4579,6 +4583,10 @@ msgstr "Skills are on {skill_1}–{skill_4} (the panel below). They cost mana, e
 msgid "Навыки: %s"
 msgstr "Skills: %s"
 
+#: scripts/ui/hud.gd
+msgid "Навыки: +%d (K)"
+msgstr "Skills: +%d (K)"
+
 #: scripts/game/game.gd
 msgid "Награда за победу: +%d осколков Затмения."
 msgstr "Victory reward: +%d Eclipse shards."
@@ -5586,10 +5594,6 @@ msgstr "Elite Hunter"
 #: data
 msgid "Охотничий лук"
 msgstr "Hunting Bow"
-
-#: scripts/ui/hud.gd
-msgid "Очки навыков: %d (K — дерево навыков)"
-msgstr "Skill points: %d (K — skill tree)"
 
 #: scripts/ui/skill_tree_book.gd
 msgid "Очков навыков: %d · уровень героя %d"
@@ -7356,8 +7360,8 @@ msgid "Сдать можно только у глашатая в городе"
 msgstr "Quests can only be turned in to the herald in town"
 
 #: scripts/ui/info_book.gd
-msgid "Сделано на Godot Engine (godotengine.org). Шрифт интерфейса — Noto Sans (SIL Open Font License), "
-msgstr "Made with Godot Engine (godotengine.org). The interface font is Noto Sans (SIL Open Font License), "
+msgid "Сделано на Godot Engine (godotengine.org). Пиксельный шрифт интерфейса — Tiny5 (Stefan Schmidt и авторы проекта Tiny5, SIL Open Font License 1.1). "
+msgstr "Made with Godot Engine (godotengine.org). The pixel font of the interface is Tiny5 (Stefan Schmidt and the Tiny5 Project Authors, SIL Open Font License 1.1). "
 
 #: data
 msgid "Сейф на 12 предметов."
@@ -9631,10 +9635,6 @@ msgstr "is enraged!"
 msgid "все"
 msgstr "everyone"
 
-#: scripts/ui/info_book.gd
-msgid "встроен в движок.\n\nСписок всех сторонних компонентов и их лицензий — THIRD_PARTY_LICENSES.md."
-msgstr "built into the engine.\n\nThe list of all third-party components and their licenses is in THIRD_PARTY_LICENSES.md."
-
 #: scripts/ui/settings_book.gd
 msgid "выкл"
 msgstr "off"
@@ -10084,5 +10084,5 @@ msgid "−5 к броне"
 msgstr "−5 armor"
 
 #: scripts/ui/tooltip_text.gd
-msgid "★ Особая сила: меняет ваш бой"
-msgstr "★ Special power: changes how you fight"
+msgid "◆ Особая сила: меняет ваш бой"
+msgstr "◆ Special power: changes how you fight"

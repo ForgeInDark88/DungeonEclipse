@@ -2,6 +2,7 @@
 "\n\n[color=#%s]Найдено раз: %d[/color]": "scripts/ui/codex_book.gd",
 "\n\n[color=#8a2a1e][b]Проклятие: %s[/b]\n%s[/color]": "scripts/ui/pact_book.gd",
 "\n\n[color=%s]Без проклятия[/color]": "scripts/ui/pact_book.gd",
+"\n\nСписок всех сторонних компонентов и их лицензий — THIRD_PARTY_LICENSES.md и docs/CREDITS.md.": "scripts/ui/info_book.gd",
 "\n[color=#%s]Выбор пути: или этот навык, или %s (до сброса)[/color]": "scripts/ui/skill_tree_book.gd",
 "\n[color=#%s]Закрыто: путь выбран — «%s» (сменить можно сбросом навыков)[/color]": "scripts/ui/skill_tree_book.gd",
 "\n[color=#%s]Нужно вложить в ветвь «%s»: %d (сейчас %d)[/color]": "scripts/ui/skill_tree_book.gd",
@@ -1143,6 +1144,7 @@
 "Навыки сброшены: возвращено %d очк.": "scripts/ui/skill_tree_book.gd",
 "Навыки — на клавишах {skill_1}–{skill_4} (панель внизу). Тратят ману, у каждого своя перезарядка.": "scripts/ui/hint_manager.gd",
 "Навыки: %s": "scripts/ui/skill_tree_book.gd",
+"Навыки: +%d (K)": "scripts/ui/hud.gd",
 "Награда за победу: +%d осколков Затмения.": "scripts/game/game.gd",
 "Награда за тайную концовку: +%d осколков.": "scripts/game/game.gd",
 "Награда получена: %d золота%s": "scripts/ui/quest_book.gd",
@@ -1395,7 +1397,6 @@
 "Ох, свобода! Я Хельга. Была у меня таверна — была, пока не пришли эти твари. Отстрой её, и у тебя будет лучшая похлёбка и самые свежие слухи.": "data",
 "Охотник на элиту": "data",
 "Охотничий лук": "data",
-"Очки навыков: %d (K — дерево навыков)": "scripts/ui/hud.gd",
 "Очков навыков: %d · уровень героя %d": "scripts/ui/skill_tree_book.gd",
 "Ошибка соединения.": "scripts/autoload/world_net.gd",
 "ПКМ": "scripts/core/input_bindings.gd",
@@ -1837,7 +1838,7 @@
 "Сдать задание": "scripts/ui/quest_book.gd",
 "Сдать задание глашатаю": "scripts/npc/quest_giver.gd",
 "Сдать можно только у глашатая в городе": "scripts/ui/quest_book.gd",
-"Сделано на Godot Engine (godotengine.org). Шрифт интерфейса — Noto Sans (SIL Open Font License), ": "scripts/ui/info_book.gd",
+"Сделано на Godot Engine (godotengine.org). Пиксельный шрифт интерфейса — Tiny5 (Stefan Schmidt и авторы проекта Tiny5, SIL Open Font License 1.1). ": "scripts/ui/info_book.gd",
 "Сейф на 12 предметов.": "data",
 "Сейф на 4 предмета: они переживут гибель героя.": "data",
 "Сейф на 8 предметов.": "data",
@@ -2406,7 +2407,6 @@
 "в походе": "scripts/autoload/save_manager.gd",
 "в ярости!": "scripts/bosses/boss.gd",
 "все": "scripts/ui/multiplayer_book.gd",
-"встроен в движок.\n\nСписок всех сторонних компонентов и их лицензий — THIRD_PARTY_LICENSES.md.": "scripts/ui/info_book.gd",
 "выкл": "scripts/ui/settings_book.gd",
 "выше обычной": "scripts/ui/expedition_map_screen.gd",
 "героиня, разбившая Затмение": "scripts/game/game.gd",
@@ -2519,5 +2519,5 @@
 "−25% опыта": "data",
 "−35% золота с монстров": "data",
 "−5 к броне": "data",
-"★ Особая сила: меняет ваш бой": "scripts/ui/tooltip_text.gd"
+"◆ Особая сила: меняет ваш бой": "scripts/ui/tooltip_text.gd"
 }

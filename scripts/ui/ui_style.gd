@@ -43,10 +43,21 @@ static func icon_border() -> PixelFrame:
 	return f
 
 
+## The game font (assets/fonts/game_font.res, Tiny5) has two crisp sizes:
+## 8 (body) and 16 (headings). Asked sizes snap to them: 6..9 -> 8 (the font
+## draws every size below 16 at 8), 10+ -> 16, so a heading stays a heading.
+const HEADING_SIZE := 16
+const HEADING_FROM := 10
+
+
+static func px(font_size: int) -> int:
+	return HEADING_SIZE if font_size >= HEADING_FROM else font_size
+
+
 static func label(text: String, font_size: int = 8, color: Color = INK) -> Label:
 	var l := Label.new()
 	l.text = text
-	l.add_theme_font_size_override("font_size", font_size)
+	l.add_theme_font_size_override("font_size", px(font_size))
 	l.add_theme_color_override("font_color", color)
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return l

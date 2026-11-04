@@ -66,8 +66,8 @@ static func credits() -> InfoBook:
 	b.chapters = [
 		[TranslationServer.translate("Игра"), TranslationServer.translate("DungeonEclipse — версия %s.\n\nИдея, дизайн и тестирование — команда DungeonEclipse и друзья, ") % ProjectSettings.get_setting("application/config/version", "1.0") +
 			TranslationServer.translate("прошедшие с нами не один забег.\n\nВся графика, музыка и звуки сгенерированы скриптами проекта (папка tools).")],
-		[TranslationServer.translate("Движок"), TranslationServer.translate("Сделано на Godot Engine (godotengine.org). Шрифт интерфейса — Noto Sans (SIL Open Font License), ") +
-			TranslationServer.translate("встроен в движок.\n\nСписок всех сторонних компонентов и их лицензий — THIRD_PARTY_LICENSES.md.")],
+		[TranslationServer.translate("Движок"), TranslationServer.translate("Сделано на Godot Engine (godotengine.org). Пиксельный шрифт интерфейса — Tiny5 (Stefan Schmidt и авторы проекта Tiny5, SIL Open Font License 1.1). ") +
+			TranslationServer.translate("\n\nСписок всех сторонних компонентов и их лицензий — THIRD_PARTY_LICENSES.md и docs/CREDITS.md.")],
 		[TranslationServer.translate("Лицензия Godot"), Engine.get_license_text().replace("\n\n", "\u0001").replace("\n", " ").replace("\u0001", "\n\n")],
 		[TranslationServer.translate("Спасибо"), TranslationServer.translate("Спасибо всем, кто спускался в подземелье Затмения, находил ошибки и возвращался снова.\n\n") +
 			TranslationServer.translate("Да вернётся солнце над Аурелией.")],

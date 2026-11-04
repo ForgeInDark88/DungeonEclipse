@@ -311,7 +311,7 @@ func _refresh_skills() -> void:
 	for s in _skill_slots:
 		s.refresh()
 	var pts := hero.skills.skill_points
-	_points_label.text = (tr("Очки навыков: %d (K — дерево навыков)") % pts) if pts > 0 else ""
+	_points_label.text = (tr("Навыки: +%d (K)") % pts) if pts > 0 else ""
 
 
 func _refresh_xp() -> void:

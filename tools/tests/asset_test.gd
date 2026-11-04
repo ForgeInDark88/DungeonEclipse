@@ -110,6 +110,23 @@ func _initialize() -> void:
 	check(ProjectSettings.get_setting("rendering/textures/canvas_textures/default_texture_filter") == 0,
 		"canvas texture filter is Nearest")
 
+	# The interface font (docs/CREDITS.md): the theme uses it, and it draws
+	# every character of every Russian and English string of the game.
+	var theme: Theme = load(ProjectSettings.get_setting("gui/theme/custom"))
+	var font: Font = theme.default_font if theme else null
+	check(font != null and font.resource_path == "res://assets/fonts/game_font.res", "theme font is the game font")
+	if font:
+		var chars := {}
+		for f in ["res://locale/messages.json", "res://locale/en.po"]:
+			for ch in FileAccess.get_file_as_string(f):
+				chars[ch] = true
+		var missing := ""
+		for ch in chars:
+			var code: int = ch.unicode_at(0)
+			if code > 32 and code != 0xFEFF and not font.has_char(code):
+				missing += ch
+		check(missing == "", "the font draws every character of the strings (missing: %s)" % missing)
+
 	print("asset checks: %d" % checked)
 	print("FAILURES: %d" % fails)
 	quit(1 if fails > 0 else 0)
