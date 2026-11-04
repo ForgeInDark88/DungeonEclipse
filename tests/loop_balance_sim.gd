@@ -52,6 +52,7 @@ func _roads(idb, gs) -> Dictionary:
 	var first_income := {}
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 2024
+	seed(2024)  # the global dice too (ItemFactory affixes): the same table every run
 	for ri in idb.regions.size():
 		var sums := {"nodes": 0.0, "camp": 0.0, "rescue": 0.0, "event": 0.0, "elite": 0.0, "special": 0.0, "lair": 0.0}
 		var res := {}
