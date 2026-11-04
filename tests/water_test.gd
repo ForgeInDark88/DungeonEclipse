@@ -76,12 +76,14 @@ func _initialize() -> void:
 	await frames(50)
 	check(p.swimming, "dropped in, the hero swims")
 	var sink_speed: float = p.velocity.y
+	var am = root.get_node("AudioManager")
 	check(sink_speed <= p.SWIM_MAX_SINK + 1.0, "the water holds the hero up (sinks at %.0f px/s)" % sink_speed)
 	# dive to the bottom, then stroke up
 	Input.action_press("move_down")
 	await frames(60)
 	Input.action_release("move_down")
 	var low: float = lvl.water_depth_at(p.global_position)
+	check(am.is_underwater(), "head under water: the world sounds dull (low-pass)")
 	Input.action_press("jump")
 	await frames(70)
 	var high: float = lvl.water_depth_at(p.global_position)
@@ -100,6 +102,7 @@ func _initialize() -> void:
 			break
 	Input.action_release("move_right")
 	check(out, "a jump at the surface leaps out onto the bank")
+	check(not am.is_underwater(), "out of the water the sound is clear again")
 	# a rod in the bank: the pond is fished for river fish
 	var rods := get_nodes_in_group("interactable").filter(func(n): return "pond" in n and n.pond)
 	check(not rods.is_empty(), "a rod stands by the pond (%d)" % rods.size())

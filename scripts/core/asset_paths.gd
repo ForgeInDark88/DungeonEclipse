@@ -237,6 +237,8 @@ const AMBIENCE := {
 	&"amb_frogs": AMBIENCE_DIR + "amb_frogs.ogg",
 	&"amb_rain": AMBIENCE_DIR + "amb_rain.ogg",
 	&"amb_fire": AMBIENCE_DIR + "amb_fire.ogg",
+	&"amb_snow": AMBIENCE_DIR + "amb_snow.ogg",
+	&"amb_ash": AMBIENCE_DIR + "amb_ash.ogg",
 }
 ## Tracks played once (not looped): AudioManager.play_sting().
 const MUSIC_ONE_SHOT: Array[StringName] = [&"victory", &"death", &"ending"]

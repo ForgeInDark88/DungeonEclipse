@@ -253,4 +253,6 @@ func _ambience() -> void:
 	if not active or biome == null:
 		return
 	AudioManager.play_ambience(biome.ambience_night if is_night() else biome.ambience_day, 0)
-	AudioManager.play_ambience(&"amb_rain" if weather == &"rain" else (&"amb_wind" if weather == &"wind" else &""), 1, -14.0)
+	# the weather's own sound over the land's: rain, wind, a blizzard, falling ash
+	var weather_sound := {&"rain": &"amb_rain", &"wind": &"amb_wind", &"snow": &"amb_snow", &"ash": &"amb_ash"}
+	AudioManager.play_ambience(weather_sound.get(weather, &""), 1, -12.0 if weather in [&"snow", &"ash"] else -14.0)

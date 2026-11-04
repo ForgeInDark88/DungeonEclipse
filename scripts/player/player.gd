@@ -510,6 +510,8 @@ func _swim(input_x: float, delta: float, depth: float) -> void:
 					status.apply(&"bleed", 4.0, maxf(1.0, 1.0 + GameState.floor_number / 4.0))
 					EventBus.message.emit(tr("Пиявка присосалась! Выбирайся из воды."))
 					AudioManager.play_sfx(&"bubbles", global_position, -8.0)
+	# head under: the world sounds dull and far away
+	AudioManager.set_underwater(depth > 26.0)
 	if depth > 28.0 and _bubble_cd <= 0.0:
 		_bubble_cd = randf_range(0.8, 1.6)
 		Fx.bubbles(get_parent(), global_position + Vector2(facing * 4.0, -24.0))
@@ -523,6 +525,8 @@ func _walk(input_x: float, delta: float) -> void:
 	var in_water := depth > 6.0
 	if in_water != swimming:
 		swimming = in_water
+		if not in_water:
+			AudioManager.set_underwater(false)
 		if level and (in_water or absf(velocity.y) > 80.0):
 			level.splash(global_position, absf(velocity.y) > 140.0)
 	if swimming:
@@ -1071,6 +1075,9 @@ func _on_died() -> void:
 	velocity = Vector2.ZERO
 	visual.alpha = 1.0
 	animator.die()
+	if swimming:
+		swimming = false
+		AudioManager.set_underwater(false)  # the world's sound comes back
 	# Co-op: the death must reach the other machines instantly — the 1s
 	# ceremony in _on_player_died_coop is too late for mobs and puppets.
 	if Net.active:

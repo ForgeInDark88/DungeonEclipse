@@ -14,6 +14,8 @@ circular).
   amb_rain   rain: a hiss, fine drops, heavy drops on leaves, a far thunder
   amb_fire   a campfire: crackles and pops, the hiss and roar of the flames,
              a log settling now and then
+  amb_snow   a blizzard: a howling, whistling wind, driven snow hissing
+  amb_ash    falling ash: a low dry wind, flakes ticking, a far rumble
 
 Uses the DSP of tools/gen_audio.py (filters, reverb). Replace with real
 recordings of the same name (docs/AUDIO_LIST.md).
@@ -390,7 +392,43 @@ def fire():
     return sc.render(room=0.9, damp=6000, peak=0.75)
 
 
-SCENES = {"amb_wind": wind, "amb_birds": birds, "amb_night": night, "amb_frogs": frogs, "amb_rain": rain, "amb_fire": fire}
+def snow():
+    """A blizzard in the mountains: a howling wind with a whistle that rises
+    and falls, the hiss of driven snow, gusts."""
+    sc = Scene()
+    wind_bed(sc, seed=71, gain=1.1, gusty=1.6)
+    hiss = shaped_noise(72, lo=3000, hi=11000, tilt=0.1) * slow(73, 0.3, 0.2, 1.0, 1.5)
+    sc.bed(hiss * 0.22, width=1.0, seed=19)
+    t = np.arange(N) / SR
+    # the howl: a whistling tone that wanders and swells with the gusts
+    f = 520 + 180 * np.asarray(slow(74, 0.08, -1.0, 1.0)) + 40 * np.sin(2 * np.pi * 0.31 * t)
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    howl = np.sin(ph) * 0.6 + np.sin(ph * 1.5) * 0.25
+    howl = np.asarray(ga.fft_filter(howl + shaped_noise(75, lo=400, hi=900) * 0.6, lo=350, hi=1300))
+    sc.bed(howl * slow(76, 0.12, 0.0, 1.0, 2.5) * 0.35, width=0.7, seed=23)
+    return sc.render(room=1.5, damp=5000, peak=0.72)
+
+
+def ash():
+    """Ash falling in the wasteland: a low dry wind, the soft rustle and
+    tick of flakes landing, a far rumble of the burnt land."""
+    sc = Scene()
+    wind_bed(sc, seed=81, gain=0.55, gusty=0.7)
+    rumble = shaped_noise(82, lo=25, hi=140, tilt=-1.0) * slow(83, 0.06, 0.4, 1.0)
+    sc.bed(rumble * 0.4, width=0.4)
+    rustle = shaped_noise(84, lo=1500, hi=6000) * slow(85, 0.9, 0.1, 1.0, 2.0)
+    sc.bed(rustle * 0.1, width=1.0, seed=29)
+    rng = np.random.default_rng(86)
+    for _ in range(int(LEN * 9)):  # flakes ticking on stone and dry grass
+        b = burst(rng.uniform(0.003, 0.012), 2500, 9000, rng.uniform(400, 900), int(rng.integers(1 << 30)))
+        sc.add(b, rng.uniform(0, LEN), rng.uniform(0.05, 0.16), rng.uniform(-1, 1), 0.2)
+    for t0 in (4.0, 13.0):  # an ember cracks somewhere
+        sc.add(burst(0.03, 800, 5000, 90, int(t0)), t0, 0.35, rng.uniform(-0.6, 0.6), 0.5)
+    return sc.render(room=1.8, damp=4000, peak=0.68)
+
+
+SCENES = {"amb_wind": wind, "amb_birds": birds, "amb_night": night, "amb_frogs": frogs, "amb_rain": rain, "amb_fire": fire,
+          "amb_snow": snow, "amb_ash": ash}
 
 if __name__ == "__main__":
     names = sys.argv[1:] or list(SCENES)

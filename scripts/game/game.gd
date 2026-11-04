@@ -719,6 +719,7 @@ func _flash_screen(color: Color) -> void:
 func _exit_tree() -> void:
 	Engine.time_scale = 1.0
 	# the wind and the birds of a location stay behind with it
+	AudioManager.set_underwater(false)
 	AudioManager.play_ambience(&"", 0)
 	AudioManager.play_ambience(&"", 1)
 	if Net.world_session:
