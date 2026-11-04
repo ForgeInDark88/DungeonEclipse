@@ -120,6 +120,8 @@ func _load_floor() -> void:
 	var floor_number := GameState.floor_number
 	var seed_value := GameState.floor_seed()
 	var gen := LevelGenerator.new()
+	var fb := GameState.current_biome()
+	gen.flooded_pools = fb.flooded_pools if fb and not GameState.is_town() else 0
 	var layout: LevelLayout
 	if GameState.is_town() and GameState.expedition and GameState.town:
 		layout = TownBuilder.build_hub(GameState.town)

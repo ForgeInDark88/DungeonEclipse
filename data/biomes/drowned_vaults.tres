@@ -119,6 +119,8 @@ sway = false
 
 [resource]
 script = ExtResource("biome_script")
+flooded_pools = 3
+pool_leeches = true
 music = &"drowned_vaults"
 step_sound = &"step_stone"
 id = &"drowned_vaults"

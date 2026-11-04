@@ -137,6 +137,7 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 		return
 	_spawn_door()
 	_spawn_return_stairs()
+	_spawn_water()
 	_spawn_specials()
 	_spawn_chests()
 	_spawn_secret_walls()
@@ -247,6 +248,7 @@ func _build_band(i: int, seed_value: int) -> void:
 			_spawn_chests()
 			_spawn_enemies()
 		_:
+			_spawn_water()
 			_spawn_specials()
 			_spawn_chests()
 			_spawn_secret_walls()
@@ -331,8 +333,13 @@ func _spawn_surface_things() -> void:
 ## Ponds: a sheet of water over the dip, a lighter line on its surface.
 func _spawn_water() -> void:
 	var col := Color(0.3, 0.5, 0.75, 0.75)
+	var underground := not (biome is SurfaceBiomeData)
 	if biome is SurfaceBiomeData:
 		col = (biome as SurfaceBiomeData).water_color
+	elif biome:
+		col = biome.pool_color
+	var wrng := RandomNumberGenerator.new()
+	wrng.seed = hash([floor_number, layout.water.size(), _origin])
 	for r: Rect2i in layout.water:
 		var top := cell_bottom(Vector2i(r.position.x, r.position.y - 1)) + Vector2(-TILE / 2.0, 2)
 		var size := Vector2(r.size.x * TILE, r.size.y * TILE + TILE / 2.0 - 2)
@@ -346,6 +353,13 @@ func _spawn_water() -> void:
 		m.set_shader_parameter("deep", Color(col.r * 0.35, col.g * 0.45, col.b * 0.6, 0.88))
 		m.set_shader_parameter("size", size)
 		m.set_shader_parameter("seed", float(r.position.x % 97))
+		if underground:
+			# a dark pool lit from inside by drifting glimmers (fungus light)
+			m.set_shader_parameter("glow", 1.0)
+			m.set_shader_parameter("deep", Color(col.r * 0.25, col.g * 0.35, col.b * 0.45, 0.92))
+			body.set_meta(&"leeches", biome != null and biome.pool_leeches)
+			if wrng.randf() < 0.5:
+				body.set_meta(&"current", -1.0 if wrng.randf() < 0.5 else 1.0)  # an undertow
 		body.material = m
 		var holder := Node2D.new()
 		holder.z_index = 2
@@ -357,6 +371,14 @@ func _spawn_water() -> void:
 			var spot := FishingSpot.new()
 			spot.pond = true
 			add_entity(spot, cell_bottom(Vector2i(r.position.x - 1, r.position.y - 1)))
+
+
+## The pond / pool whose water is at a point (global), or null.
+func water_body_at(gpos: Vector2) -> ColorRect:
+	for body: ColorRect in water_bodies:
+		if is_instance_valid(body) and Rect2(body.global_position, body.size).has_point(gpos):
+			return body
+	return null
 
 
 ## The water surface under or around a point (global): how deep the point

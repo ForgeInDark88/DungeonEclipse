@@ -472,6 +472,7 @@ const SWIM_SPEED := 0.6
 var swimming := false
 var _stroke_cd := 0.0
 var _bubble_cd := 0.0
+var _leech_cd := 4.0
 
 
 func _water_depth() -> float:
@@ -497,6 +498,18 @@ func _swim(input_x: float, delta: float, depth: float) -> void:
 		AudioManager.play_sfx(&"swim", global_position, -12.0, 0.2)
 	elif at_surface and velocity.y > 0.0 and not Input.is_action_pressed("move_down"):
 		velocity.y *= 0.6  # bobbing at the surface
+	# the water of the deep: an undertow carries the swimmer, leeches cling
+	var body := level.water_body_at(global_position) if level else null
+	if body:
+		velocity.x += float(body.get_meta(&"current", 0.0)) * 120.0 * delta
+		if body.get_meta(&"leeches", false) and depth > 12.0:
+			_leech_cd -= delta
+			if _leech_cd <= 0.0:
+				_leech_cd = randf_range(2.5, 4.0)
+				if randf() < 0.45:
+					status.apply(&"bleed", 4.0, maxf(1.0, 1.0 + GameState.floor_number / 4.0))
+					EventBus.message.emit(tr("Пиявка присосалась! Выбирайся из воды."))
+					AudioManager.play_sfx(&"bubbles", global_position, -8.0)
 	if depth > 28.0 and _bubble_cd <= 0.0:
 		_bubble_cd = randf_range(0.8, 1.6)
 		Fx.bubbles(get_parent(), global_position + Vector2(facing * 4.0, -24.0))

@@ -88,6 +88,8 @@ static func _layer_layout(li: LocationInstance, i: int) -> LevelLayout:
 			surf.specials.append({"type": &"key_drop", "cell": kc})
 		return surf
 	var gen := LevelGenerator.new()
+	var fb := layer_biome(li, i)
+	gen.flooded_pools = fb.flooded_pools if fb else 0
 	# The floor's place in the dungeon: the prisoner waits on the last one.
 	# (a rescue node with a surface keeps its prisoner in the bandits' camp)
 	GameState.location["band_last"] = bool(layer.get("last", false)) and not (li.node_type == &"rescue" and li.has_surface())

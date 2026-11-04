@@ -32,6 +32,11 @@ const AMBUSH_CHANCE := 0.8
 const MAX_MONSTERS := 30
 
 
+## Flooded pits on the floors (BiomeData.flooded_pools; the caller sets it
+## for the biome of the floor - the Drowned Vaults).
+var flooded_pools := 0
+
+
 func generate(floor_number: int, seed_value: int) -> LevelLayout:
 	rng.seed = seed_value
 	cols = clampi(3 + floor_number / 2, 3, 6)
@@ -65,7 +70,60 @@ func generate(floor_number: int, seed_value: int) -> LevelLayout:
 	_place_chests(floor_number)
 	_place_enemies(floor_number)
 	_place_lore()
+	if flooded_pools > 0:
+		_flood(seed_value)
 	return layout
+
+
+## Flooded basins: the bottom of a room between two walls fills with water
+## two cells deep (layout.water). No tile changes - the paths of the floor
+## stay as they are; monsters walk on the bottom, the hero swims. Never
+## over the start or the exit, a chest, a special, the lore note or a
+## ladder. Its own RNG: the rest of the floor stays the same.
+func _flood(seed_value: int) -> void:
+	var frng := RandomNumberGenerator.new()
+	frng.seed = hash([seed_value, "flood"])
+	var keep := {}
+	for c in [layout.start_cell, layout.exit_cell, layout.lore_cell]:
+		keep[c] = true
+	for ch in layout.chests:
+		keep[ch["cell"]] = true
+	for sp in layout.specials:
+		keep[sp["cell"]] = true
+	var basins: Array = []
+	for y in range(3, layout.height - 1):
+		var x := 1
+		while x < layout.width - 1:
+			if not _wet(x, y):
+				x += 1
+				continue
+			var x0 := x
+			while x < layout.width - 1 and _wet(x, y):
+				x += 1
+			var x1 := x - 1
+			var walled := LevelLayout.is_solid(layout.get_tile(x0 - 1, y - 1)) and LevelLayout.is_solid(layout.get_tile(x0 - 1, y - 2)) \
+					and LevelLayout.is_solid(layout.get_tile(x1 + 1, y - 1)) and LevelLayout.is_solid(layout.get_tile(x1 + 1, y - 2))
+			var clear := true
+			for k in keep:
+				var c: Vector2i = k
+				if c.x >= x0 - 1 and c.x <= x1 + 1 and c.y >= y - 3 and c.y <= y:
+					clear = false
+			if walled and clear and x1 - x0 + 1 >= 3 and x1 - x0 + 1 <= 30:
+				basins.append(Rect2i(x0, y - 2, x1 - x0 + 1, 2))
+	for i in range(basins.size() - 1, 0, -1):
+		var j := frng.randi_range(0, i)
+		var tmp: Rect2i = basins[i]
+		basins[i] = basins[j]
+		basins[j] = tmp
+	for r: Rect2i in basins.slice(0, flooded_pools):
+		layout.water.append(r)
+
+
+## A cell of a room's bottom that water could fill: floor under it, open
+## water room (no ledge, no ladder) in it and above it.
+func _wet(x: int, y: int) -> bool:
+	return LevelLayout.is_solid(layout.get_tile(x, y)) and layout.get_tile(x, y - 1) == T.EMPTY \
+			and layout.get_tile(x, y - 2) == T.EMPTY
 
 
 ## A road event's room: a short hall with a few ledges, the event's scenery

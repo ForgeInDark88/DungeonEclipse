@@ -28,6 +28,10 @@ var totals := {"levels": 0, "enemies": 0, "stuck": 0, "worst_still": 0.0, "dange
 	"lost": 0, "chases": 0, "searches": 0, "returns": 0, "pit_time": 0.0, "pond_time": 0.0}
 
 
+## --biome=<id>: every dungeon floor in that biome (e.g. drowned_vaults).
+var force_biome: StringName = &""
+
+
 func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--levels="):
@@ -38,6 +42,8 @@ func _ready() -> void:
 			start = int(a.get_slice("=", 1))
 		elif a == "--surface":
 			surface = true
+		elif a.begins_with("--biome="):
+			force_biome = StringName(a.get_slice("=", 1))
 		elif a.begins_with("--seconds="):
 			seconds = float(a.get_slice("=", 1))
 	AIDebug.reset()
@@ -81,8 +87,10 @@ func _run_level(floor_number: int, seed_value: int, index: int) -> void:
 		biome = ItemDatabase.surface_biomes[ids[index % ids.size()]]
 		layout = SurfaceGenerator.new().generate(floor_number, seed_value, 2, 6, biome)
 	else:
-		layout = LevelGenerator.new().generate(floor_number, seed_value)
-		biome = ItemDatabase.biome_for_floor(floor_number)
+		biome = ItemDatabase.biome_by_id(force_biome) if force_biome != &"" else ItemDatabase.biome_for_floor(floor_number)
+		var gen := LevelGenerator.new()
+		gen.flooded_pools = biome.flooded_pools if biome else 0  # the pits of the Drowned Vaults
+		layout = gen.generate(floor_number, seed_value)
 	var level: DungeonLevel = LEVEL_SCENE.instantiate()
 	add_child(level)
 	level.build(layout, floor_number, seed_value, biome)

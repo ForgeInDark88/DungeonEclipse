@@ -52,6 +52,11 @@ extends Resource
 ## Under the open sky (the town; every SurfaceBiomeData is): full daylight,
 ## drifting clouds, swaying foliage, the hour on the backgrounds.
 @export var open_sky: bool = false
+## Flooded pits on the floors (LevelGenerator._flood): how many, their
+## water, and whether leeches live in it (they cling to swimmers).
+@export var flooded_pools: int = 0
+@export var pool_color: Color = Color(0.16, 0.42, 0.46, 0.78)
+@export var pool_leeches: bool = false
 
 
 func is_open_sky() -> bool:
