@@ -171,6 +171,17 @@ func _initialize() -> void:
 	var theme: Theme = load(ProjectSettings.get_setting("gui/theme/custom"))
 	var font: Font = theme.default_font if theme else null
 	check(font != null and font.resource_path == "res://assets/fonts/game_font.res", "theme font is the game font")
+	# The interface skin (tools/art/build_theme.gd): no control keeps
+	# Godot's grey look.
+	if theme:
+		for pair in [["scroll", "VScrollBar"], ["grabber", "VScrollBar"], ["scroll", "HScrollBar"], ["slider", "HSlider"],
+				["normal", "LineEdit"], ["focus", "LineEdit"], ["panel", "PopupMenu"], ["panel", "ItemList"],
+				["selected", "ItemList"], ["background", "ProgressBar"], ["fill", "ProgressBar"], ["panel", "PanelContainer"],
+				["normal", "Button"]]:
+			check(theme.has_stylebox(pair[0], pair[1]), "theme styles %s/%s" % [pair[1], pair[0]])
+		for pair in [["checked", "CheckBox"], ["unchecked", "CheckBox"], ["checked", "CheckButton"], ["grabber", "HSlider"],
+				["arrow", "OptionButton"], ["updown", "SpinBox"]]:
+			check(theme.has_icon(pair[0], pair[1]), "theme draws %s/%s" % [pair[1], pair[0]])
 	if font:
 		var chars := {}
 		for f in ["res://locale/messages.json", "res://locale/en.po"]:
