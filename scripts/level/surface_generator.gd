@@ -233,12 +233,15 @@ func _ponds(screens: int) -> void:
 			ground[cx] = gy
 		_fill_ground(x - 2, x + wdt + 2)
 		_smooth_around(x - 2, x + wdt + 1)
+		# deep enough to swim in the middle (3 cells), stepped banks (1, 2)
+		# so that a monster that walks in walks out again
 		for cx in range(x, x + wdt):
-			var d := 1 if cx == x or cx == x + wdt - 1 else 2
+			var edge := mini(cx - x, x + wdt - 1 - cx)
+			var d := mini(3, edge + 1)
 			for cy in range(gy, gy + d):
 				layout.set_tile(cx, cy, T.EMPTY)
 			ground[cx] = gy + d
-		layout.water.append(Rect2i(x, gy, wdt, 2))
+		layout.water.append(Rect2i(x, gy, wdt, 3))
 		_mark_cols(x - 1, x + wdt)
 
 

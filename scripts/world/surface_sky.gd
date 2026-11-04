@@ -186,6 +186,10 @@ func _apply_weather() -> void:
 			p.emission_rect_extents = Vector2(420, 200)
 	if weather != &"wind" and weather != &"fog":
 		p.emission_rect_extents = Vector2(420, 10)
+	# raindrops ring the ponds
+	var lvl = get_tree().current_scene.get("level") if get_tree().current_scene else null
+	if lvl is DungeonLevel:
+		(lvl as DungeonLevel).set_rain(1.0 if weather == &"rain" and active else 0.0)
 
 
 func _ambience() -> void:

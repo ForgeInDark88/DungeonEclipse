@@ -55,6 +55,51 @@ static func dust(parent: Node, feet_pos: Vector2, big := false) -> void:
 	play_once(parent, feet_pos, AssetPaths.DUST_SHEET, AssetPaths.DUST_LAYOUT, &"puff", false, sc)
 
 
+## Water thrown up where something broke the surface (DungeonLevel.splash).
+static func splash(parent: Node, pos: Vector2, color: Color, big := true) -> void:
+	var p := CPUParticles2D.new()
+	p.one_shot = true
+	p.emitting = true
+	p.amount = 14 if big else 5
+	p.lifetime = 0.6
+	p.explosiveness = 1.0
+	p.direction = Vector2.UP
+	p.spread = 35.0
+	p.initial_velocity_min = 50.0 if big else 25.0
+	p.initial_velocity_max = 120.0 if big else 50.0
+	p.gravity = Vector2(0, 420)
+	p.scale_amount_min = 1.0
+	p.scale_amount_max = 2.0
+	var ramp := Gradient.new()
+	ramp.set_color(0, Color(1, 1, 1, 0.95))
+	ramp.set_color(1, Color(color.r * 1.2, color.g * 1.2, color.b * 1.3, 0.0))
+	p.color_ramp = ramp
+	p.z_index = 3
+	p.finished.connect(p.queue_free)
+	parent.add_child(p)
+	p.global_position = pos
+
+
+## Air bubbles rising from a swimmer.
+static func bubbles(parent: Node, pos: Vector2) -> void:
+	var p := CPUParticles2D.new()
+	p.one_shot = true
+	p.emitting = true
+	p.amount = 3
+	p.lifetime = 0.9
+	p.explosiveness = 0.6
+	p.direction = Vector2.UP
+	p.spread = 15.0
+	p.initial_velocity_min = 12.0
+	p.initial_velocity_max = 25.0
+	p.gravity = Vector2(0, -20)
+	p.color = Color(0.85, 0.95, 1.0, 0.8)
+	p.z_index = 3
+	p.finished.connect(p.queue_free)
+	parent.add_child(p)
+	p.global_position = pos
+
+
 static func sparks(parent: Node, pos: Vector2, color: Color, amount := 8, speed := 90.0) -> void:
 	var p := CPUParticles2D.new()
 	p.one_shot = true
