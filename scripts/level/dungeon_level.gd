@@ -829,14 +829,23 @@ func _apply_tile(cell: Vector2i, kind: int) -> void:
 			if ore_cells.has(cell):
 				coords = AssetPaths.TILE_ORE
 				glow.set_cell(cell, _src(cell), AssetPaths.TILE_ORE_GLOW)
-			elif not LevelLayout.is_solid(layout.get_tile(cell.x, cell.y - 1)):
-				coords = Vector2i(v, AssetPaths.TILE_ROW_BRICK_TOP)
-			elif not LevelLayout.is_solid(layout.get_tile(cell.x, cell.y + 1)):
-				coords = Vector2i(v, AssetPaths.TILE_ROW_BRICK_BOTTOM)
+				tiles.set_cell(cell, _src(cell), coords)
 			else:
-				# Mostly plain bricks, sometimes cracked.
-				coords = Vector2i(2 if v == 3 else v % 2, AssetPaths.TILE_ROW_BRICK)
-			tiles.set_cell(cell, _src(cell), coords)
+				var mask := _wall_mask(cell)
+				var src := _src(cell)
+				if mask != Autotile.ALL and TilesetBuilder.has_blob(tiles.tile_set, src):
+					# An exposed wall: its edges, caps and corners from the
+					# 47-variant tiles (Autotile).
+					tiles.set_cell(cell, TilesetBuilder.BLOB_OFFSET + src, Autotile.coords(mask, v % 2))
+				else:
+					if not mask & Autotile.N:
+						coords = Vector2i(v, AssetPaths.TILE_ROW_BRICK_TOP)
+					elif not mask & Autotile.S:
+						coords = Vector2i(v, AssetPaths.TILE_ROW_BRICK_BOTTOM)
+					else:
+						# Mostly plain bricks, sometimes cracked.
+						coords = Vector2i(2 if v == 3 else v % 2, AssetPaths.TILE_ROW_BRICK)
+					tiles.set_cell(cell, src, coords)
 		T.PLATFORM:
 			var left := layout.get_tile(cell.x - 1, cell.y) == T.PLATFORM
 			var right := layout.get_tile(cell.x + 1, cell.y) == T.PLATFORM
@@ -854,7 +863,23 @@ func _apply_tile(cell: Vector2i, kind: int) -> void:
 		if kind == T.EMPTY or kind == T.LADDER or kind == T.LADDER_TOP:
 			sh.erase_cell(cell)
 		else:
-			sh.set_cell(cell, _src(cell), tiles.get_cell_atlas_coords(cell))
+			sh.set_cell(cell, tiles.get_cell_source_id(cell), tiles.get_cell_atlas_coords(cell))
+
+
+## Which of the 8 neighbours of a wall cell are wall too (Autotile bits).
+## Outside the map counts as wall.
+const _MASK_DIRS: Array[Vector2i] = [Vector2i(0, -1), Vector2i(1, -1), Vector2i(1, 0), Vector2i(1, 1),
+		Vector2i(0, 1), Vector2i(-1, 1), Vector2i(-1, 0), Vector2i(-1, -1)]
+
+
+func _wall_mask(cell: Vector2i) -> int:
+	# Bit i of the mask is _MASK_DIRS[i]: N, NE, E, SE, S, SW, W, NW (Autotile).
+	var m := 0
+	for i in 8:
+		var c: Vector2i = cell + _MASK_DIRS[i]
+		if not layout.in_bounds(c.x, c.y) or LevelLayout.is_solid(layout.get_tile(c.x, c.y)):
+			m |= 1 << i
+	return m
 
 
 ## Settings → «Тени блоков».
@@ -888,7 +913,9 @@ func _apply_detail(cell: Vector2i) -> void:
 
 ## Re-picks the tile of a cell and its neighbours (after digging).
 func _refresh_around(cell: Vector2i) -> void:
-	for d in [Vector2i.ZERO, Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
+	# 3x3: a wall's corners depend on its diagonal neighbours too (Autotile).
+	for d in [Vector2i.ZERO, Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN,
+			Vector2i(-1, -1), Vector2i(1, -1), Vector2i(-1, 1), Vector2i(1, 1)]:
 		var c: Vector2i = cell + d
 		if layout.in_bounds(c.x, c.y):
 			_apply_tile(c, layout.get_tile(c.x, c.y))

@@ -110,6 +110,28 @@ func _initialize() -> void:
 	check(ProjectSettings.get_setting("rendering/textures/canvas_textures/default_texture_filter") == 0,
 		"canvas texture filter is Nearest")
 
+	# 47-variant wall tiles: every biome atlas has its _blob atlas of the
+	# size Autotile expects, and the mask table has 47 distinct tiles.
+	var at: Script = load("res://scripts/level/autotile.gd")
+	var seen := {}
+	for m in 256:
+		seen[at.index_of(m)] = true
+	check(seen.size() == 47 and at.index_of(0) == 0 and at.index_of(255) == 46, "47 blob tiles, isolated = 0, interior = 46")
+	var tilesets: Array = []
+	_walk("res://assets/sprites/tiles", ["png"], tilesets)
+	var blobs := 0
+	for f in tilesets:
+		if f.ends_with("_blob.png"):
+			continue
+		var bp: String = f.get_basename() + "_blob.png"
+		check(ResourceLoader.exists(bp), "%s has its 47-variant atlas (tools/art/gen_autotiles.py)" % f)
+		if ResourceLoader.exists(bp):
+			blobs += 1
+			var bt: Texture2D = load(bp)
+			check(bt.get_width() == 16 * at.COLUMNS and bt.get_height() == 16 * at.ROWS_PER_VARIANT * at.VARIANTS,
+				"%s is %dx%d" % [bp, 16 * at.COLUMNS, 16 * at.ROWS_PER_VARIANT * at.VARIANTS])
+	check(blobs >= 18, "blob atlases (%d)" % blobs)
+
 	# The interface font (docs/CREDITS.md): the theme uses it, and it draws
 	# every character of every Russian and English string of the game.
 	var theme: Theme = load(ProjectSettings.get_setting("gui/theme/custom"))
