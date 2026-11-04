@@ -17,6 +17,7 @@ chance = 0.2
 
 [resource]
 script = ExtResource("2_w7tpy")
+voice = &"bone"
 id = &"skeleton"
 display_name = "Скелет"
 description = "Страж катакомб. Не знает усталости и не чувствует яда."

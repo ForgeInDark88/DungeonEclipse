@@ -17,6 +17,7 @@ chance = 0.3
 
 [resource]
 script = ExtResource("2_ed")
+voice = &"water"
 id = &"drowned"
 display_name = "Утопленник"
 description = "Раздутый труп утопленника. Медлителен, но силен и не тонет."

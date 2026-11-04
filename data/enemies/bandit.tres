@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("1")
+voice = &"human"
 id = &"bandit"
 display_name = "Бандит-мечник"
 description = "Разбойник с большой дороги. Держится рядом с лагерем."

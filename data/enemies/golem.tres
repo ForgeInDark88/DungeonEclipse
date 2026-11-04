@@ -17,6 +17,7 @@ chance = 0.35
 
 [resource]
 script = ExtResource("4_kit7j")
+voice = &"stone"
 id = &"golem"
 display_name = "Каменный голем"
 description = "Ожившая кладка. Медленный и тяжёлый, обрушивает удар по площади."

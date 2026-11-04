@@ -17,6 +17,7 @@ chance = 0.5
 
 [resource]
 script = ExtResource("1")
+voice = &"hiss"
 id = &"snake"
 display_name = "Змея"
 description = "Прячется в траве. Яд жжёт долго."

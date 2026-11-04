@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("1")
+voice = &"brute"
 id = &"ogre"
 display_name = "Огр"
 description = "Громада с дубиной. Медленный, но один удар валит с ног."

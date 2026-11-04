@@ -25,6 +25,7 @@ chance = 0.2
 
 [resource]
 script = ExtResource("5_o5dl5")
+voice = &"hiss"
 id = &"spider"
 display_name = "Пещерный паук"
 description = "Ждёт на потолке и падает на голову. Укус ядовит."

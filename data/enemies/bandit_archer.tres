@@ -9,6 +9,7 @@
 
 [resource]
 script = ExtResource("1")
+voice = &"human"
 id = &"bandit_archer"
 display_name = "Бандит-лучник"
 description = "Стреляет из-за спин товарищей."

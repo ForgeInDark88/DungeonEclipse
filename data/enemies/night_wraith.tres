@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("1")
+voice = &"spirit"
 id = &"night_wraith"
 display_name = "Ночной призрак"
 description = "Холодный огонёк над травой. Летает сквозь всё."

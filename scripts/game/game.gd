@@ -150,6 +150,7 @@ func _load_floor() -> void:
 	if GameState.is_town() and GameState.expedition:
 		EventBus.message.emit(tr("%s · %s. Ворота похода — в конце улицы.") % [biome.display_name, Buildings.phase_name()])
 		_town_sky()
+		AudioManager.play_sfx(&"town_bell", Vector2.INF, -10.0, 0.0)
 		# butterflies over the street, fireflies at night, birds in the trees
 		var life := SurfaceLife.new()
 		level.add_child(life)

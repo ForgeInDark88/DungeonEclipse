@@ -125,6 +125,22 @@ func _initialize() -> void:
 		check(am.variant_count(id) >= 1, "sound %s has a file" % id)
 	for id in ap.MUSIC:
 		check(ResourceLoader.exists(ap.MUSIC[id]), "track %s: %s" % [id, ap.MUSIC[id]])
-	print("sounds: %d ids" % ap.SFX.size())
+	# Stage D: 300+ sound files; every monster speaks with its own voice.
+	var files := 0
+	for f in DirAccess.get_files_at("res://assets/audio/sfx"):
+		if f.ends_with(".wav"):
+			files += 1
+	check(files >= 300, "300+ sound files (%d)" % files)
+	var idb = root.get_node("ItemDatabase")
+	for e in idb.enemies:
+		if e.id == &"training_dummy":
+			continue
+		check(e.voice != &"", "%s has a voice family" % e.id)
+		for k in ["aggro", "attack", "hurt", "death"]:
+			var id := StringName("%s_%s" % [e.voice, k])
+			check(ap.SFX.has(id) and am.variant_count(id) >= 3, "%s: %s with 3 takes" % [e.id, id])
+		check(ap.SFX.has(e.hit_sound()), "%s: the blow on it sounds (%s)" % [e.id, e.hit_sound()])
+	check(am.variant_count(&"step_stone") >= 3 and am.variant_count(&"hit_flesh") >= 3, "frequent sounds have variants")
+	print("sounds: %d ids, %d files" % [ap.SFX.size(), files])
 	print("FAILURES: %d" % fails)
 	quit(1 if fails > 0 else 0)

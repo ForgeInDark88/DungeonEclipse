@@ -126,7 +126,7 @@ func _unlock_row(what: Resource, kind: String) -> Control:
 
 
 func _buy(ok: bool) -> void:
-	AudioManager.play_ui(&"coin" if ok else &"chest_locked")
+	AudioManager.play_ui(&"ui_buy" if ok else &"ui_error")
 
 
 func _price(shards: int, gold: int) -> String:

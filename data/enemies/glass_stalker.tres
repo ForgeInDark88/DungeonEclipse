@@ -9,6 +9,7 @@
 
 [resource]
 script = ExtResource("3_ed")
+voice = &"stone"
 id = &"glass_stalker"
 display_name = "Стеклянный сталкер"
 description = "Осколок чужого отражения. Проходит сквозь стены и режет света."

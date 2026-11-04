@@ -11,6 +11,7 @@
 
 [resource]
 script = ExtResource("4_3a0v7")
+voice = &"human"
 id = &"summoner"
 display_name = "Некромант"
 description = "Некромант, поднимающий скелетов. Убейте его первым."

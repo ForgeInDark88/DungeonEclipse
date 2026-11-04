@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("1_data")
+voice = &"mimic"
 id = &"mimic"
 display_name = "Мимик"
 gender = "m"

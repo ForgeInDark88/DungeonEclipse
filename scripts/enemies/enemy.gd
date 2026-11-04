@@ -536,6 +536,26 @@ func _dissolve_away(parent: Node, pos: Vector2, color: Color) -> void:
 	tw.tween_callback(queue_free)
 
 
+var _aggro_cool := 0.0
+
+
+## Its voice on a change of state: a cry when it takes up the chase from
+## calm (not more than once in 6 s), the swing when an attack begins.
+func _voice_for(was: State, now: State) -> void:
+	if _dead or data == null:
+		return
+	var t := Time.get_ticks_msec() / 1000.0
+	if now == State.CHASE and was not in [State.CHASE, State.ATTACK, State.HURT, State.ALERT] and t > _aggro_cool:
+		_aggro_cool = t + 6.0
+		var cry := data.aggro_sound()
+		if cry != &"":
+			AudioManager.play_sfx(cry, global_position, -3.0, 0.12)
+	elif now == State.ATTACK and data.behavior != EnemyData.Behavior.RANGED:
+		var swing := data.attack_sound()
+		if swing != &"":
+			AudioManager.play_sfx(swing, global_position, -4.0, 0.12)
+
+
 ## In a fight (the music's combat layer listens: AudioManager._process).
 func is_fighting() -> bool:
 	return not _dead and state in [State.CHASE, State.ATTACK, State.ALERT]
@@ -676,10 +696,12 @@ func _set_state(new_state: State) -> void:
 		_pounce_windup = 0.0
 		_set_flash(0.0)
 	_pouncing = false
+	var was := state
 	state = new_state
 	_state_time = 0.0
 	_path.clear()
 	_hold = false
+	_voice_for(was, new_state)
 
 
 func _notice() -> void:
@@ -1796,7 +1818,7 @@ func _shoot() -> void:
 	p.setup(data.projectile_texture, dir_v, data.projectile_speed, hit_damage(), "player")
 	p.blast_color = Color(0.8, 0.3, 1.0)
 	p.on_hit = func(target: Node, dmg: int) -> void: _apply_hit_effects(target, dmg)
-	AudioManager.play_sfx(data.sound_attack if data.sound_attack != &"" else &"enemy_shoot", global_position)
+	AudioManager.play_sfx(data.attack_sound() if data.attack_sound() != &"" else &"enemy_shoot", global_position)
 	level.add_entity(p, from)
 	# Co-op: enemy shots exist only where they are simulated; guests get a
 	# visual copy (the damage itself reaches them through player_damage).
@@ -1881,8 +1903,8 @@ func take_damage(amount: int, crit: bool = false, from_pos: Vector2 = Vector2.IN
 	if from_pos != Vector2.INF and state in [State.PATROL, State.RETURN, State.SEARCH]:
 		_last_seen = from_pos
 		_memory = MEMORY_TIME
-	AudioManager.play_sfx(&"hit_crit" if crit else &"hit_flesh", global_position)
-	AudioManager.play_sfx(data.sound_hurt, global_position, -4.0)
+	AudioManager.play_sfx(data.hit_sound(crit), global_position)
+	AudioManager.play_sfx(data.hurt_sound(), global_position, -4.0)
 	Fx.hit_spark(get_parent(), global_position + Vector2(0, -data.collision_size.y / 2.0), crit)
 	_flash()
 	# Co-op: shells replay the hurt reaction (white flash + hurt pose).
@@ -1995,8 +2017,8 @@ func net_hurt(crit := false) -> void:
 	if _dead or not puppet:
 		return
 	# The same impact the host sees: spark, hit sounds.
-	AudioManager.play_sfx(&"hit_crit" if crit else &"hit_flesh", global_position)
-	AudioManager.play_sfx(data.sound_hurt, global_position, -4.0)
+	AudioManager.play_sfx(data.hit_sound(crit), global_position)
+	AudioManager.play_sfx(data.hurt_sound(), global_position, -4.0)
 	Fx.hit_spark(get_parent(), global_position + Vector2(0, -data.collision_size.y / 2.0), crit)
 	state = State.HURT
 	_attack_anim_left = 0.0
@@ -2012,7 +2034,7 @@ func net_die() -> void:
 	if _dead:
 		return
 	_dead = true
-	AudioManager.play_sfx(data.sound_death, global_position)
+	AudioManager.play_sfx(data.death_sound(), global_position)
 	set_physics_process(false)
 	remove_from_group("enemies")
 	shape.set_deferred("disabled", true)
@@ -2027,7 +2049,7 @@ func net_die() -> void:
 
 func _die() -> void:
 	_dead = true
-	AudioManager.play_sfx(data.sound_death, global_position)
+	AudioManager.play_sfx(data.death_sound(), global_position)
 	set_physics_process(false)
 	status.clear()
 	status.set_physics_process(false)

@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("1")
+voice = &"beast"
 id = &"deer"
 display_name = "Олень"
 description = "Пугливый лесной житель. Не трогает путников, но копыта у него крепкие."

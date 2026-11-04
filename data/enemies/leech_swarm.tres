@@ -9,6 +9,7 @@
 
 [resource]
 script = ExtResource("2_ed")
+voice = &"water"
 id = &"leech_swarm"
 display_name = "Пиявка"
 description = "Проворная кровопийца затопленных залов. Прыгает и впивается."

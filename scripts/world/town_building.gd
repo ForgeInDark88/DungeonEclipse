@@ -116,6 +116,8 @@ func play_built() -> void:
 	Fx.sparks(get_parent(), global_position + Vector2(0, -20), Color(1.0, 0.85, 0.5), 30, 120.0)
 	EventBus.screen_shake.emit(2.0)
 	AudioManager.play_sfx(&"level_up", global_position)
+	AudioManager.play_ui(&"ui_build")
+	AudioManager.play_sfx(&"town_anvil", global_position, -4.0)
 
 
 func get_prompt() -> String:

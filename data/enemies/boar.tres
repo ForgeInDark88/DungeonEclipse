@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("1")
+voice = &"beast"
 id = &"boar"
 display_name = "Кабан"
 description = "Упрямый зверь с клыками. Разгоняется и сбивает с ног."

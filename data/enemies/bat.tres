@@ -9,6 +9,7 @@
 
 [resource]
 script = ExtResource("2_b60uw")
+voice = &"winged"
 id = &"bat"
 display_name = "Летучая мышь"
 description = "Пищащая тень под сводами. Слабая, но налетает стаями и бьёт сверху."

@@ -135,6 +135,7 @@ func _build() -> void:
 func _show(i: int) -> void:
 	if i < 0 or i >= chapters.size():
 		return
+	AudioManager.play_ui(&"ui_page", -6.0)
 	_head.text = chapters[i][0]
 	_text.text = _keys(chapters[i][1])
 	_text.add_theme_font_size_override("font_size", 6 if _text.text.length() > 700 else 7)

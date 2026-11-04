@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("1")
+voice = &"beast"
 id = &"wolf"
 display_name = "Волк"
 description = "Серый хищник холмов и лесов. Нападает стаей и прыгает на добычу."

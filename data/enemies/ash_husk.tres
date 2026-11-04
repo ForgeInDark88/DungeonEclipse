@@ -18,6 +18,7 @@ chance = 0.4
 
 [resource]
 script = ExtResource("4_ed")
+voice = &"bone"
 id = &"ash_husk"
 display_name = "Пепельный опустошитель"
 description = "Выгоревшая оболочка культиста. Швыряет тлеющие сгустки пепла."

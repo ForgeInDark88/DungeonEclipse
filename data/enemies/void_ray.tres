@@ -17,6 +17,7 @@ chance = 0.35
 
 [resource]
 script = ExtResource("4_ed")
+voice = &"void"
 id = &"void_ray"
 display_name = "Бездновый скат"
 description = "Стеклянный скат, что плывёт над пустотой. Пикирует молча — слышно только звон крыльев."

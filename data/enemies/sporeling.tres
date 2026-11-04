@@ -17,6 +17,7 @@ chance = 0.6
 
 [resource]
 script = ExtResource("4_ed")
+voice = &"plant"
 id = &"sporeling"
 display_name = "Спорыш"
 description = "Грибной нарост, который взрывается облаком спор. Ядовит."
