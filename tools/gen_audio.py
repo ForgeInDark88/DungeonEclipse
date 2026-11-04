@@ -335,6 +335,7 @@ def make_boss_sfx():
 SCALES = {
     "minor": [0, 2, 3, 5, 7, 8, 10], "dorian": [0, 2, 3, 5, 7, 9, 10], "phrygian": [0, 1, 3, 5, 7, 8, 10],
     "harmonic": [0, 2, 3, 5, 7, 8, 11], "major": [0, 2, 4, 5, 7, 9, 11],
+    "mixolydian": [0, 2, 4, 5, 7, 9, 10], "lydian": [0, 2, 4, 6, 7, 9, 11],
 }
 NOTE = {"C": 0, "C#": 1, "D": 2, "D#": 3, "E": 4, "F": 5, "F#": 6, "G": 7, "G#": 8, "A": 9, "A#": 10, "B": 11}
 
@@ -696,6 +697,42 @@ TRACKS = {
     "boss_drowned_bell": dict(key="D", scale="phrygian", bpm=124, prog=[0, 1, 0, 6, 0, 3, 1, 4], pad="choir",
                               bass="ostinato", grit=0.4, bass_drive=1.4, drums="taiko", toll=True, stabs=True,
                               lead="lead", density=0.5, full=True, bars=32, seed=43),
+    # ------------------------------------------------- the open surface
+    # Camp: rest by the fire - a slow 3/4 lilt, plucked lute chords, a
+    # sparse wooden flute, a shaker like embers; warm and safe.
+    "camp": dict(key="D", scale="mixolydian", bpm=70, beats=3, prog=[0, 6, 3, 0, 4, 3, 6, 0], pad="pad", bright=0.55,
+                 bass="waltz", arp="pluck", arp_rate=1, drums="shaker", drums_from=2, lead="flute", lead_octave=1,
+                 density=0.32, sevenths=True, bars=32, seed=51),
+    # Forest: morning light through leaves - lydian brightness, rippling
+    # plucks, a flute that wanders, hand drums later on.
+    "surface_forest": dict(key="G", scale="lydian", bpm=88, prog=[0, 1, 4, 0, 5, 1, 3, 4], pad="pad", bright=0.8,
+                           bass="roots", arp="pluck", arp_rate=2, drums="hand", drums_from=2, lead="flute",
+                           lead_octave=1, density=0.45, bars=32, seed=53),
+    # Hills: wide open grass and wind - a calm major walk, music-box
+    # arpeggios, shaker, a high flute.
+    "surface_hills": dict(key="E", scale="major", bpm=80, prog=[0, 4, 5, 3, 0, 4, 3, 4], pad="pad", bright=0.7,
+                          bass="roots", arp="box", arp_rate=2, drums="shaker", drums_from=1, lead="flute",
+                          lead_octave=2, density=0.38, sevenths=True, bars=32, seed=55),
+    # Swamp: warm, damp and uneasy - dorian, plucked low ostinato, bells
+    # dripping, hand drums like bubbles.
+    "surface_swamp": dict(key="C", scale="dorian", bpm=76, prog=[0, 3, 0, 6, 0, 3, 5, 4], pad="pad", bright=0.5,
+                          bass="ostinato", grit=0.2, arp="bell", arp_rate=2, drums="hand", drums_from=1,
+                          lead="pluck", density=0.35, bars=32, seed=57),
+    # Ruins: a fallen kingdom in daylight - minor, slow choir, a lone
+    # music box, tolling bells far away.
+    "surface_ruins": dict(key="A", scale="minor", bpm=66, prog=[0, 5, 3, 4, 0, 5, 6, 4], pad="choir", bright=0.6,
+                          bass="roots", arp="box", arp_rate=1, toll=True, lead="flute", lead_octave=1, density=0.3,
+                          sevenths=True, bars=32, seed=59),
+    # Mountains: cold air and height - dorian, deep roots, bell
+    # arpeggios like falling ice, taiko from the third part.
+    "surface_mountains": dict(key="D", scale="dorian", bpm=72, prog=[0, 6, 3, 0, 5, 6, 3, 4], pad="choir", bright=0.55,
+                              bass="roots", arp="bell", arp_rate=2, drums="taiko", drums_from=2, lead="flute",
+                              lead_octave=2, density=0.3, bars=32, seed=61),
+    # Wasteland: dry heat under a dark sun - phrygian, a heartbeat, a
+    # gritty ostinato, a thin music-box lead.
+    "surface_wasteland": dict(key="F", scale="phrygian", bpm=74, prog=[0, 1, 0, 6, 0, 1, 3, 1], pad="pad", bright=0.75,
+                              bass="ostinato", grit=0.3, arp="bell", arp_rate=1, drums="heartbeat", toll=True, lead="box",
+                              lead_octave=1, density=0.3, bars=32, seed=63),
 }
 
 
@@ -948,6 +985,12 @@ def make_music():
 
 
 if __name__ == "__main__":
+    import sys
+    if len(sys.argv) > 2 and sys.argv[1] == "music":
+        # only the named TRACKS:  python3 tools/gen_audio.py music camp surface_forest
+        for name in sys.argv[2:]:
+            write_ogg("music_" + name, compose(TRACKS[name]))
+        raise SystemExit(0)
     make_sfx()
     make_boss_sfx()
     print("sfx done")

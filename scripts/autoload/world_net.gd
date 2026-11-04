@@ -767,6 +767,7 @@ func _show_emote(peer: int, i: int) -> void:
 ## Host → everyone: the loop moved on (state, town, expedition, location).
 func broadcast_flow(new_state: int) -> void:
 	if session and Net.is_host and Net.active:
+		Net.floor_players = Net.players.size()  # the next location is built for the party now
 		flow.rpc(GameFlow.flow_payload(new_state))
 
 

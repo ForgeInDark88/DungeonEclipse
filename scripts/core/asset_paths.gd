@@ -215,8 +215,8 @@ const MUSIC_FALLBACK := {
 	&"boss_illusionist": &"boss",
 	&"mirror_halls": &"ruins",
 	&"boss_eclipse": &"boss",
-	# The open surface: its own tracks once they exist (docs/AUDIO_LIST.md),
-	# until then the nearest mood we have.
+	# The open surface and the camp have their own tracks; if one goes
+	# missing, the nearest mood we have.
 	&"surface_forest": &"town",
 	&"camp": &"town",
 	&"surface_hills": &"town",
@@ -228,11 +228,12 @@ const MUSIC_FALLBACK := {
 ## Ambience loops of the surface (AudioManager.play_ambience).
 const AMBIENCE_DIR := "res://assets/audio/ambience/"
 const AMBIENCE := {
-	&"amb_wind": AMBIENCE_DIR + "amb_wind.wav",
-	&"amb_birds": AMBIENCE_DIR + "amb_birds.wav",
-	&"amb_night": AMBIENCE_DIR + "amb_night.wav",
-	&"amb_frogs": AMBIENCE_DIR + "amb_frogs.wav",
-	&"amb_rain": AMBIENCE_DIR + "amb_rain.wav",
+	&"amb_wind": AMBIENCE_DIR + "amb_wind.ogg",
+	&"amb_birds": AMBIENCE_DIR + "amb_birds.ogg",
+	&"amb_night": AMBIENCE_DIR + "amb_night.ogg",
+	&"amb_frogs": AMBIENCE_DIR + "amb_frogs.ogg",
+	&"amb_rain": AMBIENCE_DIR + "amb_rain.ogg",
+	&"amb_fire": AMBIENCE_DIR + "amb_fire.ogg",
 }
 ## Tracks played once (not looped): AudioManager.play_sting().
 const MUSIC_ONE_SHOT: Array[StringName] = [&"victory", &"death", &"ending"]

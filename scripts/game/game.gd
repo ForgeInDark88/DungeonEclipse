@@ -215,6 +215,12 @@ func _load_camp() -> void:
 	player.global_position = level.start_position()
 	apply_layer_biome(biome)
 	AudioManager.play_music(&"camp")
+	# the fire crackles; the land around it is heard more quietly
+	AudioManager.play_ambience(&"amb_fire", 0, -12.0)
+	if biome is SurfaceBiomeData:
+		AudioManager.play_ambience((biome as SurfaceBiomeData).ambience_day, 1, -20.0)
+	else:
+		AudioManager.play_ambience(&"", 1)
 	_sync_pet()
 	EventBus.message.emit(tr("Лагерь · %s") % (biome.display_name if biome else ""))
 	_net_on_floor_loaded()
@@ -607,6 +613,9 @@ func _flash_screen(color: Color) -> void:
 
 func _exit_tree() -> void:
 	Engine.time_scale = 1.0
+	# the wind and the birds of a location stay behind with it
+	AudioManager.play_ambience(&"", 0)
+	AudioManager.play_ambience(&"", 1)
 	if Net.world_session:
 		Net.set_scene_token("")
 

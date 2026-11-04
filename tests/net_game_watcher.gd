@@ -124,14 +124,19 @@ func _watch_game() -> void:
 		if not c.opened and not c.sealed and c.tier < 2:
 			chest = c
 			break
+	if chest != null and OS.get_environment("NET_DEBUG") != "":
+		print("DBG chest seq=%d tier=%d locked=%s mimic=%s at %s" % [chest.net_seq, chest.tier, chest.locked, chest.mimic, chest.global_position])
 	if chest == null:
 		print("SKIP: no chest on this floor")
 	elif is_host:
 		await get_tree().create_timer(7.0).timeout
 		check(chest.opened, "host: guest's chest request opened the chest")
 	else:
-		# Stand right at the chest so the host's range check passes.
-		mine.global_position = chest.global_position + Vector2(-20, 0)
+		# Stand right at the chest so the host's range check passes (on the
+		# chest's own cell: 20 px aside can be off a narrow ledge, the hero
+		# falls and the host rightly says "too far").
+		mine.global_position = chest.global_position + Vector2(-2, -1)
+		mine.velocity = Vector2.ZERO
 		await get_tree().create_timer(0.8).timeout
 		chest.interact(mine)
 		await get_tree().create_timer(2.0).timeout
@@ -261,6 +266,9 @@ func _watch_game() -> void:
 	if level != null:
 		var traps := get_tree().get_nodes_in_group("traps")
 		traps.sort_custom(func(a: Node, b: Node) -> bool: return a.net_seq < b.net_seq)
+		if OS.get_environment("NET_DEBUG") != "":
+			for t in traps:
+				print("DBG trap seq=%d %s at %s disarmed=%s linked=%s" % [t.net_seq, t.data.id, level.world_to_cell(t.global_position), t.disarmed, t.linked != null])
 		for t in traps:
 			if t.disarmed:
 				continue
@@ -364,7 +372,8 @@ func _run_host() -> void:
 	check(Net.host_game(), "host: port open")
 	var race: RaceData = ItemDatabase.races[0]
 	var cls: ClassData = ItemDatabase.classes[0]
-	GameState.start_new_run(race, cls, 12345, false, &"normal")
+	var seed_value := int(OS.get_environment("NET_SEED")) if OS.get_environment("NET_SEED") != "" else 12345
+	GameState.start_new_run(race, cls, seed_value, false, &"normal")
 	GameState.next_floor()
 	var t := Timer.new()
 	t.autostart = true

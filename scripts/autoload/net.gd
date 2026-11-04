@@ -26,6 +26,8 @@ var world_session := false
 ## Seats of this session (host included), at most MAX_PLAYERS.
 var max_players := MAX_PLAYERS
 var players := {}              # peer_id -> {"name", "race", "cls", "female"}
+## The party size the current floor was built for (layout_party()).
+var floor_players := 0
 ## Race/class ids each peer picked, stored until the run starts.
 var my_info := {"name": tr("Игрок"), "race": &"human", "cls": &"warrior", "female": false}
 
@@ -178,6 +180,7 @@ func leave(reason := "") -> void:
 	scene_token = ""
 	peer_tokens.clear()
 	players.clear()
+	floor_players = 0
 	_stop_udp()
 	_discovering = false
 	if reason != "":
@@ -227,27 +230,31 @@ func rpc_start_run(seed_value: int, difficulty_id: StringName) -> void:
 		start_run.rpc(seed_value, difficulty_id, GameState.eclipse_level)
 
 
-## Host moved everyone to another floor (or the town).
+## Host moved everyone to another floor (or the town); `party` is the
+## party size the host builds that floor for.
 @rpc("authority", "call_remote", "reliable")
-func set_floor(floor_number: int, town_return: int = -1) -> void:
+func set_floor(floor_number: int, town_return: int = -1, party := 0) -> void:
+	floor_players = party
 	GameState.net_set_floor(floor_number, town_return)
 
 
 func rpc_set_floor(floor_number: int, town_return: int = -1) -> void:
 	if is_host:
-		set_floor.rpc(floor_number, town_return)
+		floor_players = players.size()
+		set_floor.rpc(floor_number, town_return, floor_players)
 
 
 ## Host pushes its run state to a peer that joined mid-run.
 @rpc("authority", "call_remote", "reliable")
-func late_join(floor_number: int, seed_value: int, difficulty_id: StringName, eclipse := 0) -> void:
+func late_join(floor_number: int, seed_value: int, difficulty_id: StringName, eclipse := 0, party := 0) -> void:
+	floor_players = party  # the floor already stands: built for the party before us
 	GameState.begin_network_run(seed_value, difficulty_id, floor_number, eclipse)
 
 
 func rpc_late_join(peer_id: int) -> void:
 	if is_host:
 		late_join.rpc_id(peer_id, GameState.floor_number, GameState.run_seed,
-				GameState.difficulty.id if GameState.difficulty else &"normal", GameState.eclipse_level)
+				GameState.difficulty.id if GameState.difficulty else &"normal", GameState.eclipse_level, floor_players)
 
 
 # ------------------------------------------------------------ difficulty
@@ -281,8 +288,24 @@ func boss_hp_mult() -> float:
 	return 1.0 + rules().boss_hp_per_extra * extra_players()
 
 
+## How many monsters a layout gets: the party the floor is built for. The
+## host builds for the party it has and remembers it (floor_players); a
+## guest builds the same floor with the host's number, never with its own
+## view of the party - a friend joining mid-floor would otherwise roll a
+## floor with more monster places, and every roll after them (traps!)
+## would land elsewhere than on the host.
 func monster_count_mult() -> float:
-	return 1.0 + rules().monsters_per_extra * extra_players()
+	return 1.0 + rules().monsters_per_extra * maxi(0, mini(layout_party(), MAX_PLAYERS) - 1)
+
+
+## The party size the current floor's layout is built for (see above).
+func layout_party() -> int:
+	if not active:
+		floor_players = 1  # hosted later: the floor that stands was built for one
+		return 1
+	if is_host:
+		floor_players = players.size()
+	return floor_players if floor_players > 0 else players.size()
 
 
 func reward_mult() -> float:
@@ -327,7 +350,7 @@ func _on_peer_connected(id: int) -> void:
 		if GameState.run_active:
 			# A friend arrived mid-run: pull them straight into the dungeon.
 			late_join.rpc_id(id, GameState.floor_number, GameState.run_seed,
-					GameState.difficulty.id if GameState.difficulty else &"normal", GameState.eclipse_level)
+					GameState.difficulty.id if GameState.difficulty else &"normal", GameState.eclipse_level, floor_players)
 
 
 func _on_peer_disconnected(id: int) -> void:
