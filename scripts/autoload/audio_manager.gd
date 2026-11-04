@@ -174,6 +174,8 @@ func play_ambience(id: StringName, channel := 0, volume_db := -10.0) -> void:
 		var wav := stream as AudioStreamWAV
 		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
 		wav.loop_end = int(wav.get_length() * wav.mix_rate)
+	elif stream is AudioStreamOggVorbis:
+		(stream as AudioStreamOggVorbis).loop = true
 	tw.tween_callback(func() -> void:
 		p.stream = stream
 		p.play())

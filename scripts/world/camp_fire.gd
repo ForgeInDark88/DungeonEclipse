@@ -37,6 +37,19 @@ func _ready() -> void:
 	var tw := create_tween().set_loops()
 	tw.tween_property(_light, "energy", 1.1, 0.4)
 	tw.tween_property(_light, "energy", 0.8, 0.5)
+	# the fire crackles, heard only when close
+	var crackle := AudioStreamPlayer2D.new()
+	var stream = load(AssetPaths.AMBIENCE[&"amb_fire"]) if ResourceLoader.exists(AssetPaths.AMBIENCE[&"amb_fire"]) else null
+	if stream is AudioStreamOggVorbis:
+		(stream as AudioStreamOggVorbis).loop = true
+		crackle.stream = stream
+		crackle.bus = &"SFX"
+		crackle.volume_db = -6.0
+		crackle.max_distance = 240.0
+		crackle.attenuation = 1.6
+		crackle.autoplay = true
+		crackle.position = Vector2(0, -6)
+		add_child(crackle)
 
 
 func can_interact() -> bool:

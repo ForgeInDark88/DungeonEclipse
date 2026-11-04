@@ -152,5 +152,5 @@
 | `rare_stall.png` | 28×30 | Лавка редкого (за осколки) |
 
 Костёр, палатки, повозка — из пропов поверхности; доска слухов и
-указатель — из города (`quest_board.png`, `signpost.png`). Музыка
-`music_camp.ogg` пока не написана (играет городская).
+указатель — из города (`quest_board.png`, `signpost.png`). Музыка лагеря — `music_camp.ogg`,
+треск костра — `amb_fire.ogg` (`docs/AUDIO_LIST.md`).
