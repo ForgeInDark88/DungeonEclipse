@@ -23,6 +23,9 @@ uniform bool has_stars = false;
 uniform vec2 moon = vec2(0.74, 0.22);
 uniform float rays = 0.0;
 uniform float life = 1.0;  // Settings → «Живость мира» (0, 0.5, 1)
+// underground: what glows (candles, fungus, lava, crystals, runes) breathes
+uniform sampler2D glow_mask : filter_nearest;
+uniform bool has_glow = false;
 
 void fragment() {
 	vec2 uv = UV;
@@ -66,6 +69,10 @@ void fragment() {
 		float b = fract(UV.x * 2.6 + UV.y * 1.3 + sin(TIME * 0.05) * 0.15);
 		float ray = smoothstep(0.0, 0.06, b) * smoothstep(0.2, 0.08, b);
 		c.rgb += vec3(1.0, 0.95, 0.75) * ray * rays * life * (1.0 - UV.y * 0.6) * c.a;
+	}
+	if (has_glow && texture(glow_mask, UV).a > 0.5) {
+		float br = 0.5 + 0.5 * sin(TIME * 1.3 + UV.x * 31.0 + UV.y * 17.0);
+		c.rgb *= 1.08 + 0.22 * br * max(life, 0.25);
 	}
 	if (shimmer * life > 0.0) {
 		float band = 0.5 + 0.5 * sin(TIME * 0.25 + UV.x * 5.0 - UV.y * 2.0);
