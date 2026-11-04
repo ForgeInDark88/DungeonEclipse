@@ -93,8 +93,15 @@
 | `bandit_sheet.png`, `bandit_archer_sheet.png`, `thief_sheet.png`, `goblin_sheet.png`, `ghoul_sheet.png` | 24×28 | `surface_human_layout.tres` | бандит-мечник, лучник, вор, гоблин, упырь |
 | `ogre_sheet.png` | 36×40 | `ogre_layout.tres` | огр |
 
-Лесной паук, ночной призрак и ворон используют листы паука, призрака
-и летучей мыши из данжа, перекрашенные через `tint`.
+Свои листы (генератор `python3 tools/gen_own_monsters.py`, кадры и
+раскладки прежних листов — хитбоксы не меняются):
+
+| Файл | Кадр | Раскладка | Кто |
+|---|---|---|---|
+| `crow_sheet.png` | 20×16 | `bat_layout.tres` | ворон: чёрное оперение с синим отливом, взмахи, пикирует с когтями и раскрытым клювом |
+| `forest_spider_sheet.png` | 22×14 | `spider_layout.tres` | лесной паук: мохнатый бурый паук-волк, лапы веером, мох на брюшке, капля яда |
+| `night_wraith_sheet.png` | 18×22 | `ghost_layout.tres` | ночной дух-огонёк: рваный полупрозрачный саван, фонарь с холодным пламенем и ореолом |
+| `leech_swarm_sheet.png` | 20×16 | `slime_layout.tres` | рой пиявок (данж): клубок из пяти пиявок, поднимают головы и бросаются |
 
 ## Добыча на поверхности — `assets/sprites/surface/`
 Генератор: `python3 tools/gen_quality_art.py`.
