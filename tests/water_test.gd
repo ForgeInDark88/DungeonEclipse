@@ -2,7 +2,7 @@ extends SceneTree
 ## Ponds of the surface (water + swimming): the hero dropped into a pond
 ## swims (held up, not on the bottom like a stone), jump strokes bring them
 ## to the surface, a jump at the surface leaps out onto the bank; the pond
-## splashes; a monster that walks into a pond walks out (stepped banks).
+## splashes; a rod in the bank fishes the pond for river fish.
 ##   godot --headless -s tests/water_test.gd
 
 var fails := 0
@@ -100,6 +100,18 @@ func _initialize() -> void:
 			break
 	Input.action_release("move_right")
 	check(out, "a jump at the surface leaps out onto the bank")
+	# a rod in the bank: the pond is fished for river fish
+	var rods := get_nodes_in_group("interactable").filter(func(n): return "pond" in n and n.pond)
+	check(not rods.is_empty(), "a rod stands by the pond (%d)" % rods.size())
+	if not rods.is_empty():
+		var g = load("res://scripts/ui/fishing_game.gd").new()
+		g._spot = rods[0]
+		var ids := {}
+		for i in 200:
+			ids[g._roll()[0]] = true
+		check(ids.has(&"river_perch") and ids.has(&"pike") and not ids.has(&"cave_fish"), "the pond gives river fish, not cave fish (%s)" % str(ids.keys()))
+		check(idb.get_item(&"river_perch") != null and idb.get_item(&"pike") != null, "the river fish exist as items")
+		g.free()
 	# rain rings and a splash do not break anything
 	lvl.set_rain(1.0)
 	lvl.splash(mid + Vector2(0, 2), true)

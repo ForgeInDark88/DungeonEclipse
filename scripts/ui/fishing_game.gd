@@ -18,6 +18,15 @@ const CATCH := [
 	[&"bone", 5.0, 0.4, 0.9],
 	[&"eclipse_shard", 3.0, 0.2, 1.5],
 ]
+## The ponds of the surface: river fish; &"purse" is a purse from the
+## bottom (gold by depth, not an item).
+const POND_CATCH := [
+	[&"river_perch", 55.0, 0.36, 1.0],
+	[&"pike", 22.0, 0.22, 1.45],
+	[&"golden_carp", 4.0, 0.13, 1.8],
+	[&"purse", 8.0, 0.3, 1.1],
+	[&"wild_berries", 6.0, 0.45, 0.8],
+]
 
 var _spot: FishingSpot
 var _player: Player
@@ -55,15 +64,16 @@ func open(spot: FishingSpot, player: Player) -> void:
 
 
 func _roll() -> Array:
+	var table: Array = POND_CATCH if _spot and _spot.pond else CATCH
 	var total := 0.0
-	for c in CATCH:
+	for c in table:
 		total += c[1]
 	var r := randf() * total
-	for c in CATCH:
+	for c in table:
 		r -= c[1]
 		if r <= 0.0:
 			return c
-	return CATCH[0]
+	return table[0]
 
 
 func _build() -> void:
@@ -165,6 +175,13 @@ func _input(event: InputEvent) -> void:
 
 
 func _land() -> void:
+	if _catch[0] == &"purse":
+		var gold := randi_range(15, 30) + 6 * maxi(1, GameState.floor_number)
+		_player.hero.gold += gold
+		_spot.caught()
+		AudioManager.play_ui(&"coin")
+		_end(true, tr("Со дна — размокший кошелёк: +%d золота!") % gold)
+		return
 	var item := ItemDatabase.get_item(_catch[0])
 	if item == null:
 		_end(false, tr("Пусто."))

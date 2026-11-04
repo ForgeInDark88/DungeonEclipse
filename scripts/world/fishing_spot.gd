@@ -7,6 +7,8 @@ extends Area2D
 const USES := 3
 
 var uses_left := USES
+## A pond of the surface (a rod in the bank, river fish), not a dark pool.
+var pond := false
 var _sprite: Sprite2D
 var _bubbles: CPUParticles2D
 
@@ -23,9 +25,9 @@ func _ready() -> void:
 	shape.position = Vector2(0, -9)
 	add_child(shape)
 	_sprite = Sprite2D.new()
-	_sprite.texture = AssetPaths.tex(AssetPaths.SPRITES_DIR + "props/fishing_spot.png")
+	_sprite.texture = AssetPaths.tex(AssetPaths.SPRITES_DIR + ("props/pond_rod.png" if pond else "props/fishing_spot.png"))
 	_sprite.centered = false
-	_sprite.offset = Vector2(-16, -16)
+	_sprite.offset = Vector2(-4, -20) if pond else Vector2(-16, -16)
 	_sprite.z_index = -1
 	add_child(_sprite)
 	_bubbles = CPUParticles2D.new()
@@ -33,7 +35,7 @@ func _ready() -> void:
 	_bubbles.lifetime = 1.4
 	_bubbles.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
 	_bubbles.emission_rect_extents = Vector2(10, 1)
-	_bubbles.position = Vector2(-2, -4)
+	_bubbles.position = Vector2(12, 0) if pond else Vector2(-2, -4)
 	_bubbles.direction = Vector2.UP
 	_bubbles.gravity = Vector2(0, -10)
 	_bubbles.initial_velocity_min = 3.0

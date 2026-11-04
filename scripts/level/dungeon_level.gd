@@ -351,6 +351,11 @@ func _spawn_water() -> void:
 		holder.add_child(body)
 		add_entity(holder, top)
 		water_bodies.append(body)
+		# a rod in the bank: fish the pond (surface only)
+		if layout.is_surface and r.size.x >= 5:
+			var spot := FishingSpot.new()
+			spot.pond = true
+			add_entity(spot, cell_bottom(Vector2i(r.position.x - 1, r.position.y - 1)))
 
 
 ## The water surface under or around a point (global): how deep the point
