@@ -232,6 +232,7 @@ func _load_camp() -> void:
 ## repeats as before.
 func apply_layer_biome(b: BiomeData) -> void:
 	_apply_biome(b)
+	_front_layer(b)
 	var open_sky := b is SurfaceBiomeData
 	for layer in $Parallax.get_children():
 		var pl := layer as ParallaxLayer
@@ -421,6 +422,37 @@ func _apply_biome(biome: BiomeData) -> void:
 	m.set_shader_parameter("fog_amount", biome.fog_amount)
 
 
+var _front: ParallaxBackground
+
+
+## A rare dark branch hanging over the top of the screen under the open sky
+## (surface_<biome>_front.png), sliding faster than the world: depth. Under
+## the world's post effects (layer 2 < PostFX 3), under the HUD.
+func _front_layer(b: BiomeData) -> void:
+	var path := ""
+	if b is SurfaceBiomeData and b.parallax_far:
+		path = b.parallax_far.resource_path.replace("_far.png", "_front.png")
+	if path == "" or not ResourceLoader.exists(path):
+		if _front:
+			_front.visible = false
+		return
+	if _front == null:
+		_front = ParallaxBackground.new()
+		_front.name = "FrontParallax"
+		_front.layer = 2
+		var pl := ParallaxLayer.new()
+		pl.motion_scale = Vector2(1.35, 0.0)
+		pl.motion_mirroring = Vector2(640, 0)
+		var sp := Sprite2D.new()
+		sp.centered = false
+		sp.scale = Vector2(2, 2)
+		pl.add_child(sp)
+		_front.add_child(pl)
+		add_child(_front)
+	(_front.get_child(0).get_child(0) as Sprite2D).texture = load(path)
+	_front.visible = true
+
+
 ## Quiet life in the backgrounds (assets/shaders/parallax_life.gdshader):
 ## under the sky the clouds drift and the foliage sways (its mask is
 ## <layer>_sway.png next to the texture), underground the light breathes.
@@ -445,6 +477,13 @@ func _parallax_life(sprite: Sprite2D, tex: Texture2D, i: int, open_sky: bool) ->
 	m.set_shader_parameter("sway", 1.0)
 	m.set_shader_parameter("tex_size", Vector2(tex.get_width(), tex.get_height()))
 	m.set_shader_parameter("shimmer", 0.0 if open_sky else 0.035 - 0.008 * i)
+	m.set_shader_parameter("is_sky", open_sky and i == 0)
+	var stars := "res://assets/sprites/backgrounds/surface_stars.png"
+	m.set_shader_parameter("has_stars", open_sky and i == 0 and ResourceLoader.exists(stars))
+	m.set_shader_parameter("stars", load(stars) if open_sky and i == 0 and ResourceLoader.exists(stars) else null)
+	m.set_shader_parameter("night", 0.0)
+	m.set_shader_parameter("sky_tint", Color.WHITE)
+	m.set_shader_parameter("rays", 0.0)
 
 
 ## Settings → «Яркость»: multiplies the picture of the world (not the HUD).

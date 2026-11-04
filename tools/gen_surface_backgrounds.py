@@ -11,6 +11,8 @@ drawn at x2 by the game's parallax):
                           the sky (aerial perspective), but keeping colour
   surface_<b>_near.png    the near land: saturated, lit from the top left,
                           trees and rocks with a lit side and a dark side
+  surface_<b>_front.png   a rare dark branch hanging over the top of the
+                          screen (the game slides it faster than the world)
   surface_<b>_*_sway.png  white where the mid / near layer is foliage: only
                           those pixels sway in the wind (parallax_life shader)
 
@@ -344,13 +346,75 @@ def build(name, spec, seed):
     os.makedirs(BACK, exist_ok=True)
     sky(name, top, horizon, glow, rnd).save(os.path.join(BACK, f"surface_{name}_far.png"))
     clouds(name, glow, rnd, kind == "mesas").save(os.path.join(BACK, f"surface_{name}_clouds.png"))
+    front(name, near, kind, rnd).save(os.path.join(BACK, f"surface_{name}_front.png"))
     for layer, col in (("mid", far), ("near", near)):
         im, mask = land(name, col, horizon, accent, kind, layer, rnd)
         im.save(os.path.join(BACK, f"surface_{name}_{layer}.png"))
         mask.save(os.path.join(BACK, f"surface_{name}_{layer}_sway.png"))
 
 
+def front(name, near, kind, rnd):
+    """A foreground over the scene (the game slides it faster than the world):
+    rare dark, soft-edged branches hanging from the top of the screen. Only
+    the top 34 px of the 180 are used, one cluster per tile width."""
+    im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    px = im.load()
+    dark = mul(near, 0.42) if kind != "mesas" else mul(near, 0.5)
+    x0 = rnd.randint(40, 260)
+    leaves = []
+    # a bough coming in from the top, with leaves (or twigs) along it
+    pts = [(x0 + int(t * 46 + math.sin(t * 5) * 4), int(-2 + t * 26 - t * t * 10)) for t in [i / 20 for i in range(21)]]
+    for (x, y) in pts:
+        for dy in range(-1, 2):
+            if 0 <= y + dy < H:
+                px[x % W, y + dy] = rgba(mul(dark, 0.8), 240)
+    for i, (x, y) in enumerate(pts[2:], 2):
+        if i % 2 == 0:
+            leaves.append((x + rnd.randint(-3, 3), y + rnd.randint(1, 7)))
+    for (lx, ly) in leaves:
+        if kind == "mesas":
+            for k in range(4):
+                xx, yy = lx + k, ly + k // 2
+                if 0 <= yy < H:
+                    px[xx % W, yy] = rgba(dark, 220)
+            continue
+        r = rnd.uniform(3.5, 6.5)
+        for yy in range(int(ly - r), int(ly + r) + 1):
+            for xx in range(int(lx - r), int(lx + r) + 1):
+                dd = math.hypot(xx - lx, (yy - ly) * 1.2) / r
+                if dd <= 1.0 and 0 <= yy < 34:
+                    a = 230 if dd < 0.7 else (150 if (xx + yy) % 2 else 80)  # soft, out-of-focus rim
+                    c = mul(dark, 1.15 if yy < ly - r * 0.3 else 1.0)
+                    old = px[xx % W, yy]
+                    if a > old[3]:
+                        px[xx % W, yy] = rgba(c, a)
+    return im
+
+
+def stars():
+    """The night sky, shared by every biome (shown by the parallax_life
+    shader with the night): stars of three sizes, a faint milky band."""
+    rnd = random.Random(99)
+    im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    px = im.load()
+    for x in range(W):  # the milky way: a faint diagonal band of dust
+        for y in range(H):
+            band = abs((y - 30) - (x - 160) * 0.35)
+            if band < 18 and rnd.random() < 0.25 * (1 - band / 18):
+                px[x, y] = (200, 205, 235, rnd.randint(30, 70))
+    for _ in range(170):
+        x, y = rnd.randrange(W), rnd.randrange(int(H * 0.75))
+        px[x, y] = (255, 255, 255, rnd.randint(120, 255)) if rnd.random() < 0.8 else (255, 230, 190, 230)
+    for _ in range(12):  # bright ones with a cross
+        x, y = rnd.randrange(2, W - 2), rnd.randrange(2, int(H * 0.6))
+        px[x, y] = (255, 255, 255, 255)
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            px[x + dx, y + dy] = (200, 215, 255, 140)
+    im.save(os.path.join(BACK, "surface_stars.png"))
+
+
 def main():
+    stars()
     for i, (name, spec) in enumerate(BIOMES.items()):
         build(name, spec, 700 + i * 31)
     print("surface backgrounds: ok")
