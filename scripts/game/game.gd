@@ -232,6 +232,7 @@ func _load_camp() -> void:
 ## repeats as before.
 func apply_layer_biome(b: BiomeData) -> void:
 	_apply_biome(b)
+	_front_layer(b)
 	var open_sky := b is SurfaceBiomeData
 	for layer in $Parallax.get_children():
 		var pl := layer as ParallaxLayer
@@ -394,9 +395,10 @@ func _sync_pet() -> void:
 func _apply_biome(biome: BiomeData) -> void:
 	if biome == null:
 		return
-	# A touch below the biome's ambient: torches, ore and magic make warm
-	# pools of light instead of vanishing in a flat even light.
-	($Ambient as CanvasModulate).color = biome.ambient * Color(0.88, 0.87, 0.86, 1.0)
+	var open_sky := biome is SurfaceBiomeData
+	# Underground a touch below the biome's ambient: torches, ore and magic
+	# make warm pools of light. Under the open sky the daylight is full.
+	($Ambient as CanvasModulate).color = biome.ambient if open_sky else biome.ambient * Color(0.88, 0.87, 0.86, 1.0)
 	# (the town's hour: its SurfaceSky, see _town_sky)
 	AudioManager.play_music(biome.music)
 	player.apply_biome(biome)
@@ -405,9 +407,11 @@ func _apply_biome(biome: BiomeData) -> void:
 	for i in layers.size():
 		var sprite: Sprite2D = layers[i].get_child(0)
 		sprite.texture = textures[i]
-		# Only a light shading of the far layers, for depth.
-		sprite.modulate = biome.ambient.darkened(0.22 - 0.07 * i)
+		# Underground a light shading of the far layers, for depth; the open
+		# sky has its depth painted in (aerial perspective) and stays bright.
+		sprite.modulate = Color.WHITE if open_sky else biome.ambient.darkened(0.22 - 0.07 * i)
 		layers[i].visible = textures[i] != null
+		_parallax_life(sprite, textures[i], i, open_sky)
 	var m := ($PostFX/Rect as ColorRect).material as ShaderMaterial
 	m.set_shader_parameter("tint", biome.grade_tint)
 	m.set_shader_parameter("saturation", biome.saturation)
@@ -416,6 +420,70 @@ func _apply_biome(biome: BiomeData) -> void:
 	apply_graphics()
 	m.set_shader_parameter("fog_color", biome.fog_color)
 	m.set_shader_parameter("fog_amount", biome.fog_amount)
+
+
+var _front: ParallaxBackground
+
+
+## A rare dark branch hanging over the top of the screen under the open sky
+## (surface_<biome>_front.png), sliding faster than the world: depth. Under
+## the world's post effects (layer 2 < PostFX 3), under the HUD.
+func _front_layer(b: BiomeData) -> void:
+	var path := ""
+	if b is SurfaceBiomeData and b.parallax_far:
+		path = b.parallax_far.resource_path.replace("_far.png", "_front.png")
+	if path == "" or not ResourceLoader.exists(path):
+		if _front:
+			_front.visible = false
+		return
+	if _front == null:
+		_front = ParallaxBackground.new()
+		_front.name = "FrontParallax"
+		_front.layer = 2
+		var pl := ParallaxLayer.new()
+		pl.motion_scale = Vector2(1.35, 0.0)
+		pl.motion_mirroring = Vector2(640, 0)
+		var sp := Sprite2D.new()
+		sp.centered = false
+		sp.scale = Vector2(2, 2)
+		pl.add_child(sp)
+		_front.add_child(pl)
+		add_child(_front)
+	(_front.get_child(0).get_child(0) as Sprite2D).texture = load(path)
+	_front.visible = true
+
+
+## Quiet life in the backgrounds (assets/shaders/parallax_life.gdshader):
+## under the sky the clouds drift and the foliage sways (its mask is
+## <layer>_sway.png next to the texture), underground the light breathes.
+func _parallax_life(sprite: Sprite2D, tex: Texture2D, i: int, open_sky: bool) -> void:
+	if tex == null:
+		sprite.material = null
+		return
+	var m := sprite.material as ShaderMaterial
+	if m == null:
+		m = ShaderMaterial.new()
+		m.shader = load("res://assets/shaders/parallax_life.gdshader")
+		sprite.material = m
+	var path := tex.resource_path
+	var clouds_path := path.replace("_far.png", "_clouds.png")
+	var sway_path := path.replace(".png", "_sway.png")
+	var has_clouds := open_sky and i == 0 and clouds_path != path and ResourceLoader.exists(clouds_path)
+	var has_sway := open_sky and i > 0 and ResourceLoader.exists(sway_path)
+	m.set_shader_parameter("has_clouds", has_clouds)
+	m.set_shader_parameter("clouds", load(clouds_path) if has_clouds else null)
+	m.set_shader_parameter("has_sway", has_sway)
+	m.set_shader_parameter("sway_mask", load(sway_path) if has_sway else null)
+	m.set_shader_parameter("sway", 1.0)
+	m.set_shader_parameter("tex_size", Vector2(tex.get_width(), tex.get_height()))
+	m.set_shader_parameter("shimmer", 0.0 if open_sky else 0.035 - 0.008 * i)
+	m.set_shader_parameter("is_sky", open_sky and i == 0)
+	var stars := "res://assets/sprites/backgrounds/surface_stars.png"
+	m.set_shader_parameter("has_stars", open_sky and i == 0 and ResourceLoader.exists(stars))
+	m.set_shader_parameter("stars", load(stars) if open_sky and i == 0 and ResourceLoader.exists(stars) else null)
+	m.set_shader_parameter("night", 0.0)
+	m.set_shader_parameter("sky_tint", Color.WHITE)
+	m.set_shader_parameter("rays", 0.0)
 
 
 ## Settings → «Яркость»: multiplies the picture of the world (not the HUD).

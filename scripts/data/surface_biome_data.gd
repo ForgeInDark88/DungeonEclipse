@@ -21,6 +21,12 @@ extends BiomeData
 ## Rise of the land: 1 flat .. 3 rugged.
 @export_range(1, 3) var roughness: int = 2
 
+## The grass in front of the heroes (GrassField): its colour and how much.
+@export var grass_color: Color = Color(0.45, 0.72, 0.3)
+@export_range(0.0, 1.0) var grass_density: float = 0.7
+## Shafts of sunlight through the land by day (0 = none, 0.06 = a forest).
+@export var light_rays: float = 0.02
+
 @export_group("Weather")
 ## Weather kinds and weights: none, rain, fog, wind, ash, snow.
 @export var weather: Dictionary = {"none": 3.0, "rain": 1.0, "fog": 1.0, "wind": 1.0}

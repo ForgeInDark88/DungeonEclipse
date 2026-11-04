@@ -49,6 +49,53 @@ def eel():
     return finish(im, g)
 
 
+def perch():
+    """A river perch: green-gold with dark bars and red fins."""
+    im, g = blank(16, 16), blank(16, 16)
+    m = mask(16, 16, lambda d: d.ellipse((2, 5, 12, 11), fill=FULL))
+    lit(im, m, (128, 150, 70), 5, 6, 5, 3)
+    d = ImageDraw.Draw(im)
+    for x in (5, 8, 11):
+        d.line((x, 6, x - 1, 10), fill=rgba((60, 76, 40)))  # the perch's bars
+    d.line((4, 10, 10, 10), fill=rgba((230, 210, 150)))
+    d.polygon([(12, 8), (15, 5), (15, 11)], fill=rgba((210, 80, 50)))
+    d.polygon([(5, 5), (6, 2), (8, 2), (9, 5)], fill=rgba((200, 90, 60)))  # spiny fin
+    d.point((7, 11), fill=rgba((220, 90, 60)))
+    d.point((3, 7), fill=rgba((240, 240, 220)))
+    d.point((4, 7), fill=rgba((20, 20, 30)))
+    return finish(im, g)
+
+
+def pike():
+    """A pike: long, olive with pale spots, a toothy snout."""
+    im, g = blank(16, 16), blank(16, 16)
+    m = mask(16, 16, lambda d: d.ellipse((1, 6, 13, 10), fill=FULL))
+    lit(im, m, (96, 120, 64), 4, 7, 6, 2)
+    d = ImageDraw.Draw(im)
+    for x, y in ((4, 7), (7, 8), (10, 7), (9, 9), (6, 9)):
+        d.point((x, y), fill=rgba((200, 210, 140)))
+    d.line((2, 9, 10, 9), fill=rgba((210, 214, 170)))
+    d.polygon([(13, 8), (15, 5), (15, 11)], fill=rgba((110, 120, 60)))
+    d.polygon([(10, 6), (12, 4), (12, 6)], fill=rgba((110, 120, 60)))
+    d.line((0, 8, 2, 8), fill=rgba((230, 230, 220)))  # teeth of the snout
+    d.point((2, 7), fill=rgba((250, 230, 90)))  # a yellow eye
+    return finish(im, g)
+
+
+def pond_rod():
+    """16x20: a rod stuck in the bank, its line and a red float on the water."""
+    im, g = blank(16, 20), blank(16, 20)
+    d = ImageDraw.Draw(im)
+    d.line((3, 19, 11, 3), fill=rgba((150, 104, 62)))
+    d.line((4, 19, 12, 3), fill=rgba((110, 74, 44)))
+    d.point((11, 3), fill=rgba((200, 160, 110)))
+    d.line((12, 3, 15, 15), fill=rgba((230, 230, 230), 150))
+    d.ellipse((13, 14, 15, 17), fill=rgba((230, 60, 50)))
+    d.point((14, 14), fill=rgba((255, 255, 255)))
+    d.ellipse((1, 17, 6, 19), fill=rgba((96, 80, 60)))  # a little mound of earth
+    return finish(im, g)
+
+
 def spot():
     """32x16: a dark pool sunk into the floor, a mooring post, a rod leaning on it."""
     im, g = blank(32, 16), blank(32, 16)
@@ -115,6 +162,12 @@ CATCH = [
     ("golden_carp", lambda: fish((230, 180, 60), (255, 230, 150), (220, 120, 40), (255, 210, 90)), "Золотой карась",
      "Говорят, его чешуя — расплавленные монеты утонувших. Торговцы платят щедро.",
      [("heal_effect", {"amount": 0, "percent": 0.5})], 2, 150, 5),
+    # the ponds of the surface (FishingSpot.pond)
+    ("river_perch", perch, "Речной окунь",
+     "Полосатый и колючий. Жареный на костре — лучше любой похлёбки.", [("heal_effect", {"amount": 0, "percent": 0.2})], 0, 12, 10),
+    ("pike", pike, "Щука",
+     "Хозяйка пруда, зубастая и злая. Сытная, и трактирщик возьмёт с охотой.",
+     [("heal_effect", {"amount": 0, "percent": 0.4})], 1, 60, 5),
 ]
 
 
@@ -125,6 +178,7 @@ def main():
             f.write(tres(fid, name, desc, effects, rarity, price, stack))
         print("catch:", fid)
     spot().save(os.path.join(gp.A, "sprites", "props", "fishing_spot.png"))
+    pond_rod().save(os.path.join(gp.A, "sprites", "props", "pond_rod.png"))
     print("fishing spot")
 
 

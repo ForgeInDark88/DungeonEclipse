@@ -39,6 +39,8 @@ var _rng := RandomNumberGenerator.new()
 var _pull_request: Array = []
 ## Time of day and weather over the surface (null without a surface).
 var sky: SurfaceSky
+var life: SurfaceLife
+var grass: GrassField
 
 
 func _init() -> void:
@@ -86,6 +88,13 @@ func setup(p_game: Node, p_level: DungeonLevel, li: LocationInstance) -> void:
 		sky = SurfaceSky.new()
 		add_child(sky)
 		sky.setup(sb, li.play_seed, game.get_node_or_null("Ambient") as CanvasModulate, game.player.camera)
+		# small life and the grass of the surface (decoration, every machine its own)
+		life = SurfaceLife.new()
+		level.add_child(life)
+		life.setup(level, 0, sky, li.play_seed)
+		grass = GrassField.new()
+		level.add_child(grass)
+		grass.setup(level, 0, sb.grass_color, sb.grass_density, li.play_seed + 1)
 
 
 ## The hero stands at the last save point (the start of the surface on a
@@ -300,6 +309,10 @@ func _enter_band(i: int, first := false) -> void:
 		game.apply_layer_biome(b["biome"])
 	if sky:
 		sky.set_active(int(b["kind"]) == LocationInstance.Kind.SURFACE)
+	if life:
+		life.active = i == 0
+	if grass:
+		grass.active = i == 0
 	if int(b["kind"]) == LocationInstance.Kind.ARENA and not instance.boss_beaten:
 		for boss in get_tree().get_nodes_in_group("bosses"):
 			AudioManager.play_music((boss as Boss).boss.music)

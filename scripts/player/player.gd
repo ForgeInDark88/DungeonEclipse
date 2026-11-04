@@ -462,7 +462,59 @@ func _climb(input_x: float) -> void:
 		_stop_climbing()
 
 
+## Swimming in the ponds of the surface: the water holds the hero up and
+## slows them; jump strokes upward (hold it to keep swimming), down dives,
+## and at the surface a jump leaps out onto the bank. No drowning.
+const SWIM_GRAVITY := 240.0
+const SWIM_MAX_SINK := 70.0
+const SWIM_STROKE := -150.0
+const SWIM_SPEED := 0.6
+var swimming := false
+var _stroke_cd := 0.0
+var _bubble_cd := 0.0
+
+
+func _water_depth() -> float:
+	return level.water_depth_at(global_position) if level else -1.0
+
+
+func _swim(input_x: float, delta: float, depth: float) -> void:
+	_stroke_cd -= delta
+	_bubble_cd -= delta
+	velocity.y = minf(velocity.y + SWIM_GRAVITY * delta, SWIM_MAX_SINK)
+	if Input.is_action_pressed("move_down"):
+		velocity.y = minf(velocity.y + 420.0 * delta, 120.0)
+	var target := input_x * hero.stats.speed() * status.speed_multiplier() * SWIM_SPEED
+	velocity.x = move_toward(velocity.x, target, ACCELERATION * 0.45 * delta)
+	var at_surface := depth < 20.0
+	if Input.is_action_just_pressed("jump") and at_surface:
+		velocity.y = JUMP_VELOCITY * 0.85  # out onto the bank
+		_stroke_cd = 0.3
+	elif Input.is_action_pressed("jump") and _stroke_cd <= 0.0:
+		velocity.y = SWIM_STROKE
+		_stroke_cd = 0.32
+		visual.squash_to(Vector2(1.15, 0.9), 0.18)
+		AudioManager.play_sfx(&"swim", global_position, -12.0, 0.2)
+	elif at_surface and velocity.y > 0.0 and not Input.is_action_pressed("move_down"):
+		velocity.y *= 0.6  # bobbing at the surface
+	if depth > 28.0 and _bubble_cd <= 0.0:
+		_bubble_cd = randf_range(0.8, 1.6)
+		Fx.bubbles(get_parent(), global_position + Vector2(facing * 4.0, -24.0))
+		if randf() < 0.4:
+			AudioManager.play_sfx(&"bubbles", global_position, -16.0, 0.2)
+	_coyote = 0.0
+
+
 func _walk(input_x: float, delta: float) -> void:
+	var depth := _water_depth()
+	var in_water := depth > 6.0
+	if in_water != swimming:
+		swimming = in_water
+		if level and (in_water or absf(velocity.y) > 80.0):
+			level.splash(global_position, absf(velocity.y) > 140.0)
+	if swimming:
+		_swim(input_x, delta, depth)
+		return
 	velocity.y = minf(velocity.y + GRAVITY * delta, MAX_FALL_SPEED)
 	var target := input_x * hero.stats.speed() * status.speed_multiplier()
 	var accel := ACCELERATION if is_on_floor() else AIR_ACCELERATION
@@ -830,6 +882,11 @@ func _net_puppet_step(delta: float) -> void:
 	var est := (global_position - before) / maxf(delta, 0.0001)
 	velocity = Vector2(est.x, 0.0)
 	animator.update(delta, true, velocity, false, false)
+	var wet := _water_depth() > 6.0
+	if wet != swimming:
+		swimming = wet
+		if level:
+			level.splash(global_position, absf(est.y) > 140.0)
 
 
 func take_damage(amount: int, from_pos: Vector2 = Vector2.INF, damage_type: int = 0) -> void:

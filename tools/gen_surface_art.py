@@ -329,14 +329,13 @@ def main() -> None:
     os.makedirs(PROPS, exist_ok=True)
     src = Image.open(os.path.join(TILES, "tiles_town.png"))
     rnd = random.Random(15)
-    for name, (top, soil, rk, s_top, s_bot, far, mid, near, kind) in BIOMES.items():
-        sky(name, s_top, s_bot, rnd)
-        silhouettes(name, mid, kind, "mid", rnd)
-        silhouettes(name, near, kind, "near", rnd)
-    tree("tree_oak", (70, 132, 58), (96, 66, 40), "oak", rnd)
-    tree("tree_pine", (52, 100, 64), (90, 62, 40), "pine", rnd)
-    tree("tree_willow", (96, 120, 70), (80, 66, 48), "willow", rnd)
-    tree("tree_dead", (0, 0, 0), (96, 80, 66), "dead", rnd)
+    # the backgrounds: tools/gen_surface_backgrounds.py (sky, drifting
+    # clouds, far and near land with a foliage mask for the wind)
+    import gen_surface_backgrounds
+    gen_surface_backgrounds.main()
+    # the trees: tools/gen_trees.py (oak, birch, pine, willow, dead)
+    import gen_trees
+    gen_trees.main()
     rock("rock_big", (124, 120, 112), 34, 24, rnd)
     rock("rock_small", (130, 126, 118), 16, 10, rnd)
     rock("rock_red", (150, 110, 90), 26, 20, rnd)

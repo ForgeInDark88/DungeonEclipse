@@ -6152,6 +6152,10 @@ msgid "Положить: %s"
 msgstr "Put: %s"
 
 #: data
+msgid "Полосатый и колючий. Жареный на костре — лучше любой похлёбки."
+msgstr "Striped and spiny. Fried over a fire it beats any stew."
+
+#: data
 msgid "Полумрак"
 msgstr "Twilight"
 
@@ -6947,6 +6951,10 @@ msgstr "Resources: %s"
 msgid "Рецептов нет"
 msgstr "No recipes"
 
+#: data
+msgid "Речной окунь"
+msgstr "River Perch"
+
 #: scripts/ui/journal_book.gd
 msgid "Решения"
 msgstr "Decisions"
@@ -7690,6 +7698,10 @@ msgstr "Lift curses — %d g"
 #: scripts/ui/building_book.gd
 msgid "Снять проклятия: %d шт. (%d з.)"
 msgstr "Lift curses: %d (%d g)"
+
+#: scripts/ui/fishing_game.gd
+msgid "Со дна — размокший кошелёк: +%d золота!"
+msgstr "From the bottom, a soggy purse: +%d gold!"
 
 #: data
 msgid "Соберите 1000 золота за все забеги."
@@ -8960,6 +8972,10 @@ msgid "Хозяин этих земель. Победа открывает пу�
 msgstr "The master of these lands. Victory opens the way on."
 
 #: data
+msgid "Хозяйка пруда, зубастая и злая. Сытная, и трактирщик возьмёт с охотой."
+msgstr "The mistress of the pond, toothy and fierce. Filling, and the innkeeper will gladly buy it."
+
+#: data
 msgid "Хозяйка таверны"
 msgstr "Innkeeper"
 
@@ -9310,6 +9326,10 @@ msgstr "Shielded"
 #: data
 msgid "Щитоносный"
 msgstr "Shielded"
+
+#: data
+msgid "Щука"
+msgstr "Pike"
 
 #: scripts/combat/relic_powers.gd
 msgid "Эгида"

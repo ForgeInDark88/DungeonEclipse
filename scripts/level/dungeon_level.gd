@@ -271,9 +271,25 @@ func _spawn_surface_props() -> void:
 		s.centered = false
 		s.offset = Vector2(-floorf(tex.get_width() / 2.0), -tex.get_height())
 		s.z_index = int(p["z"])
-		if String(p["tex"]).begins_with("tree") or p["tex"] == &"reeds":
+		var name := String(p["tex"])
+		if name.begins_with("tree") or name == "reeds":
 			s.flip_h = (hash(p["cell"]) & 1) == 1
+		if name.begins_with("tree") and name != "tree_dead" or name in ["bush", "reeds", "berry_bush"]:
+			s.material = _foliage_material()  # a pixel of wind in the crowns
 		add_entity(s, cell_bottom(p["cell"]))
+
+
+static var _foliage: ShaderMaterial
+## The ponds (ColorRects with assets/shaders/water.gdshader).
+var water_bodies: Array[ColorRect] = []
+
+
+## One shared material for every plant (assets/shaders/foliage_sway.gdshader).
+static func _foliage_material() -> ShaderMaterial:
+	if _foliage == null:
+		_foliage = ShaderMaterial.new()
+		_foliage.shader = load("res://assets/shaders/foliage_sway.gdshader")
+	return _foliage
 
 
 ## A camp of the road (CampBuilder): its props, its spots, the trader,
@@ -317,20 +333,64 @@ func _spawn_water() -> void:
 	if biome is SurfaceBiomeData:
 		col = (biome as SurfaceBiomeData).water_color
 	for r: Rect2i in layout.water:
-		var top := cell_bottom(Vector2i(r.position.x, r.position.y - 1))
-		var w := r.size.x * TILE
-		var poly := Polygon2D.new()
-		poly.color = col
-		poly.z_index = 2
-		poly.polygon = PackedVector2Array([Vector2(-TILE / 2.0, 4), Vector2(w - TILE / 2.0, 4),
-				Vector2(w - TILE / 2.0, r.size.y * TILE), Vector2(-TILE / 2.0, r.size.y * TILE)])
-		add_entity(poly, top)
-		var shine := Line2D.new()
-		shine.width = 1.0
-		shine.default_color = col.lightened(0.5)
-		shine.z_index = 2
-		shine.points = PackedVector2Array([Vector2(-TILE / 2.0, 4), Vector2(w - TILE / 2.0, 4)])
-		add_entity(shine, top)
+		var top := cell_bottom(Vector2i(r.position.x, r.position.y - 1)) + Vector2(-TILE / 2.0, 2)
+		var size := Vector2(r.size.x * TILE, r.size.y * TILE + TILE / 2.0 - 2)
+		var body := ColorRect.new()
+		body.size = size
+		body.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# (the holder's z 2 puts it in front of the hero: a swimmer is seen through the water)
+		var m := ShaderMaterial.new()
+		m.shader = load("res://assets/shaders/water.gdshader")
+		m.set_shader_parameter("shallow", Color(col.r, col.g, col.b, minf(col.a, 0.62)))
+		m.set_shader_parameter("deep", Color(col.r * 0.35, col.g * 0.45, col.b * 0.6, 0.88))
+		m.set_shader_parameter("size", size)
+		m.set_shader_parameter("seed", float(r.position.x % 97))
+		body.material = m
+		var holder := Node2D.new()
+		holder.z_index = 2
+		holder.add_child(body)
+		add_entity(holder, top)
+		water_bodies.append(body)
+		# a rod in the bank: fish the pond (surface only)
+		if layout.is_surface and r.size.x >= 5:
+			var spot := FishingSpot.new()
+			spot.pond = true
+			add_entity(spot, cell_bottom(Vector2i(r.position.x - 1, r.position.y - 1)))
+
+
+## The water surface under or around a point (global): how deep the point
+## is under it (px, 0 = at the surface), or -1 when it is not in water.
+func water_depth_at(gpos: Vector2) -> float:
+	for body: ColorRect in water_bodies:
+		if not is_instance_valid(body):
+			continue
+		var r := Rect2(body.global_position, body.size)
+		if r.grow_individual(0, 0, 0, 0).has_point(gpos):
+			return gpos.y - (r.position.y + 2.0)
+	return -1.0
+
+
+## Something broke the surface at gpos: rings run out from it, drops fly.
+func splash(gpos: Vector2, big := true) -> void:
+	for body: ColorRect in water_bodies:
+		if not is_instance_valid(body):
+			continue
+		var r := Rect2(body.global_position - Vector2(0, 10), body.size + Vector2(0, 10))
+		if r.has_point(gpos):
+			var m := body.material as ShaderMaterial
+			var rx := gpos.x - body.global_position.x
+			var tw := body.create_tween()
+			tw.tween_method(func(age: float) -> void: m.set_shader_parameter("ripple", Vector3(rx, 0.0, age)), 0.0, 1.6, 1.6)
+			Fx.splash(get_parent() if get_parent() else self, Vector2(gpos.x, body.global_position.y + 3), (m.get_shader_parameter("shallow") as Color), big)
+			AudioManager.play_sfx(&"splash" if big else &"swim", gpos, -4.0 if big else -10.0, 0.15)
+			return
+
+
+## Rain on every pond (SurfaceSky weather).
+func set_rain(amount: float) -> void:
+	for body: ColorRect in water_bodies:
+		if is_instance_valid(body):
+			(body.material as ShaderMaterial).set_shader_parameter("rain", amount)
 
 
 ## The band dictionary (LevelLayout.bands) of index i.

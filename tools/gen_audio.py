@@ -984,8 +984,25 @@ def make_music():
     write_ogg("music_death", sting([69, 67, 65, 64, 62, 57], 4.5, i_choir, i_choir, minor=True))
 
 
+def make_water_sfx():
+    """Water of the surface ponds: a splash in, a swim stroke, bubbles."""
+    body = bandpass(noise(0.5, 91), 900, 0.5) * adsr(0.5, 0.005, 0.12, 0.25, 0.3)
+    spray = fft_filter(noise(0.35, 92), lo=2500) * decay(0.35, 9) * 0.6
+    plop = osc("sine", np.linspace(320, 140, n_of(0.12)), 0.12) * decay(0.12, 30)
+    drops = mix(*[at(osc("sine", f, 0.05) * decay(0.05, 80) * 0.35, t) for f, t in ((1800, 0.12), (2400, 0.2), (1500, 0.27), (2900, 0.33))])
+    sfx("splash", mix(plop, body, spray, drops), 0.6, room=0.2)
+    stroke = bandpass(noise(0.3, 93), 700, 0.7) * adsr(0.3, 0.08, 0.1, 0.4, 0.15)
+    sfx("swim", mix(stroke, at(osc("sine", 900, 0.04) * decay(0.04, 90) * 0.2, 0.1)), 0.35, room=0.1)
+    bub = mix(*[at(osc("sine", np.linspace(f, f * 1.6, n_of(0.04)), 0.04) * decay(0.04, 70) * 0.5, t)
+                for f, t in ((600, 0.0), (750, 0.07), (520, 0.13), (900, 0.18))])
+    sfx("bubbles", bub, 0.3)
+
+
 if __name__ == "__main__":
     import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "water":
+        make_water_sfx()
+        raise SystemExit(0)
     if len(sys.argv) > 2 and sys.argv[1] == "music":
         # only the named TRACKS:  python3 tools/gen_audio.py music camp surface_forest
         for name in sys.argv[2:]:
@@ -993,5 +1010,6 @@ if __name__ == "__main__":
         raise SystemExit(0)
     make_sfx()
     make_boss_sfx()
+    make_water_sfx()
     print("sfx done")
     make_music()
