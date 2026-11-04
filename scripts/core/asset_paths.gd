@@ -383,6 +383,19 @@ static func building_icon(id: StringName) -> Texture2D:
 	return tex_or_null(path)
 
 
+## A town building as it looks at `level`: ruins at 0, its texture at 1,
+## town/<id>_<level>.png above (tools/art/gen_building_levels.py: annexes,
+## a cupola, gilded eaves); a missing level file falls back to the texture.
+static func building_texture(data: BuildingData, level: int) -> Texture2D:
+	if level <= 0:
+		return tex(TOWN_DIR + "ruins.png")
+	if level >= 2:
+		var t := tex_or_null(TOWN_DIR + "%s_%d.png" % [data.id, mini(level, 3)])
+		if t:
+			return t
+	return data.texture if data.texture else tex(TOWN_DIR + "ruins.png")
+
+
 ## Two idle frames of a townsperson (npc/<id>_idle.png), null when none.
 static func npc_sheet(id: StringName) -> Texture2D:
 	var path := SPRITES_DIR + "npc/%s_idle.png" % id

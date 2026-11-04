@@ -3,7 +3,7 @@ extends SceneTree
 ## surface location (the hero placed at a few points along it).
 ##   xvfb-run -a -s "-screen 0 1280x720x24" godot --rendering-driver opengl3 \
 ##       --resolution 1280x720 -s tools/art/shot_world.gd -- <out_dir> [seed] [hour]
-## Writes <out_dir>/town.png, surface_0.png .. surface_2.png, floor.png.
+## Writes <out_dir>/town.png, town_folk.png (by a passer-by), surface_0.png .. surface_2.png, floor.png.
 ## hour 0..1 sets the surface sky phase (0.5 = noon), default: as generated.
 ## Uses its own save folder (user://shot_saves/), never the player's.
 
@@ -55,6 +55,12 @@ func _initialize() -> void:
 	await wait_scene(flow.State.TOWN)
 	current_scene.player._invulnerable = 99999.0
 	await shot("town.png")
+	var folk := get_nodes_in_group("passersby")
+	if not folk.is_empty():
+		var p = current_scene.player
+		p.global_position = (folk[0] as Node2D).global_position + Vector2(-30, -2)
+		p.velocity = Vector2.ZERO
+		await shot("town_folk.png")
 	flow.open_map()
 	await wait_scene(flow.State.EXPEDITION_MAP)
 	var id: int = gs.run.next_choices()[0]

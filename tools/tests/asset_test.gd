@@ -147,6 +147,25 @@ func _initialize() -> void:
 				check(false, "%s: a decoration without a texture" % f)
 				break
 
+	# The town: every building looks different at levels 1, 2, 3
+	# (tools/art/gen_building_levels.py); every passer-by has both sheets.
+	var buildings: Array = []
+	_walk("res://data/buildings", ["tres"], buildings)
+	for f in buildings:
+		var bd = load(f)
+		var ts := []
+		for lvl in [1, 2, 3]:
+			ts.append(ap.building_texture(bd, lvl))
+		check(ts[0] != ts[1] and ts[1] != ts[2] and ts[2] != null and ts[2] != ap.placeholder(),
+			"%s: its own sprite at levels 1, 2, 3" % f)
+	var pb: Script = load("res://scripts/world/town_passerby.gd")
+	check(pb.ROLES.size() >= 25, "25+ passers-by (%d)" % pb.ROLES.size())
+	for role in pb.ROLES:
+		for anim in ["idle", "walk"]:
+			check(ResourceLoader.exists("res://assets/sprites/npc/folk_%s_%s.png" % [role, anim]), "passer-by %s has its %s sheet" % [role, anim])
+	check(pb.count_for(0, false) >= 2 and pb.count_for(30, false) > pb.count_for(3, false) and pb.count_for(30, true) <= 3,
+		"more passers-by as the town prospers, a few at night")
+
 	# The interface font (docs/CREDITS.md): the theme uses it, and it draws
 	# every character of every Russian and English string of the game.
 	var theme: Theme = load(ProjectSettings.get_setting("gui/theme/custom"))

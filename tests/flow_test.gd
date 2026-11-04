@@ -14,7 +14,11 @@ func check(c: bool, what: String) -> void:
 		fails += 1
 
 
-func wait_scene(state: int, frames := 240) -> void:
+## Waits for the flow to reach `state` (it returns as soon as it does).
+## The limit is generous: headless frames are fast and a big location
+## loads for seconds; a run out of patience is reported, not silently
+## passed over (the next checks would see a half-built scene).
+func wait_scene(state: int, frames := 1800) -> void:
 	var flow = root.get_node("GameFlow")
 	for i in frames:
 		await process_frame
@@ -22,6 +26,7 @@ func wait_scene(state: int, frames := 240) -> void:
 			for k in 30:
 				await process_frame
 			return
+	print("WAIT: state %d not reached in %d frames (now %d, busy %s)" % [state, frames, flow.state, flow.is_busy()])
 
 
 func _initialize() -> void:
@@ -41,6 +46,7 @@ func _initialize() -> void:
 	await wait_scene(flow.State.TOWN)
 	check(gs.expedition and gs.is_town(), "a new hero starts in the town")
 	check(current_scene.scene_file_path == gs.GAME and current_scene.level.layout.is_town, "the town street is built")
+	check(get_nodes_in_group("passersby").size() >= 2, "passers-by walk the street (%d)" % get_nodes_in_group("passersby").size())
 	check(sm.has_town(), "the town is saved right away")
 
 	# ---------------------------------------------------- town → map

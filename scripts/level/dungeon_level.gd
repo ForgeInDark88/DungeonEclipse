@@ -563,6 +563,7 @@ func _spawn_town() -> void:
 			for k in (info.get("schedule", {}) as Dictionary):
 				npc.schedule[k] = cell_bottom(Vector2i(int(info["schedule"][k]), info["cell"].y)).x
 			add_entity(npc, cell_bottom(info["cell"]))
+	_spawn_passersby()
 	var gate := DungeonGate.new()
 	add_entity(gate, cell_bottom(layout.exit_cell))
 	for dx in [-28, 28]:
@@ -864,6 +865,28 @@ func _apply_tile(cell: Vector2i, kind: int) -> void:
 			sh.erase_cell(cell)
 		else:
 			sh.set_cell(cell, tiles.get_cell_source_id(cell), tiles.get_cell_atlas_coords(cell))
+
+
+## Passers-by of the town (TownPasserby): more as prosperity grows, a few
+## at night. Their own RNG: the level's sequence (shared in co-op) is untouched.
+func _spawn_passersby() -> void:
+	var town := GameState.town
+	var prosperity := Buildings.prosperity(town) if town else 0
+	var night := Buildings.is_night()
+	var r := RandomNumberGenerator.new()
+	r.seed = hash([floor_number, prosperity, "passersby"])
+	var pool: Array[StringName] = TownPasserby.NIGHT_ROLES.duplicate() if night else TownPasserby.ROLES.duplicate()
+	var x_lo := 6.0 * TILE
+	var x_hi := float(mini(layout.width, TownBuilder.HUB_GATE) - 6) * TILE
+	var ground := func(px: float) -> float:
+		return float(TownBuilder.ground_at(clampi(int(px / TILE), 0, layout.width - 1)) * TILE)
+	for i in TownPasserby.count_for(prosperity, night):
+		var p := TownPasserby.new()
+		var role: StringName = pool[r.randi_range(0, pool.size() - 1)]
+		var x := r.randf_range(x_lo, x_hi)
+		var span := r.randf_range(5.0, 14.0) * TILE
+		p.setup(role, maxf(x_lo, x - span), minf(x_hi, x + span), ground, r.randi())
+		add_entity(p, Vector2(x, ground.call(x)))
 
 
 ## Which of the 8 neighbours of a wall cell are wall too (Autotile bits).

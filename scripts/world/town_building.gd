@@ -40,7 +40,7 @@ func level() -> int:
 ## Redraws the building for its current level.
 func refresh() -> void:
 	var lvl := level()
-	var tex: Texture2D = data.texture if lvl > 0 else AssetPaths.tex(AssetPaths.TOWN_DIR + "ruins.png")
+	var tex: Texture2D = AssetPaths.building_texture(data, lvl)
 	_sprite.texture = tex
 	_sprite.offset = Vector2(-floorf(tex.get_width() / 2.0), -tex.get_height())
 	_sprite.modulate = Color.WHITE if lvl > 0 else Color(0.85, 0.82, 0.8)
