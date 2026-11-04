@@ -1,0 +1,355 @@
+[gd_resource type="Resource" script_class="DecorPack" load_steps=97 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/decor_pack.gd" id="pack"]
+[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_ash_0.png" id="t_ashen_halls_ash_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_ash_1.png" id="t_ashen_halls_ash_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_ash_2.png" id="t_ashen_halls_ash_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_ash_3.png" id="t_ashen_halls_ash_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_ash_4.png" id="t_ashen_halls_ash_4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_ash_5.png" id="t_ashen_halls_ash_5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_column_0.png" id="t_ashen_halls_column_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_column_1.png" id="t_ashen_halls_column_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_column_2.png" id="t_ashen_halls_column_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_column_3.png" id="t_ashen_halls_column_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_brazier_0.png" id="t_ashen_halls_brazier_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_brazier_1.png" id="t_ashen_halls_brazier_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_brazier_2.png" id="t_ashen_halls_brazier_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_rubble_0.png" id="t_ashen_halls_rubble_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_rubble_1.png" id="t_ashen_halls_rubble_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_rubble_2.png" id="t_ashen_halls_rubble_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_rubble_3.png" id="t_ashen_halls_rubble_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_bones_0.png" id="t_ashen_halls_bones_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_bones_1.png" id="t_ashen_halls_bones_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_bones_2.png" id="t_ashen_halls_bones_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_skulls_0.png" id="t_ashen_halls_skulls_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_skulls_1.png" id="t_ashen_halls_skulls_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_banner_0.png" id="t_ashen_halls_banner_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_banner_1.png" id="t_ashen_halls_banner_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_banner_2.png" id="t_ashen_halls_banner_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_chain_0.png" id="t_ashen_halls_chain_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_chain_1.png" id="t_ashen_halls_chain_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_ribcage_0.png" id="t_ashen_halls_ribcage_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_ribcage_1.png" id="t_ashen_halls_ribcage_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_sconce_0.png" id="t_ashen_halls_sconce_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_relief_0.png" id="t_ashen_halls_relief_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_relief_1.png" id="t_ashen_halls_relief_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_relief_2.png" id="t_ashen_halls_relief_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_sword_0.png" id="t_ashen_halls_sword_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_sword_1.png" id="t_ashen_halls_sword_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_shield_0.png" id="t_ashen_halls_shield_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_shield_1.png" id="t_ashen_halls_shield_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_stalagmite_0.png" id="t_ashen_halls_stalagmite_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_stalagmite_1.png" id="t_ashen_halls_stalagmite_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_stalactite_0.png" id="t_ashen_halls_stalactite_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_stalactite_1.png" id="t_ashen_halls_stalactite_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_crate_0.png" id="t_ashen_halls_crate_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_crate_1.png" id="t_ashen_halls_crate_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_wheel_0.png" id="t_ashen_halls_wheel_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_wheel_1.png" id="t_ashen_halls_wheel_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_urn_0.png" id="t_ashen_halls_urn_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ashen_halls/ashen_halls_urn_1.png" id="t_ashen_halls_urn_1"]
+
+[sub_resource type="Resource" id="d_ashen_halls_ash_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_ash_0")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_ash_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_ash_1")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_ash_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_ash_2")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_ash_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_ash_3")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_ash_4"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_ash_4")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_ash_5"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_ash_5")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_column_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_column_0")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_column_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_column_1")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_column_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_column_2")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_column_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_column_3")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_brazier_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_brazier_0")
+placement = 0
+weight = 0.113
+light_color = Color(1.000, 0.549, 0.275, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_ashen_halls_brazier_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_brazier_1")
+placement = 0
+weight = 0.113
+light_color = Color(1.000, 0.549, 0.275, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_ashen_halls_brazier_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_brazier_2")
+placement = 0
+weight = 0.113
+light_color = Color(1.000, 0.549, 0.275, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_ashen_halls_rubble_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_rubble_0")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_rubble_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_rubble_1")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_rubble_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_rubble_2")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_rubble_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_rubble_3")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_bones_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_bones_0")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_bones_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_bones_1")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_bones_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_bones_2")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_skulls_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_skulls_0")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_skulls_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_skulls_1")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_banner_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_banner_0")
+placement = 2
+weight = 0.113
+sway = true
+
+[sub_resource type="Resource" id="d_ashen_halls_banner_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_banner_1")
+placement = 2
+weight = 0.113
+sway = true
+
+[sub_resource type="Resource" id="d_ashen_halls_banner_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_banner_2")
+placement = 2
+weight = 0.113
+sway = true
+
+[sub_resource type="Resource" id="d_ashen_halls_chain_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_chain_0")
+placement = 1
+weight = 0.113
+sway = true
+
+[sub_resource type="Resource" id="d_ashen_halls_chain_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_chain_1")
+placement = 1
+weight = 0.113
+sway = true
+
+[sub_resource type="Resource" id="d_ashen_halls_ribcage_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_ribcage_0")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_ribcage_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_ribcage_1")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_sconce_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_sconce_0")
+placement = 2
+weight = 0.113
+light_color = Color(1.000, 0.549, 0.275, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_ashen_halls_relief_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_relief_0")
+placement = 2
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_relief_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_relief_1")
+placement = 2
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_relief_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_relief_2")
+placement = 2
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_sword_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_sword_0")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_sword_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_sword_1")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_shield_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_shield_0")
+placement = 2
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_shield_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_shield_1")
+placement = 2
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_stalagmite_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_stalagmite_0")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_stalagmite_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_stalagmite_1")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_stalactite_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_stalactite_0")
+placement = 1
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_stalactite_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_stalactite_1")
+placement = 1
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_crate_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_crate_0")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_crate_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_crate_1")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_wheel_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_wheel_0")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_wheel_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_wheel_1")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_urn_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_urn_0")
+placement = 0
+weight = 0.113
+
+[sub_resource type="Resource" id="d_ashen_halls_urn_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ashen_halls_urn_1")
+placement = 0
+weight = 0.113
+
+[resource]
+script = ExtResource("pack")
+id = &"ashen_halls_pack"
+decorations = Array[ExtResource("decor")]([SubResource("d_ashen_halls_ash_0"), SubResource("d_ashen_halls_ash_1"), SubResource("d_ashen_halls_ash_2"), SubResource("d_ashen_halls_ash_3"), SubResource("d_ashen_halls_ash_4"), SubResource("d_ashen_halls_ash_5"), SubResource("d_ashen_halls_column_0"), SubResource("d_ashen_halls_column_1"), SubResource("d_ashen_halls_column_2"), SubResource("d_ashen_halls_column_3"), SubResource("d_ashen_halls_brazier_0"), SubResource("d_ashen_halls_brazier_1"), SubResource("d_ashen_halls_brazier_2"), SubResource("d_ashen_halls_rubble_0"), SubResource("d_ashen_halls_rubble_1"), SubResource("d_ashen_halls_rubble_2"), SubResource("d_ashen_halls_rubble_3"), SubResource("d_ashen_halls_bones_0"), SubResource("d_ashen_halls_bones_1"), SubResource("d_ashen_halls_bones_2"), SubResource("d_ashen_halls_skulls_0"), SubResource("d_ashen_halls_skulls_1"), SubResource("d_ashen_halls_banner_0"), SubResource("d_ashen_halls_banner_1"), SubResource("d_ashen_halls_banner_2"), SubResource("d_ashen_halls_chain_0"), SubResource("d_ashen_halls_chain_1"), SubResource("d_ashen_halls_ribcage_0"), SubResource("d_ashen_halls_ribcage_1"), SubResource("d_ashen_halls_sconce_0"), SubResource("d_ashen_halls_relief_0"), SubResource("d_ashen_halls_relief_1"), SubResource("d_ashen_halls_relief_2"), SubResource("d_ashen_halls_sword_0"), SubResource("d_ashen_halls_sword_1"), SubResource("d_ashen_halls_shield_0"), SubResource("d_ashen_halls_shield_1"), SubResource("d_ashen_halls_stalagmite_0"), SubResource("d_ashen_halls_stalagmite_1"), SubResource("d_ashen_halls_stalactite_0"), SubResource("d_ashen_halls_stalactite_1"), SubResource("d_ashen_halls_crate_0"), SubResource("d_ashen_halls_crate_1"), SubResource("d_ashen_halls_wheel_0"), SubResource("d_ashen_halls_wheel_1"), SubResource("d_ashen_halls_urn_0"), SubResource("d_ashen_halls_urn_1")])

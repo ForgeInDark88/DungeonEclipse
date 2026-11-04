@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BiomeData" load_steps=22 format=3]
+[gd_resource type="Resource" script_class="BiomeData" load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="1_linjs"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/mushrooms.png" id="2_6jimb"]
@@ -13,6 +13,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/wall_roots.png" id="dx_wall_roots"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/mushroom_cluster.png" id="dx_mushroom_cluster"]
 
+[ext_resource type="Resource" path="res://data/decor/fungal_pack.tres" id="decor_pack"]
 [sub_resource type="Resource" id="Resource_7wvo4"]
 script = ExtResource("1_linjs")
 texture = ExtResource("2_6jimb")
@@ -105,6 +106,7 @@ sway = false
 
 [resource]
 script = ExtResource("9_1a17a")
+decor_pack = ExtResource("decor_pack")
 music = &"fungal"
 step_sound = &"step_soft"
 id = &"fungal"

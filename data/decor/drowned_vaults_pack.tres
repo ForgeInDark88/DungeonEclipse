@@ -1,0 +1,337 @@
+[gd_resource type="Resource" script_class="DecorPack" load_steps=91 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/decor_pack.gd" id="pack"]
+[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_coral_0.png" id="t_drowned_vaults_coral_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_coral_1.png" id="t_drowned_vaults_coral_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_coral_2.png" id="t_drowned_vaults_coral_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_coral_3.png" id="t_drowned_vaults_coral_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_coral_4.png" id="t_drowned_vaults_coral_4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_barnacles_0.png" id="t_drowned_vaults_barnacles_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_barnacles_1.png" id="t_drowned_vaults_barnacles_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_barnacles_2.png" id="t_drowned_vaults_barnacles_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_barnacles_3.png" id="t_drowned_vaults_barnacles_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_anchor_0.png" id="t_drowned_vaults_anchor_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_anchor_1.png" id="t_drowned_vaults_anchor_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_chain_0.png" id="t_drowned_vaults_chain_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_chain_1.png" id="t_drowned_vaults_chain_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_chain_2.png" id="t_drowned_vaults_chain_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_urn_0.png" id="t_drowned_vaults_urn_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_urn_1.png" id="t_drowned_vaults_urn_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_urn_2.png" id="t_drowned_vaults_urn_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_amphora_0.png" id="t_drowned_vaults_amphora_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_amphora_1.png" id="t_drowned_vaults_amphora_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_puddle_0.png" id="t_drowned_vaults_puddle_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_puddle_1.png" id="t_drowned_vaults_puddle_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_puddle_2.png" id="t_drowned_vaults_puddle_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_puddle_3.png" id="t_drowned_vaults_puddle_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_moss_0.png" id="t_drowned_vaults_moss_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_moss_1.png" id="t_drowned_vaults_moss_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_moss_2.png" id="t_drowned_vaults_moss_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_moss_3.png" id="t_drowned_vaults_moss_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_ivy_0.png" id="t_drowned_vaults_ivy_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_ivy_1.png" id="t_drowned_vaults_ivy_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_ivy_2.png" id="t_drowned_vaults_ivy_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_rubble_0.png" id="t_drowned_vaults_rubble_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_rubble_1.png" id="t_drowned_vaults_rubble_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_rubble_2.png" id="t_drowned_vaults_rubble_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_bones_0.png" id="t_drowned_vaults_bones_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_bones_1.png" id="t_drowned_vaults_bones_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_skulls_0.png" id="t_drowned_vaults_skulls_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_skulls_1.png" id="t_drowned_vaults_skulls_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_lantern_0.png" id="t_drowned_vaults_lantern_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_lantern_1.png" id="t_drowned_vaults_lantern_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_banner_0.png" id="t_drowned_vaults_banner_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_banner_1.png" id="t_drowned_vaults_banner_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_relief_0.png" id="t_drowned_vaults_relief_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_relief_1.png" id="t_drowned_vaults_relief_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/drowned_vaults/drowned_vaults_grate_0.png" id="t_drowned_vaults_grate_0"]
+
+[sub_resource type="Resource" id="d_drowned_vaults_coral_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_coral_0")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_coral_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_coral_1")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_coral_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_coral_2")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_coral_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_coral_3")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_coral_4"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_coral_4")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_barnacles_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_barnacles_0")
+placement = 2
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_barnacles_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_barnacles_1")
+placement = 2
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_barnacles_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_barnacles_2")
+placement = 2
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_barnacles_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_barnacles_3")
+placement = 2
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_anchor_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_anchor_0")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_anchor_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_anchor_1")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_chain_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_chain_0")
+placement = 1
+weight = 0.207
+sway = true
+
+[sub_resource type="Resource" id="d_drowned_vaults_chain_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_chain_1")
+placement = 1
+weight = 0.207
+sway = true
+
+[sub_resource type="Resource" id="d_drowned_vaults_chain_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_chain_2")
+placement = 1
+weight = 0.207
+sway = true
+
+[sub_resource type="Resource" id="d_drowned_vaults_urn_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_urn_0")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_urn_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_urn_1")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_urn_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_urn_2")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_amphora_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_amphora_0")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_amphora_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_amphora_1")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_puddle_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_puddle_0")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_puddle_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_puddle_1")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_puddle_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_puddle_2")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_puddle_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_puddle_3")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_moss_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_moss_0")
+placement = 1
+weight = 0.207
+sway = true
+
+[sub_resource type="Resource" id="d_drowned_vaults_moss_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_moss_1")
+placement = 1
+weight = 0.207
+sway = true
+
+[sub_resource type="Resource" id="d_drowned_vaults_moss_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_moss_2")
+placement = 1
+weight = 0.207
+sway = true
+
+[sub_resource type="Resource" id="d_drowned_vaults_moss_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_moss_3")
+placement = 1
+weight = 0.207
+sway = true
+
+[sub_resource type="Resource" id="d_drowned_vaults_ivy_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_ivy_0")
+placement = 2
+weight = 0.207
+sway = true
+
+[sub_resource type="Resource" id="d_drowned_vaults_ivy_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_ivy_1")
+placement = 2
+weight = 0.207
+sway = true
+
+[sub_resource type="Resource" id="d_drowned_vaults_ivy_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_ivy_2")
+placement = 2
+weight = 0.207
+sway = true
+
+[sub_resource type="Resource" id="d_drowned_vaults_rubble_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_rubble_0")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_rubble_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_rubble_1")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_rubble_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_rubble_2")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_bones_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_bones_0")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_bones_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_bones_1")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_skulls_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_skulls_0")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_skulls_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_skulls_1")
+placement = 0
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_lantern_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_lantern_0")
+placement = 1
+weight = 0.207
+light_color = Color(0.471, 0.863, 0.784, 0.85)
+light_scale = 0.22
+unshaded = true
+sway = true
+
+[sub_resource type="Resource" id="d_drowned_vaults_lantern_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_lantern_1")
+placement = 1
+weight = 0.207
+light_color = Color(0.471, 0.863, 0.784, 0.85)
+light_scale = 0.22
+unshaded = true
+sway = true
+
+[sub_resource type="Resource" id="d_drowned_vaults_banner_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_banner_0")
+placement = 2
+weight = 0.207
+sway = true
+
+[sub_resource type="Resource" id="d_drowned_vaults_banner_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_banner_1")
+placement = 2
+weight = 0.207
+sway = true
+
+[sub_resource type="Resource" id="d_drowned_vaults_relief_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_relief_0")
+placement = 2
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_relief_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_relief_1")
+placement = 2
+weight = 0.207
+
+[sub_resource type="Resource" id="d_drowned_vaults_grate_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_drowned_vaults_grate_0")
+placement = 2
+weight = 0.207
+
+[resource]
+script = ExtResource("pack")
+id = &"drowned_vaults_pack"
+decorations = Array[ExtResource("decor")]([SubResource("d_drowned_vaults_coral_0"), SubResource("d_drowned_vaults_coral_1"), SubResource("d_drowned_vaults_coral_2"), SubResource("d_drowned_vaults_coral_3"), SubResource("d_drowned_vaults_coral_4"), SubResource("d_drowned_vaults_barnacles_0"), SubResource("d_drowned_vaults_barnacles_1"), SubResource("d_drowned_vaults_barnacles_2"), SubResource("d_drowned_vaults_barnacles_3"), SubResource("d_drowned_vaults_anchor_0"), SubResource("d_drowned_vaults_anchor_1"), SubResource("d_drowned_vaults_chain_0"), SubResource("d_drowned_vaults_chain_1"), SubResource("d_drowned_vaults_chain_2"), SubResource("d_drowned_vaults_urn_0"), SubResource("d_drowned_vaults_urn_1"), SubResource("d_drowned_vaults_urn_2"), SubResource("d_drowned_vaults_amphora_0"), SubResource("d_drowned_vaults_amphora_1"), SubResource("d_drowned_vaults_puddle_0"), SubResource("d_drowned_vaults_puddle_1"), SubResource("d_drowned_vaults_puddle_2"), SubResource("d_drowned_vaults_puddle_3"), SubResource("d_drowned_vaults_moss_0"), SubResource("d_drowned_vaults_moss_1"), SubResource("d_drowned_vaults_moss_2"), SubResource("d_drowned_vaults_moss_3"), SubResource("d_drowned_vaults_ivy_0"), SubResource("d_drowned_vaults_ivy_1"), SubResource("d_drowned_vaults_ivy_2"), SubResource("d_drowned_vaults_rubble_0"), SubResource("d_drowned_vaults_rubble_1"), SubResource("d_drowned_vaults_rubble_2"), SubResource("d_drowned_vaults_bones_0"), SubResource("d_drowned_vaults_bones_1"), SubResource("d_drowned_vaults_skulls_0"), SubResource("d_drowned_vaults_skulls_1"), SubResource("d_drowned_vaults_lantern_0"), SubResource("d_drowned_vaults_lantern_1"), SubResource("d_drowned_vaults_banner_0"), SubResource("d_drowned_vaults_banner_1"), SubResource("d_drowned_vaults_relief_0"), SubResource("d_drowned_vaults_relief_1"), SubResource("d_drowned_vaults_grate_0")])

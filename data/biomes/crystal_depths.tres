@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BiomeData" load_steps=12 format=3]
+[gd_resource type="Resource" script_class="BiomeData" load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor_script"]
 [ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="biome_script"]
@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/echo_crystal.png" id="dx_echo_crystal"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/ice_vein.png" id="dx_ice_vein"]
 
+[ext_resource type="Resource" path="res://data/decor/crystal_depths_pack.tres" id="decor_pack"]
 [sub_resource type="Resource" id="Decor_crystal_spire"]
 script = ExtResource("decor_script")
 texture = ExtResource("dx_crystal_spire")
@@ -54,6 +55,7 @@ sway = false
 
 [resource]
 script = ExtResource("biome_script")
+decor_pack = ExtResource("decor_pack")
 music = &"crystal_depths"
 step_sound = &"step_stone"
 id = &"crystal_depths"

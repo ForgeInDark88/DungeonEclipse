@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BiomeData" load_steps=18 format=3]
+[gd_resource type="Resource" script_class="BiomeData" load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor_script"]
 [ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="biome_script"]
@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/abyss_chain.png" id="dx_abyss_chain"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/glass_stalactite.png" id="dx_glass_stalactite"]
 
+[ext_resource type="Resource" path="res://data/decor/obsidian_abyss_pack.tres" id="decor_pack"]
 [sub_resource type="Resource" id="Decor_obsidian_spire"]
 script = ExtResource("decor_script")
 texture = ExtResource("dx_obsidian_spire")
@@ -83,6 +84,7 @@ sway = false
 
 [resource]
 script = ExtResource("biome_script")
+decor_pack = ExtResource("decor_pack")
 music = &"obsidian_abyss"
 step_sound = &"step_stone"
 id = &"obsidian_abyss"

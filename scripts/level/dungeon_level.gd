@@ -1551,10 +1551,13 @@ func _spawn_ambience() -> void:
 
 ## Bones, cobwebs, crystals, statues... from BiomeData.decorations.
 func _spawn_decorations() -> void:
-	if biome == null or biome.decorations.is_empty():
+	if biome == null:
+		return
+	var pool := biome.all_decorations()
+	if pool.is_empty():
 		return
 	var weights: Array[float] = []
-	for d in biome.decorations:
+	for d in pool:
 		weights.append(d.weight)
 	var rooms := (layout.width / LevelGenerator.ROOM_W) * (layout.height / LevelGenerator.ROOM_H)
 	var count := roundi(rooms * biome.decor_per_room)
@@ -1562,7 +1565,7 @@ func _spawn_decorations() -> void:
 	var tries := 0
 	while count > 0 and tries < count * 20:
 		tries += 1
-		var data: DecorData = biome.decorations[LootTable._weighted_index(weights, rng)]
+		var data: DecorData = pool[LootTable._weighted_index(weights, rng)]
 		var cell := Vector2i(rng.randi_range(1, layout.width - 2), rng.randi_range(1, layout.height - 2))
 		if used.has(cell) or layout.get_tile(cell.x, cell.y) != T.EMPTY or cell == layout.exit_cell:
 			continue

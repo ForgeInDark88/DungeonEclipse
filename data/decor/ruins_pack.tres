@@ -1,0 +1,321 @@
+[gd_resource type="Resource" script_class="DecorPack" load_steps=87 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/decor_pack.gd" id="pack"]
+[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_column_0.png" id="t_ruins_column_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_column_1.png" id="t_ruins_column_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_column_2.png" id="t_ruins_column_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_column_3.png" id="t_ruins_column_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_bust_0.png" id="t_ruins_bust_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_bust_1.png" id="t_ruins_bust_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_bust_2.png" id="t_ruins_bust_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_urn_0.png" id="t_ruins_urn_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_urn_1.png" id="t_ruins_urn_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_urn_2.png" id="t_ruins_urn_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_amphora_0.png" id="t_ruins_amphora_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_amphora_1.png" id="t_ruins_amphora_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_rubble_0.png" id="t_ruins_rubble_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_rubble_1.png" id="t_ruins_rubble_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_rubble_2.png" id="t_ruins_rubble_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_rubble_3.png" id="t_ruins_rubble_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_banner_0.png" id="t_ruins_banner_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_banner_1.png" id="t_ruins_banner_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_banner_2.png" id="t_ruins_banner_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_relief_0.png" id="t_ruins_relief_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_relief_1.png" id="t_ruins_relief_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_relief_2.png" id="t_ruins_relief_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_relief_3.png" id="t_ruins_relief_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_shield_0.png" id="t_ruins_shield_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_shield_1.png" id="t_ruins_shield_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_crossed_0.png" id="t_ruins_crossed_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_crossed_1.png" id="t_ruins_crossed_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_books_0.png" id="t_ruins_books_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_books_1.png" id="t_ruins_books_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_ivy_0.png" id="t_ruins_ivy_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_ivy_1.png" id="t_ruins_ivy_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_ivy_2.png" id="t_ruins_ivy_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_ferns_0.png" id="t_ruins_ferns_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_ferns_1.png" id="t_ruins_ferns_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_sconce_0.png" id="t_ruins_sconce_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_sconce_1.png" id="t_ruins_sconce_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_pedestal_0.png" id="t_ruins_pedestal_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_pedestal_1.png" id="t_ruins_pedestal_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_wheel_0.png" id="t_ruins_wheel_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_sword_0.png" id="t_ruins_sword_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_sword_1.png" id="t_ruins_sword_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/ruins/ruins_mask_0.png" id="t_ruins_mask_0"]
+
+[sub_resource type="Resource" id="d_ruins_column_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_column_0")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_column_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_column_1")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_column_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_column_2")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_column_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_column_3")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_bust_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_bust_0")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_bust_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_bust_1")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_bust_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_bust_2")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_urn_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_urn_0")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_urn_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_urn_1")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_urn_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_urn_2")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_amphora_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_amphora_0")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_amphora_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_amphora_1")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_rubble_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_rubble_0")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_rubble_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_rubble_1")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_rubble_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_rubble_2")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_rubble_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_rubble_3")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_banner_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_banner_0")
+placement = 2
+weight = 0.362
+sway = true
+
+[sub_resource type="Resource" id="d_ruins_banner_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_banner_1")
+placement = 2
+weight = 0.362
+sway = true
+
+[sub_resource type="Resource" id="d_ruins_banner_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_banner_2")
+placement = 2
+weight = 0.362
+sway = true
+
+[sub_resource type="Resource" id="d_ruins_relief_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_relief_0")
+placement = 2
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_relief_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_relief_1")
+placement = 2
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_relief_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_relief_2")
+placement = 2
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_relief_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_relief_3")
+placement = 2
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_shield_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_shield_0")
+placement = 2
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_shield_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_shield_1")
+placement = 2
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_crossed_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_crossed_0")
+placement = 2
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_crossed_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_crossed_1")
+placement = 2
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_books_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_books_0")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_books_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_books_1")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_ivy_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_ivy_0")
+placement = 2
+weight = 0.362
+sway = true
+
+[sub_resource type="Resource" id="d_ruins_ivy_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_ivy_1")
+placement = 2
+weight = 0.362
+sway = true
+
+[sub_resource type="Resource" id="d_ruins_ivy_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_ivy_2")
+placement = 2
+weight = 0.362
+sway = true
+
+[sub_resource type="Resource" id="d_ruins_ferns_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_ferns_0")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_ferns_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_ferns_1")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_sconce_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_sconce_0")
+placement = 2
+weight = 0.362
+light_color = Color(1.000, 0.839, 0.549, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_ruins_sconce_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_sconce_1")
+placement = 2
+weight = 0.362
+light_color = Color(1.000, 0.839, 0.549, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_ruins_pedestal_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_pedestal_0")
+placement = 0
+weight = 0.362
+light_color = Color(1.000, 0.839, 0.549, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_ruins_pedestal_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_pedestal_1")
+placement = 0
+weight = 0.362
+light_color = Color(1.000, 0.839, 0.549, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_ruins_wheel_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_wheel_0")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_sword_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_sword_0")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_sword_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_sword_1")
+placement = 0
+weight = 0.362
+
+[sub_resource type="Resource" id="d_ruins_mask_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_ruins_mask_0")
+placement = 2
+weight = 0.362
+
+[resource]
+script = ExtResource("pack")
+id = &"ruins_pack"
+decorations = Array[ExtResource("decor")]([SubResource("d_ruins_column_0"), SubResource("d_ruins_column_1"), SubResource("d_ruins_column_2"), SubResource("d_ruins_column_3"), SubResource("d_ruins_bust_0"), SubResource("d_ruins_bust_1"), SubResource("d_ruins_bust_2"), SubResource("d_ruins_urn_0"), SubResource("d_ruins_urn_1"), SubResource("d_ruins_urn_2"), SubResource("d_ruins_amphora_0"), SubResource("d_ruins_amphora_1"), SubResource("d_ruins_rubble_0"), SubResource("d_ruins_rubble_1"), SubResource("d_ruins_rubble_2"), SubResource("d_ruins_rubble_3"), SubResource("d_ruins_banner_0"), SubResource("d_ruins_banner_1"), SubResource("d_ruins_banner_2"), SubResource("d_ruins_relief_0"), SubResource("d_ruins_relief_1"), SubResource("d_ruins_relief_2"), SubResource("d_ruins_relief_3"), SubResource("d_ruins_shield_0"), SubResource("d_ruins_shield_1"), SubResource("d_ruins_crossed_0"), SubResource("d_ruins_crossed_1"), SubResource("d_ruins_books_0"), SubResource("d_ruins_books_1"), SubResource("d_ruins_ivy_0"), SubResource("d_ruins_ivy_1"), SubResource("d_ruins_ivy_2"), SubResource("d_ruins_ferns_0"), SubResource("d_ruins_ferns_1"), SubResource("d_ruins_sconce_0"), SubResource("d_ruins_sconce_1"), SubResource("d_ruins_pedestal_0"), SubResource("d_ruins_pedestal_1"), SubResource("d_ruins_wheel_0"), SubResource("d_ruins_sword_0"), SubResource("d_ruins_sword_1"), SubResource("d_ruins_mask_0")])

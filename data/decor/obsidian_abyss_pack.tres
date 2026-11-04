@@ -1,0 +1,375 @@
+[gd_resource type="Resource" script_class="DecorPack" load_steps=91 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/decor_pack.gd" id="pack"]
+[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_spire_0.png" id="t_obsidian_abyss_spire_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_spire_1.png" id="t_obsidian_abyss_spire_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_spire_2.png" id="t_obsidian_abyss_spire_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_spire_3.png" id="t_obsidian_abyss_spire_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_spire_4.png" id="t_obsidian_abyss_spire_4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_crystals_0.png" id="t_obsidian_abyss_crystals_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_crystals_1.png" id="t_obsidian_abyss_crystals_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_crystals_2.png" id="t_obsidian_abyss_crystals_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_crystals_3.png" id="t_obsidian_abyss_crystals_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_crystal_hang_0.png" id="t_obsidian_abyss_crystal_hang_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_crystal_hang_1.png" id="t_obsidian_abyss_crystal_hang_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_crystal_hang_2.png" id="t_obsidian_abyss_crystal_hang_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_chain_0.png" id="t_obsidian_abyss_chain_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_chain_1.png" id="t_obsidian_abyss_chain_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_chain_2.png" id="t_obsidian_abyss_chain_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_chain_3.png" id="t_obsidian_abyss_chain_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_brazier_0.png" id="t_obsidian_abyss_brazier_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_brazier_1.png" id="t_obsidian_abyss_brazier_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_brazier_2.png" id="t_obsidian_abyss_brazier_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_skulls_0.png" id="t_obsidian_abyss_skulls_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_skulls_1.png" id="t_obsidian_abyss_skulls_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_skulls_2.png" id="t_obsidian_abyss_skulls_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_bones_0.png" id="t_obsidian_abyss_bones_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_bones_1.png" id="t_obsidian_abyss_bones_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_rubble_0.png" id="t_obsidian_abyss_rubble_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_rubble_1.png" id="t_obsidian_abyss_rubble_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_rubble_2.png" id="t_obsidian_abyss_rubble_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_rubble_3.png" id="t_obsidian_abyss_rubble_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_sigil_0.png" id="t_obsidian_abyss_sigil_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_sigil_1.png" id="t_obsidian_abyss_sigil_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_sigil_2.png" id="t_obsidian_abyss_sigil_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_grate_0.png" id="t_obsidian_abyss_grate_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_grate_1.png" id="t_obsidian_abyss_grate_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_stalagmite_0.png" id="t_obsidian_abyss_stalagmite_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_stalagmite_1.png" id="t_obsidian_abyss_stalagmite_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_stalagmite_2.png" id="t_obsidian_abyss_stalagmite_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_stalactite_0.png" id="t_obsidian_abyss_stalactite_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_stalactite_1.png" id="t_obsidian_abyss_stalactite_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_stalactite_2.png" id="t_obsidian_abyss_stalactite_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_mask_0.png" id="t_obsidian_abyss_mask_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_mask_1.png" id="t_obsidian_abyss_mask_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_relief_0.png" id="t_obsidian_abyss_relief_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_relief_1.png" id="t_obsidian_abyss_relief_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/obsidian_abyss/obsidian_abyss_urn_0.png" id="t_obsidian_abyss_urn_0"]
+
+[sub_resource type="Resource" id="d_obsidian_abyss_spire_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_spire_0")
+placement = 0
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_spire_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_spire_1")
+placement = 0
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_spire_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_spire_2")
+placement = 0
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_spire_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_spire_3")
+placement = 0
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_spire_4"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_spire_4")
+placement = 0
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_crystals_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_crystals_0")
+placement = 0
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_crystals_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_crystals_1")
+placement = 0
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_crystals_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_crystals_2")
+placement = 0
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_crystals_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_crystals_3")
+placement = 0
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_crystal_hang_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_crystal_hang_0")
+placement = 1
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_crystal_hang_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_crystal_hang_1")
+placement = 1
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_crystal_hang_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_crystal_hang_2")
+placement = 1
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_chain_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_chain_0")
+placement = 1
+weight = 0.175
+sway = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_chain_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_chain_1")
+placement = 1
+weight = 0.175
+sway = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_chain_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_chain_2")
+placement = 1
+weight = 0.175
+sway = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_chain_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_chain_3")
+placement = 1
+weight = 0.175
+sway = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_brazier_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_brazier_0")
+placement = 0
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_brazier_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_brazier_1")
+placement = 0
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_brazier_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_brazier_2")
+placement = 0
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_skulls_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_skulls_0")
+placement = 0
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_skulls_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_skulls_1")
+placement = 0
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_skulls_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_skulls_2")
+placement = 0
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_bones_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_bones_0")
+placement = 0
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_bones_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_bones_1")
+placement = 0
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_rubble_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_rubble_0")
+placement = 0
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_rubble_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_rubble_1")
+placement = 0
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_rubble_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_rubble_2")
+placement = 0
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_rubble_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_rubble_3")
+placement = 0
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_sigil_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_sigil_0")
+placement = 2
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_sigil_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_sigil_1")
+placement = 2
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_sigil_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_sigil_2")
+placement = 2
+weight = 0.175
+light_color = Color(0.745, 0.431, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_obsidian_abyss_grate_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_grate_0")
+placement = 2
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_grate_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_grate_1")
+placement = 2
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_stalagmite_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_stalagmite_0")
+placement = 0
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_stalagmite_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_stalagmite_1")
+placement = 0
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_stalagmite_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_stalagmite_2")
+placement = 0
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_stalactite_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_stalactite_0")
+placement = 1
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_stalactite_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_stalactite_1")
+placement = 1
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_stalactite_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_stalactite_2")
+placement = 1
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_mask_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_mask_0")
+placement = 2
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_mask_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_mask_1")
+placement = 2
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_relief_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_relief_0")
+placement = 2
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_relief_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_relief_1")
+placement = 2
+weight = 0.175
+
+[sub_resource type="Resource" id="d_obsidian_abyss_urn_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_obsidian_abyss_urn_0")
+placement = 0
+weight = 0.175
+
+[resource]
+script = ExtResource("pack")
+id = &"obsidian_abyss_pack"
+decorations = Array[ExtResource("decor")]([SubResource("d_obsidian_abyss_spire_0"), SubResource("d_obsidian_abyss_spire_1"), SubResource("d_obsidian_abyss_spire_2"), SubResource("d_obsidian_abyss_spire_3"), SubResource("d_obsidian_abyss_spire_4"), SubResource("d_obsidian_abyss_crystals_0"), SubResource("d_obsidian_abyss_crystals_1"), SubResource("d_obsidian_abyss_crystals_2"), SubResource("d_obsidian_abyss_crystals_3"), SubResource("d_obsidian_abyss_crystal_hang_0"), SubResource("d_obsidian_abyss_crystal_hang_1"), SubResource("d_obsidian_abyss_crystal_hang_2"), SubResource("d_obsidian_abyss_chain_0"), SubResource("d_obsidian_abyss_chain_1"), SubResource("d_obsidian_abyss_chain_2"), SubResource("d_obsidian_abyss_chain_3"), SubResource("d_obsidian_abyss_brazier_0"), SubResource("d_obsidian_abyss_brazier_1"), SubResource("d_obsidian_abyss_brazier_2"), SubResource("d_obsidian_abyss_skulls_0"), SubResource("d_obsidian_abyss_skulls_1"), SubResource("d_obsidian_abyss_skulls_2"), SubResource("d_obsidian_abyss_bones_0"), SubResource("d_obsidian_abyss_bones_1"), SubResource("d_obsidian_abyss_rubble_0"), SubResource("d_obsidian_abyss_rubble_1"), SubResource("d_obsidian_abyss_rubble_2"), SubResource("d_obsidian_abyss_rubble_3"), SubResource("d_obsidian_abyss_sigil_0"), SubResource("d_obsidian_abyss_sigil_1"), SubResource("d_obsidian_abyss_sigil_2"), SubResource("d_obsidian_abyss_grate_0"), SubResource("d_obsidian_abyss_grate_1"), SubResource("d_obsidian_abyss_stalagmite_0"), SubResource("d_obsidian_abyss_stalagmite_1"), SubResource("d_obsidian_abyss_stalagmite_2"), SubResource("d_obsidian_abyss_stalactite_0"), SubResource("d_obsidian_abyss_stalactite_1"), SubResource("d_obsidian_abyss_stalactite_2"), SubResource("d_obsidian_abyss_mask_0"), SubResource("d_obsidian_abyss_mask_1"), SubResource("d_obsidian_abyss_relief_0"), SubResource("d_obsidian_abyss_relief_1"), SubResource("d_obsidian_abyss_urn_0")])

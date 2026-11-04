@@ -1,0 +1,418 @@
+[gd_resource type="Resource" script_class="DecorPack" load_steps=97 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/decor_pack.gd" id="pack"]
+[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_crystals_0.png" id="t_crystal_depths_crystals_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_crystals_1.png" id="t_crystal_depths_crystals_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_crystals_2.png" id="t_crystal_depths_crystals_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_crystals_3.png" id="t_crystal_depths_crystals_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_crystals_4.png" id="t_crystal_depths_crystals_4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_crystals_5.png" id="t_crystal_depths_crystals_5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_crystals_6.png" id="t_crystal_depths_crystals_6"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_crystals_7.png" id="t_crystal_depths_crystals_7"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_crystals_8.png" id="t_crystal_depths_crystals_8"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_crystals_9.png" id="t_crystal_depths_crystals_9"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_crystal_hang_0.png" id="t_crystal_depths_crystal_hang_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_crystal_hang_1.png" id="t_crystal_depths_crystal_hang_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_crystal_hang_2.png" id="t_crystal_depths_crystal_hang_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_crystal_hang_3.png" id="t_crystal_depths_crystal_hang_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_crystal_hang_4.png" id="t_crystal_depths_crystal_hang_4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_crystal_hang_5.png" id="t_crystal_depths_crystal_hang_5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_stalagmite_0.png" id="t_crystal_depths_stalagmite_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_stalagmite_1.png" id="t_crystal_depths_stalagmite_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_stalagmite_2.png" id="t_crystal_depths_stalagmite_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_stalagmite_3.png" id="t_crystal_depths_stalagmite_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_stalactite_0.png" id="t_crystal_depths_stalactite_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_stalactite_1.png" id="t_crystal_depths_stalactite_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_stalactite_2.png" id="t_crystal_depths_stalactite_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_stalactite_3.png" id="t_crystal_depths_stalactite_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_rubble_0.png" id="t_crystal_depths_rubble_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_rubble_1.png" id="t_crystal_depths_rubble_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_rubble_2.png" id="t_crystal_depths_rubble_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_rubble_3.png" id="t_crystal_depths_rubble_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_puddle_0.png" id="t_crystal_depths_puddle_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_puddle_1.png" id="t_crystal_depths_puddle_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_puddle_2.png" id="t_crystal_depths_puddle_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_lantern_0.png" id="t_crystal_depths_lantern_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_lantern_1.png" id="t_crystal_depths_lantern_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_lantern_2.png" id="t_crystal_depths_lantern_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_pedestal_0.png" id="t_crystal_depths_pedestal_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_pedestal_1.png" id="t_crystal_depths_pedestal_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_spire_0.png" id="t_crystal_depths_spire_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_spire_1.png" id="t_crystal_depths_spire_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_bones_0.png" id="t_crystal_depths_bones_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_bones_1.png" id="t_crystal_depths_bones_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_mushroom_0.png" id="t_crystal_depths_mushroom_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_mushroom_1.png" id="t_crystal_depths_mushroom_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_chain_0.png" id="t_crystal_depths_chain_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_chain_1.png" id="t_crystal_depths_chain_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_relief_0.png" id="t_crystal_depths_relief_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_relief_1.png" id="t_crystal_depths_relief_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/crystal_depths/crystal_depths_urn_0.png" id="t_crystal_depths_urn_0"]
+
+[sub_resource type="Resource" id="d_crystal_depths_crystals_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_crystals_0")
+placement = 0
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_crystals_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_crystals_1")
+placement = 0
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_crystals_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_crystals_2")
+placement = 0
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_crystals_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_crystals_3")
+placement = 0
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_crystals_4"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_crystals_4")
+placement = 0
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_crystals_5"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_crystals_5")
+placement = 0
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_crystals_6"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_crystals_6")
+placement = 0
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_crystals_7"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_crystals_7")
+placement = 0
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_crystals_8"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_crystals_8")
+placement = 0
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_crystals_9"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_crystals_9")
+placement = 0
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_crystal_hang_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_crystal_hang_0")
+placement = 1
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_crystal_hang_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_crystal_hang_1")
+placement = 1
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_crystal_hang_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_crystal_hang_2")
+placement = 1
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_crystal_hang_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_crystal_hang_3")
+placement = 1
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_crystal_hang_4"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_crystal_hang_4")
+placement = 1
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_crystal_hang_5"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_crystal_hang_5")
+placement = 1
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_stalagmite_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_stalagmite_0")
+placement = 0
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_stalagmite_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_stalagmite_1")
+placement = 0
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_stalagmite_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_stalagmite_2")
+placement = 0
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_stalagmite_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_stalagmite_3")
+placement = 0
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_stalactite_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_stalactite_0")
+placement = 1
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_stalactite_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_stalactite_1")
+placement = 1
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_stalactite_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_stalactite_2")
+placement = 1
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_stalactite_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_stalactite_3")
+placement = 1
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_rubble_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_rubble_0")
+placement = 0
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_rubble_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_rubble_1")
+placement = 0
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_rubble_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_rubble_2")
+placement = 0
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_rubble_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_rubble_3")
+placement = 0
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_puddle_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_puddle_0")
+placement = 0
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_puddle_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_puddle_1")
+placement = 0
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_puddle_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_puddle_2")
+placement = 0
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_lantern_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_lantern_0")
+placement = 1
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+sway = true
+
+[sub_resource type="Resource" id="d_crystal_depths_lantern_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_lantern_1")
+placement = 1
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+sway = true
+
+[sub_resource type="Resource" id="d_crystal_depths_lantern_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_lantern_2")
+placement = 1
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+sway = true
+
+[sub_resource type="Resource" id="d_crystal_depths_pedestal_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_pedestal_0")
+placement = 0
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_pedestal_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_pedestal_1")
+placement = 0
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_spire_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_spire_0")
+placement = 0
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_spire_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_spire_1")
+placement = 0
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_bones_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_bones_0")
+placement = 0
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_bones_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_bones_1")
+placement = 0
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_mushroom_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_mushroom_0")
+placement = 0
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_mushroom_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_mushroom_1")
+placement = 0
+weight = 0.117
+light_color = Color(0.471, 0.784, 1.000, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_crystal_depths_chain_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_chain_0")
+placement = 1
+weight = 0.117
+sway = true
+
+[sub_resource type="Resource" id="d_crystal_depths_chain_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_chain_1")
+placement = 1
+weight = 0.117
+sway = true
+
+[sub_resource type="Resource" id="d_crystal_depths_relief_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_relief_0")
+placement = 2
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_relief_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_relief_1")
+placement = 2
+weight = 0.117
+
+[sub_resource type="Resource" id="d_crystal_depths_urn_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_crystal_depths_urn_0")
+placement = 0
+weight = 0.117
+
+[resource]
+script = ExtResource("pack")
+id = &"crystal_depths_pack"
+decorations = Array[ExtResource("decor")]([SubResource("d_crystal_depths_crystals_0"), SubResource("d_crystal_depths_crystals_1"), SubResource("d_crystal_depths_crystals_2"), SubResource("d_crystal_depths_crystals_3"), SubResource("d_crystal_depths_crystals_4"), SubResource("d_crystal_depths_crystals_5"), SubResource("d_crystal_depths_crystals_6"), SubResource("d_crystal_depths_crystals_7"), SubResource("d_crystal_depths_crystals_8"), SubResource("d_crystal_depths_crystals_9"), SubResource("d_crystal_depths_crystal_hang_0"), SubResource("d_crystal_depths_crystal_hang_1"), SubResource("d_crystal_depths_crystal_hang_2"), SubResource("d_crystal_depths_crystal_hang_3"), SubResource("d_crystal_depths_crystal_hang_4"), SubResource("d_crystal_depths_crystal_hang_5"), SubResource("d_crystal_depths_stalagmite_0"), SubResource("d_crystal_depths_stalagmite_1"), SubResource("d_crystal_depths_stalagmite_2"), SubResource("d_crystal_depths_stalagmite_3"), SubResource("d_crystal_depths_stalactite_0"), SubResource("d_crystal_depths_stalactite_1"), SubResource("d_crystal_depths_stalactite_2"), SubResource("d_crystal_depths_stalactite_3"), SubResource("d_crystal_depths_rubble_0"), SubResource("d_crystal_depths_rubble_1"), SubResource("d_crystal_depths_rubble_2"), SubResource("d_crystal_depths_rubble_3"), SubResource("d_crystal_depths_puddle_0"), SubResource("d_crystal_depths_puddle_1"), SubResource("d_crystal_depths_puddle_2"), SubResource("d_crystal_depths_lantern_0"), SubResource("d_crystal_depths_lantern_1"), SubResource("d_crystal_depths_lantern_2"), SubResource("d_crystal_depths_pedestal_0"), SubResource("d_crystal_depths_pedestal_1"), SubResource("d_crystal_depths_spire_0"), SubResource("d_crystal_depths_spire_1"), SubResource("d_crystal_depths_bones_0"), SubResource("d_crystal_depths_bones_1"), SubResource("d_crystal_depths_mushroom_0"), SubResource("d_crystal_depths_mushroom_1"), SubResource("d_crystal_depths_chain_0"), SubResource("d_crystal_depths_chain_1"), SubResource("d_crystal_depths_relief_0"), SubResource("d_crystal_depths_relief_1"), SubResource("d_crystal_depths_urn_0")])

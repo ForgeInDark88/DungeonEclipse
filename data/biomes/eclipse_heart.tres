@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BiomeData" load_steps=18 format=3]
+[gd_resource type="Resource" script_class="BiomeData" load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor_script"]
 [ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="biome_script"]
@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/black_sun_lamp.png" id="dx_black_sun_lamp"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/offering_pile.png" id="dx_offering_pile"]
 
+[ext_resource type="Resource" path="res://data/decor/eclipse_heart_pack.tres" id="decor_pack"]
 [sub_resource type="Resource" id="Decor_sun_altar"]
 script = ExtResource("decor_script")
 texture = ExtResource("dx_sun_altar")
@@ -83,6 +84,7 @@ sway = false
 
 [resource]
 script = ExtResource("biome_script")
+decor_pack = ExtResource("decor_pack")
 music = &"eclipse_heart"
 step_sound = &"step_stone"
 id = &"eclipse_heart"

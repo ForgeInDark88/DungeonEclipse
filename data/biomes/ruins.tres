@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BiomeData" load_steps=26 format=3]
+[gd_resource type="Resource" script_class="BiomeData" load_steps=27 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="1_ase3j"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/statue.png" id="2_tthib"]
@@ -15,6 +15,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/wall_ivy.png" id="dx_wall_ivy"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/broken_arch.png" id="dx_broken_arch"]
 
+[ext_resource type="Resource" path="res://data/decor/ruins_pack.tres" id="decor_pack"]
 [sub_resource type="Resource" id="Resource_mbtgo"]
 script = ExtResource("1_ase3j")
 texture = ExtResource("2_tthib")
@@ -127,6 +128,7 @@ sway = false
 
 [resource]
 script = ExtResource("10_0ie7r")
+decor_pack = ExtResource("decor_pack")
 music = &"ruins"
 step_sound = &"step_stone"
 id = &"ruins"

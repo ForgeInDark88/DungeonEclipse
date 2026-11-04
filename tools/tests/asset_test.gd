@@ -132,6 +132,21 @@ func _initialize() -> void:
 				"%s is %dx%d" % [bp, 16 * at.COLUMNS, 16 * at.ROWS_PER_VARIANT * at.VARIANTS])
 	check(blobs >= 18, "blob atlases (%d)" % blobs)
 
+	# Every dungeon biome: 50+ decorations (hand-made + its decor pack,
+	# tools/art/gen_decor_pack.py), each with a texture.
+	var dungeon_biomes: Array = []
+	_walk("res://data/biomes", ["tres"], dungeon_biomes)
+	for f in dungeon_biomes:
+		var b = load(f)
+		if b == null or not b.has_method("all_decorations"):
+			continue
+		var all: Array = b.all_decorations()
+		check(all.size() >= 50, "%s has 50+ decorations (%d)" % [f, all.size()])
+		for d in all:
+			if d.texture == null:
+				check(false, "%s: a decoration without a texture" % f)
+				break
+
 	# The interface font (docs/CREDITS.md): the theme uses it, and it draws
 	# every character of every Russian and English string of the game.
 	var theme: Theme = load(ProjectSettings.get_setting("gui/theme/custom"))

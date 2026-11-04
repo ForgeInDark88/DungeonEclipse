@@ -1,0 +1,381 @@
+[gd_resource type="Resource" script_class="DecorPack" load_steps=91 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/decor_pack.gd" id="pack"]
+[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_mushroom_0.png" id="t_fungal_mushroom_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_mushroom_1.png" id="t_fungal_mushroom_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_mushroom_2.png" id="t_fungal_mushroom_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_mushroom_3.png" id="t_fungal_mushroom_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_mushroom_4.png" id="t_fungal_mushroom_4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_mushroom_5.png" id="t_fungal_mushroom_5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_mushroom_6.png" id="t_fungal_mushroom_6"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_mushroom_7.png" id="t_fungal_mushroom_7"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_mushroom_8.png" id="t_fungal_mushroom_8"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_mushroom_9.png" id="t_fungal_mushroom_9"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_ferns_0.png" id="t_fungal_ferns_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_ferns_1.png" id="t_fungal_ferns_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_ferns_2.png" id="t_fungal_ferns_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_ferns_3.png" id="t_fungal_ferns_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_puddle_0.png" id="t_fungal_puddle_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_puddle_1.png" id="t_fungal_puddle_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_puddle_2.png" id="t_fungal_puddle_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_moss_0.png" id="t_fungal_moss_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_moss_1.png" id="t_fungal_moss_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_moss_2.png" id="t_fungal_moss_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_moss_3.png" id="t_fungal_moss_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_roots_0.png" id="t_fungal_roots_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_roots_1.png" id="t_fungal_roots_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_roots_2.png" id="t_fungal_roots_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_roots_3.png" id="t_fungal_roots_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_rubble_0.png" id="t_fungal_rubble_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_rubble_1.png" id="t_fungal_rubble_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_rubble_2.png" id="t_fungal_rubble_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_stalagmite_0.png" id="t_fungal_stalagmite_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_stalagmite_1.png" id="t_fungal_stalagmite_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_stalactite_0.png" id="t_fungal_stalactite_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_stalactite_1.png" id="t_fungal_stalactite_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_crystals_0.png" id="t_fungal_crystals_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_crystals_1.png" id="t_fungal_crystals_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_ivy_0.png" id="t_fungal_ivy_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_ivy_1.png" id="t_fungal_ivy_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_ivy_2.png" id="t_fungal_ivy_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_bones_0.png" id="t_fungal_bones_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_bones_1.png" id="t_fungal_bones_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_lantern_0.png" id="t_fungal_lantern_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_lantern_1.png" id="t_fungal_lantern_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_sack_0.png" id="t_fungal_sack_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_urn_0.png" id="t_fungal_urn_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/fungal/fungal_urn_1.png" id="t_fungal_urn_1"]
+
+[sub_resource type="Resource" id="d_fungal_mushroom_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_mushroom_0")
+placement = 0
+weight = 0.334
+light_color = Color(0.471, 0.902, 0.824, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_fungal_mushroom_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_mushroom_1")
+placement = 0
+weight = 0.334
+light_color = Color(0.471, 0.902, 0.824, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_fungal_mushroom_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_mushroom_2")
+placement = 0
+weight = 0.334
+light_color = Color(0.471, 0.902, 0.824, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_fungal_mushroom_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_mushroom_3")
+placement = 0
+weight = 0.334
+light_color = Color(0.471, 0.902, 0.824, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_fungal_mushroom_4"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_mushroom_4")
+placement = 0
+weight = 0.334
+light_color = Color(0.471, 0.902, 0.824, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_fungal_mushroom_5"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_mushroom_5")
+placement = 0
+weight = 0.334
+light_color = Color(0.471, 0.902, 0.824, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_fungal_mushroom_6"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_mushroom_6")
+placement = 0
+weight = 0.334
+light_color = Color(0.471, 0.902, 0.824, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_fungal_mushroom_7"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_mushroom_7")
+placement = 0
+weight = 0.334
+light_color = Color(0.471, 0.902, 0.824, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_fungal_mushroom_8"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_mushroom_8")
+placement = 0
+weight = 0.334
+light_color = Color(0.471, 0.902, 0.824, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_fungal_mushroom_9"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_mushroom_9")
+placement = 0
+weight = 0.334
+light_color = Color(0.471, 0.902, 0.824, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_fungal_ferns_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_ferns_0")
+placement = 0
+weight = 0.334
+
+[sub_resource type="Resource" id="d_fungal_ferns_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_ferns_1")
+placement = 0
+weight = 0.334
+
+[sub_resource type="Resource" id="d_fungal_ferns_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_ferns_2")
+placement = 0
+weight = 0.334
+
+[sub_resource type="Resource" id="d_fungal_ferns_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_ferns_3")
+placement = 0
+weight = 0.334
+
+[sub_resource type="Resource" id="d_fungal_puddle_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_puddle_0")
+placement = 0
+weight = 0.334
+light_color = Color(0.471, 0.902, 0.824, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_fungal_puddle_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_puddle_1")
+placement = 0
+weight = 0.334
+light_color = Color(0.471, 0.902, 0.824, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_fungal_puddle_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_puddle_2")
+placement = 0
+weight = 0.334
+light_color = Color(0.471, 0.902, 0.824, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_fungal_moss_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_moss_0")
+placement = 1
+weight = 0.334
+sway = true
+
+[sub_resource type="Resource" id="d_fungal_moss_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_moss_1")
+placement = 1
+weight = 0.334
+sway = true
+
+[sub_resource type="Resource" id="d_fungal_moss_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_moss_2")
+placement = 1
+weight = 0.334
+sway = true
+
+[sub_resource type="Resource" id="d_fungal_moss_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_moss_3")
+placement = 1
+weight = 0.334
+sway = true
+
+[sub_resource type="Resource" id="d_fungal_roots_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_roots_0")
+placement = 1
+weight = 0.334
+sway = true
+
+[sub_resource type="Resource" id="d_fungal_roots_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_roots_1")
+placement = 1
+weight = 0.334
+sway = true
+
+[sub_resource type="Resource" id="d_fungal_roots_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_roots_2")
+placement = 1
+weight = 0.334
+sway = true
+
+[sub_resource type="Resource" id="d_fungal_roots_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_roots_3")
+placement = 1
+weight = 0.334
+sway = true
+
+[sub_resource type="Resource" id="d_fungal_rubble_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_rubble_0")
+placement = 0
+weight = 0.334
+
+[sub_resource type="Resource" id="d_fungal_rubble_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_rubble_1")
+placement = 0
+weight = 0.334
+
+[sub_resource type="Resource" id="d_fungal_rubble_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_rubble_2")
+placement = 0
+weight = 0.334
+
+[sub_resource type="Resource" id="d_fungal_stalagmite_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_stalagmite_0")
+placement = 0
+weight = 0.334
+
+[sub_resource type="Resource" id="d_fungal_stalagmite_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_stalagmite_1")
+placement = 0
+weight = 0.334
+
+[sub_resource type="Resource" id="d_fungal_stalactite_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_stalactite_0")
+placement = 1
+weight = 0.334
+
+[sub_resource type="Resource" id="d_fungal_stalactite_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_stalactite_1")
+placement = 1
+weight = 0.334
+
+[sub_resource type="Resource" id="d_fungal_crystals_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_crystals_0")
+placement = 0
+weight = 0.334
+light_color = Color(0.471, 0.902, 0.824, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_fungal_crystals_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_crystals_1")
+placement = 0
+weight = 0.334
+light_color = Color(0.471, 0.902, 0.824, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_fungal_ivy_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_ivy_0")
+placement = 2
+weight = 0.334
+sway = true
+
+[sub_resource type="Resource" id="d_fungal_ivy_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_ivy_1")
+placement = 2
+weight = 0.334
+sway = true
+
+[sub_resource type="Resource" id="d_fungal_ivy_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_ivy_2")
+placement = 2
+weight = 0.334
+sway = true
+
+[sub_resource type="Resource" id="d_fungal_bones_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_bones_0")
+placement = 0
+weight = 0.334
+
+[sub_resource type="Resource" id="d_fungal_bones_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_bones_1")
+placement = 0
+weight = 0.334
+
+[sub_resource type="Resource" id="d_fungal_lantern_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_lantern_0")
+placement = 1
+weight = 0.334
+light_color = Color(0.471, 0.902, 0.824, 0.85)
+light_scale = 0.22
+unshaded = true
+sway = true
+
+[sub_resource type="Resource" id="d_fungal_lantern_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_lantern_1")
+placement = 1
+weight = 0.334
+light_color = Color(0.471, 0.902, 0.824, 0.85)
+light_scale = 0.22
+unshaded = true
+sway = true
+
+[sub_resource type="Resource" id="d_fungal_sack_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_sack_0")
+placement = 0
+weight = 0.334
+
+[sub_resource type="Resource" id="d_fungal_urn_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_urn_0")
+placement = 0
+weight = 0.334
+
+[sub_resource type="Resource" id="d_fungal_urn_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_fungal_urn_1")
+placement = 0
+weight = 0.334
+
+[resource]
+script = ExtResource("pack")
+id = &"fungal_pack"
+decorations = Array[ExtResource("decor")]([SubResource("d_fungal_mushroom_0"), SubResource("d_fungal_mushroom_1"), SubResource("d_fungal_mushroom_2"), SubResource("d_fungal_mushroom_3"), SubResource("d_fungal_mushroom_4"), SubResource("d_fungal_mushroom_5"), SubResource("d_fungal_mushroom_6"), SubResource("d_fungal_mushroom_7"), SubResource("d_fungal_mushroom_8"), SubResource("d_fungal_mushroom_9"), SubResource("d_fungal_ferns_0"), SubResource("d_fungal_ferns_1"), SubResource("d_fungal_ferns_2"), SubResource("d_fungal_ferns_3"), SubResource("d_fungal_puddle_0"), SubResource("d_fungal_puddle_1"), SubResource("d_fungal_puddle_2"), SubResource("d_fungal_moss_0"), SubResource("d_fungal_moss_1"), SubResource("d_fungal_moss_2"), SubResource("d_fungal_moss_3"), SubResource("d_fungal_roots_0"), SubResource("d_fungal_roots_1"), SubResource("d_fungal_roots_2"), SubResource("d_fungal_roots_3"), SubResource("d_fungal_rubble_0"), SubResource("d_fungal_rubble_1"), SubResource("d_fungal_rubble_2"), SubResource("d_fungal_stalagmite_0"), SubResource("d_fungal_stalagmite_1"), SubResource("d_fungal_stalactite_0"), SubResource("d_fungal_stalactite_1"), SubResource("d_fungal_crystals_0"), SubResource("d_fungal_crystals_1"), SubResource("d_fungal_ivy_0"), SubResource("d_fungal_ivy_1"), SubResource("d_fungal_ivy_2"), SubResource("d_fungal_bones_0"), SubResource("d_fungal_bones_1"), SubResource("d_fungal_lantern_0"), SubResource("d_fungal_lantern_1"), SubResource("d_fungal_sack_0"), SubResource("d_fungal_urn_0"), SubResource("d_fungal_urn_1")])

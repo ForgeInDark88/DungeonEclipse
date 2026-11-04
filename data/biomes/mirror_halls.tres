@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BiomeData" load_steps=24 format=3]
+[gd_resource type="Resource" script_class="BiomeData" load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor_script"]
 [ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="biome_script"]
@@ -14,6 +14,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/wall_masks.png" id="dx_wall_masks"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/grand_mirror.png" id="dx_grand_mirror"]
 
+[ext_resource type="Resource" path="res://data/decor/mirror_halls_pack.tres" id="decor_pack"]
 [sub_resource type="Resource" id="Decor_mirror"]
 script = ExtResource("decor_script")
 texture = ExtResource("dx_mirror")
@@ -116,6 +117,7 @@ sway = false
 
 [resource]
 script = ExtResource("biome_script")
+decor_pack = ExtResource("decor_pack")
 music = &"mirror_halls"
 step_sound = &"step_stone"
 id = &"mirror_halls"

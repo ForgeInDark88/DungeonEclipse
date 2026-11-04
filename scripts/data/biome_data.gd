@@ -41,6 +41,9 @@ extends Resource
 
 @export_group("Decorations")
 @export var decorations: Array[DecorData] = []
+## Generated props of the biome (tools/art/gen_decor_pack.py), added to
+## `decorations` by all_decorations().
+@export var decor_pack: DecorPack
 ## Decorations per room (average).
 @export var decor_per_room: float = 3.0
 ## Share of wall bricks that become glowing ore.
@@ -74,3 +77,15 @@ func parallax_textures() -> Array:
 	for p in [parallax_far, parallax_mid, parallax_near]:
 		out.append(AssetPaths.tex(p) if p != "" else null)
 	return out
+
+
+var _all_decor: Array[DecorData] = []
+
+
+## The hand-made decorations and the biome's decor pack together.
+func all_decorations() -> Array[DecorData]:
+	if _all_decor.is_empty():
+		_all_decor.append_array(decorations)
+		if decor_pack:
+			_all_decor.append_array(decor_pack.decorations)
+	return _all_decor

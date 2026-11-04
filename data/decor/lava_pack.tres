@@ -1,0 +1,360 @@
+[gd_resource type="Resource" script_class="DecorPack" load_steps=89 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/decor_pack.gd" id="pack"]
+[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_brazier_0.png" id="t_lava_brazier_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_brazier_1.png" id="t_lava_brazier_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_brazier_2.png" id="t_lava_brazier_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_brazier_3.png" id="t_lava_brazier_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_crystals_0.png" id="t_lava_crystals_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_crystals_1.png" id="t_lava_crystals_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_crystals_2.png" id="t_lava_crystals_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_crystals_3.png" id="t_lava_crystals_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_crystal_hang_0.png" id="t_lava_crystal_hang_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_crystal_hang_1.png" id="t_lava_crystal_hang_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_rubble_0.png" id="t_lava_rubble_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_rubble_1.png" id="t_lava_rubble_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_rubble_2.png" id="t_lava_rubble_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_rubble_3.png" id="t_lava_rubble_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_stalagmite_0.png" id="t_lava_stalagmite_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_stalagmite_1.png" id="t_lava_stalagmite_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_stalagmite_2.png" id="t_lava_stalagmite_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_stalactite_0.png" id="t_lava_stalactite_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_stalactite_1.png" id="t_lava_stalactite_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_stalactite_2.png" id="t_lava_stalactite_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_ash_0.png" id="t_lava_ash_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_ash_1.png" id="t_lava_ash_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_ash_2.png" id="t_lava_ash_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_ash_3.png" id="t_lava_ash_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_chain_0.png" id="t_lava_chain_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_chain_1.png" id="t_lava_chain_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_chain_2.png" id="t_lava_chain_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_grate_0.png" id="t_lava_grate_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_grate_1.png" id="t_lava_grate_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_grate_2.png" id="t_lava_grate_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_puddle_0.png" id="t_lava_puddle_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_puddle_1.png" id="t_lava_puddle_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_puddle_2.png" id="t_lava_puddle_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_bones_0.png" id="t_lava_bones_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_bones_1.png" id="t_lava_bones_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_skulls_0.png" id="t_lava_skulls_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_skulls_1.png" id="t_lava_skulls_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_banner_0.png" id="t_lava_banner_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_banner_1.png" id="t_lava_banner_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_spire_0.png" id="t_lava_spire_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_spire_1.png" id="t_lava_spire_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_sword_0.png" id="t_lava_sword_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/lava/lava_crate_0.png" id="t_lava_crate_0"]
+
+[sub_resource type="Resource" id="d_lava_brazier_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_brazier_0")
+placement = 0
+weight = 0.286
+light_color = Color(1.000, 0.471, 0.157, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_lava_brazier_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_brazier_1")
+placement = 0
+weight = 0.286
+light_color = Color(1.000, 0.471, 0.157, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_lava_brazier_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_brazier_2")
+placement = 0
+weight = 0.286
+light_color = Color(1.000, 0.471, 0.157, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_lava_brazier_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_brazier_3")
+placement = 0
+weight = 0.286
+light_color = Color(1.000, 0.471, 0.157, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_lava_crystals_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_crystals_0")
+placement = 0
+weight = 0.286
+light_color = Color(1.000, 0.471, 0.157, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_lava_crystals_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_crystals_1")
+placement = 0
+weight = 0.286
+light_color = Color(1.000, 0.471, 0.157, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_lava_crystals_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_crystals_2")
+placement = 0
+weight = 0.286
+light_color = Color(1.000, 0.471, 0.157, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_lava_crystals_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_crystals_3")
+placement = 0
+weight = 0.286
+light_color = Color(1.000, 0.471, 0.157, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_lava_crystal_hang_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_crystal_hang_0")
+placement = 1
+weight = 0.286
+light_color = Color(1.000, 0.471, 0.157, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_lava_crystal_hang_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_crystal_hang_1")
+placement = 1
+weight = 0.286
+light_color = Color(1.000, 0.471, 0.157, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_lava_rubble_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_rubble_0")
+placement = 0
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_rubble_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_rubble_1")
+placement = 0
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_rubble_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_rubble_2")
+placement = 0
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_rubble_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_rubble_3")
+placement = 0
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_stalagmite_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_stalagmite_0")
+placement = 0
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_stalagmite_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_stalagmite_1")
+placement = 0
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_stalagmite_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_stalagmite_2")
+placement = 0
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_stalactite_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_stalactite_0")
+placement = 1
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_stalactite_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_stalactite_1")
+placement = 1
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_stalactite_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_stalactite_2")
+placement = 1
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_ash_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_ash_0")
+placement = 0
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_ash_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_ash_1")
+placement = 0
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_ash_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_ash_2")
+placement = 0
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_ash_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_ash_3")
+placement = 0
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_chain_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_chain_0")
+placement = 1
+weight = 0.286
+sway = true
+
+[sub_resource type="Resource" id="d_lava_chain_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_chain_1")
+placement = 1
+weight = 0.286
+sway = true
+
+[sub_resource type="Resource" id="d_lava_chain_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_chain_2")
+placement = 1
+weight = 0.286
+sway = true
+
+[sub_resource type="Resource" id="d_lava_grate_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_grate_0")
+placement = 2
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_grate_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_grate_1")
+placement = 2
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_grate_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_grate_2")
+placement = 2
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_puddle_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_puddle_0")
+placement = 0
+weight = 0.286
+light_color = Color(1.000, 0.471, 0.157, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_lava_puddle_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_puddle_1")
+placement = 0
+weight = 0.286
+light_color = Color(1.000, 0.471, 0.157, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_lava_puddle_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_puddle_2")
+placement = 0
+weight = 0.286
+light_color = Color(1.000, 0.471, 0.157, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_lava_bones_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_bones_0")
+placement = 0
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_bones_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_bones_1")
+placement = 0
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_skulls_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_skulls_0")
+placement = 0
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_skulls_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_skulls_1")
+placement = 0
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_banner_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_banner_0")
+placement = 2
+weight = 0.286
+sway = true
+
+[sub_resource type="Resource" id="d_lava_banner_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_banner_1")
+placement = 2
+weight = 0.286
+sway = true
+
+[sub_resource type="Resource" id="d_lava_spire_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_spire_0")
+placement = 0
+weight = 0.286
+light_color = Color(1.000, 0.471, 0.157, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_lava_spire_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_spire_1")
+placement = 0
+weight = 0.286
+light_color = Color(1.000, 0.471, 0.157, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_lava_sword_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_sword_0")
+placement = 0
+weight = 0.286
+
+[sub_resource type="Resource" id="d_lava_crate_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_lava_crate_0")
+placement = 0
+weight = 0.286
+
+[resource]
+script = ExtResource("pack")
+id = &"lava_pack"
+decorations = Array[ExtResource("decor")]([SubResource("d_lava_brazier_0"), SubResource("d_lava_brazier_1"), SubResource("d_lava_brazier_2"), SubResource("d_lava_brazier_3"), SubResource("d_lava_crystals_0"), SubResource("d_lava_crystals_1"), SubResource("d_lava_crystals_2"), SubResource("d_lava_crystals_3"), SubResource("d_lava_crystal_hang_0"), SubResource("d_lava_crystal_hang_1"), SubResource("d_lava_rubble_0"), SubResource("d_lava_rubble_1"), SubResource("d_lava_rubble_2"), SubResource("d_lava_rubble_3"), SubResource("d_lava_stalagmite_0"), SubResource("d_lava_stalagmite_1"), SubResource("d_lava_stalagmite_2"), SubResource("d_lava_stalactite_0"), SubResource("d_lava_stalactite_1"), SubResource("d_lava_stalactite_2"), SubResource("d_lava_ash_0"), SubResource("d_lava_ash_1"), SubResource("d_lava_ash_2"), SubResource("d_lava_ash_3"), SubResource("d_lava_chain_0"), SubResource("d_lava_chain_1"), SubResource("d_lava_chain_2"), SubResource("d_lava_grate_0"), SubResource("d_lava_grate_1"), SubResource("d_lava_grate_2"), SubResource("d_lava_puddle_0"), SubResource("d_lava_puddle_1"), SubResource("d_lava_puddle_2"), SubResource("d_lava_bones_0"), SubResource("d_lava_bones_1"), SubResource("d_lava_skulls_0"), SubResource("d_lava_skulls_1"), SubResource("d_lava_banner_0"), SubResource("d_lava_banner_1"), SubResource("d_lava_spire_0"), SubResource("d_lava_spire_1"), SubResource("d_lava_sword_0"), SubResource("d_lava_crate_0")])
