@@ -94,12 +94,17 @@ func flow_payload(new_state: State = state) -> Dictionary:
 		"state": new_state, "town": town, "run": GameState.run.to_dict() if GameState.run else {},
 		"location": GameState.location.duplicate(true), "floor": GameState.floor_number,
 		"result": last_result.duplicate(true) if new_state == State.RUN_RESULT else {},
+		# the party the location is built for (Net.layout_party): a guest
+		# joining mid-location builds the host's location, monster places
+		# and all (WorldNet.broadcast_flow refreshes it on every move)
+		"floor_players": Net.floor_players if Net.floor_players > 0 else Net.players.size(),
 	}
 
 
 ## A guest follows the host: the same town, map, location; the guest's own
 ## hero. An expedition lost by the party costs the guest its own gear.
 func apply_remote_flow(p: Dictionary) -> void:
+	Net.floor_players = int(p.get("floor_players", 0))
 	var town := TownState.from_dict(p.get("town", {}))
 	var had_run := GameState.run != null
 	GameState.town = town
