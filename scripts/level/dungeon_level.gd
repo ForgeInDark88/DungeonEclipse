@@ -111,7 +111,7 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	for y in layout.height:
 		for x in layout.width:
 			var cell := Vector2i(x, y)
-			if not layout.is_town and not layout.is_surface and (noise.get_noise_2d(x, y) > -0.25 or _near_solid(cell)):
+			if not layout.is_town and not layout.is_surface and _back_wall_at(cell, noise):
 				back.set_cell(cell, _src(cell), Vector2i(_back_variant(cell), AssetPaths.TILE_ROW_BACKWALL))
 			_apply_tile(cell, layout.get_tile(x, y))
 	for y in layout.height:
@@ -211,7 +211,7 @@ func build_location(p_layout: LevelLayout, seed_value: int) -> void:
 			var cell := Vector2i(x, y)
 			if x >= band_w and layout.get_tile(x, y) == T.EMPTY:
 				continue  # outside every layer: nothing to draw
-			if not open_sky and (noise.get_noise_2d(x, y) > -0.25 or _near_solid(cell)):
+			if not open_sky and _back_wall_at(cell, noise):
 				back.set_cell(cell, _src(cell), Vector2i(_back_variant(cell), AssetPaths.TILE_ROW_BACKWALL))
 			_apply_tile(cell, layout.get_tile(x, y))
 	for y in layout.height:
@@ -727,6 +727,53 @@ func _variant(cell: Vector2i) -> int:
 
 ## Back wall: mostly plain blocks (0, 1); a crack (2) or a niche (3) only
 ## now and then (2 in 96 / 1 in 96), so details do not turn into a pattern.
+## The back wall stands at a cell, or there is a view into the cave behind
+## it (the parallax). Always a rim of wall next to the tiles. Openings:
+## - small holes (the old noise);
+## - big caverns where the wall has fallen away (a slow second noise);
+## - in some rooms an arched window, in others a jagged crack.
+## Pure decoration: the same seed gives the same wall on every machine.
+var _cave_noise: FastNoiseLite
+
+
+func _back_wall_at(cell: Vector2i, noise: FastNoiseLite) -> bool:
+	if _near_solid(cell):
+		return true
+	if noise.get_noise_2d(cell.x, cell.y) <= -0.25:
+		return false
+	if _cave_noise == null:
+		_cave_noise = FastNoiseLite.new()
+		_cave_noise.seed = noise.seed + 7
+		_cave_noise.frequency = 0.035
+	if _cave_noise.get_noise_2d(cell.x, cell.y) > 0.22:
+		return false
+	var rw := LevelGenerator.ROOM_W
+	var rh := LevelGenerator.ROOM_H
+	var room := Vector2i(floori(cell.x / float(rw)), floori(cell.y / float(rh)))
+	var h := absi(hash([room, noise.seed, "back"]))
+	var local := cell - room * Vector2i(rw, rh)
+	match h % 10:
+		0, 1, 2:  # an arched window high in the room
+			var ww := 4 + (h / 10) % 3
+			var wh := 4 + (h / 30) % 3
+			var cx := rw / 2 + ((h / 90) % 5) - 2
+			var top := 2
+			var dx := local.x - cx
+			if absi(dx) <= ww / 2 and local.y >= top and local.y < top + wh:
+				# the round top of the arch
+				if local.y == top and absi(dx) >= ww / 2:
+					return true
+				return false
+		3, 4:  # a jagged crack down from the ceiling
+			var x0 := 3 + (h / 10) % (rw - 6)
+			var ln := 4 + (h / 70) % 4
+			if local.y >= 1 and local.y < 1 + ln:
+				var wob := int(sin(local.y * 1.7 + h) * 1.4)
+				if local.x == x0 + wob or (local.y % 3 == 0 and local.x == x0 + wob + 1):
+					return false
+	return true
+
+
 func _back_variant(cell: Vector2i) -> int:
 	var h := absi(hash(cell * 13 + Vector2i(floor_number, 11))) % 96
 	return 3 if h == 95 else 2 if h >= 93 else h % 2
