@@ -1586,10 +1586,14 @@ func _spawn_decorations() -> void:
 	var count := roundi(rooms * biome.decor_per_room)
 	var used := {}
 	var tries := 0
+	# Decorations are pure looks: their own RNG (same seed on every machine),
+	# so adding a prop never moves a trap, a chest or a monster.
+	var drng := RandomNumberGenerator.new()
+	drng.seed = hash([rng.seed, floor_number, layout.width, layout.height, "decor"])
 	while count > 0 and tries < count * 20:
 		tries += 1
-		var data: DecorData = pool[LootTable._weighted_index(weights, rng)]
-		var cell := Vector2i(rng.randi_range(1, layout.width - 2), rng.randi_range(1, layout.height - 2))
+		var data: DecorData = pool[LootTable._weighted_index(weights, drng)]
+		var cell := Vector2i(drng.randi_range(1, layout.width - 2), drng.randi_range(1, layout.height - 2))
 		if used.has(cell) or layout.get_tile(cell.x, cell.y) != T.EMPTY or cell == layout.exit_cell:
 			continue
 		var tall := data.texture.get_height() > TILE

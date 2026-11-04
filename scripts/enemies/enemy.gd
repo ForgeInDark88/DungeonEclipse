@@ -298,6 +298,8 @@ func _setup_elite() -> void:
 	glow.position = Vector2(0, -data.collision_size.y / 2.0)
 	add_child(glow)
 	sprite.modulate = data.tint * elite.tint.lightened(0.3)
+	# A one-pixel outline in the affix colour: an elite reads at a glance.
+	_sprite_shader().set_shader_parameter("outline_color", Color(elite.tint, 0.95))
 	_name_label = Label.new()
 	_name_label.text = display_name()
 	_name_label.add_theme_font_size_override("font_size", 6)
@@ -520,6 +522,27 @@ func _physics_process(delta: float) -> void:
 		danger_time += delta
 	_attack_anim_left = maxf(0.0, _attack_anim_left - delta)
 	_update_animation()
+
+
+## After the death animation: the body dissolves pixel by pixel, its edge
+## glowing in the monster's colour, and breaks into sparks (flash.gdshader).
+func _dissolve_away(parent: Node, pos: Vector2, color: Color) -> void:
+	var m := _sprite_shader()
+	m.set_shader_parameter("outline_color", Color(0, 0, 0, 0))
+	m.set_shader_parameter("dissolve_edge", data.tint.lightened(0.45))
+	Fx.sparks(parent, pos, color, 14, 100.0)
+	var tw := create_tween()
+	tw.tween_method(func(v: float) -> void: m.set_shader_parameter("dissolve", v), 0.0, 1.0, 0.4)
+	tw.tween_callback(queue_free)
+
+
+## The sprite's own copy of the sprite shader (flash, outline, dissolve).
+func _sprite_shader() -> ShaderMaterial:
+	var m := sprite.material as ShaderMaterial
+	if m == null:
+		m = AssetPaths.flash_material()
+		sprite.material = m
+	return m
 
 
 # --------------------------------------------------------------- animation
@@ -1994,8 +2017,7 @@ func net_die() -> void:
 	var pos := global_position + Vector2(0, -6)
 	var color := data.tint.darkened(0.2)
 	sprite.animation_finished.connect(func() -> void:
-		Fx.sparks(parent, pos, color, 14, 100.0)
-		queue_free(), CONNECT_ONE_SHOT)
+		_dissolve_away(parent, pos, color), CONNECT_ONE_SHOT)
 
 
 func _die() -> void:
@@ -2021,8 +2043,7 @@ func _die() -> void:
 	var pos := global_position + Vector2(0, -6)
 	var color := data.tint.darkened(0.2)
 	sprite.animation_finished.connect(func() -> void:
-		Fx.sparks(parent, pos, color, 14, 100.0)
-		queue_free(), CONNECT_ONE_SHOT)
+		_dissolve_away(parent, pos, color), CONNECT_ONE_SHOT)
 
 
 ## Co-op host: this enemy leaves the world without a kill (an illusion that
