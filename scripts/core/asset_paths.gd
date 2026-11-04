@@ -74,6 +74,13 @@ const FIREBALL := SPRITES_DIR + "fx/fireball.png"
 const KNIFE := SPRITES_DIR + "fx/knife.png"
 const DARK_BOLT := SPRITES_DIR + "fx/dark_bolt.png"
 const BOMB := SPRITES_DIR + "items/bomb.png"
+const GATE_BARS := SPRITES_DIR + "props/gate_bars.png"
+const TITLE_GLOW := UI_DIR + "title_glow.png"
+const TITLE_STONE := UI_DIR + "title_stone.png"
+const TREE_CREST := UI_DIR + "tree_crest.png"
+const TREE_NODE := UI_DIR + "tree_node.png"
+const TREE_KEYSTONE := UI_DIR + "tree_keystone.png"
+const TREE_BG := UI_DIR + "tree_bg.png"
 
 # --- Animated sheets (grid PNG + SpriteSheetLayout .tres, see docs/ANIMATION_GUIDE.md) ---
 const ANIM_DIR := "res://data/animations/"
@@ -246,6 +253,9 @@ const MUSIC_ONE_SHOT: Array[StringName] = [&"victory", &"death", &"ending"]
 # --- Shaders ---
 const SHADER_FLASH := "res://assets/shaders/flash.gdshader"
 const SHADER_POST_FX := "res://assets/shaders/post_fx.gdshader"
+const SHADER_FOLIAGE := "res://assets/shaders/foliage_sway.gdshader"
+const SHADER_WATER := "res://assets/shaders/water.gdshader"
+const SHADER_PARALLAX := "res://assets/shaders/parallax_life.gdshader"
 
 # Biome tileset atlas (16x16 cells, 4 columns): rows of variants.
 # The texture itself comes from BiomeData.tileset_texture.
@@ -277,8 +287,16 @@ static func layout(path: String) -> SpriteSheetLayout:
 
 static func flash_material() -> ShaderMaterial:
 	var m := ShaderMaterial.new()
-	m.shader = load(SHADER_FLASH)
+	m.shader = shader(SHADER_FLASH)
 	return m
+
+
+## A shader by path; a missing file gives null (the node is drawn plain) and a warning.
+static func shader(path: String) -> Shader:
+	if ResourceLoader.exists(path):
+		return load(path) as Shader
+	_warn_missing(path)
+	return null
 
 
 ## Close-up sheet; a heroine uses hero_<race>_<class>_f.png (the male one if missing).
@@ -304,17 +322,55 @@ static func portrait_bg_path(class_id: StringName) -> String:
 	return PORTRAITS_DIR + "bg_%s.png" % class_id
 
 
+## A texture by path. A missing (or renamed) file never crashes the game:
+## it gives a visible magenta-black checker and one warning per path.
+## Use tex_or_null() where the caller has its own fallback.
 static func tex(path: String) -> Texture2D:
-	if ResourceLoader.exists(path):
+	var t := tex_or_null(path)
+	if t != null:
+		return t
+	_warn_missing(path)
+	return placeholder()
+
+
+## The texture, or null without a warning when the file is absent.
+static func tex_or_null(path: String) -> Texture2D:
+	if path != "" and ResourceLoader.exists(path):
 		return load(path) as Texture2D
-	push_warning("Missing texture: %s" % path)
 	return null
+
+
+static var _placeholder: Texture2D
+static var _warned := {}
+
+
+## 16x16 magenta-black checker: a missing asset is obvious in the game.
+static func placeholder() -> Texture2D:
+	if _placeholder == null:
+		var img := Image.create(16, 16, false, Image.FORMAT_RGBA8)
+		for y in 16:
+			for x in 16:
+				img.set_pixel(x, y, Color(1, 0, 1) if (x / 4 + y / 4) % 2 == 0 else Color(0.08, 0, 0.08))
+		_placeholder = ImageTexture.create_from_image(img)
+	return _placeholder
+
+
+## How many distinct asset paths were missing during this run (tests read it).
+static func missing_count() -> int:
+	return _warned.size()
+
+
+static func _warn_missing(path: String) -> void:
+	if _warned.has(path):
+		return
+	_warned[path] = true
+	push_warning("Missing asset: %s (fallback used)" % path)
 
 
 ## Icon of an expedition map node (type or special kind; "unknown" = fog).
 static func map_icon(kind: StringName) -> Texture2D:
 	var path := MAP_DIR + "node_%s.png" % kind
-	return tex(path) if ResourceLoader.exists(path) else tex(MAP_DIR + "node_unknown.png")
+	return tex_or_null(path) if ResourceLoader.exists(path) else tex(MAP_DIR + "node_unknown.png")
 
 
 static func map_hint(kind: StringName) -> Texture2D:
@@ -324,10 +380,10 @@ static func map_hint(kind: StringName) -> Texture2D:
 ## Icon of a town building (tools/gen_town_loop_art.py): ui/buildings/<id>.png.
 static func building_icon(id: StringName) -> Texture2D:
 	var path := UI_DIR + "buildings/%s.png" % id
-	return tex(path) if ResourceLoader.exists(path) else null
+	return tex_or_null(path)
 
 
 ## Two idle frames of a townsperson (npc/<id>_idle.png), null when none.
 static func npc_sheet(id: StringName) -> Texture2D:
 	var path := SPRITES_DIR + "npc/%s_idle.png" % id
-	return tex(path) if ResourceLoader.exists(path) else null
+	return tex_or_null(path)

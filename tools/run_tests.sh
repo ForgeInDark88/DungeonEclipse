@@ -76,6 +76,7 @@ fi
 
 echo "== data, generation, balance"
 script_test data tools/tests/data_test.gd
+script_test assets tools/tests/asset_test.gd
 if [ $QUICK -eq 1 ]; then SEEDS=100 script_test level_gen tools/tests/level_gen_test.gd; else script_test level_gen tools/tests/level_gen_test.gd 1800; fi
 script_test combat tools/tests/combat_sim.gd
 script_test layer_balance tests/layer_balance_sim.gd

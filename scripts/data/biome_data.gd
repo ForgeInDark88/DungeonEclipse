@@ -11,9 +11,11 @@ extends Resource
 @export var tileset_texture: Texture2D
 
 @export_group("Parallax (far → near)")
-@export var parallax_far: Texture2D
-@export var parallax_mid: Texture2D
-@export var parallax_near: Texture2D
+## Paths, not textures: a background loads when its biome is entered
+## (parallax_textures), not with the data base at start (docs/PERFORMANCE.md).
+@export_file("*.png") var parallax_far: String = ""
+@export_file("*.png") var parallax_mid: String = ""
+@export_file("*.png") var parallax_near: String = ""
 
 @export_group("Light and color")
 ## Soft general light of the biome (CanvasModulate of the world). Bright on
@@ -63,3 +65,12 @@ func is_open_sky() -> bool:
 	return open_sky or self is SurfaceBiomeData
 ## Footstep sound on bricks in this biome (platforms/ladders always use wood).
 @export var step_sound: StringName = &"step_stone"
+
+
+## The three background layers far -> near, loaded now; null where a biome
+## has none (the layer is hidden). A missing file gives the placeholder.
+func parallax_textures() -> Array:
+	var out := []
+	for p in [parallax_far, parallax_mid, parallax_near]:
+		out.append(AssetPaths.tex(p) if p != "" else null)
+	return out

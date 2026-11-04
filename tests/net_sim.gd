@@ -79,6 +79,9 @@ func _run_client() -> void:
 			check(true, "client sees the full roster")
 			check(absf(Net.enemy_hp_mult() - (1.0 + Net.rules().hp_per_extra)) < 0.01, "client agrees on hp mult")
 			print("RESULT: ", "OK" if _fails == 0 else "%d FAILURES" % _fails)
+			# Stay connected a moment: the host polls its roster once a second,
+			# and a client that leaves at once can be gone before it looks.
+			await get_tree().create_timer(2.5).timeout
 			get_tree().quit(1 if _fails > 0 else 0))
 	add_child(t)
 	# A short delay so the host is listening first.

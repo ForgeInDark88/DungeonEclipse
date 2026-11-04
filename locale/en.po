@@ -1095,6 +1095,10 @@ msgstr "It strikes where it hurts most."
 msgid "В бой!"
 msgstr "To battle!"
 
+#: scripts/ui/multiplayer_book.gd
+msgid "В браузерной версии кооператив недоступен: скачайте игру для Windows или Linux."
+msgstr "Co-op is not available in the browser version: download the game for Windows or Linux."
+
 #: scripts/game/game.gd
 msgid "В главное меню"
 msgstr "To the main menu"

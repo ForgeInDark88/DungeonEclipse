@@ -290,7 +290,7 @@ var water_bodies: Array[ColorRect] = []
 static func _foliage_material() -> ShaderMaterial:
 	if _foliage == null:
 		_foliage = ShaderMaterial.new()
-		_foliage.shader = load("res://assets/shaders/foliage_sway.gdshader")
+		_foliage.shader = AssetPaths.shader(AssetPaths.SHADER_FOLIAGE)
 		_foliage.set_shader_parameter("amount", 1.2 if SaveManager.scenery > 0 else 0.0)
 	return _foliage
 
@@ -348,7 +348,7 @@ func _spawn_water() -> void:
 		body.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		# (the holder's z 2 puts it in front of the hero: a swimmer is seen through the water)
 		var m := ShaderMaterial.new()
-		m.shader = load("res://assets/shaders/water.gdshader")
+		m.shader = AssetPaths.shader(AssetPaths.SHADER_WATER)
 		m.set_shader_parameter("shallow", Color(col.r, col.g, col.b, minf(col.a, 0.62)))
 		m.set_shader_parameter("deep", Color(col.r * 0.35, col.g * 0.45, col.b * 0.6, 0.88))
 		m.set_shader_parameter("size", size)
@@ -525,7 +525,7 @@ func same_band(a: Vector2, b: Vector2) -> bool:
 ## blacksmith, the dungeon gate with two torches, fireflies.
 func _spawn_town() -> void:
 	for p in layout.town_props:
-		var tex: Texture2D = load(AssetPaths.TOWN_DIR + String(p["tex"]) + ".png")
+		var tex: Texture2D = AssetPaths.tex(AssetPaths.TOWN_DIR + String(p["tex"]) + ".png")
 		var s := Sprite2D.new()
 		s.texture = tex
 		s.centered = false

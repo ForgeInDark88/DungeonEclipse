@@ -5,7 +5,6 @@ extends Node
 ## opening slams shut - doorways AND ladders - behind falling portcullises
 ## (bedrock under them for physics), and they reopen when the champion dies.
 
-const BARS := preload("res://assets/sprites/props/gate_bars.png")
 const T := LevelLayout.Tile
 
 var level: DungeonLevel
@@ -90,7 +89,7 @@ func _close() -> void:
 		# apply_remote_tile records the change: late joiners get the seals.
 		level.apply_remote_tile(cell, T.BEDROCK)
 		var bars := Sprite2D.new()
-		bars.texture = BARS
+		bars.texture = AssetPaths.tex(AssetPaths.GATE_BARS)
 		bars.centered = false
 		bars.z_index = 14
 		level.entities.add_child(bars)

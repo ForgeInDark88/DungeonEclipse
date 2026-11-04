@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BiomeData" load_steps=17 format=3]
+[gd_resource type="Resource" script_class="BiomeData" load_steps=26 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="1_ase3j"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/statue.png" id="2_tthib"]
@@ -6,9 +6,6 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/barrel.png" id="4_iy81m"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/vines.png" id="5_iy0kn"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/candles.png" id="6_y7ltg"]
-[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/ruins_far.png" id="7_alwl3"]
-[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/ruins_mid.png" id="8_72lie"]
-[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/ruins_near.png" id="9_ctfa8"]
 [ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="10_0ie7r"]
 [ext_resource type="Texture2D" path="res://assets/sprites/tiles/tiles_ruins.png" id="11_jgxml"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/vase.png" id="dx_vase"]
@@ -136,9 +133,9 @@ id = &"ruins"
 display_name = "Руины"
 order = 2
 tileset_texture = ExtResource("11_jgxml")
-parallax_far = ExtResource("7_alwl3")
-parallax_mid = ExtResource("8_72lie")
-parallax_near = ExtResource("9_ctfa8")
+parallax_far = "res://assets/sprites/backgrounds/ruins_far.png"
+parallax_mid = "res://assets/sprites/backgrounds/ruins_mid.png"
+parallax_near = "res://assets/sprites/backgrounds/ruins_near.png"
 ambient = Color(0.98, 0.99, 1, 1)
 back_wall_modulate = Color(0.9, 0.85, 0.78, 1)
 torch_color = Color(1, 0.8, 0.45, 1)

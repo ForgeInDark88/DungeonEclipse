@@ -406,7 +406,7 @@ func _apply_biome(biome: BiomeData) -> void:
 	# (the town's hour: its SurfaceSky, see _town_sky)
 	AudioManager.play_music(biome.music)
 	player.apply_biome(biome)
-	var textures := [biome.parallax_far, biome.parallax_mid, biome.parallax_near]
+	var textures := biome.parallax_textures()
 	var layers := $Parallax.get_children()
 	for i in layers.size():
 		var sprite: Sprite2D = layers[i].get_child(0)
@@ -445,8 +445,8 @@ var _front_wanted := false  # under the open sky (the setting may still hide it)
 ## the world's post effects (layer 2 < PostFX 3), under the HUD.
 func _front_layer(b: BiomeData) -> void:
 	var path := ""
-	if b is SurfaceBiomeData and b.parallax_far:
-		path = b.parallax_far.resource_path.replace("_far.png", "_front.png")
+	if b is SurfaceBiomeData and b.parallax_far != "":
+		path = b.parallax_far.replace("_far.png", "_front.png")
 	_front_wanted = path != "" and ResourceLoader.exists(path)
 	if not _front_wanted:
 		if _front:
@@ -465,7 +465,7 @@ func _front_layer(b: BiomeData) -> void:
 		pl.add_child(sp)
 		_front.add_child(pl)
 		add_child(_front)
-	(_front.get_child(0).get_child(0) as Sprite2D).texture = load(path)
+	(_front.get_child(0).get_child(0) as Sprite2D).texture = AssetPaths.tex(path)
 	_front.visible = SaveManager.scenery >= 2
 
 
@@ -479,7 +479,7 @@ func _parallax_life(sprite: Sprite2D, tex: Texture2D, i: int, open_sky: bool) ->
 	var m := sprite.material as ShaderMaterial
 	if m == null:
 		m = ShaderMaterial.new()
-		m.shader = load("res://assets/shaders/parallax_life.gdshader")
+		m.shader = AssetPaths.shader(AssetPaths.SHADER_PARALLAX)
 		sprite.material = m
 	var path := tex.resource_path
 	var clouds_path := path.replace("_far.png", "_clouds.png")

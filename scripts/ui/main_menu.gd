@@ -15,7 +15,7 @@ func _ready() -> void:
 	block.custom_minimum_size = Vector2(150, 52)
 	block.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	var glow := TextureRect.new()
-	glow.texture = load("res://assets/ui/title_glow.png")
+	glow.texture = AssetPaths.tex(AssetPaths.TITLE_GLOW)
 	glow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	glow.stretch_mode = TextureRect.STRETCH_SCALE
 	glow.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -24,7 +24,7 @@ func _ready() -> void:
 	var title := TextureRect.new()
 	# The title in the game's own style (tools/gen_title.py); the original
 	# artwork stays as res://assets/ui/title.png.
-	title.texture = load("res://assets/ui/title_stone.png")
+	title.texture = AssetPaths.tex(AssetPaths.TITLE_STONE)
 	title.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	title.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	title.set_anchors_preset(Control.PRESET_FULL_RECT)

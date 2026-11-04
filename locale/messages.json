@@ -272,6 +272,7 @@
 "Быстрый и смертоносный, полагается на криты. Урон зависит от Ловкости. Перекат (ПКМ / L): рывок, во время которого вас нельзя ранить.": "data",
 "Бьёт туда, где больнее всего.": "data",
 "В бой!": "scripts/ui/event_dialog.gd",
+"В браузерной версии кооператив недоступен: скачайте игру для Windows или Linux.": "scripts/ui/multiplayer_book.gd",
 "В главное меню": "scripts/game/game.gd",
 "В город": "scripts/ui/run_result_screen.gd",
 "В город переехал(а) %s.": "scripts/autoload/game_flow.gd",

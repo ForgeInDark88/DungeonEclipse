@@ -1,11 +1,8 @@
-[gd_resource type="Resource" script_class="BiomeData" load_steps=21 format=3]
+[gd_resource type="Resource" script_class="BiomeData" load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor_script"]
 [ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="biome_script"]
 [ext_resource type="Texture2D" path="res://assets/sprites/tiles/tiles_world_roots.png" id="tiles"]
-[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/world_roots_far.png" id="bg_far"]
-[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/world_roots_mid.png" id="bg_mid"]
-[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/world_roots_near.png" id="bg_near"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/root_arch.png" id="dx_root_arch"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/hanging_roots.png" id="dx_hanging_roots"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/amber_node.png" id="dx_amber_node"]
@@ -92,9 +89,9 @@ id = &"world_roots"
 display_name = "Корни мира"
 order = 8
 tileset_texture = ExtResource("tiles")
-parallax_far = ExtResource("bg_far")
-parallax_mid = ExtResource("bg_mid")
-parallax_near = ExtResource("bg_near")
+parallax_far = "res://assets/sprites/backgrounds/world_roots_far.png"
+parallax_mid = "res://assets/sprites/backgrounds/world_roots_mid.png"
+parallax_near = "res://assets/sprites/backgrounds/world_roots_near.png"
 ambient = Color(0.95, 0.9, 0.82, 1)
 back_wall_modulate = Color(0.82, 0.76, 0.68, 1)
 torch_color = Color(1.0, 0.75, 0.4, 1)

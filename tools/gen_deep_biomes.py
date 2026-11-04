@@ -69,8 +69,6 @@ def write_tres(bid: str, title: str, order: int, decor, m: dict) -> None:
     ext = ['[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor_script"]',
            '[ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="biome_script"]',
            '[ext_resource type="Texture2D" path="res://assets/sprites/tiles/tiles_%s.png" id="tiles"]' % bid]
-    for layer in ("far", "mid", "near"):
-        ext.append('[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/%s_%s.png" id="bg_%s"]' % (bid, layer, layer))
     subs = []
     for name, placement, weight, light, unshaded, sway in decor:
         ext.append('[ext_resource type="Texture2D" path="res://assets/sprites/decor/%s.png" id="dx_%s"]' % (name, name))
@@ -83,9 +81,9 @@ id = &"%(bid)s"
 display_name = "%(title)s"
 order = %(order)d
 tileset_texture = ExtResource("tiles")
-parallax_far = ExtResource("bg_far")
-parallax_mid = ExtResource("bg_mid")
-parallax_near = ExtResource("bg_near")
+parallax_far = "res://assets/sprites/backgrounds/%(bid)s_far.png"
+parallax_mid = "res://assets/sprites/backgrounds/%(bid)s_mid.png"
+parallax_near = "res://assets/sprites/backgrounds/%(bid)s_near.png"
 ambient = %(ambient)s
 back_wall_modulate = %(back_mod)s
 torch_color = %(torch)s

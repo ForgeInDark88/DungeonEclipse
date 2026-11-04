@@ -1,10 +1,7 @@
-[gd_resource type="Resource" script_class="SurfaceBiomeData" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="SurfaceBiomeData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/surface_biome_data.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/sprites/tiles/tiles_surface_mountains.png" id="2"]
-[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/surface_mountains_far.png" id="3"]
-[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/surface_mountains_mid.png" id="4"]
-[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/surface_mountains_near.png" id="5"]
 
 [resource]
 script = ExtResource("1")
@@ -12,9 +9,9 @@ id = &"surface_mountains"
 display_name = "Горы"
 order = 100
 tileset_texture = ExtResource("2")
-parallax_far = ExtResource("3")
-parallax_mid = ExtResource("4")
-parallax_near = ExtResource("5")
+parallax_far = "res://assets/sprites/backgrounds/surface_mountains_far.png"
+parallax_mid = "res://assets/sprites/backgrounds/surface_mountains_mid.png"
+parallax_near = "res://assets/sprites/backgrounds/surface_mountains_near.png"
 ambient = Color(0.97, 0.99, 1.02, 1)
 back_wall_modulate = Color(0.85, 0.85, 0.9, 1)
 ambient_particles = Color(0.85, 1, 0.55, 1)

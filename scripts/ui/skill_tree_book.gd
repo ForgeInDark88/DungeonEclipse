@@ -23,10 +23,6 @@ const BRANCH_COLORS: Array[Color] = [
 	Color(1.0, 0.68, 0.30),
 ]
 
-const CREST_TEX := preload("res://assets/ui/tree_crest.png")
-const NODE_TEX := preload("res://assets/ui/tree_node.png")
-const KEYSTONE_TEX := preload("res://assets/ui/tree_keystone.png")
-const BG_TEX := preload("res://assets/ui/tree_bg.png")
 
 var hero: Hero
 var is_open := false
@@ -120,7 +116,7 @@ func _build() -> void:
 	add_child(_root)
 	# Night-town backdrop instead of the parchment book.
 	var bg := TextureRect.new()
-	bg.texture = BG_TEX
+	bg.texture = AssetPaths.tex(AssetPaths.TREE_BG)
 	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -279,7 +275,7 @@ func _refresh() -> void:
 			_tree_area.add_child(head)
 		# The eclipse crest at the top, roots of the three branches.
 		var crest := TextureRect.new()
-		crest.texture = CREST_TEX
+		crest.texture = AssetPaths.tex(AssetPaths.TREE_CREST)
 		crest.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		crest.position = Vector2(_tree_area.size.x / 2.0 - 10.0, 16.0)
 		crest.size = Vector2(20, 20)
@@ -351,7 +347,7 @@ func _node(s: SkillData) -> Control:
 	box.custom_minimum_size = size
 	box.mouse_filter = Control.MOUSE_FILTER_STOP
 	var frame := TextureRect.new()
-	frame.texture = KEYSTONE_TEX if _is_keystone(s) else NODE_TEX
+	frame.texture = AssetPaths.tex(AssetPaths.TREE_KEYSTONE if _is_keystone(s) else AssetPaths.TREE_NODE)
 	frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	frame.size = size
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
