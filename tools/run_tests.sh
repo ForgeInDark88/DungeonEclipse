@@ -64,6 +64,9 @@ pair_test() {  # name scene: host + client on 127.0.0.1
 }
 
 echo "== import / parse"
+# Import first (a fresh clone has nothing imported; its first pass prints
+# compile noise for scripts that preload art), then the clean parse check.
+timeout 900 "$GODOT" --headless --import > "$LOG_DIR/import_first.log" 2>&1
 timeout 600 "$GODOT" --headless --editor --quit > "$LOG_DIR/import.log" 2>&1
 if grep -qE "SCRIPT ERROR|Parse Error|Failed to load script" "$LOG_DIR/import.log"; then
 	FAILED+=("import"); echo "  FAIL  import — $LOG_DIR/import.log"; grep -E "SCRIPT ERROR|Parse Error" "$LOG_DIR/import.log" | head -5

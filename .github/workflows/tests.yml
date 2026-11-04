@@ -44,10 +44,12 @@ jobs:
           mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot
           chmod +x godot
 
+      # A fresh clone has no .godot/imported: `--editor --quit` would quit
+      # before importing (every texture missing), `--import` waits for it.
       - name: Import the project
         run: |
-          ~/godot/godot --headless --editor --quit || true
-          ~/godot/godot --headless --editor --quit
+          ~/godot/godot --headless --import > import.log 2>&1 || true
+          ls .godot/imported | wc -l
 
       - name: Tests (quick on push, full on demand / nightly)
         env:
