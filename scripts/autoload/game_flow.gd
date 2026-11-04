@@ -13,7 +13,8 @@ enum State { MAIN_MENU, HERO_CREATE, TOWN, EXPEDITION_MAP, LOCATION, RUN_RESULT 
 
 const MAP_SCENE := "res://scenes/ui/expedition_map.tscn"
 const RESULT_SCENE := "res://scenes/ui/run_result.tscn"
-const CAMP_SCENE := "res://scenes/ui/camp.tscn"
+## The camp is a place to walk now (CampBuilder in the game scene).
+const CAMP_SCENE := "res://scenes/game/game.tscn"
 ## Node types played as a platformer location in the game scene.
 const PLATFORMER_TYPES := [&"level", &"elite", &"special", &"rescue", &"lair", &"boss", &"event"]
 const FADE_TIME := 0.25
@@ -653,6 +654,8 @@ func end_expedition(outcome: RunState.Outcome) -> void:
 		return
 	run.outcome = outcome
 	var hero := GameState.hero
+	if outcome != RunState.Outcome.DEATH:
+		CampSpot.unpack_stash(hero)  # the camp's chest comes home with a living hero
 	var prosperity_before := Buildings.prosperity(town)
 	var region_before := town.region_unlocked
 	var path_types: Array = []
@@ -682,6 +685,13 @@ func end_expedition(outcome: RunState.Outcome) -> void:
 		r["resources"] = {}
 		r["rescued"] = []
 		r["blueprints"] = []
+		# the memorial remembers the fallen (the last 30)
+		var fallen: Array = town.flags.get("fallen", [])
+		var hero_now := GameState.hero
+		fallen.append({"name": String(SaveManager.last_name) if SaveManager.last_name != "" else tr("Безымянный герой"),
+				"class": hero_now.class_data.display_name if hero_now else "", "level": hero_now.level if hero_now else 1,
+				"depth": GameState.floor_number})
+		town.flags["fallen"] = fallen.slice(maxi(0, fallen.size() - 30))
 		town.add_stat("deaths")
 	else:
 		for k in run.resources:

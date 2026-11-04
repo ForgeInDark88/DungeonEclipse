@@ -2,9 +2,9 @@
 
 [ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1"]
 [ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="2"]
-[ext_resource type="Texture2D" path="res://assets/sprites/enemies/spider_sheet.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/forest_spider_sheet.png" id="3"]
 [ext_resource type="Resource" path="res://data/animations/spider_layout.tres" id="4"]
-[ext_resource type="Texture2D" path="res://assets/sprites/enemies/spider.png" id="5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/forest_spider.png" id="5"]
 
 [resource]
 script = ExtResource("1")
@@ -34,5 +34,5 @@ min_floor = 1
 spawn_weight = 0.90
 biomes = Array[StringName]([&"surface_forest", &"surface_swamp", &"surface_ruins"])
 habitat = &"surface"
-tint = Color(0.75, 0.95, 0.65, 1)
+tint = Color(1, 1, 1, 1)
 gender = "m"

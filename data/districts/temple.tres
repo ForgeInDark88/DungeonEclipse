@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="DistrictData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/district_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"temple"
+display_name = "Храмовый холм"
+x_from = 42
+x_to = 80
+raise = 3
+open_from_start = false
+prosperity = 14
+residents = 0
+gathering = &""
+props = Array[Dictionary]([{"tex": "tree", "x": 44, "z": -3, "lamp": false}, {"tex": "lamppost", "x": 56, "z": -1, "lamp": true}, {"tex": "flowers", "x": 66, "z": -1, "lamp": false}, {"tex": "lamppost", "x": 74, "z": -1, "lamp": true}])
+houses = Array[int]([])

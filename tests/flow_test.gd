@@ -76,19 +76,36 @@ func _initialize() -> void:
 		gs.run.map.nodes[camp]["type"] = &"camp"
 	flow.enter_node(camp)
 	await wait_scene(flow.State.LOCATION)
-	check(current_scene.name == "CampScreen", "a camp node opens the camp")
+	check(current_scene.scene_file_path == gs.GAME and current_scene.level.layout.is_camp, "a camp node is a place to walk")
+	var camp_spots_d := {}
+	for sp in current_scene.get_tree().get_nodes_in_group("camp_spots"):
+		camp_spots_d[sp.kind] = sp
+	check(camp_spots_d.has(&"fire") and camp_spots_d.has(&"road") and camp_spots_d.has(&"home") and camp_spots_d.has(&"board"),
+			"the camp has its fire, the road on, the way home and the rumour board (%s)" % str(camp_spots_d.keys()))
 	gs.hero.stats.hp = 10
 	var g0: int = gs.hero.gold
-	current_scene._rest()
+	camp_spots_d[&"fire"].interact(current_scene.player)
 	check(gs.hero.stats.hp > 10 and gs.hero.gold == g0, "the first rest at the fire is free and heals")
-	var hp1: int = gs.hero.stats.hp
 	gs.hero.add_gold(500)
-	current_scene._rest()
-	check(gs.hero.gold == g0 + 500 - current_scene.rest_price(), "the next rest costs gold")
-	check(current_scene._merchant != null and not current_scene._merchant.stock.is_empty(), "the camp has a trader with goods")
+	var camp_price: int = camp_spots_d[&"fire"].rest_price()
+	camp_spots_d[&"fire"].interact(current_scene.player)
+	check(gs.hero.gold == g0 + 500 - camp_price, "the next rest costs gold")
+	check(sm.has_expedition(), "the fire is a save point")
+	var traders := current_scene.get_tree().get_nodes_in_group("merchants")
+	check(not traders.is_empty() and not traders[0].stock.is_empty(), "the camp has a trader with goods")
+	check(camp_spots_d[&"board"].rumours().contains("·"), "the board tells of the roads ahead")
+	# the camp's chest: an item put there comes home with a living hero
+	gs.town.set_building_level(&"warehouse", 1)
+	var stash_it = idb.get_item(&"rope")
+	gs.hero.inventory.add_item(stash_it, 1)
+	var CS = load("res://scripts/world/camp_spot.gd")
+	var ropes_before: int = gs.hero.inventory.count_of(&"rope")
+	gs.run.flags["camp_stash"] = [load("res://scripts/core/run_codec.gd").item_to_dict(stash_it)]
+	gs.hero.inventory.remove_by_id(&"rope", 1)
 	flow.retreat()
 	await wait_scene(flow.State.RUN_RESULT)
 	check(flow.last_result["outcome"] == 2 and flow.last_result["gold"] >= 40, "retreat: the result screen counts the gold")
+	check(gs.hero.inventory.count_of(&"rope") == ropes_before, "the camp's chest came home with the hero")
 	check(gs.town.resource(&"wood") == 3, "retreat: resources reach the town")
 	check(not sm.load_town().expedition_active, "retreat: the expedition is closed in the save")
 	flow.back_to_town()

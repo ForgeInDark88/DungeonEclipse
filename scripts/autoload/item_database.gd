@@ -5,6 +5,7 @@ extends Node
 const REGION_DIR := "res://data/regions"
 const LOCATION_DIR := "res://data/locations"
 const SURFACE_DIR := "res://data/surface"
+const DISTRICT_DIR := "res://data/districts"
 const BUILDING_DIR := "res://data/buildings"
 const NPC_DIR := "res://data/npcs"
 const ROAD_EVENT_DIR := "res://data/road_events"
@@ -33,6 +34,8 @@ var items: Dictionary = {}  # StringName -> ItemData
 var locations: Dictionary = {}
 ## Id -> SurfaceBiomeData (data/surface): the open land of the regions.
 var surface_biomes: Dictionary = {}
+## Districts of the town, left to right (data/districts).
+var districts: Array[DistrictData] = []
 var races: Array[RaceData] = []
 var classes: Array[ClassData] = []
 var enemies: Array[EnemyData] = []
@@ -81,6 +84,11 @@ func reload() -> void:
 	pacts.clear()
 	pets.clear()
 	difficulties.clear()
+	districts.clear()
+	for res in load_dir(DISTRICT_DIR):
+		if res is DistrictData:
+			districts.append(res)
+	districts.sort_custom(func(a: DistrictData, b: DistrictData) -> bool: return a.x_from < b.x_from)
 	surface_biomes.clear()
 	for res in load_dir(SURFACE_DIR):
 		if res is SurfaceBiomeData:

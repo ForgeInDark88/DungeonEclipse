@@ -178,6 +178,7 @@ const WEAPON_SFX: Array[StringName] = [&"attack_sword", &"attack_axe", &"attack_
 const MUSIC := {
 	&"menu": MUSIC_DIR + "music_menu.ogg",
 	&"surface_forest": MUSIC_DIR + "music_surface_forest.ogg",
+	&"camp": MUSIC_DIR + "music_camp.ogg",
 	&"surface_hills": MUSIC_DIR + "music_surface_hills.ogg",
 	&"surface_swamp": MUSIC_DIR + "music_surface_swamp.ogg",
 	&"surface_ruins": MUSIC_DIR + "music_surface_ruins.ogg",
@@ -217,6 +218,7 @@ const MUSIC_FALLBACK := {
 	# The open surface: its own tracks once they exist (docs/AUDIO_LIST.md),
 	# until then the nearest mood we have.
 	&"surface_forest": &"town",
+	&"camp": &"town",
 	&"surface_hills": &"town",
 	&"surface_swamp": &"fungal",
 	&"surface_ruins": &"ruins",

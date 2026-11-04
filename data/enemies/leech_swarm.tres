@@ -2,9 +2,9 @@
 
 [ext_resource type="Resource" path="res://data/loot_tables/enemy_common.tres" id="1_lt"]
 [ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="2_ed"]
-[ext_resource type="Texture2D" path="res://assets/sprites/enemies/leech_sheet.png" id="3_sh"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/leech_swarm_sheet.png" id="3_sh"]
 [ext_resource type="Resource" path="res://data/animations/slime_layout.tres" id="4_la"]
-[ext_resource type="Texture2D" path="res://assets/sprites/enemies/leech.png" id="5_ic"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/leech_swarm.png" id="5_ic"]
 [ext_resource type="Script" path="res://scripts/combat/hit_effect.gd" id="6_he"]
 
 [resource]

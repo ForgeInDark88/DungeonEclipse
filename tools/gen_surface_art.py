@@ -346,6 +346,9 @@ def main() -> None:
     for n, b in gen_surface_tiles.BIOMES.items():
         gen_surface_tiles.build(n, b)
     print("surface art: ok")
+    # the finished art over the old placeholders (same names and sizes)
+    import gen_quality_art
+    gen_quality_art.main()
 
 
 if __name__ == "__main__":

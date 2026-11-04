@@ -164,3 +164,6 @@ if __name__ == "__main__":
     signpost("map_exit")
     lift("arena_exit")
     print("portals: ok")
+    # the finished art over the old placeholders (same names and sizes)
+    import gen_quality_art
+    gen_quality_art.main()

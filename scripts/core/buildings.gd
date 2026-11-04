@@ -63,6 +63,9 @@ static func block_reason(b: BuildingData, gold_paid := false) -> String:
 	var miss := requirement_missing(b, next)
 	if miss != "":
 		return miss
+	var dist := TownDistricts.of_building(b)
+	if dist and not TownDistricts.is_open(dist, t):
+		return "%s: %s" % [TranslationServer.translate(dist.display_name), TownDistricts.unlock_text(dist)]
 	var c := cost(b, next)
 	var lack: Array[String] = []
 	var hero := GameState.hero

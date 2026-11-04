@@ -127,6 +127,9 @@ func _load_floor() -> void:
 		layout = TownBuilder.build()
 	elif GameState.is_boss_floor():
 		layout = gen.generate_arena(floor_number, seed_value)
+	elif GameState.location_type() == &"camp":
+		_load_camp()
+		return
 	elif GameState.location_type() == &"event":
 		layout = gen.generate_event_room(floor_number, seed_value)
 	else:
@@ -144,6 +147,7 @@ func _load_floor() -> void:
 		AudioManager.play_music((b as Boss).boss.music)
 	if GameState.is_town() and GameState.expedition:
 		EventBus.message.emit(tr("%s · %s. Ворота похода — в конце улицы.") % [biome.display_name, Buildings.phase_name()])
+		_town_sky()
 		_take_thumbnail()
 		_town_news()
 	elif GameState.expedition:
@@ -186,6 +190,34 @@ func _load_location() -> void:
 	location.place_player(player)
 	if not GameFlow.is_guest():
 		location.save_point()  # the first save point: the start of the location
+
+
+## A camp of the road as a place to walk (CampBuilder): forest, ruins or
+## cave by the region and the node; the town decides what stands there.
+func _load_camp() -> void:
+	var seed_value := GameState.floor_seed()
+	var sid := LocationInstance.surface_biome_for(int(GameState.location.get("region", 0)), seed_value)
+	var kind := &"forest"
+	if sid in [&"surface_ruins", &"surface_wasteland"]:
+		kind = &"ruins"
+	elif sid == &"surface_mountains" or (GameState.floor_number >= 10 and absi(seed_value) % 3 == 0):
+		kind = &"cave"
+	var biome: BiomeData = ItemDatabase.surface_biomes.get(sid) if kind != &"cave" else GameState.current_biome()
+	var companions: Array = GameState.run.rescued.duplicate() if GameState.run else []
+	var layout := CampBuilder.build(seed_value, kind, GameState.town, companions)
+	if GameState.town:
+		GameState.town.flags["camp_level"] = CampBuilder.camp_level(GameState.town)
+	level = LEVEL_SCENE.instantiate()
+	world.add_child(level)
+	world.move_child(level, 0)
+	level.build(layout, GameState.floor_number, seed_value, biome)
+	player.set_level(level)
+	player.global_position = level.start_position()
+	apply_layer_biome(biome)
+	AudioManager.play_music(&"camp")
+	_sync_pet()
+	EventBus.message.emit(tr("Лагерь · %s") % (biome.display_name if biome else ""))
+	_net_on_floor_loaded()
 
 
 ## LocationManager: the hero went to a layer with another biome.
@@ -245,6 +277,27 @@ func finish_location() -> void:
 	overlay.visible = true
 
 
+## The town's hour and weather (visual only: the light, the people's
+## schedule, rain or fog): the day turns on from the phase the expeditions
+## left it at (Buildings.day_phase).
+var town_sky: SurfaceSky
+
+
+func _town_sky() -> void:
+	if town_sky:
+		town_sky.queue_free()
+	var sb := load("res://data/town/town_sky.tres") as SurfaceBiomeData
+	if sb == null:
+		return
+	town_sky = SurfaceSky.new()
+	town_sky.add_to_group("town_sky")
+	add_child(town_sky)
+	town_sky.setup(sb, int(GameState.town.world_seed if GameState.town else 0) + Buildings.day_phase(),
+			$Ambient as CanvasModulate, player.camera)
+	town_sky.phase = [0.04, 0.3, 0.6, 0.8][Buildings.day_phase()]
+	town_sky.set_active(true)
+
+
 ## A miniature of the world for the load screen (taken in the street).
 func _take_thumbnail() -> void:
 	if DisplayServer.get_name() == "headless":
@@ -259,6 +312,9 @@ func _take_thumbnail() -> void:
 ## shine in the street.
 func _town_news() -> void:
 	var t := GameState.town
+	if t:
+		for d in TownDistricts.newly_open(t):
+			t.news.append(tr("Открылся новый квартал: %s.") % tr(d.display_name))
 	if t == null or (t.news.is_empty() and (t.flags.get("arrived", []) as Array).is_empty()):
 		return
 	var lines := t.news.duplicate()
@@ -335,9 +391,7 @@ func _apply_biome(biome: BiomeData) -> void:
 	# A touch below the biome's ambient: torches, ore and magic make warm
 	# pools of light instead of vanishing in a flat even light.
 	($Ambient as CanvasModulate).color = biome.ambient * Color(0.88, 0.87, 0.86, 1.0)
-	if GameState.expedition and GameState.is_town():
-		# Morning, day, evening or night in the town (Buildings.day_phase).
-		($Ambient as CanvasModulate).color *= Buildings.PHASE_TINT[Buildings.day_phase()]
+	# (the town's hour: its SurfaceSky, see _town_sky)
 	AudioManager.play_music(biome.music)
 	player.apply_biome(biome)
 	var textures := [biome.parallax_far, biome.parallax_mid, biome.parallax_near]
@@ -420,7 +474,7 @@ func _toggle_pause() -> void:
 	overlay.add_button(tr("Дерево навыков"), func() -> void:
 		_toggle_pause()
 		skill_tree.open())
-	var safe_spot := location != null and location.at_safe_spot(player)
+	var safe_spot := (location != null and location.at_safe_spot(player)) or GameState.location_type() == &"camp"
 	if GameState.expedition and (GameState.is_town() or safe_spot):
 		overlay.add_button(tr("Сохранить и выйти"), func() -> void: GameFlow.save_and_quit())
 	else:

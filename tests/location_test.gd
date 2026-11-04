@@ -14,7 +14,7 @@ const CLEARANCE := 2
 var LB = null
 var LI = null
 var fails := 0
-var stats := {"locks": 0, "lifts": 0, "side_floors": 0, "pois": 0, "locations": 0, "layers": 0, "portals": 0, "paths": 0, "build_ms": 0}
+var stats := {"objects": 0, "locks": 0, "lifts": 0, "side_floors": 0, "pois": 0, "locations": 0, "layers": 0, "portals": 0, "paths": 0, "build_ms": 0}
 
 
 func check(c: bool, what: String) -> void:
@@ -53,7 +53,7 @@ func _initialize() -> void:
 	print("locations: %d, layers: %d, portals: %d, points of interest: %d, paths checked: %d, avg build %.1f ms" % [
 		stats["locations"], stats["layers"], stats["portals"], stats["pois"], stats["paths"],
 		float(stats["build_ms"]) / maxf(1.0, stats["locations"])])
-	print("locked ways down: %d, lifts: %d, side floors: %d" % [stats["locks"], stats["lifts"], stats["side_floors"]])
+	print("locked ways down: %d, lifts: %d, side floors: %d, objects checked: %d" % [stats["locks"], stats["lifts"], stats["side_floors"], stats["objects"]])
 	print("FAILURES: %d" % fails)
 	quit(1 if fails > 0 else 0)
 
@@ -138,6 +138,27 @@ func _check_location(node: Dictionary, tag: String) -> void:
 				stats["paths"] += 1
 				check(not surface_nav.ground_path(sub.start_cell, ch["cell"], 1).is_empty(),
 						"%s: surface chest at %s is reachable" % [tag, ch["cell"]])
+		# stage 20: nothing else stands in the rock either, and what the hero
+		# walks up to on the surface is reachable from its start
+		var things: Array = []
+		for r in sub.resources:
+			things.append(["resource " + String(r["kind"]), r["cell"], r["kind"] != &"tree"])
+		for b in sub.breakables:
+			things.append(["breakable " + String(b["look"]), b["cell"], true])
+		for sp in sub.specials:
+			things.append(["special " + String(sp["type"]), sp["cell"], true])
+		if sub.lore_cell.x >= 0:
+			things.append(["lore", sub.lore_cell, false])
+		for th in things:
+			var tc: Vector2i = th[1]
+			stats["objects"] += 1
+			var tt: int = sub.get_tile(tc.x, tc.y)
+			check(tt != LevelLayout.Tile.BRICK and tt != LevelLayout.Tile.BEDROCK,
+					"%s: layer %d, %s at %s stands in the open" % [tag, i, th[0], tc])
+			if int(band["kind"]) == 0 and th[2]:
+				stats["paths"] += 1
+				check(not nav.ground_path(start, tc, 1).is_empty(),
+						"%s: layer %d, %s at %s is reachable" % [tag, i, th[0], tc])
 		for k in cells.size():
 			var c: Vector2i = cells[k] - origin
 			if c == start:
