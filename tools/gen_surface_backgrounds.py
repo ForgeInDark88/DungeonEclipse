@@ -41,6 +41,9 @@ BIOMES = {
     "mountains": ((56, 110, 200), (206, 226, 246), (255, 244, 222), (120, 140, 176), (82, 112, 110), (246, 250, 255), "peaks"),
     "wasteland": ((150, 112, 132), (246, 196, 140), (255, 214, 150), (176, 120, 96), (150, 92, 64), (230, 170, 90), "mesas"),
 }
+# The town (town_far / _clouds / _mid / _near): a day sky with the Eclipse
+# for its sun, fields and a windmill far away, the roofs of the outer town.
+TOWN = ((70, 118, 200), (230, 220, 210), (255, 226, 190), (118, 160, 120), (88, 140, 72), (240, 214, 90), "town")
 
 
 def clamp(v) -> int:
@@ -69,7 +72,7 @@ def wave(rnd, terms):
 
 
 # ---------------------------------------------------------------- the sky
-def sky(name, top, horizon, glow, rnd):
+def sky(name, top, horizon, glow, rnd, eclipse=False):
     im = Image.new("RGBA", (W, H))
     px = im.load()
     sun = (rnd.randint(70, 250), rnd.randint(34, 54))
@@ -85,6 +88,26 @@ def sky(name, top, horizon, glow, rnd):
             if y > H * 0.62 and (x + y) % 2 == 0:
                 c = mix(c, glow, 0.06)
             px[x, y] = rgba(c)
+    if eclipse:
+        # the Eclipse over the town: a dark disc in a bright corona with rays
+        layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        lp = layer.load()
+        for y in range(max(0, sun[1] - 30), min(H, sun[1] + 31)):
+            for x in range(sun[0] - 30, sun[0] + 31):
+                dx, dy = x - sun[0], y - sun[1]
+                r = math.hypot(dx, dy)
+                a = math.atan2(dy, dx)
+                ray = 0.5 + 0.5 * math.cos(a * 9 + 0.6) * math.cos(a * 4)
+                corona = max(0.0, 1.0 - (r - 7) / (10 + 14 * ray)) if r >= 7 else 0.0
+                if r < 7.5:
+                    lp[x % W, y] = rgba((40, 30, 52), 255)
+                elif corona > 0:
+                    c = mix(glow, (255, 252, 240), min(1.0, corona * 1.4))
+                    lp[x % W, y] = rgba(c, int(255 * min(1.0, corona ** 1.3)))
+                if 7 <= r < 8.4:
+                    lp[x % W, y] = rgba((255, 248, 226), 255)  # the burning rim
+        im.alpha_composite(layer)
+        return im
     # the sun: a soft disc in three rings, blended over the sky (an RGBA
     # ellipse straight on the sky would punch see-through holes)
     for r, k in ((11, 0.25), (8, 0.55), (6, 1.0)):
@@ -212,6 +235,8 @@ def land(name, color, sky_col, accent, kind, layer, rnd):
             c = mul(col, k)
             if kind == "mesas" and (y - y0) % 9 in (0, 1):
                 c = mul(c, 0.9 if (y - y0) % 9 == 0 else 1.08)
+            if kind == "town" and not near and ((x // 23 + (y - y0) // 7) % 3 == 0):
+                c = mix(c, (200, 186, 110), 0.28)  # fields of wheat between the meadows
             px[x + M, y] = rgba(c)
         for dy in range(2):
             if 0 <= y0 + dy < H:
@@ -309,6 +334,46 @@ def land(name, color, sky_col, accent, kind, layer, rnd):
                           fill=rgba(mix(accent, (170, 190, 220), 0.5)))
             else:
                 fir(xi, y, rnd.randint(18, 34))
+        elif kind == "town":
+            if near and rnd.random() < 0.62:
+                # a house of the outer town: a wall, a pitched roof, a chimney, windows
+                hw = rnd.randint(7, 12)
+                hh = rnd.randint(10, 18)
+                wall = mix((206, 190, 160), col, 0.25)
+                roof = rnd.choice([(150, 66, 50), (120, 86, 60), (96, 92, 110)])
+                d.rectangle((xi - hw, y - hh, xi + hw, y + 2), fill=rgba(wall))
+                d.rectangle((xi - hw, y - hh, xi - hw + 1, y + 2), fill=rgba(mul(wall, 1.12)))
+                d.rectangle((xi + hw - 1, y - hh, xi + hw, y + 2), fill=rgba(mul(wall, 0.8)))
+                peak = y - hh - hw + 2
+                d.polygon([(xi - hw - 2, y - hh), (xi, peak), (xi + hw + 2, y - hh)], fill=rgba(roof))
+                d.polygon([(xi, peak), (xi + hw + 2, y - hh), (xi + 1, y - hh)], fill=rgba(mul(roof, 0.76)))
+                d.line((xi - hw - 2, y - hh, xi, peak), fill=rgba(mul(roof, 1.3)))
+                cx = xi + hw // 2
+                d.rectangle((cx, peak + 3, cx + 2, y - hh - 2), fill=rgba(mul(wall, 0.7)))
+                for k in range(-1, 2, 2):
+                    wx = xi + k * hw // 2
+                    d.rectangle((wx - 1, y - hh + 4, wx + 1, y - hh + 7), fill=rgba((250, 210, 120)))
+                    d.point((wx, y - hh + 4), fill=rgba((255, 240, 190)))
+                d.rectangle((xi - 1, y - 5, xi + 1, y + 2), fill=rgba((90, 62, 40)))
+            elif near:
+                canopy(xi, y - 8, rnd.uniform(5, 8))
+                d.line((xi, y - 3, xi, y), fill=rgba(mul((90, 64, 40), 0.9)))
+            else:
+                r = rnd.random()
+                if r < 0.12:  # a windmill on a hill
+                    d.polygon([(xi - 3, y), (xi - 2, y - 14), (xi + 2, y - 14), (xi + 3, y)], fill=rgba(mul(flat, 1.1)))
+                    d.polygon([(xi - 3, y - 14), (xi, y - 18), (xi + 3, y - 14)], fill=rgba(mul(dark, 0.9)))
+                    for a in range(4):
+                        ang = a * math.pi / 2 + 0.4
+                        d.line((xi, y - 15, xi + math.cos(ang) * 9, y - 15 + math.sin(ang) * 9), fill=rgba(mul(lit, 1.1)))
+                elif r < 0.2:  # the old castle on the far hill
+                    d.rectangle((xi - 4, y - 22, xi + 4, y), fill=rgba(mul(flat, 1.05)))
+                    d.rectangle((xi + 4, y - 12, xi + 12, y), fill=rgba(mul(flat, 0.95)))
+                    for k in range(3):
+                        d.rectangle((xi - 4 + k * 3, y - 24, xi - 3 + k * 3, y - 22), fill=rgba(mul(flat, 1.05)))
+                    d.polygon([(xi - 5, y - 22), (xi, y - 30), (xi + 5, y - 22)], fill=rgba(mul(dark, 0.95)))
+                else:
+                    canopy(xi, y - 4, rnd.uniform(3, 5))
         else:  # mesas and spires of the wasteland
             if rnd.random() < 0.5:
                 hh = rnd.randint(16, 44) if near else rnd.randint(12, 30)
@@ -344,13 +409,15 @@ def build(name, spec, seed):
     top, horizon, glow, far, near, accent, kind = spec
     rnd = random.Random(seed)
     os.makedirs(BACK, exist_ok=True)
-    sky(name, top, horizon, glow, rnd).save(os.path.join(BACK, f"surface_{name}_far.png"))
-    clouds(name, glow, rnd, kind == "mesas").save(os.path.join(BACK, f"surface_{name}_clouds.png"))
-    front(name, near, kind, rnd).save(os.path.join(BACK, f"surface_{name}_front.png"))
+    pre = "town" if kind == "town" else f"surface_{name}"
+    sky(name, top, horizon, glow, rnd, eclipse=kind == "town").save(os.path.join(BACK, f"{pre}_far.png"))
+    clouds(name, glow, rnd, kind == "mesas").save(os.path.join(BACK, f"{pre}_clouds.png"))
+    if kind != "town":
+        front(name, near, kind, rnd).save(os.path.join(BACK, f"{pre}_front.png"))
     for layer, col in (("mid", far), ("near", near)):
         im, mask = land(name, col, horizon, accent, kind, layer, rnd)
-        im.save(os.path.join(BACK, f"surface_{name}_{layer}.png"))
-        mask.save(os.path.join(BACK, f"surface_{name}_{layer}_sway.png"))
+        im.save(os.path.join(BACK, f"{pre}_{layer}.png"))
+        mask.save(os.path.join(BACK, f"{pre}_{layer}_sway.png"))
 
 
 def front(name, near, kind, rnd):
@@ -417,6 +484,7 @@ def main():
     stars()
     for i, (name, spec) in enumerate(BIOMES.items()):
         build(name, spec, 700 + i * 31)
+    build("town", TOWN, 1313)
     print("surface backgrounds: ok")
 
 

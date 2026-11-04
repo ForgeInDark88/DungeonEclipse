@@ -119,6 +119,59 @@ func _initialize() -> void:
 	check(true, "rain on the ponds and a splash")
 	flow.retreat()
 	await wait_scene(flow.State.RUN_RESULT)
+	flow.back_to_town()
+	await wait_scene(flow.State.TOWN)
+	# ---- the flooded pits of the Drowned Vaults
+	var dv = idb.biome_by_id(&"drowned_vaults")
+	check(dv != null and dv.flooded_pools > 0 and dv.pool_leeches, "the Drowned Vaults have flooded basins with leeches")
+	var with_water := 0
+	var bad := 0
+	for k in 40:
+		var gen = load("res://scripts/level/level_generator.gd").new()
+		gen.flooded_pools = dv.flooded_pools
+		var lay = gen.generate(3 + k % 10, 9000 + k * 97)
+		if not lay.water.is_empty():
+			with_water += 1
+		for r: Rect2i in lay.water:
+			for x in range(r.position.x, r.end.x):
+				if lay.get_tile(x, r.position.y) != LevelLayout.Tile.EMPTY or lay.get_tile(x, r.end.y - 1) != LevelLayout.Tile.EMPTY or not LevelLayout.is_solid(lay.get_tile(x, r.end.y)):
+					bad += 1
+	check(with_water >= 14, "about every second Drowned Vaults floor has flooded basins (%d / 40)" % with_water)
+	check(bad == 0, "every basin is open water over a floor")
+	flow.open_map()
+	await wait_scene(flow.State.EXPEDITION_MAP)
+	var did: int = gs.run.next_choices()[0]
+	gs.run.map.nodes[did]["type"] = &"level"
+	gs.run.map.nodes[did]["biome"] = &"drowned_vaults"
+	gs.run.map.nodes[did]["seed"] = 31337
+	flow.enter_node(did)
+	await wait_scene(flow.State.LOCATION)
+	current_scene.location.travel(&"f1_up")
+	await create_timer(1.2).timeout
+	lvl = current_scene.level
+	p = current_scene.player
+	p._invulnerable = 9999.0
+	var pool: ColorRect = null
+	for b in lvl.water_bodies:
+		if b.get_meta(&"leeches", false):
+			pool = b
+	check(pool != null, "a pool with leeches under the surface")
+	if pool:
+		check(float((pool.material as ShaderMaterial).get_shader_parameter("glow")) > 0.0, "the dark water glimmers from inside")
+		for e in get_nodes_in_group("enemies"):
+			e.queue_free()
+		seed(5)
+		var bled := false
+		for i in 120:  # ~60 s in the water: a leech bites in a few seconds, at worst in half a minute
+			p.global_position = pool.global_position + Vector2(pool.size.x / 2.0, pool.size.y - 4)
+			p.velocity = Vector2.ZERO
+			await frames(30)
+			if p.status.has(&"bleed"):
+				bled = true
+				break
+		check(bled, "a leech clings to the swimmer (bleeding)")
+	flow.retreat()
+	await wait_scene(flow.State.RUN_RESULT)
 	sm.delete_slot(1)
 	print("FAILURES: %d" % fails)
 	quit(1 if fails > 0 else 0)

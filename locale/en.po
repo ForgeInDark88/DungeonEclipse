@@ -2291,6 +2291,10 @@ msgstr "Female"
 msgid "Живая гора: поднимает кристаллы из-под земли и плавит всё лучом. Его шаги — землетрясения."
 msgstr "A living mountain: it raises crystals from the ground and melts everything with a beam. Its steps are earthquakes."
 
+#: scripts/ui/settings_book.gd
+msgid "Живость мира"
+msgstr "World life"
+
 #: data
 msgid "Живучесть"
 msgstr "Toughness"
@@ -5871,6 +5875,10 @@ msgstr "A squeaking shadow under the vaults. Weak, but swoops in flocks and stri
 msgid "Пиявка"
 msgstr "Leech"
 
+#: scripts/player/player.gd
+msgid "Пиявка присосалась! Выбирайся из воды."
+msgstr "A leech has latched on! Get out of the water."
+
 #: data
 msgid "Пламя"
 msgstr "Flame"
@@ -8455,6 +8463,10 @@ msgstr "Delete this world forever?"
 msgid "Точные выверенные удары мечом и топором."
 msgstr "Precise, measured blows with sword and axe."
 
+#: scripts/ui/settings_book.gd
+msgid "Трава, живность, качание листвы, облака и лучи. На слабом компьютере — «мало» или «выкл»."
+msgstr "Grass, small animals, swaying leaves, clouds and light rays. On a slow computer choose “a little” or “off”."
+
 #: data
 msgid "Травница"
 msgstr "Herbalist"
@@ -9619,6 +9631,10 @@ msgstr "everyone"
 msgid "встроен в движок.\n\nСписок всех сторонних компонентов и их лицензий — THIRD_PARTY_LICENSES.md."
 msgstr "built into the engine.\n\nThe list of all third-party components and their licenses is in THIRD_PARTY_LICENSES.md."
 
+#: scripts/ui/settings_book.gd
+msgid "выкл"
+msgstr "off"
+
 #: scripts/ui/expedition_map_screen.gd
 msgid "выше обычной"
 msgstr "better than usual"
@@ -9751,6 +9767,10 @@ msgstr "ice"
 msgid "магия"
 msgstr "magic"
 
+#: scripts/ui/settings_book.gd
+msgid "мало"
+msgstr "a little"
+
 #: scripts/ui/expedition_map_screen.gd
 msgid "много сундуков и золота"
 msgstr "many chests and gold"
@@ -9854,6 +9874,10 @@ msgstr "none yet (guardians and lairs keep them)"
 #: scripts/ui/journal_book.gd
 msgid "пока ни одного судьбоносного выбора"
 msgstr "no fateful choices yet"
+
+#: scripts/ui/settings_book.gd
+msgid "полно"
+msgstr "full"
 
 #: scripts/ui/chronicler_book.gd
 msgid "получено"

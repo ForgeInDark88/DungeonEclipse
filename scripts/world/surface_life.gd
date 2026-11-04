@@ -18,6 +18,8 @@ var level: DungeonLevel
 var band := 0
 var sky: SurfaceSky
 var active := true
+## Settings → «Живость мира»: 1 full, 0.5 a little, 0 none.
+var amount := 1.0
 var _rng := RandomNumberGenerator.new()
 var _flyers: Array = []     # {node, kind, home, t, vel}
 var _perches: Array = []    # {pos, birds: [Sprite2D], gone_t}
@@ -31,27 +33,40 @@ func setup(p_level: DungeonLevel, p_band: int, p_sky: SurfaceSky, seed_value: in
 	band = p_band
 	sky = p_sky
 	_rng.seed = seed_value
+	add_to_group("scenery")
+	amount = SaveManager.scenery_amount()
 	z_index = 1
 	top_level = true  # everything here in world coordinates
 	global_position = Vector2.ZERO
+	# a layer of a location, or the whole level (the town, a camp)
 	var b := level.layout_band(band)
-	if b.is_empty():
-		return
-	_rect = level.band_rect_px(level.cell_bottom(Vector2i(b["origin"]) + Vector2i(2, 2)))
-	var sub: LevelLayout = b["layout"]
-	var origin: Vector2i = b["origin"]
+	var sub: LevelLayout = b["layout"] if not b.is_empty() else level.layout
+	var origin: Vector2i = b["origin"] if not b.is_empty() else Vector2i.ZERO
+	_rect = level.band_rect_px(level.cell_bottom(origin + Vector2i(2, 2)))
 	for x in sub.width:
 		for y in range(1, sub.height):
 			if LevelLayout.is_solid(sub.get_tile(x, y)):
 				_ground[x + origin.x] = level.cell_bottom(Vector2i(x, y - 1) + origin).y
 				break
+	var trees: Array = []
 	for p in sub.surface_props:
-		var tex := String(p["tex"])
-		if tex.begins_with("tree") and _rng.randf() < 0.4:
-			var base := level.cell_bottom(Vector2i(p["cell"]) + origin)
-			_perches.append({"pos": base + Vector2(_rng.randf_range(-8, 8), -76 if tex != "tree_dead" else -66), "birds": [], "gone_t": 0.0})
+		if String(p["tex"]).begins_with("tree"):
+			trees.append(["res://assets/sprites/surface/%s.png" % String(p["tex"]), p["cell"]])
+	for p in sub.town_props:
+		if String(p["tex"]).begins_with("tree"):
+			trees.append([AssetPaths.TOWN_DIR + String(p["tex"]) + ".png", p["cell"]])
+	for t in trees:
+		if _rng.randf() < 0.4:
+			var tex := AssetPaths.tex(t[0])
+			var top := (tex.get_height() if tex else 80) - 5
+			var base := level.cell_bottom(Vector2i(t[1]) + origin)
+			_perches.append({"pos": base + Vector2(_rng.randf_range(-8, 8), -top), "birds": [], "gone_t": 0.0})
 	for perch in _perches:
 		_settle(perch)
+
+
+func set_amount(a: float) -> void:
+	amount = a
 
 
 func _tex(name: String) -> Texture2D:
@@ -89,14 +104,14 @@ func _ground_y(x: float) -> float:
 
 
 func _process(delta: float) -> void:
-	visible = active
-	if not active or level == null:
+	visible = active and amount > 0.0
+	if not visible or level == null:
 		return
 	var view := _view()
 	if view.size == Vector2.ZERO or not view.intersects(_rect):
 		return
 	var night := sky != null and sky.is_night()
-	_keep(view, &"butterfly" if not night else &"firefly", BUTTERFLIES if not night else FIREFLIES)
+	_keep(view, &"butterfly" if not night else &"firefly", ceili((BUTTERFLIES if not night else FIREFLIES) * amount))
 	_step_flyers(delta, view, night)
 	_step_birds(delta)
 	_step_fish(delta, view)

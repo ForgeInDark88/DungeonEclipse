@@ -31,6 +31,11 @@ var hud_scale: float = 1.0
 ## Graphics (Settings): bloom glow of bright pixels, block shadows on the back wall.
 var bloom: bool = true
 var block_shadows: bool = true
+## Settings → «Живость мира»: the quiet life of the world - grass, small
+## animals, swaying foliage, drifting clouds, shafts of light, the
+## foreground branch. 2 full, 1 a little, 0 off (weak machines, or a
+## player whom it distracts). Water, light and the night sky stay.
+var scenery: int = 2
 ## Language (Localizer): "ru", "en"; "" = pick by the system language.
 var language: String = ""
 var show_damage_numbers: bool = true
@@ -47,6 +52,11 @@ var seen_hints: Array = []
 var best_floor: int = 0
 var total_runs: int = 0
 var total_kills: int = 0
+
+
+## How much of the quiet life of the world to show: 0, 0.5 or 1.
+func scenery_amount() -> float:
+	return [0.0, 0.5, 1.0][clampi(scenery, 0, 2)]
 
 
 func _ready() -> void:
@@ -70,6 +80,7 @@ func load_settings() -> void:
 	hud_scale = cfg.get_value("video", "hud_scale", hud_scale)
 	bloom = cfg.get_value("video", "bloom", bloom)
 	block_shadows = cfg.get_value("video", "block_shadows", block_shadows)
+	scenery = clampi(int(cfg.get_value("video", "scenery", scenery)), 0, 2)
 	show_damage_numbers = cfg.get_value("game", "damage_numbers", show_damage_numbers)
 	language = cfg.get_value("game", "language", language)
 	show_hints = cfg.get_value("game", "hints", show_hints)
@@ -92,6 +103,7 @@ func save_settings() -> void:
 	cfg.set_value("video", "hud_scale", hud_scale)
 	cfg.set_value("video", "bloom", bloom)
 	cfg.set_value("video", "block_shadows", block_shadows)
+	cfg.set_value("video", "scenery", scenery)
 	cfg.set_value("game", "damage_numbers", show_damage_numbers)
 	cfg.set_value("game", "language", language)
 	cfg.set_value("game", "hints", show_hints)

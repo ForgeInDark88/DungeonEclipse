@@ -9,6 +9,7 @@ uniform vec2 size = vec2(64.0, 32.0);   // px
 uniform float rain = 0.0;               // 0..1
 uniform vec3 ripple = vec3(0.0, 0.0, 9.0);  // x (px), unused, age (s; set by a tween)
 uniform float seed = 0.0;
+uniform float glow = 0.0;               // underground: glimmers drifting in the deep
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 
@@ -24,6 +25,16 @@ void fragment() {
 	// light bands drifting under the surface
 	float band = sin(px.x * 0.18 + px.y * 0.5 - t * 0.8 + seed) * sin(px.x * 0.07 - t * 0.35);
 	if (band > 0.72 && depth < 0.6) { c.rgb += 0.06; }
+	// underground: specks of fungus light drifting slowly up through the water
+	if (glow > 0.0) {
+		vec2 cell = floor(vec2(px.x / 5.0, (px.y + t * 3.0) / 5.0));
+		float h = hash(cell + seed);
+		if (h > 0.93 && mod(px.x, 5.0) == 2.0 && mod(floor(px.y + t * 3.0), 5.0) == 2.0) {
+			float tw = 0.5 + 0.5 * sin(t * 2.0 + h * 40.0);
+			c.rgb = mix(c.rgb, vec3(0.45, 1.0, 0.85), 0.55 * tw * glow);
+		}
+		if (band > 0.6) { c.rgb += vec3(0.0, 0.05, 0.05) * glow; }
+	}
 	// the crest: a lit line and a darker line under it
 	if (px.y < surf) { c = vec4(mix(shallow.rgb, vec3(0.95, 1.0, 1.0), 0.55), 0.95); }
 	else if (px.y < surf + 1.0) { c.rgb = mix(c.rgb, vec3(0.85, 0.95, 1.0), 0.25); }

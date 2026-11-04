@@ -22,6 +22,7 @@ uniform sampler2D stars : repeat_enable, filter_nearest;
 uniform bool has_stars = false;
 uniform vec2 moon = vec2(0.74, 0.22);
 uniform float rays = 0.0;
+uniform float life = 1.0;  // Settings → «Живость мира» (0, 0.5, 1)
 
 void fragment() {
 	vec2 uv = UV;
@@ -61,14 +62,14 @@ void fragment() {
 	} else {
 		c.rgb = mix(c.rgb, c.rgb * vec3(0.3, 0.36, 0.6), night);
 	}
-	if (rays > 0.0 && !is_sky) {
+	if (rays * life > 0.0 && !is_sky) {
 		float b = fract(UV.x * 2.6 + UV.y * 1.3 + sin(TIME * 0.05) * 0.15);
 		float ray = smoothstep(0.0, 0.06, b) * smoothstep(0.2, 0.08, b);
-		c.rgb += vec3(1.0, 0.95, 0.75) * ray * rays * (1.0 - UV.y * 0.6) * c.a;
+		c.rgb += vec3(1.0, 0.95, 0.75) * ray * rays * life * (1.0 - UV.y * 0.6) * c.a;
 	}
-	if (shimmer > 0.0) {
+	if (shimmer * life > 0.0) {
 		float band = 0.5 + 0.5 * sin(TIME * 0.25 + UV.x * 5.0 - UV.y * 2.0);
-		c.rgb *= 1.0 + shimmer * (band * band - 0.35);
+		c.rgb *= 1.0 + shimmer * life * (band * band - 0.35);
 	}
 	COLOR = c * COLOR;
 }
