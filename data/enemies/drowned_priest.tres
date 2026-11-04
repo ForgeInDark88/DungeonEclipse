@@ -11,6 +11,7 @@
 
 [resource]
 script = ExtResource("2_ed")
+voice = &"water"
 id = &"drowned_priest"
 display_name = "Жрец Утопленных"
 description = "Хранитель обрядов затопленных залов. Призывает утопленников и швыряет чёрную воду."

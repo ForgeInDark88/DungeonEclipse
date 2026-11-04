@@ -128,7 +128,7 @@ func _spikes(delta: float) -> void:
 				_hit_this_cycle.clear()
 				_play(&"rise")
 				sprite.animation_finished.connect(func() -> void: _play(&"up"), CONNECT_ONE_SHOT)
-				AudioManager.play_sfx(&"dig", global_position, -6.0)
+				AudioManager.play_sfx(&"trap_spike", global_position, -5.0)
 		"up":
 			for v in _victims():
 				if v not in _hit_this_cycle:
@@ -160,6 +160,7 @@ func _acid() -> void:
 		hit = true
 	if hit:
 		_cooldown = 0.5
+		AudioManager.play_sfx(&"trap_flame", global_position, -8.0, 0.15)
 
 
 # ------------------------------------------------------------------ plates
@@ -173,7 +174,7 @@ func _plate() -> void:
 	if not on.is_empty():
 		_phase = "down"
 		_play(&"down")
-		AudioManager.play_sfx(&"chest_locked", global_position, -4.0)
+		AudioManager.play_sfx(&"trap_click", global_position, -3.0)
 		# Co-op: each machine springs it only for its own hero (puppet
 		# positions lag); everyone else sees it through spring_shared().
 		var mine: Node = null
@@ -278,7 +279,7 @@ func _fire_arrow() -> void:
 	p.lifetime = data.trigger_range / data.projectile_speed + 0.6
 	p.on_hit = func(target: Node, dmg: int) -> void: _apply_effects(target, dmg)
 	level.add_entity(p, global_position + Vector2(facing * 9.0, -8.0))
-	AudioManager.play_sfx(&"attack_bow", global_position, -3.0)
+	AudioManager.play_sfx(&"trap_arrow", global_position, -3.0)
 
 
 # ------------------------------------------------------------- falling rock

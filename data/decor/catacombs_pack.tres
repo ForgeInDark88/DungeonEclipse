@@ -1,0 +1,355 @@
+[gd_resource type="Resource" script_class="DecorPack" load_steps=95 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/decor_pack.gd" id="pack"]
+[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_urn_0.png" id="t_catacombs_urn_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_urn_1.png" id="t_catacombs_urn_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_urn_2.png" id="t_catacombs_urn_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_amphora_0.png" id="t_catacombs_amphora_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_amphora_1.png" id="t_catacombs_amphora_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_rubble_0.png" id="t_catacombs_rubble_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_rubble_1.png" id="t_catacombs_rubble_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_stalagmite_0.png" id="t_catacombs_stalagmite_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_stalagmite_1.png" id="t_catacombs_stalagmite_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_stalactite_0.png" id="t_catacombs_stalactite_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_stalactite_1.png" id="t_catacombs_stalactite_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_stalactite_2.png" id="t_catacombs_stalactite_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_bones_0.png" id="t_catacombs_bones_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_bones_1.png" id="t_catacombs_bones_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_bones_2.png" id="t_catacombs_bones_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_bones_3.png" id="t_catacombs_bones_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_skulls_0.png" id="t_catacombs_skulls_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_skulls_1.png" id="t_catacombs_skulls_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_skulls_2.png" id="t_catacombs_skulls_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_skulls_3.png" id="t_catacombs_skulls_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_candles_0.png" id="t_catacombs_candles_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_candles_1.png" id="t_catacombs_candles_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_candles_2.png" id="t_catacombs_candles_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_candles_3.png" id="t_catacombs_candles_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_ribcage_0.png" id="t_catacombs_ribcage_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_ribcage_1.png" id="t_catacombs_ribcage_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_chain_0.png" id="t_catacombs_chain_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_chain_1.png" id="t_catacombs_chain_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_chain_2.png" id="t_catacombs_chain_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_banner_0.png" id="t_catacombs_banner_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_banner_1.png" id="t_catacombs_banner_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_banner_2.png" id="t_catacombs_banner_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_relief_0.png" id="t_catacombs_relief_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_relief_1.png" id="t_catacombs_relief_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_relief_2.png" id="t_catacombs_relief_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_mask_0.png" id="t_catacombs_mask_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_grate_0.png" id="t_catacombs_grate_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_grate_1.png" id="t_catacombs_grate_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_sconce_0.png" id="t_catacombs_sconce_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_sconce_1.png" id="t_catacombs_sconce_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_shelf_0.png" id="t_catacombs_shelf_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_shelf_1.png" id="t_catacombs_shelf_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_shelf_2.png" id="t_catacombs_shelf_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_column_0.png" id="t_catacombs_column_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_column_1.png" id="t_catacombs_column_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/catacombs/catacombs_books_0.png" id="t_catacombs_books_0"]
+
+[sub_resource type="Resource" id="d_catacombs_urn_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_urn_0")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_urn_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_urn_1")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_urn_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_urn_2")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_amphora_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_amphora_0")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_amphora_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_amphora_1")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_rubble_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_rubble_0")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_rubble_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_rubble_1")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_stalagmite_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_stalagmite_0")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_stalagmite_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_stalagmite_1")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_stalactite_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_stalactite_0")
+placement = 1
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_stalactite_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_stalactite_1")
+placement = 1
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_stalactite_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_stalactite_2")
+placement = 1
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_bones_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_bones_0")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_bones_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_bones_1")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_bones_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_bones_2")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_bones_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_bones_3")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_skulls_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_skulls_0")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_skulls_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_skulls_1")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_skulls_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_skulls_2")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_skulls_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_skulls_3")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_candles_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_candles_0")
+placement = 0
+weight = 0.298
+light_color = Color(1.000, 0.745, 0.431, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_catacombs_candles_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_candles_1")
+placement = 0
+weight = 0.298
+light_color = Color(1.000, 0.745, 0.431, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_catacombs_candles_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_candles_2")
+placement = 0
+weight = 0.298
+light_color = Color(1.000, 0.745, 0.431, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_catacombs_candles_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_candles_3")
+placement = 0
+weight = 0.298
+light_color = Color(1.000, 0.745, 0.431, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_catacombs_ribcage_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_ribcage_0")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_ribcage_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_ribcage_1")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_chain_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_chain_0")
+placement = 1
+weight = 0.298
+sway = true
+
+[sub_resource type="Resource" id="d_catacombs_chain_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_chain_1")
+placement = 1
+weight = 0.298
+sway = true
+
+[sub_resource type="Resource" id="d_catacombs_chain_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_chain_2")
+placement = 1
+weight = 0.298
+sway = true
+
+[sub_resource type="Resource" id="d_catacombs_banner_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_banner_0")
+placement = 2
+weight = 0.298
+sway = true
+
+[sub_resource type="Resource" id="d_catacombs_banner_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_banner_1")
+placement = 2
+weight = 0.298
+sway = true
+
+[sub_resource type="Resource" id="d_catacombs_banner_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_banner_2")
+placement = 2
+weight = 0.298
+sway = true
+
+[sub_resource type="Resource" id="d_catacombs_relief_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_relief_0")
+placement = 2
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_relief_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_relief_1")
+placement = 2
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_relief_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_relief_2")
+placement = 2
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_mask_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_mask_0")
+placement = 2
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_grate_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_grate_0")
+placement = 2
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_grate_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_grate_1")
+placement = 2
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_sconce_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_sconce_0")
+placement = 2
+weight = 0.298
+light_color = Color(1.000, 0.745, 0.431, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_catacombs_sconce_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_sconce_1")
+placement = 2
+weight = 0.298
+light_color = Color(1.000, 0.745, 0.431, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_catacombs_shelf_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_shelf_0")
+placement = 2
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_shelf_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_shelf_1")
+placement = 2
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_shelf_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_shelf_2")
+placement = 2
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_column_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_column_0")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_column_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_column_1")
+placement = 0
+weight = 0.298
+
+[sub_resource type="Resource" id="d_catacombs_books_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_catacombs_books_0")
+placement = 0
+weight = 0.298
+
+[resource]
+script = ExtResource("pack")
+id = &"catacombs_pack"
+decorations = Array[ExtResource("decor")]([SubResource("d_catacombs_urn_0"), SubResource("d_catacombs_urn_1"), SubResource("d_catacombs_urn_2"), SubResource("d_catacombs_amphora_0"), SubResource("d_catacombs_amphora_1"), SubResource("d_catacombs_rubble_0"), SubResource("d_catacombs_rubble_1"), SubResource("d_catacombs_stalagmite_0"), SubResource("d_catacombs_stalagmite_1"), SubResource("d_catacombs_stalactite_0"), SubResource("d_catacombs_stalactite_1"), SubResource("d_catacombs_stalactite_2"), SubResource("d_catacombs_bones_0"), SubResource("d_catacombs_bones_1"), SubResource("d_catacombs_bones_2"), SubResource("d_catacombs_bones_3"), SubResource("d_catacombs_skulls_0"), SubResource("d_catacombs_skulls_1"), SubResource("d_catacombs_skulls_2"), SubResource("d_catacombs_skulls_3"), SubResource("d_catacombs_candles_0"), SubResource("d_catacombs_candles_1"), SubResource("d_catacombs_candles_2"), SubResource("d_catacombs_candles_3"), SubResource("d_catacombs_ribcage_0"), SubResource("d_catacombs_ribcage_1"), SubResource("d_catacombs_chain_0"), SubResource("d_catacombs_chain_1"), SubResource("d_catacombs_chain_2"), SubResource("d_catacombs_banner_0"), SubResource("d_catacombs_banner_1"), SubResource("d_catacombs_banner_2"), SubResource("d_catacombs_relief_0"), SubResource("d_catacombs_relief_1"), SubResource("d_catacombs_relief_2"), SubResource("d_catacombs_mask_0"), SubResource("d_catacombs_grate_0"), SubResource("d_catacombs_grate_1"), SubResource("d_catacombs_sconce_0"), SubResource("d_catacombs_sconce_1"), SubResource("d_catacombs_shelf_0"), SubResource("d_catacombs_shelf_1"), SubResource("d_catacombs_shelf_2"), SubResource("d_catacombs_column_0"), SubResource("d_catacombs_column_1"), SubResource("d_catacombs_books_0")])

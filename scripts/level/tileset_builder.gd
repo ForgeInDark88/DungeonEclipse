@@ -5,6 +5,10 @@ extends RefCounted
 ## physics layer 1 = one-way platforms (collision layer "platforms").
 
 const SOURCE_ID := 0
+## Source id of the 47-variant wall tiles of atlas source `i`: BLOB_OFFSET + i
+## (tiles_<biome>_blob.png next to the biome atlas; absent -> no source,
+## the walls fall back to the plain rows).
+const BLOB_OFFSET := 64
 const LADDER_TOP_ALT := 1
 const TILE := 16
 const COLUMNS := 4
@@ -85,3 +89,31 @@ static func _add_source(ts: TileSet, texture: Texture2D, id: int) -> void:
 		td.add_collision_polygon(1)
 		td.set_collision_polygon_points(1, 0, thin)
 		td.set_collision_polygon_one_way(1, 0, true)
+	_add_blob_source(ts, texture, id)
+
+
+## The 47-variant wall tiles (tools/art/gen_autotiles.py, Autotile): every
+## tile is a full solid block.
+static func _add_blob_source(ts: TileSet, texture: Texture2D, id: int) -> void:
+	var path := texture.resource_path.get_basename() + "_blob.png"
+	var tex := AssetPaths.tex_or_null(path)
+	if tex == null:
+		return
+	var src := TileSetAtlasSource.new()
+	src.texture = tex
+	src.texture_region_size = Vector2i(TILE, TILE)
+	ts.add_source(src, BLOB_OFFSET + id)
+	var h := TILE / 2.0
+	var full := PackedVector2Array([Vector2(-h, -h), Vector2(h, -h), Vector2(h, h), Vector2(-h, h)])
+	for y in Autotile.ROWS_PER_VARIANT * Autotile.VARIANTS:
+		for x in Autotile.COLUMNS:
+			var c := Vector2i(x, y)
+			src.create_tile(c)
+			var td := src.get_tile_data(c, 0)
+			td.add_collision_polygon(0)
+			td.set_collision_polygon_points(0, 0, full)
+
+
+## Whether source `id` of `ts` has its 47-variant wall tiles.
+static func has_blob(ts: TileSet, id: int) -> bool:
+	return ts != null and ts.has_source(BLOB_OFFSET + id)

@@ -23,6 +23,8 @@ var master_volume: float = 0.8
 var music_volume: float = 0.6
 var sfx_volume: float = 0.8
 var ui_volume: float = 0.7
+## Ambience (wind, birds, rain, the hum of a cave): its own bus "Ambient".
+var ambient_volume: float = 0.7
 var fullscreen: bool = false
 ## World brightness multiplier (Settings → «Яркость»).
 var brightness: float = 1.0
@@ -75,6 +77,7 @@ func load_settings() -> void:
 	music_volume = cfg.get_value("audio", "music_volume", music_volume)
 	sfx_volume = cfg.get_value("audio", "sfx_volume", sfx_volume)
 	ui_volume = cfg.get_value("audio", "ui_volume", ui_volume)
+	ambient_volume = cfg.get_value("audio", "ambient_volume", ambient_volume)
 	fullscreen = cfg.get_value("video", "fullscreen", fullscreen)
 	brightness = cfg.get_value("video", "brightness", brightness)
 	hud_scale = cfg.get_value("video", "hud_scale", hud_scale)
@@ -98,6 +101,7 @@ func save_settings() -> void:
 	cfg.set_value("audio", "music_volume", music_volume)
 	cfg.set_value("audio", "sfx_volume", sfx_volume)
 	cfg.set_value("audio", "ui_volume", ui_volume)
+	cfg.set_value("audio", "ambient_volume", ambient_volume)
 	cfg.set_value("video", "fullscreen", fullscreen)
 	cfg.set_value("video", "brightness", brightness)
 	cfg.set_value("video", "hud_scale", hud_scale)

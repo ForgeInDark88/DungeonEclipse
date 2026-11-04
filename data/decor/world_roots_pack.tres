@@ -1,0 +1,356 @@
+[gd_resource type="Resource" script_class="DecorPack" load_steps=91 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/decor_pack.gd" id="pack"]
+[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_roots_0.png" id="t_world_roots_roots_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_roots_1.png" id="t_world_roots_roots_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_roots_2.png" id="t_world_roots_roots_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_roots_3.png" id="t_world_roots_roots_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_roots_4.png" id="t_world_roots_roots_4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_roots_5.png" id="t_world_roots_roots_5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_roots_6.png" id="t_world_roots_roots_6"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_roots_7.png" id="t_world_roots_roots_7"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_ferns_0.png" id="t_world_roots_ferns_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_ferns_1.png" id="t_world_roots_ferns_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_ferns_2.png" id="t_world_roots_ferns_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_ferns_3.png" id="t_world_roots_ferns_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_ferns_4.png" id="t_world_roots_ferns_4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_ferns_5.png" id="t_world_roots_ferns_5"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_mushroom_0.png" id="t_world_roots_mushroom_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_mushroom_1.png" id="t_world_roots_mushroom_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_mushroom_2.png" id="t_world_roots_mushroom_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_mushroom_3.png" id="t_world_roots_mushroom_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_mushroom_4.png" id="t_world_roots_mushroom_4"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_moss_0.png" id="t_world_roots_moss_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_moss_1.png" id="t_world_roots_moss_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_moss_2.png" id="t_world_roots_moss_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_moss_3.png" id="t_world_roots_moss_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_ivy_0.png" id="t_world_roots_ivy_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_ivy_1.png" id="t_world_roots_ivy_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_ivy_2.png" id="t_world_roots_ivy_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_ivy_3.png" id="t_world_roots_ivy_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_rubble_0.png" id="t_world_roots_rubble_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_rubble_1.png" id="t_world_roots_rubble_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_rubble_2.png" id="t_world_roots_rubble_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_crystals_0.png" id="t_world_roots_crystals_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_crystals_1.png" id="t_world_roots_crystals_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_crystals_2.png" id="t_world_roots_crystals_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_stalagmite_0.png" id="t_world_roots_stalagmite_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_stalagmite_1.png" id="t_world_roots_stalagmite_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_lantern_0.png" id="t_world_roots_lantern_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_lantern_1.png" id="t_world_roots_lantern_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_sack_0.png" id="t_world_roots_sack_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_sack_1.png" id="t_world_roots_sack_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_wheel_0.png" id="t_world_roots_wheel_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_puddle_0.png" id="t_world_roots_puddle_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_puddle_1.png" id="t_world_roots_puddle_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_pedestal_0.png" id="t_world_roots_pedestal_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/world_roots/world_roots_pedestal_1.png" id="t_world_roots_pedestal_1"]
+
+[sub_resource type="Resource" id="d_world_roots_roots_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_roots_0")
+placement = 1
+weight = 0.184
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_roots_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_roots_1")
+placement = 1
+weight = 0.184
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_roots_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_roots_2")
+placement = 1
+weight = 0.184
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_roots_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_roots_3")
+placement = 1
+weight = 0.184
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_roots_4"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_roots_4")
+placement = 1
+weight = 0.184
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_roots_5"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_roots_5")
+placement = 1
+weight = 0.184
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_roots_6"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_roots_6")
+placement = 1
+weight = 0.184
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_roots_7"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_roots_7")
+placement = 1
+weight = 0.184
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_ferns_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_ferns_0")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_ferns_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_ferns_1")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_ferns_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_ferns_2")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_ferns_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_ferns_3")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_ferns_4"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_ferns_4")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_ferns_5"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_ferns_5")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_mushroom_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_mushroom_0")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_mushroom_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_mushroom_1")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_mushroom_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_mushroom_2")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_mushroom_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_mushroom_3")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_mushroom_4"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_mushroom_4")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_moss_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_moss_0")
+placement = 1
+weight = 0.184
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_moss_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_moss_1")
+placement = 1
+weight = 0.184
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_moss_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_moss_2")
+placement = 1
+weight = 0.184
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_moss_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_moss_3")
+placement = 1
+weight = 0.184
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_ivy_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_ivy_0")
+placement = 2
+weight = 0.184
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_ivy_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_ivy_1")
+placement = 2
+weight = 0.184
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_ivy_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_ivy_2")
+placement = 2
+weight = 0.184
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_ivy_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_ivy_3")
+placement = 2
+weight = 0.184
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_rubble_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_rubble_0")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_rubble_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_rubble_1")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_rubble_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_rubble_2")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_crystals_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_crystals_0")
+placement = 0
+weight = 0.184
+light_color = Color(1.000, 0.745, 0.314, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_world_roots_crystals_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_crystals_1")
+placement = 0
+weight = 0.184
+light_color = Color(1.000, 0.745, 0.314, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_world_roots_crystals_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_crystals_2")
+placement = 0
+weight = 0.184
+light_color = Color(1.000, 0.745, 0.314, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_world_roots_stalagmite_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_stalagmite_0")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_stalagmite_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_stalagmite_1")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_lantern_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_lantern_0")
+placement = 1
+weight = 0.184
+light_color = Color(1.000, 0.745, 0.314, 0.85)
+light_scale = 0.22
+unshaded = true
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_lantern_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_lantern_1")
+placement = 1
+weight = 0.184
+light_color = Color(1.000, 0.745, 0.314, 0.85)
+light_scale = 0.22
+unshaded = true
+sway = true
+
+[sub_resource type="Resource" id="d_world_roots_sack_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_sack_0")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_sack_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_sack_1")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_wheel_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_wheel_0")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_puddle_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_puddle_0")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_puddle_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_puddle_1")
+placement = 0
+weight = 0.184
+
+[sub_resource type="Resource" id="d_world_roots_pedestal_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_pedestal_0")
+placement = 0
+weight = 0.184
+light_color = Color(1.000, 0.745, 0.314, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_world_roots_pedestal_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_world_roots_pedestal_1")
+placement = 0
+weight = 0.184
+light_color = Color(1.000, 0.745, 0.314, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[resource]
+script = ExtResource("pack")
+id = &"world_roots_pack"
+decorations = Array[ExtResource("decor")]([SubResource("d_world_roots_roots_0"), SubResource("d_world_roots_roots_1"), SubResource("d_world_roots_roots_2"), SubResource("d_world_roots_roots_3"), SubResource("d_world_roots_roots_4"), SubResource("d_world_roots_roots_5"), SubResource("d_world_roots_roots_6"), SubResource("d_world_roots_roots_7"), SubResource("d_world_roots_ferns_0"), SubResource("d_world_roots_ferns_1"), SubResource("d_world_roots_ferns_2"), SubResource("d_world_roots_ferns_3"), SubResource("d_world_roots_ferns_4"), SubResource("d_world_roots_ferns_5"), SubResource("d_world_roots_mushroom_0"), SubResource("d_world_roots_mushroom_1"), SubResource("d_world_roots_mushroom_2"), SubResource("d_world_roots_mushroom_3"), SubResource("d_world_roots_mushroom_4"), SubResource("d_world_roots_moss_0"), SubResource("d_world_roots_moss_1"), SubResource("d_world_roots_moss_2"), SubResource("d_world_roots_moss_3"), SubResource("d_world_roots_ivy_0"), SubResource("d_world_roots_ivy_1"), SubResource("d_world_roots_ivy_2"), SubResource("d_world_roots_ivy_3"), SubResource("d_world_roots_rubble_0"), SubResource("d_world_roots_rubble_1"), SubResource("d_world_roots_rubble_2"), SubResource("d_world_roots_crystals_0"), SubResource("d_world_roots_crystals_1"), SubResource("d_world_roots_crystals_2"), SubResource("d_world_roots_stalagmite_0"), SubResource("d_world_roots_stalagmite_1"), SubResource("d_world_roots_lantern_0"), SubResource("d_world_roots_lantern_1"), SubResource("d_world_roots_sack_0"), SubResource("d_world_roots_sack_1"), SubResource("d_world_roots_wheel_0"), SubResource("d_world_roots_puddle_0"), SubResource("d_world_roots_puddle_1"), SubResource("d_world_roots_pedestal_0"), SubResource("d_world_roots_pedestal_1")])

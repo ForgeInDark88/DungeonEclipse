@@ -249,7 +249,7 @@ static func arc_slash(parent: Node, pos: Vector2, radius: float, color: Color, f
 ## Spinning knives thrown out in a circle (blade storms and dances).
 static func blade_fan(parent: Node, pos: Vector2, radius: float, color: Color, count := 9) -> void:
 	AudioManager.play_sfx(&"attack_dagger", pos, -2.0, 0.25)
-	var tex := load("res://assets/sprites/fx/knife.png") as Texture2D
+	var tex := AssetPaths.tex(AssetPaths.KNIFE)
 	for i in count:
 		var a := TAU * i / count + randf() * 0.25
 		var knife := Sprite2D.new()
@@ -362,7 +362,7 @@ static func ice_burst(parent: Node, pos: Vector2, radius: float, color: Color) -
 		twi.set_parallel(true)
 		twi.tween_property(spike, "modulate:a", 0.0, 0.45)
 		twi.chain().tween_callback(spike.queue_free)
-	var tex := load("res://assets/sprites/fx/shard.png") as Texture2D
+	var tex := AssetPaths.tex(AssetPaths.SHARD)
 	for i in 7:
 		var a := TAU * i / 7 + randf() * 0.4
 		var shard := Sprite2D.new()

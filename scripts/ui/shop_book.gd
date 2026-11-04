@@ -195,10 +195,11 @@ func buy(index: int) -> void:
 	var price := item.shop_price()
 	if hero.gold < price:
 		EventBus.message.emit(tr("Не хватает золота"))
-		AudioManager.play_ui(&"chest_locked")
+		AudioManager.play_ui(&"ui_error")
 		return
 	if hero.inventory.free_space_for(item) <= 0:
 		EventBus.message.emit(tr("Рюкзак полон"))
+		AudioManager.play_ui(&"ui_error")
 		return
 	if Net.active and not Net.is_host:
 		var ns := get_tree().get_first_node_in_group("net_game") as NetSync
@@ -230,6 +231,7 @@ func _complete_purchase(item: ItemData) -> void:
 	var price := item.shop_price()
 	if not hero.spend_gold(price):
 		return
+	AudioManager.play_ui(&"ui_buy")
 	hero.inventory.add_item(item if item.is_stackable() else ItemFactory.create(item, merchant.floor_number))
 	AudioManager.play_ui(&"coin")
 	EventBus.item_bought.emit(item)
@@ -249,6 +251,7 @@ func sell(index: int) -> void:
 	var price := item.sell_price()
 	hero.inventory.take_at(index, 1)
 	hero.add_gold(price)
+	AudioManager.play_ui(&"ui_sell")
 	item.identify()  # the merchant knows what he bought
 	var ns := get_tree().get_first_node_in_group("net_game") as NetSync if Net.active else null
 	var echoes_back := false

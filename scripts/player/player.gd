@@ -1328,6 +1328,39 @@ func _nearest_interactable() -> Node:
 	return best
 
 
+## The object the hero can use gets a thin warm outline (flash.gdshader):
+## its main sprite, when that sprite has no material of its own.
+static var _outline_mat: ShaderMaterial
+var _hl_visual: CanvasItem
+
+
+func _highlight(target: Node) -> void:
+	var visual: CanvasItem = _main_visual(target) if target else null
+	if visual == _hl_visual:
+		return
+	if is_instance_valid(_hl_visual) and _hl_visual.material == _outline_mat:
+		_hl_visual.material = null
+	_hl_visual = null
+	if visual == null or visual.material != null:
+		return
+	if _outline_mat == null:
+		_outline_mat = AssetPaths.flash_material()
+		_outline_mat.set_shader_parameter("outline_color", Color(1.0, 0.92, 0.62, 0.9))
+	visual.material = _outline_mat
+	_hl_visual = visual
+
+
+static func _main_visual(target: Node) -> CanvasItem:
+	for c in target.get_children():
+		if c is Sprite2D or c is AnimatedSprite2D:
+			return c
+	for c in target.get_children():
+		for g in c.get_children():
+			if g is Sprite2D or g is AnimatedSprite2D:
+				return g
+	return null
+
+
 func try_interact() -> bool:
 	var target := _nearest_interactable()
 	if target == null:
@@ -1340,6 +1373,7 @@ func try_interact() -> bool:
 
 func _update_interact_hint() -> void:
 	var target := _nearest_interactable()
+	_highlight(target)
 	var text := ""
 	if target != null:
 		text = "[%s] %s" % [InputBindings.key_for("interact"), target.get_prompt()]

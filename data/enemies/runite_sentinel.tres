@@ -9,6 +9,7 @@
 
 [resource]
 script = ExtResource("3_ed")
+voice = &"stone"
 id = &"runite_sentinel"
 display_name = "Рунный страж"
 description = "Оживший страж руин. Броня как скала, удар — как обвал."

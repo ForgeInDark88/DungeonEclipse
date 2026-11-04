@@ -157,7 +157,7 @@ func _buildings() -> void:
 	_line(tr("Процветание: %d · %s") % [t.prosperity, TownResources.describe(t.resources) if not t.resources.is_empty() else tr("ресурсов нет")], 8)
 	for b in ItemDatabase.buildings:
 		var lvl := t.building_level(b.id)
-		var text := "%s  %s" % [b.display_name, "★".repeat(lvl) + "☆".repeat(b.max_level - lvl)]
+		var text := "%s  %s" % [b.display_name, "◆".repeat(lvl) + "◇".repeat(b.max_level - lvl)]
 		if lvl < b.max_level:
 			var miss := Buildings.requirement_missing(b, lvl + 1)
 			text += " — " + (miss if miss != "" else tr("следующий уровень: %s") % (b.level_texts[lvl] if lvl < b.level_texts.size() else ""))

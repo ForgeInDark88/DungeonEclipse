@@ -111,7 +111,7 @@ func build(p_layout: LevelLayout, p_floor: int, seed_value: int, p_biome: BiomeD
 	for y in layout.height:
 		for x in layout.width:
 			var cell := Vector2i(x, y)
-			if not layout.is_town and not layout.is_surface and (noise.get_noise_2d(x, y) > -0.25 or _near_solid(cell)):
+			if not layout.is_town and not layout.is_surface and _back_wall_at(cell, noise):
 				back.set_cell(cell, _src(cell), Vector2i(_back_variant(cell), AssetPaths.TILE_ROW_BACKWALL))
 			_apply_tile(cell, layout.get_tile(x, y))
 	for y in layout.height:
@@ -211,7 +211,7 @@ func build_location(p_layout: LevelLayout, seed_value: int) -> void:
 			var cell := Vector2i(x, y)
 			if x >= band_w and layout.get_tile(x, y) == T.EMPTY:
 				continue  # outside every layer: nothing to draw
-			if not open_sky and (noise.get_noise_2d(x, y) > -0.25 or _near_solid(cell)):
+			if not open_sky and _back_wall_at(cell, noise):
 				back.set_cell(cell, _src(cell), Vector2i(_back_variant(cell), AssetPaths.TILE_ROW_BACKWALL))
 			_apply_tile(cell, layout.get_tile(x, y))
 	for y in layout.height:
@@ -290,7 +290,7 @@ var water_bodies: Array[ColorRect] = []
 static func _foliage_material() -> ShaderMaterial:
 	if _foliage == null:
 		_foliage = ShaderMaterial.new()
-		_foliage.shader = load("res://assets/shaders/foliage_sway.gdshader")
+		_foliage.shader = AssetPaths.shader(AssetPaths.SHADER_FOLIAGE)
 		_foliage.set_shader_parameter("amount", 1.2 if SaveManager.scenery > 0 else 0.0)
 	return _foliage
 
@@ -348,7 +348,7 @@ func _spawn_water() -> void:
 		body.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		# (the holder's z 2 puts it in front of the hero: a swimmer is seen through the water)
 		var m := ShaderMaterial.new()
-		m.shader = load("res://assets/shaders/water.gdshader")
+		m.shader = AssetPaths.shader(AssetPaths.SHADER_WATER)
 		m.set_shader_parameter("shallow", Color(col.r, col.g, col.b, minf(col.a, 0.62)))
 		m.set_shader_parameter("deep", Color(col.r * 0.35, col.g * 0.45, col.b * 0.6, 0.88))
 		m.set_shader_parameter("size", size)
@@ -525,7 +525,7 @@ func same_band(a: Vector2, b: Vector2) -> bool:
 ## blacksmith, the dungeon gate with two torches, fireflies.
 func _spawn_town() -> void:
 	for p in layout.town_props:
-		var tex: Texture2D = load(AssetPaths.TOWN_DIR + String(p["tex"]) + ".png")
+		var tex: Texture2D = AssetPaths.tex(AssetPaths.TOWN_DIR + String(p["tex"]) + ".png")
 		var s := Sprite2D.new()
 		s.texture = tex
 		s.centered = false
@@ -563,6 +563,7 @@ func _spawn_town() -> void:
 			for k in (info.get("schedule", {}) as Dictionary):
 				npc.schedule[k] = cell_bottom(Vector2i(int(info["schedule"][k]), info["cell"].y)).x
 			add_entity(npc, cell_bottom(info["cell"]))
+	_spawn_passersby()
 	var gate := DungeonGate.new()
 	add_entity(gate, cell_bottom(layout.exit_cell))
 	for dx in [-28, 28]:
@@ -727,6 +728,53 @@ func _variant(cell: Vector2i) -> int:
 
 ## Back wall: mostly plain blocks (0, 1); a crack (2) or a niche (3) only
 ## now and then (2 in 96 / 1 in 96), so details do not turn into a pattern.
+## The back wall stands at a cell, or there is a view into the cave behind
+## it (the parallax). Always a rim of wall next to the tiles. Openings:
+## - small holes (the old noise);
+## - big caverns where the wall has fallen away (a slow second noise);
+## - in some rooms an arched window, in others a jagged crack.
+## Pure decoration: the same seed gives the same wall on every machine.
+var _cave_noise: FastNoiseLite
+
+
+func _back_wall_at(cell: Vector2i, noise: FastNoiseLite) -> bool:
+	if _near_solid(cell):
+		return true
+	if noise.get_noise_2d(cell.x, cell.y) <= -0.25:
+		return false
+	if _cave_noise == null:
+		_cave_noise = FastNoiseLite.new()
+		_cave_noise.seed = noise.seed + 7
+		_cave_noise.frequency = 0.035
+	if _cave_noise.get_noise_2d(cell.x, cell.y) > 0.22:
+		return false
+	var rw := LevelGenerator.ROOM_W
+	var rh := LevelGenerator.ROOM_H
+	var room := Vector2i(floori(cell.x / float(rw)), floori(cell.y / float(rh)))
+	var h := absi(hash([room, noise.seed, "back"]))
+	var local := cell - room * Vector2i(rw, rh)
+	match h % 10:
+		0, 1, 2:  # an arched window high in the room
+			var ww := 4 + (h / 10) % 3
+			var wh := 4 + (h / 30) % 3
+			var cx := rw / 2 + ((h / 90) % 5) - 2
+			var top := 2
+			var dx := local.x - cx
+			if absi(dx) <= ww / 2 and local.y >= top and local.y < top + wh:
+				# the round top of the arch
+				if local.y == top and absi(dx) >= ww / 2:
+					return true
+				return false
+		3, 4:  # a jagged crack down from the ceiling
+			var x0 := 3 + (h / 10) % (rw - 6)
+			var ln := 4 + (h / 70) % 4
+			if local.y >= 1 and local.y < 1 + ln:
+				var wob := int(sin(local.y * 1.7 + h) * 1.4)
+				if local.x == x0 + wob or (local.y % 3 == 0 and local.x == x0 + wob + 1):
+					return false
+	return true
+
+
 func _back_variant(cell: Vector2i) -> int:
 	var h := absi(hash(cell * 13 + Vector2i(floor_number, 11))) % 96
 	return 3 if h == 95 else 2 if h >= 93 else h % 2
@@ -782,14 +830,23 @@ func _apply_tile(cell: Vector2i, kind: int) -> void:
 			if ore_cells.has(cell):
 				coords = AssetPaths.TILE_ORE
 				glow.set_cell(cell, _src(cell), AssetPaths.TILE_ORE_GLOW)
-			elif not LevelLayout.is_solid(layout.get_tile(cell.x, cell.y - 1)):
-				coords = Vector2i(v, AssetPaths.TILE_ROW_BRICK_TOP)
-			elif not LevelLayout.is_solid(layout.get_tile(cell.x, cell.y + 1)):
-				coords = Vector2i(v, AssetPaths.TILE_ROW_BRICK_BOTTOM)
+				tiles.set_cell(cell, _src(cell), coords)
 			else:
-				# Mostly plain bricks, sometimes cracked.
-				coords = Vector2i(2 if v == 3 else v % 2, AssetPaths.TILE_ROW_BRICK)
-			tiles.set_cell(cell, _src(cell), coords)
+				var mask := _wall_mask(cell)
+				var src := _src(cell)
+				if mask != Autotile.ALL and TilesetBuilder.has_blob(tiles.tile_set, src):
+					# An exposed wall: its edges, caps and corners from the
+					# 47-variant tiles (Autotile).
+					tiles.set_cell(cell, TilesetBuilder.BLOB_OFFSET + src, Autotile.coords(mask, v % 2))
+				else:
+					if not mask & Autotile.N:
+						coords = Vector2i(v, AssetPaths.TILE_ROW_BRICK_TOP)
+					elif not mask & Autotile.S:
+						coords = Vector2i(v, AssetPaths.TILE_ROW_BRICK_BOTTOM)
+					else:
+						# Mostly plain bricks, sometimes cracked.
+						coords = Vector2i(2 if v == 3 else v % 2, AssetPaths.TILE_ROW_BRICK)
+					tiles.set_cell(cell, src, coords)
 		T.PLATFORM:
 			var left := layout.get_tile(cell.x - 1, cell.y) == T.PLATFORM
 			var right := layout.get_tile(cell.x + 1, cell.y) == T.PLATFORM
@@ -807,7 +864,45 @@ func _apply_tile(cell: Vector2i, kind: int) -> void:
 		if kind == T.EMPTY or kind == T.LADDER or kind == T.LADDER_TOP:
 			sh.erase_cell(cell)
 		else:
-			sh.set_cell(cell, _src(cell), tiles.get_cell_atlas_coords(cell))
+			sh.set_cell(cell, tiles.get_cell_source_id(cell), tiles.get_cell_atlas_coords(cell))
+
+
+## Passers-by of the town (TownPasserby): more as prosperity grows, a few
+## at night. Their own RNG: the level's sequence (shared in co-op) is untouched.
+func _spawn_passersby() -> void:
+	var town := GameState.town
+	var prosperity := Buildings.prosperity(town) if town else 0
+	var night := Buildings.is_night()
+	var r := RandomNumberGenerator.new()
+	r.seed = hash([floor_number, prosperity, "passersby"])
+	var pool: Array[StringName] = TownPasserby.NIGHT_ROLES.duplicate() if night else TownPasserby.ROLES.duplicate()
+	var x_lo := 6.0 * TILE
+	var x_hi := float(mini(layout.width, TownBuilder.HUB_GATE) - 6) * TILE
+	var ground := func(px: float) -> float:
+		return float(TownBuilder.ground_at(clampi(int(px / TILE), 0, layout.width - 1)) * TILE)
+	for i in TownPasserby.count_for(prosperity, night):
+		var p := TownPasserby.new()
+		var role: StringName = pool[r.randi_range(0, pool.size() - 1)]
+		var x := r.randf_range(x_lo, x_hi)
+		var span := r.randf_range(5.0, 14.0) * TILE
+		p.setup(role, maxf(x_lo, x - span), minf(x_hi, x + span), ground, r.randi())
+		add_entity(p, Vector2(x, ground.call(x)))
+
+
+## Which of the 8 neighbours of a wall cell are wall too (Autotile bits).
+## Outside the map counts as wall.
+const _MASK_DIRS: Array[Vector2i] = [Vector2i(0, -1), Vector2i(1, -1), Vector2i(1, 0), Vector2i(1, 1),
+		Vector2i(0, 1), Vector2i(-1, 1), Vector2i(-1, 0), Vector2i(-1, -1)]
+
+
+func _wall_mask(cell: Vector2i) -> int:
+	# Bit i of the mask is _MASK_DIRS[i]: N, NE, E, SE, S, SW, W, NW (Autotile).
+	var m := 0
+	for i in 8:
+		var c: Vector2i = cell + _MASK_DIRS[i]
+		if not layout.in_bounds(c.x, c.y) or LevelLayout.is_solid(layout.get_tile(c.x, c.y)):
+			m |= 1 << i
+	return m
 
 
 ## Settings → «Тени блоков».
@@ -841,7 +936,9 @@ func _apply_detail(cell: Vector2i) -> void:
 
 ## Re-picks the tile of a cell and its neighbours (after digging).
 func _refresh_around(cell: Vector2i) -> void:
-	for d in [Vector2i.ZERO, Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
+	# 3x3: a wall's corners depend on its diagonal neighbours too (Autotile).
+	for d in [Vector2i.ZERO, Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN,
+			Vector2i(-1, -1), Vector2i(1, -1), Vector2i(-1, 1), Vector2i(1, 1)]:
 		var c: Vector2i = cell + d
 		if layout.in_bounds(c.x, c.y):
 			_apply_tile(c, layout.get_tile(c.x, c.y))
@@ -1477,19 +1574,26 @@ func _spawn_ambience() -> void:
 
 ## Bones, cobwebs, crystals, statues... from BiomeData.decorations.
 func _spawn_decorations() -> void:
-	if biome == null or biome.decorations.is_empty():
+	if biome == null:
+		return
+	var pool := biome.all_decorations()
+	if pool.is_empty():
 		return
 	var weights: Array[float] = []
-	for d in biome.decorations:
+	for d in pool:
 		weights.append(d.weight)
 	var rooms := (layout.width / LevelGenerator.ROOM_W) * (layout.height / LevelGenerator.ROOM_H)
 	var count := roundi(rooms * biome.decor_per_room)
 	var used := {}
 	var tries := 0
+	# Decorations are pure looks: their own RNG (same seed on every machine),
+	# so adding a prop never moves a trap, a chest or a monster.
+	var drng := RandomNumberGenerator.new()
+	drng.seed = hash([rng.seed, floor_number, layout.width, layout.height, "decor"])
 	while count > 0 and tries < count * 20:
 		tries += 1
-		var data: DecorData = biome.decorations[LootTable._weighted_index(weights, rng)]
-		var cell := Vector2i(rng.randi_range(1, layout.width - 2), rng.randi_range(1, layout.height - 2))
+		var data: DecorData = pool[LootTable._weighted_index(weights, drng)]
+		var cell := Vector2i(drng.randi_range(1, layout.width - 2), drng.randi_range(1, layout.height - 2))
 		if used.has(cell) or layout.get_tile(cell.x, cell.y) != T.EMPTY or cell == layout.exit_cell:
 			continue
 		var tall := data.texture.get_height() > TILE

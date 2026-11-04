@@ -77,3 +77,44 @@ enum Behavior { WALKER, FLYER, RANGED }
 @export var sound_hurt: StringName = &"enemy_hurt"
 @export var sound_death: StringName = &"enemy_death"
 @export var sound_attack: StringName = &""
+## Voice family (tools/audio/gen_sfx.py, docs/AUDIO_LIST.md): bone, slime,
+## beast, hiss, winged, spirit, human, brute, stone, frost, water, plant,
+## void, mimic. Gives the monster its own <voice>_aggro / _attack / _hurt /
+## _death and the sound of a blow on it; empty = the sound_* fields above.
+@export var voice: StringName = &""
+
+## What a blow on this kind of body sounds like.
+const HIT_BY_VOICE := {&"bone": &"hit_bone", &"stone": &"hit_stone", &"slime": &"hit_slime", &"water": &"hit_slime",
+	&"plant": &"hit_wood", &"mimic": &"hit_wood", &"frost": &"hit_stone", &"spirit": &"hit_spirit", &"void": &"hit_spirit"}
+
+
+func _voiced(kind: String, fallback: StringName) -> StringName:
+	if voice != &"":
+		var id := StringName("%s_%s" % [voice, kind])
+		if AssetPaths.SFX.has(id):
+			return id
+	return fallback
+
+
+func hurt_sound() -> StringName:
+	return _voiced("hurt", sound_hurt)
+
+
+func death_sound() -> StringName:
+	return _voiced("death", sound_death)
+
+
+func aggro_sound() -> StringName:
+	return _voiced("aggro", &"")
+
+
+## The swing / bite / spit of a melee or ranged attack.
+func attack_sound() -> StringName:
+	return _voiced("attack", sound_attack)
+
+
+func hit_sound(crit := false) -> StringName:
+	if crit:
+		return &"hit_crit"
+	var id: StringName = HIT_BY_VOICE.get(voice, &"hit_flesh")
+	return id if AssetPaths.SFX.has(id) else &"hit_flesh"

@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("1")
+voice = &"bone"
 id = &"ghoul"
 display_name = "Упырь"
 description = "Выходит из могил, когда темнеет."

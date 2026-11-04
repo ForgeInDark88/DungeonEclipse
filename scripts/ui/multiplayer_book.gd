@@ -59,8 +59,11 @@ func _build_left() -> void:
 				get_tree().change_scene_to_file("res://scenes/ui/net_join.tscn")]]:
 		var b := BookPageScreen.button(entry[0], entry[1])
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.disabled = not Net.lan_available()
 		row.add_child(b)
 	_left.add_child(row)
+	if not Net.lan_available():
+		_left.add_child(UIStyle.label(tr("В браузерной версии кооператив недоступен: скачайте игру для Windows или Linux."), 6, UIStyle.INK_SOFT))
 
 	_left.add_child(UIStyle.label(tr("Мои профили"), 10))
 	var nick := _edit(_left, tr("Ник"), String(NetSettings.get_value("nick")) if String(NetSettings.get_value("nick")) != "" else SaveManager.last_name)

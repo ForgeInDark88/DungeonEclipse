@@ -126,7 +126,7 @@ func _fill_left() -> void:
 	head.add_child(icon)
 	head.add_child(UIStyle.label(data.display_name, 12))
 	_left.add_child(head)
-	var stars := "★".repeat(lvl) + "☆".repeat(data.max_level - lvl)
+	var stars := "◆".repeat(lvl) + "◇".repeat(data.max_level - lvl)
 	_left.add_child(UIStyle.label(stars if lvl > 0 else tr("Руины"), 9, UIStyle.INK_SOFT))
 	_left.add_child(_wrap(data.description, 7))
 	if lvl > 0 and lvl <= data.level_texts.size():

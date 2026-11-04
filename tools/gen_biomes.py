@@ -1191,8 +1191,6 @@ def mirror_biome_tres():
     ext = ['[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor_script"]',
            '[ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="biome_script"]',
            '[ext_resource type="Texture2D" path="res://assets/sprites/tiles/tiles_mirror_halls.png" id="tiles"]']
-    for layer in ("far", "mid", "near"):
-        ext.append('[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/mirror_halls_%s.png" id="bg_%s"]' % (layer, layer))
     subs = []
     for name, placement, weight, light, unshaded, sway in MIRROR_DECOR:
         ext.append('[ext_resource type="Texture2D" path="res://assets/sprites/decor/%s.png" id="dx_%s"]' % (name, name))
@@ -1205,9 +1203,9 @@ id = &"mirror_halls"
 display_name = "Зеркальные чертоги"
 order = 4
 tileset_texture = ExtResource("tiles")
-parallax_far = ExtResource("bg_far")
-parallax_mid = ExtResource("bg_mid")
-parallax_near = ExtResource("bg_near")
+parallax_far = "res://assets/sprites/backgrounds/mirror_halls_far.png"
+parallax_mid = "res://assets/sprites/backgrounds/mirror_halls_mid.png"
+parallax_near = "res://assets/sprites/backgrounds/mirror_halls_near.png"
 ambient = Color(0.98, 0.95, 1, 1)
 back_wall_modulate = Color(0.84, 0.8, 0.9, 1)
 torch_color = Color(0.8, 0.55, 1, 1)

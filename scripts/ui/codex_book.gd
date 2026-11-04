@@ -81,6 +81,8 @@ func _ready() -> void:
 
 
 func select_tab(tab: Tab) -> void:
+	if _list:  # not on opening the book
+		AudioManager.play_ui(&"ui_tab")
 	_tab = tab
 	if _list:
 		_list.queue_free()

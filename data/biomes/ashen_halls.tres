@@ -1,16 +1,14 @@
-[gd_resource type="Resource" script_class="BiomeData" load_steps=15 format=3]
+[gd_resource type="Resource" script_class="BiomeData" load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor_script"]
 [ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="biome_script"]
 [ext_resource type="Texture2D" path="res://assets/sprites/tiles/tiles_ashen_halls.png" id="tiles"]
-[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/ashen_halls_far.png" id="bg_far"]
-[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/ashen_halls_mid.png" id="bg_mid"]
-[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/ashen_halls_near.png" id="bg_near"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/ember_mound.png" id="dx_ember_mound"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/ash_stalagmite.png" id="dx_ash_stalagmite"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/charred_column.png" id="dx_charred_column"]
 [ext_resource type="Texture2D" path="res://assets/sprites/decor/ash_fall.png" id="dx_ash_fall"]
 
+[ext_resource type="Resource" path="res://data/decor/ashen_halls_pack.tres" id="decor_pack"]
 [sub_resource type="Resource" id="Decor_ember_mound"]
 script = ExtResource("decor_script")
 texture = ExtResource("dx_ember_mound")
@@ -57,15 +55,17 @@ sway = false
 
 [resource]
 script = ExtResource("biome_script")
+acoustics = &"hall"
+decor_pack = ExtResource("decor_pack")
 music = &"ashen_halls"
 step_sound = &"step_stone"
 id = &"ashen_halls"
 display_name = "Пепельные чертоги"
 order = 5
 tileset_texture = ExtResource("tiles")
-parallax_far = ExtResource("bg_far")
-parallax_mid = ExtResource("bg_mid")
-parallax_near = ExtResource("bg_near")
+parallax_far = "res://assets/sprites/backgrounds/ashen_halls_far.png"
+parallax_mid = "res://assets/sprites/backgrounds/ashen_halls_mid.png"
+parallax_near = "res://assets/sprites/backgrounds/ashen_halls_near.png"
 ambient = Color(0.92, 0.86, 0.92, 1)
 back_wall_modulate = Color(0.8, 0.74, 0.8, 1)
 torch_color = Color(1.0, 0.62, 0.35, 1)

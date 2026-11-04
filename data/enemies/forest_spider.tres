@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("1")
+voice = &"hiss"
 id = &"forest_spider"
 display_name = "Лесной паук"
 description = "Плетёт сети в кронах и прыгает сверху."

@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("1")
+voice = &"winged"
 id = &"crow"
 display_name = "Ворон"
 description = "Кружит над полями. Пока его не трогают, он не трогает."

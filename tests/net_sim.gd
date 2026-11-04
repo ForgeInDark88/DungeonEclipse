@@ -38,17 +38,20 @@ func _run_host() -> void:
 			_done = true
 			check(true, "client registered on the host")
 			check(Net.players.size() == 2, "roster has 2 players")
-			check(absf(Net.enemy_hp_mult() - 1.4) < 0.01, "enemy hp mult x1.4 for 2 players (got %.2f)" % Net.enemy_hp_mult())
-			check(absf(Net.enemy_damage_mult() - 1.25) < 0.01, "enemy damage mult x1.25 for 2 players")
+			# the party's rules are data (data/coop/rules.tres, CoopRules)
+			var want_hp: float = 1.0 + Net.rules().hp_per_extra
+			var want_dmg: float = 1.0 + Net.rules().damage_per_extra
+			check(absf(Net.enemy_hp_mult() - want_hp) < 0.01, "enemy hp mult x%.2f for 2 players (got %.2f)" % [want_hp, Net.enemy_hp_mult()])
+			check(absf(Net.enemy_damage_mult() - want_dmg) < 0.01, "enemy damage mult x%.2f for 2 players" % want_dmg)
 			# Both sides agree on the roster.
 			check(Net.players[1]["name"] == "Хост", "host entry present")
 			for id in Net.players:
 				if id != 1:
 					check(Net.players[id]["name"].begins_with("Гость"), "guest entry present")
 			print("RESULT: ", "OK" if _fails == 0 else "%d FAILURES" % _fails)
-			# Hold the door a moment so the client finishes its own checks.
-			await get_tree().create_timer(2.0).timeout
-			get_tree().quit(1 if _fails > 0 else 0))
+			# Hold the door so the client finishes its checks and leaves first.
+			var tree := get_tree()
+			tree.create_timer(4.0).timeout.connect(tree.quit.bind(1 if _fails > 0 else 0)))
 	add_child(t)
 	# Give up after 15 s.
 	get_tree().create_timer(15.0).timeout.connect(func() -> void:
@@ -74,9 +77,14 @@ func _run_client() -> void:
 			joined = true
 			_done = true
 			check(true, "client sees the full roster")
-			check(absf(Net.enemy_hp_mult() - 1.4) < 0.01, "client agrees on hp mult")
+			check(absf(Net.enemy_hp_mult() - (1.0 + Net.rules().hp_per_extra)) < 0.01, "client agrees on hp mult")
 			print("RESULT: ", "OK" if _fails == 0 else "%d FAILURES" % _fails)
-			get_tree().quit(1 if _fails > 0 else 0))
+			# Stay connected a moment: the host polls its roster once a second,
+			# and a client that leaves at once can be gone before it looks.
+			# The quit hangs on the tree, not on this node: a disconnect may
+			# change the scene and free it.
+			var tree := get_tree()
+			tree.create_timer(1.5).timeout.connect(tree.quit.bind(1 if _fails > 0 else 0)))
 	add_child(t)
 	# A short delay so the host is listening first.
 	get_tree().create_timer(0.8).timeout.connect(func() -> void:

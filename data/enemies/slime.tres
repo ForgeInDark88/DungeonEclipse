@@ -17,6 +17,7 @@ chance = 0.25
 
 [resource]
 script = ExtResource("2_s5mx1")
+voice = &"slime"
 id = &"slime"
 display_name = "Слизень"
 description = "Студень, растворяющий всё на своём пути. Прыгает на добычу."

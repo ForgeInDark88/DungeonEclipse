@@ -11,18 +11,44 @@ extends Node
 ## sting "victory", then back to the biome; hero died → sting "death".
 ## Every change is a cross-fade of MUSIC_FADE seconds.
 
-const BUSES: Array[StringName] = [&"Music", &"SFX", &"UI"]
+const BUSES: Array[StringName] = [&"Music", &"SFX", &"UI", &"Ambient"]
 const WORLD_VOICES := 16
 const UI_VOICES := 4
 const MUSIC_FADE := 1.5
+
+## Voice priority by sound id prefix (higher wins a voice when all are busy;
+## a sound never steals from a more important one). Unlisted: 1.
+const PRIORITY := {&"step_": 0, &"land": 0, &"dust": 0, &"dig": 0, &"bubbles": 0, &"swim": 0,
+	&"coin": 1, &"pickup_": 1, &"attack_": 2, &"hit_": 2, &"enemy_": 2, &"cast_": 2,
+	&"player_": 3, &"boss_": 3, &"level_up": 3, &"explosion": 3, &"meteor_": 3, &"portal": 2}
+## Acoustics of a place (BiomeData.acoustics): reverb on the SFX bus.
+## room_size, damping, wet, pre-delay ms; "open" = no reverb.
+const SPACES := {
+	&"open": [0.0, 0.0, 0.0, 0.0],
+	&"room": [0.35, 0.6, 0.12, 10.0],
+	&"hall": [0.7, 0.45, 0.2, 25.0],
+	&"cave": [0.8, 0.3, 0.24, 35.0],
+	&"crypt": [0.6, 0.55, 0.22, 18.0],
+	&"water": [0.75, 0.75, 0.26, 30.0],
+}
+## How long the combat layer stays after the last monster in a fight.
+const COMBAT_HOLD := 4.0
+const COMBAT_RANGE := 360.0
 
 ## A one-shot track (victory, death) ended.
 signal music_finished(id: StringName)
 
 var _world: Array[AudioStreamPlayer2D] = []
+var _world_prio: Array[int] = []
 var _ui: Array[AudioStreamPlayer] = []
 var _music: Array[AudioStreamPlayer] = []
 var _music_index := 0
+## The combat layer of each music player (same index), and its fade.
+var _combat: Array[AudioStreamPlayer] = []
+var _combat_fades: Array[Tween] = [null, null]
+var _combat_on := false
+var _combat_hold := 0.0
+var _combat_poll := 0.0
 ## Running fade tween of each music player. A new fade kills the old one:
 ## otherwise a quick double switch (biome track, then the boss track in the
 ## same frame) left a fade-out running that stopped the new track.
@@ -50,6 +76,7 @@ func _ready() -> void:
 		p.attenuation = 1.5
 		add_child(p)
 		_world.append(p)
+		_world_prio.append(0)
 	for i in UI_VOICES:
 		var p := AudioStreamPlayer.new()
 		p.bus = &"UI"
@@ -64,6 +91,13 @@ func _ready() -> void:
 				_on_music_finished(p))
 		add_child(p)
 		_music.append(p)
+		# its combat layer (music_<id>_combat.ogg), started with it
+		var c := AudioStreamPlayer.new()
+		c.bus = &"Music"
+		c.volume_db = -80.0
+		add_child(c)
+		_combat.append(c)
+	_setup_reverb()
 	apply_volumes()
 
 
@@ -72,6 +106,7 @@ func apply_volumes() -> void:
 	_set_bus(&"Music", SaveManager.music_volume)
 	_set_bus(&"SFX", SaveManager.sfx_volume)
 	_set_bus(&"UI", SaveManager.ui_volume)
+	_set_bus(&"Ambient", SaveManager.ambient_volume)
 
 
 func _set_bus(bus_name: StringName, linear: float) -> void:
@@ -100,16 +135,27 @@ func _throttled(id: StringName, min_ms: int) -> bool:
 func play_sfx(id: StringName, pos: Vector2 = Vector2.INF, volume_db := 0.0, pitch_variation := 0.08) -> void:
 	if id == &"" or not AssetPaths.SFX.has(id) or _throttled(id, 30):
 		return
-	var stream := _stream(AssetPaths.SFX[id])
+	var stream := _variant(id)
 	if stream == null:
 		return
-	var player: AudioStreamPlayer2D = null
-	for p in _world:
-		if not p.playing:
-			player = p
+	var prio := priority_of(id)
+	var slot := -1
+	for i in _world.size():
+		if not _world[i].playing:
+			slot = i
 			break
-	if player == null:
-		player = _world[0]
+	if slot < 0:
+		# All voices busy: take the least important one, never a more
+		# important sound than this one.
+		var low := prio + 1
+		for i in _world.size():
+			if _world_prio[i] < low:
+				low = _world_prio[i]
+				slot = i
+		if slot < 0:
+			return
+	var player := _world[slot]
+	_world_prio[slot] = prio
 	player.stream = stream
 	player.volume_db = volume_db
 	player.pitch_scale = 1.0 + randf_range(-pitch_variation, pitch_variation)
@@ -121,7 +167,7 @@ func play_sfx(id: StringName, pos: Vector2 = Vector2.INF, volume_db := 0.0, pitc
 func play_ui(id: StringName, volume_db := 0.0) -> void:
 	if id == &"" or not AssetPaths.SFX.has(id) or _throttled(id, 25):
 		return
-	var stream := _stream(AssetPaths.SFX[id])
+	var stream := _variant(id)
 	if stream == null:
 		return
 	for p in _ui:
@@ -132,7 +178,40 @@ func play_ui(id: StringName, volume_db := 0.0) -> void:
 			return
 
 
-## Cross-fades to another music track (same id = keep playing).
+var _variants: Dictionary = {}  # id -> Array[String] of files
+
+
+## A sound and its variants: <file>.wav, <file>_2.wav ... <file>_6.wav
+## (tools/gen_audio.py); one is picked at random each time.
+func _variant(id: StringName) -> AudioStream:
+	if not _variants.has(id):
+		var base: String = AssetPaths.SFX[id]
+		var files: Array[String] = [base]
+		for k in range(2, 7):
+			var v := base.get_basename() + "_%d.%s" % [k, base.get_extension()]
+			if ResourceLoader.exists(v):
+				files.append(v)
+		_variants[id] = files
+	var list: Array = _variants[id]
+	return _stream(list[randi() % list.size()])
+
+
+## How many files sound `id` has (the base and its variants).
+func variant_count(id: StringName) -> int:
+	if not AssetPaths.SFX.has(id):
+		return 0
+	_variant(id)
+	return (_variants[id] as Array).size()
+
+
+static func priority_of(id: StringName) -> int:
+	var s := String(id)
+	for k in PRIORITY:
+		if s.begins_with(String(k)):
+			return PRIORITY[k]
+	return 1
+
+
 ## Quitting: every player lets go of its stream first, so the audio thread
 ## holds no playback while the engine frees resources (no leaks at exit).
 func _exit_tree() -> void:
@@ -155,7 +234,7 @@ func play_ambience(id: StringName, channel := 0, volume_db := -10.0) -> void:
 	if _amb.is_empty():
 		for i in 2:
 			var p := AudioStreamPlayer.new()
-			p.bus = &"SFX"
+			p.bus = &"Ambient"
 			p.volume_db = -80.0
 			add_child(p)
 			_amb.append(p)
@@ -274,7 +353,9 @@ func _switch_music(id: StringName) -> void:
 	if old.playing:
 		var tw := create_tween()
 		tw.tween_property(old, "volume_db", -80.0, MUSIC_FADE)
+		tw.parallel().tween_property(_combat[old_i], "volume_db", -80.0, MUSIC_FADE)
 		tw.tween_callback(old.stop)
+		tw.tween_callback(_combat[old_i].stop)
 		_fades[old_i] = tw
 	new.stop()
 	var stream := _music_stream(id)
@@ -282,7 +363,14 @@ func _switch_music(id: StringName) -> void:
 		return
 	new.stream = stream
 	new.volume_db = -40.0
+	var layer := _combat_stream(id)
+	var c := _combat[_music_index]
+	c.stop()
+	c.stream = layer
+	c.volume_db = 0.0 if _combat_on and layer else -80.0
 	new.play()
+	if layer:
+		c.play()
 	var fade_in := create_tween()
 	fade_in.tween_property(new, "volume_db", 0.0, MUSIC_FADE)
 	_fades[_music_index] = fade_in
@@ -312,3 +400,101 @@ func stop_music() -> void:
 	for i in _music.size():
 		_kill_fade(i)
 		_music[i].stop()
+		_combat[i].stop()
+
+
+# ----------------------------------------------------------- combat layer
+## The combat layer of a track: music_<id>_combat.ogg next to it, as long as
+## the track (it loops in step). None: the track has no layer.
+func _combat_stream(id: StringName) -> AudioStream:
+	if id in AssetPaths.MUSIC_ONE_SHOT or not AssetPaths.MUSIC.has(id):
+		return null
+	var path := String(AssetPaths.MUSIC[id]).get_basename() + "_combat.ogg"
+	var s := _stream(path)
+	if s is AudioStreamOggVorbis:
+		(s as AudioStreamOggVorbis).loop = true
+	return s
+
+
+## Fades the combat layer in or out (also driven by _process from the
+## monsters near the camera).
+func set_combat(on: bool) -> void:
+	if on == _combat_on:
+		return
+	_combat_on = on
+	var c := _combat[_music_index]
+	if _combat_fades[_music_index] and _combat_fades[_music_index].is_valid():
+		_combat_fades[_music_index].kill()
+	if c.stream == null:
+		return
+	var tw := create_tween()
+	tw.tween_property(c, "volume_db", 0.0 if on else -80.0, 0.6 if on else 2.5) \
+		.set_trans(Tween.TRANS_SINE)
+	_combat_fades[_music_index] = tw
+
+
+func in_combat() -> bool:
+	return _combat_on
+
+
+## Is a monster near the camera fighting (chasing, attacking)? Polled 4 times
+## a second; the layer stays COMBAT_HOLD s after the last one.
+func _process(delta: float) -> void:
+	_combat_poll -= delta
+	if _combat_poll > 0.0:
+		return
+	_combat_poll = 0.25
+	var cam := get_viewport().get_camera_2d() if get_viewport() else null
+	var fighting := false
+	if cam:
+		var c := cam.get_screen_center_position()
+		for e in get_tree().get_nodes_in_group("enemies"):
+			if e.has_method("is_fighting") and e.is_fighting() and (e as Node2D).global_position.distance_to(c) < COMBAT_RANGE:
+				fighting = true
+				break
+	if fighting:
+		_combat_hold = COMBAT_HOLD
+	else:
+		_combat_hold -= 0.25
+	set_combat(_combat_hold > 0.0)
+
+
+# ----------------------------------------------------------------- reverb
+var _reverb: AudioEffectReverb
+var _space: StringName = &"open"
+
+
+func _setup_reverb() -> void:
+	var bus := AudioServer.get_bus_index(&"SFX")
+	_reverb = AudioEffectReverb.new()
+	_reverb.wet = 0.0
+	_reverb.dry = 1.0
+	AudioServer.add_bus_effect(bus, _reverb)
+	AudioServer.set_bus_effect_enabled(bus, AudioServer.get_bus_effect_count(bus) - 1, false)
+
+
+## The acoustics of the place (BiomeData.acoustics, AudioManager.SPACES).
+func set_space(space: StringName) -> void:
+	if not SPACES.has(space):
+		space = &"open"
+	if space == _space or _reverb == null:
+		return
+	_space = space
+	var v: Array = SPACES[space]
+	var bus := AudioServer.get_bus_index(&"SFX")
+	var idx := -1
+	for i in AudioServer.get_bus_effect_count(bus):
+		if AudioServer.get_bus_effect(bus, i) == _reverb:
+			idx = i
+	if idx < 0:
+		return
+	_reverb.room_size = v[0]
+	_reverb.damping = v[1]
+	_reverb.wet = v[2]
+	_reverb.predelay_msec = v[3]
+	_reverb.hipass = 0.15
+	AudioServer.set_bus_effect_enabled(bus, idx, space != &"open")
+
+
+func current_space() -> StringName:
+	return _space

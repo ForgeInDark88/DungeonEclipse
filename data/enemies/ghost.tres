@@ -17,6 +17,7 @@ chance = 0.35
 
 [resource]
 script = ExtResource("4_twsag")
+voice = &"spirit"
 id = &"ghost"
 display_name = "Призрак"
 description = "Неупокоенная душа. Проходит сквозь стены и не боится яда."

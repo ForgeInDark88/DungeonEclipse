@@ -46,6 +46,7 @@ func _pct(part: int, whole: int) -> String:
 func _ready() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 20261022
+	seed(20261022)  # the global dice too (ItemFactory affixes): the same table every run
 	md.append("# Баланс лута и сложности")
 	md.append("")
 	md.append("Отчёт создан `tests/loot_sim.tscn` (%d открытий каждой таблицы на этаж, фиксированное зерно)." % OPENS)

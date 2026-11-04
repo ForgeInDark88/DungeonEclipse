@@ -17,6 +17,7 @@ chance = 0.5
 
 [resource]
 script = ExtResource("4_ed")
+voice = &"hiss"
 id = &"crystal_crawler"
 display_name = "Кристальный ползун"
 description = "Ждёт на потолке в наростах кристаллов и падает на голову."

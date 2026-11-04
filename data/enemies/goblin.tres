@@ -8,6 +8,7 @@
 
 [resource]
 script = ExtResource("1")
+voice = &"human"
 id = &"goblin"
 display_name = "Гоблин"
 description = "Мелкий, злобный и не один."

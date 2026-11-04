@@ -36,7 +36,7 @@ func _ready() -> void:
 	EventBus.elite_killed.connect(func(_d: EnemyData) -> void: add(&"elites"))
 	EventBus.boss_defeated.connect(func(b: BossData, _p: Vector2) -> void:
 		add(&"bosses")
-		if b.final:
+		if b != null and b.final:
 			add(&"victories"))
 	EventBus.floor_changed.connect(func(n: int) -> void: record_max(&"floor", n))
 	EventBus.chest_opened.connect(func(_c: Node) -> void: add(&"chests"))

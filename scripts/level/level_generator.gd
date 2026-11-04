@@ -20,6 +20,7 @@ var _spots: Dictionary = {}  # Vector2i room -> Array[Vector2i]
 var _used: Dictionary = {}
 ## Rooms taken by merchants / events: no chests or monsters there.
 var _reserved: Dictionary = {}
+var _secret_rooms: Dictionary = {}  # sealed rooms with a cracked secret wall into them
 ## Chance that a floor has a merchant room.
 const MERCHANT_CHANCE := 0.4
 ## Chance that a floor has a blacksmith room.
@@ -51,6 +52,7 @@ func generate(floor_number: int, seed_value: int) -> LevelLayout:
 	_spots.clear()
 	_used.clear()
 	_reserved.clear()
+	_secret_rooms.clear()
 
 	_make_border()
 	for r in rows:
@@ -68,6 +70,7 @@ func generate(floor_number: int, seed_value: int) -> LevelLayout:
 	_place_specials(floor_number)
 	_place_secret_walls()
 	_place_chests(floor_number)
+	_chests_within_reach()
 	_place_enemies(floor_number)
 	_place_lore()
 	if flooded_pools > 0:
@@ -506,7 +509,9 @@ func _place_chests(floor_number: int) -> void:
 					break
 				var cell: Variant = _take_spot(room, true)
 				if cell != null:
-					layout.chests.append({"cell": cell, "tier": tier, "mimic": mimic})
+					# how the hero gets in: through a cracked secret wall, or only with a bomb
+					layout.chests.append({"cell": cell, "tier": tier, "mimic": mimic,
+							"entry": &"secret" if _secret_rooms.has(room) else &"bomb"})
 	for room in rooms:
 		if placed >= count:
 			break
@@ -528,6 +533,52 @@ func _place_chests(floor_number: int) -> void:
 
 ## Secret rooms (rooms no corridor leads to): a cracked wall to a connected
 ## neighbour on the same row, 3 cells tall at the floor. A hit breaks it.
+## No chest on a ledge the hero cannot jump to: one look at what the hero
+## reaches (HeroReach, the secret walls taken as broken), and a chest out of
+## reach moves to a reachable place of its room (or of the floor). Chests
+## behind bomb-only walls stay where they are. No RNG: the floor is the same
+## on every machine.
+func _chests_within_reach() -> void:
+	# only a chest on a ledge can be out of reach (the floors of the rooms
+	# are joined): no ledge chest, no search (it costs ~0.2 s a floor)
+	var on_ledge := false
+	for ch in layout.chests:
+		var c: Vector2i = ch["cell"]
+		if ch.get("entry", &"") != &"bomb" and layout.get_tile(c.x, c.y + 1) != T.BRICK:
+			on_ledge = true
+			break
+	if not on_ledge:
+		return
+	var open := LevelLayout.new(layout.width, layout.height)
+	open.tiles = layout.tiles.duplicate()
+	for wall in layout.secret_walls:
+		for c: Vector2i in wall:
+			open.set_tile(c.x, c.y, T.EMPTY)
+	var reach := HeroReach.cells(open, layout.start_cell)
+	for ch in layout.chests:
+		if ch.get("entry", &"") == &"bomb" or reach.has(ch["cell"]):
+			continue
+		var old: Vector2i = ch["cell"]
+		var room := Vector2i(old.x / ROOM_W, old.y / ROOM_H)
+		var spot := _reachable_spot(room, reach)
+		if spot == Vector2i(-1, -1):
+			for r: Vector2i in _spots:
+				spot = _reachable_spot(r, reach)
+				if spot != Vector2i(-1, -1):
+					break
+		if spot != Vector2i(-1, -1):
+			_used.erase(old)
+			_used[spot] = true
+			ch["cell"] = spot
+
+
+func _reachable_spot(room: Vector2i, reach: Dictionary) -> Vector2i:
+	for cell: Vector2i in _spots.get(room, []):
+		if reach.has(cell) and not _used.has(cell) and not _used.has(cell + Vector2i.LEFT) and not _used.has(cell + Vector2i.RIGHT):
+			return cell
+	return Vector2i(-1, -1)
+
+
 func _place_secret_walls() -> void:
 	for r in rows:
 		for c in cols:
@@ -549,6 +600,7 @@ func _place_secret_walls() -> void:
 					wall.append(Vector2i(x, y))
 			if not wall.is_empty():
 				layout.secret_walls.append(wall)
+				_secret_rooms[room] = true
 
 
 func _place_enemies(floor_number: int) -> void:

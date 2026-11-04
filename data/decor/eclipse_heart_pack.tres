@@ -1,0 +1,386 @@
+[gd_resource type="Resource" script_class="DecorPack" load_steps=91 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/decor_pack.gd" id="pack"]
+[ext_resource type="Script" path="res://scripts/data/decor_data.gd" id="decor"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_sigil_0.png" id="t_eclipse_heart_sigil_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_sigil_1.png" id="t_eclipse_heart_sigil_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_sigil_2.png" id="t_eclipse_heart_sigil_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_sigil_3.png" id="t_eclipse_heart_sigil_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_brazier_0.png" id="t_eclipse_heart_brazier_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_brazier_1.png" id="t_eclipse_heart_brazier_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_brazier_2.png" id="t_eclipse_heart_brazier_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_brazier_3.png" id="t_eclipse_heart_brazier_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_bust_0.png" id="t_eclipse_heart_bust_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_bust_1.png" id="t_eclipse_heart_bust_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_bust_2.png" id="t_eclipse_heart_bust_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_column_0.png" id="t_eclipse_heart_column_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_column_1.png" id="t_eclipse_heart_column_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_column_2.png" id="t_eclipse_heart_column_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_banner_0.png" id="t_eclipse_heart_banner_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_banner_1.png" id="t_eclipse_heart_banner_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_banner_2.png" id="t_eclipse_heart_banner_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_banner_3.png" id="t_eclipse_heart_banner_3"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_pedestal_0.png" id="t_eclipse_heart_pedestal_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_pedestal_1.png" id="t_eclipse_heart_pedestal_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_pedestal_2.png" id="t_eclipse_heart_pedestal_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_crystals_0.png" id="t_eclipse_heart_crystals_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_crystals_1.png" id="t_eclipse_heart_crystals_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_crystals_2.png" id="t_eclipse_heart_crystals_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_mask_0.png" id="t_eclipse_heart_mask_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_mask_1.png" id="t_eclipse_heart_mask_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_mask_2.png" id="t_eclipse_heart_mask_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_candles_0.png" id="t_eclipse_heart_candles_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_candles_1.png" id="t_eclipse_heart_candles_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_candles_2.png" id="t_eclipse_heart_candles_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_chain_0.png" id="t_eclipse_heart_chain_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_chain_1.png" id="t_eclipse_heart_chain_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_relief_0.png" id="t_eclipse_heart_relief_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_relief_1.png" id="t_eclipse_heart_relief_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_relief_2.png" id="t_eclipse_heart_relief_2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_shield_0.png" id="t_eclipse_heart_shield_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_shield_1.png" id="t_eclipse_heart_shield_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_spire_0.png" id="t_eclipse_heart_spire_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_spire_1.png" id="t_eclipse_heart_spire_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_urn_0.png" id="t_eclipse_heart_urn_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_urn_1.png" id="t_eclipse_heart_urn_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_sconce_0.png" id="t_eclipse_heart_sconce_0"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_sconce_1.png" id="t_eclipse_heart_sconce_1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/decor/pack/eclipse_heart/eclipse_heart_books_0.png" id="t_eclipse_heart_books_0"]
+
+[sub_resource type="Resource" id="d_eclipse_heart_sigil_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_sigil_0")
+placement = 2
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_sigil_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_sigil_1")
+placement = 2
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_sigil_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_sigil_2")
+placement = 2
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_sigil_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_sigil_3")
+placement = 2
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_brazier_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_brazier_0")
+placement = 0
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_brazier_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_brazier_1")
+placement = 0
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_brazier_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_brazier_2")
+placement = 0
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_brazier_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_brazier_3")
+placement = 0
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_bust_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_bust_0")
+placement = 0
+weight = 0.164
+
+[sub_resource type="Resource" id="d_eclipse_heart_bust_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_bust_1")
+placement = 0
+weight = 0.164
+
+[sub_resource type="Resource" id="d_eclipse_heart_bust_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_bust_2")
+placement = 0
+weight = 0.164
+
+[sub_resource type="Resource" id="d_eclipse_heart_column_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_column_0")
+placement = 0
+weight = 0.164
+
+[sub_resource type="Resource" id="d_eclipse_heart_column_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_column_1")
+placement = 0
+weight = 0.164
+
+[sub_resource type="Resource" id="d_eclipse_heart_column_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_column_2")
+placement = 0
+weight = 0.164
+
+[sub_resource type="Resource" id="d_eclipse_heart_banner_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_banner_0")
+placement = 2
+weight = 0.164
+sway = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_banner_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_banner_1")
+placement = 2
+weight = 0.164
+sway = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_banner_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_banner_2")
+placement = 2
+weight = 0.164
+sway = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_banner_3"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_banner_3")
+placement = 2
+weight = 0.164
+sway = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_pedestal_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_pedestal_0")
+placement = 0
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_pedestal_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_pedestal_1")
+placement = 0
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_pedestal_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_pedestal_2")
+placement = 0
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_crystals_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_crystals_0")
+placement = 0
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_crystals_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_crystals_1")
+placement = 0
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_crystals_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_crystals_2")
+placement = 0
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_mask_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_mask_0")
+placement = 2
+weight = 0.164
+
+[sub_resource type="Resource" id="d_eclipse_heart_mask_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_mask_1")
+placement = 2
+weight = 0.164
+
+[sub_resource type="Resource" id="d_eclipse_heart_mask_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_mask_2")
+placement = 2
+weight = 0.164
+
+[sub_resource type="Resource" id="d_eclipse_heart_candles_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_candles_0")
+placement = 0
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_candles_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_candles_1")
+placement = 0
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_candles_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_candles_2")
+placement = 0
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_chain_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_chain_0")
+placement = 1
+weight = 0.164
+sway = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_chain_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_chain_1")
+placement = 1
+weight = 0.164
+sway = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_relief_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_relief_0")
+placement = 2
+weight = 0.164
+
+[sub_resource type="Resource" id="d_eclipse_heart_relief_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_relief_1")
+placement = 2
+weight = 0.164
+
+[sub_resource type="Resource" id="d_eclipse_heart_relief_2"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_relief_2")
+placement = 2
+weight = 0.164
+
+[sub_resource type="Resource" id="d_eclipse_heart_shield_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_shield_0")
+placement = 2
+weight = 0.164
+
+[sub_resource type="Resource" id="d_eclipse_heart_shield_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_shield_1")
+placement = 2
+weight = 0.164
+
+[sub_resource type="Resource" id="d_eclipse_heart_spire_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_spire_0")
+placement = 0
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_spire_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_spire_1")
+placement = 0
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_urn_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_urn_0")
+placement = 0
+weight = 0.164
+
+[sub_resource type="Resource" id="d_eclipse_heart_urn_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_urn_1")
+placement = 0
+weight = 0.164
+
+[sub_resource type="Resource" id="d_eclipse_heart_sconce_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_sconce_0")
+placement = 2
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_sconce_1"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_sconce_1")
+placement = 2
+weight = 0.164
+light_color = Color(1.000, 0.824, 0.471, 0.85)
+light_scale = 0.22
+unshaded = true
+
+[sub_resource type="Resource" id="d_eclipse_heart_books_0"]
+script = ExtResource("decor")
+texture = ExtResource("t_eclipse_heart_books_0")
+placement = 0
+weight = 0.164
+
+[resource]
+script = ExtResource("pack")
+id = &"eclipse_heart_pack"
+decorations = Array[ExtResource("decor")]([SubResource("d_eclipse_heart_sigil_0"), SubResource("d_eclipse_heart_sigil_1"), SubResource("d_eclipse_heart_sigil_2"), SubResource("d_eclipse_heart_sigil_3"), SubResource("d_eclipse_heart_brazier_0"), SubResource("d_eclipse_heart_brazier_1"), SubResource("d_eclipse_heart_brazier_2"), SubResource("d_eclipse_heart_brazier_3"), SubResource("d_eclipse_heart_bust_0"), SubResource("d_eclipse_heart_bust_1"), SubResource("d_eclipse_heart_bust_2"), SubResource("d_eclipse_heart_column_0"), SubResource("d_eclipse_heart_column_1"), SubResource("d_eclipse_heart_column_2"), SubResource("d_eclipse_heart_banner_0"), SubResource("d_eclipse_heart_banner_1"), SubResource("d_eclipse_heart_banner_2"), SubResource("d_eclipse_heart_banner_3"), SubResource("d_eclipse_heart_pedestal_0"), SubResource("d_eclipse_heart_pedestal_1"), SubResource("d_eclipse_heart_pedestal_2"), SubResource("d_eclipse_heart_crystals_0"), SubResource("d_eclipse_heart_crystals_1"), SubResource("d_eclipse_heart_crystals_2"), SubResource("d_eclipse_heart_mask_0"), SubResource("d_eclipse_heart_mask_1"), SubResource("d_eclipse_heart_mask_2"), SubResource("d_eclipse_heart_candles_0"), SubResource("d_eclipse_heart_candles_1"), SubResource("d_eclipse_heart_candles_2"), SubResource("d_eclipse_heart_chain_0"), SubResource("d_eclipse_heart_chain_1"), SubResource("d_eclipse_heart_relief_0"), SubResource("d_eclipse_heart_relief_1"), SubResource("d_eclipse_heart_relief_2"), SubResource("d_eclipse_heart_shield_0"), SubResource("d_eclipse_heart_shield_1"), SubResource("d_eclipse_heart_spire_0"), SubResource("d_eclipse_heart_spire_1"), SubResource("d_eclipse_heart_urn_0"), SubResource("d_eclipse_heart_urn_1"), SubResource("d_eclipse_heart_sconce_0"), SubResource("d_eclipse_heart_sconce_1"), SubResource("d_eclipse_heart_books_0")])

@@ -17,6 +17,7 @@ chance = 0.5
 
 [resource]
 script = ExtResource("4_ed")
+voice = &"plant"
 id = &"root_strangler"
 display_name = "Корнедушец"
 description = "Узел корней мирового древа, обретший форму. Хлещет корнем и опутывает — ноги вязнут."

@@ -40,7 +40,7 @@ func level() -> int:
 ## Redraws the building for its current level.
 func refresh() -> void:
 	var lvl := level()
-	var tex: Texture2D = data.texture if lvl > 0 else AssetPaths.tex(AssetPaths.TOWN_DIR + "ruins.png")
+	var tex: Texture2D = AssetPaths.building_texture(data, lvl)
 	_sprite.texture = tex
 	_sprite.offset = Vector2(-floorf(tex.get_width() / 2.0), -tex.get_height())
 	_sprite.modulate = Color.WHITE if lvl > 0 else Color(0.85, 0.82, 0.8)
@@ -116,6 +116,8 @@ func play_built() -> void:
 	Fx.sparks(get_parent(), global_position + Vector2(0, -20), Color(1.0, 0.85, 0.5), 30, 120.0)
 	EventBus.screen_shake.emit(2.0)
 	AudioManager.play_sfx(&"level_up", global_position)
+	AudioManager.play_ui(&"ui_build")
+	AudioManager.play_sfx(&"town_anvil", global_position, -4.0)
 
 
 func get_prompt() -> String:

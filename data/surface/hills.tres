@@ -1,10 +1,7 @@
-[gd_resource type="Resource" script_class="SurfaceBiomeData" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="SurfaceBiomeData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/surface_biome_data.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/sprites/tiles/tiles_surface_hills.png" id="2"]
-[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/surface_hills_far.png" id="3"]
-[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/surface_hills_mid.png" id="4"]
-[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/surface_hills_near.png" id="5"]
 
 [resource]
 script = ExtResource("1")
@@ -12,9 +9,9 @@ id = &"surface_hills"
 display_name = "Холмы"
 order = 100
 tileset_texture = ExtResource("2")
-parallax_far = ExtResource("3")
-parallax_mid = ExtResource("4")
-parallax_near = ExtResource("5")
+parallax_far = "res://assets/sprites/backgrounds/surface_hills_far.png"
+parallax_mid = "res://assets/sprites/backgrounds/surface_hills_mid.png"
+parallax_near = "res://assets/sprites/backgrounds/surface_hills_near.png"
 ambient = Color(1, 1, 0.97, 1)
 back_wall_modulate = Color(0.85, 0.85, 0.9, 1)
 ambient_particles = Color(0.85, 1, 0.55, 1)
@@ -30,7 +27,7 @@ contrast = 1.05
 decor_per_room = 0.0
 ore_chance = 0.01
 music = &"surface_hills"
-step_sound = &"step_soft"
+step_sound = &"step_grass"
 trees = Array[StringName]([&"tree_oak", &"tree_birch"])
 rocks = Array[StringName]([&"rock_big", &"rock_small"])
 small = Array[StringName]([&"bush"])

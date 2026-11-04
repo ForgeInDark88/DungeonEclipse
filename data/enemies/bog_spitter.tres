@@ -18,6 +18,7 @@ chance = 1.0
 
 [resource]
 script = ExtResource("3_achw7")
+voice = &"slime"
 id = &"bog_spitter"
 display_name = "Болотный плевун"
 description = "Плюётся липкой грязью: попавший в неё еле переставляет ноги."

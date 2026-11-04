@@ -18,6 +18,7 @@ chance = 0.35
 
 [resource]
 script = ExtResource("4_ed")
+voice = &"void"
 id = &"light_eater"
 display_name = "Пожиратель света"
 description = "Служитель Затмения с чёрным солнцем вместо лица. Гасит свет вокруг и бросает сгустки тьмы."

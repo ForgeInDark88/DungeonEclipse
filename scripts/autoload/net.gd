@@ -140,7 +140,15 @@ func game_port() -> int:
 	return int(env) if env != "" else GAME_PORT
 
 
+## LAN co-op needs UDP sockets (ENet); a browser build has none, so the
+## Web export is single-player (docs/PERFORMANCE.md, README).
+static func lan_available() -> bool:
+	return not OS.has_feature("web")
+
+
 func host_game(port := -1, seats := MAX_PLAYERS, discoverable := true) -> bool:
+	if not lan_available():
+		return false
 	var peer := ENetMultiplayerPeer.new()
 	max_players = clampi(seats, 2, MAX_PLAYERS)
 	# One extra connection slot: a full session still answers «мир полон».
@@ -159,6 +167,8 @@ func host_game(port := -1, seats := MAX_PLAYERS, discoverable := true) -> bool:
 
 
 func join_game(ip: String, port := -1) -> bool:
+	if not lan_available():
+		return false
 	var peer := ENetMultiplayerPeer.new()
 	if peer.create_client(ip, port if port > 0 else game_port()) != OK:
 		return false

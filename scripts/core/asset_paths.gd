@@ -74,6 +74,13 @@ const FIREBALL := SPRITES_DIR + "fx/fireball.png"
 const KNIFE := SPRITES_DIR + "fx/knife.png"
 const DARK_BOLT := SPRITES_DIR + "fx/dark_bolt.png"
 const BOMB := SPRITES_DIR + "items/bomb.png"
+const GATE_BARS := SPRITES_DIR + "props/gate_bars.png"
+const TITLE_GLOW := UI_DIR + "title_glow.png"
+const TITLE_STONE := UI_DIR + "title_stone.png"
+const TREE_CREST := UI_DIR + "tree_crest.png"
+const TREE_NODE := UI_DIR + "tree_node.png"
+const TREE_KEYSTONE := UI_DIR + "tree_keystone.png"
+const TREE_BG := UI_DIR + "tree_bg.png"
 
 # --- Animated sheets (grid PNG + SpriteSheetLayout .tres, see docs/ANIMATION_GUIDE.md) ---
 const ANIM_DIR := "res://data/animations/"
@@ -175,6 +182,85 @@ const SFX := {
 	&"boss_roar": SFX_DIR + "boss_roar.wav",
 	&"boss_toll": SFX_DIR + "boss_toll.wav",
 	&"skill_cast": SFX_DIR + "skill_cast.wav",
+	# --- GENERATED SFX (tools/audio/gen_sfx.py) ---
+	&"beast_aggro": SFX_DIR + "beast_aggro.wav",
+	&"beast_attack": SFX_DIR + "beast_attack.wav",
+	&"beast_death": SFX_DIR + "beast_death.wav",
+	&"beast_hurt": SFX_DIR + "beast_hurt.wav",
+	&"bone_aggro": SFX_DIR + "bone_aggro.wav",
+	&"bone_attack": SFX_DIR + "bone_attack.wav",
+	&"bone_death": SFX_DIR + "bone_death.wav",
+	&"bone_hurt": SFX_DIR + "bone_hurt.wav",
+	&"brute_aggro": SFX_DIR + "brute_aggro.wav",
+	&"brute_attack": SFX_DIR + "brute_attack.wav",
+	&"brute_death": SFX_DIR + "brute_death.wav",
+	&"brute_hurt": SFX_DIR + "brute_hurt.wav",
+	&"frost_aggro": SFX_DIR + "frost_aggro.wav",
+	&"frost_attack": SFX_DIR + "frost_attack.wav",
+	&"frost_death": SFX_DIR + "frost_death.wav",
+	&"frost_hurt": SFX_DIR + "frost_hurt.wav",
+	&"hiss_aggro": SFX_DIR + "hiss_aggro.wav",
+	&"hiss_attack": SFX_DIR + "hiss_attack.wav",
+	&"hiss_death": SFX_DIR + "hiss_death.wav",
+	&"hiss_hurt": SFX_DIR + "hiss_hurt.wav",
+	&"hit_bone": SFX_DIR + "hit_bone.wav",
+	&"hit_slime": SFX_DIR + "hit_slime.wav",
+	&"hit_spirit": SFX_DIR + "hit_spirit.wav",
+	&"hit_stone": SFX_DIR + "hit_stone.wav",
+	&"hit_wood": SFX_DIR + "hit_wood.wav",
+	&"human_aggro": SFX_DIR + "human_aggro.wav",
+	&"human_attack": SFX_DIR + "human_attack.wav",
+	&"human_death": SFX_DIR + "human_death.wav",
+	&"human_hurt": SFX_DIR + "human_hurt.wav",
+	&"mimic_aggro": SFX_DIR + "mimic_aggro.wav",
+	&"mimic_attack": SFX_DIR + "mimic_attack.wav",
+	&"mimic_death": SFX_DIR + "mimic_death.wav",
+	&"mimic_hurt": SFX_DIR + "mimic_hurt.wav",
+	&"plant_aggro": SFX_DIR + "plant_aggro.wav",
+	&"plant_attack": SFX_DIR + "plant_attack.wav",
+	&"plant_death": SFX_DIR + "plant_death.wav",
+	&"plant_hurt": SFX_DIR + "plant_hurt.wav",
+	&"slime_aggro": SFX_DIR + "slime_aggro.wav",
+	&"slime_attack": SFX_DIR + "slime_attack.wav",
+	&"slime_death": SFX_DIR + "slime_death.wav",
+	&"slime_hurt": SFX_DIR + "slime_hurt.wav",
+	&"spirit_aggro": SFX_DIR + "spirit_aggro.wav",
+	&"spirit_attack": SFX_DIR + "spirit_attack.wav",
+	&"spirit_death": SFX_DIR + "spirit_death.wav",
+	&"spirit_hurt": SFX_DIR + "spirit_hurt.wav",
+	&"step_grass": SFX_DIR + "step_grass.wav",
+	&"step_metal": SFX_DIR + "step_metal.wav",
+	&"step_sand": SFX_DIR + "step_sand.wav",
+	&"step_water": SFX_DIR + "step_water.wav",
+	&"stone_aggro": SFX_DIR + "stone_aggro.wav",
+	&"stone_attack": SFX_DIR + "stone_attack.wav",
+	&"stone_death": SFX_DIR + "stone_death.wav",
+	&"stone_hurt": SFX_DIR + "stone_hurt.wav",
+	&"town_anvil": SFX_DIR + "town_anvil.wav",
+	&"town_bell": SFX_DIR + "town_bell.wav",
+	&"trap_arrow": SFX_DIR + "trap_arrow.wav",
+	&"trap_click": SFX_DIR + "trap_click.wav",
+	&"trap_flame": SFX_DIR + "trap_flame.wav",
+	&"trap_spike": SFX_DIR + "trap_spike.wav",
+	&"ui_build": SFX_DIR + "ui_build.wav",
+	&"ui_buy": SFX_DIR + "ui_buy.wav",
+	&"ui_error": SFX_DIR + "ui_error.wav",
+	&"ui_page": SFX_DIR + "ui_page.wav",
+	&"ui_sell": SFX_DIR + "ui_sell.wav",
+	&"ui_tab": SFX_DIR + "ui_tab.wav",
+	&"void_aggro": SFX_DIR + "void_aggro.wav",
+	&"void_attack": SFX_DIR + "void_attack.wav",
+	&"void_death": SFX_DIR + "void_death.wav",
+	&"void_hurt": SFX_DIR + "void_hurt.wav",
+	&"water_aggro": SFX_DIR + "water_aggro.wav",
+	&"water_attack": SFX_DIR + "water_attack.wav",
+	&"water_death": SFX_DIR + "water_death.wav",
+	&"water_hurt": SFX_DIR + "water_hurt.wav",
+	&"winged_aggro": SFX_DIR + "winged_aggro.wav",
+	&"winged_attack": SFX_DIR + "winged_attack.wav",
+	&"winged_death": SFX_DIR + "winged_death.wav",
+	&"winged_hurt": SFX_DIR + "winged_hurt.wav",
+	# --- END GENERATED SFX ---
 }
 ## Weapon type (WeaponItemData.WeaponType) -> swing sound id.
 const WEAPON_SFX: Array[StringName] = [&"attack_sword", &"attack_axe", &"attack_spear", &"attack_dagger", &"attack_bow", &"attack_staff", &"attack_mace", &"attack_bow", &"attack_staff"]
@@ -246,6 +332,9 @@ const MUSIC_ONE_SHOT: Array[StringName] = [&"victory", &"death", &"ending"]
 # --- Shaders ---
 const SHADER_FLASH := "res://assets/shaders/flash.gdshader"
 const SHADER_POST_FX := "res://assets/shaders/post_fx.gdshader"
+const SHADER_FOLIAGE := "res://assets/shaders/foliage_sway.gdshader"
+const SHADER_WATER := "res://assets/shaders/water.gdshader"
+const SHADER_PARALLAX := "res://assets/shaders/parallax_life.gdshader"
 
 # Biome tileset atlas (16x16 cells, 4 columns): rows of variants.
 # The texture itself comes from BiomeData.tileset_texture.
@@ -277,8 +366,16 @@ static func layout(path: String) -> SpriteSheetLayout:
 
 static func flash_material() -> ShaderMaterial:
 	var m := ShaderMaterial.new()
-	m.shader = load(SHADER_FLASH)
+	m.shader = shader(SHADER_FLASH)
 	return m
+
+
+## A shader by path; a missing file gives null (the node is drawn plain) and a warning.
+static func shader(path: String) -> Shader:
+	if ResourceLoader.exists(path):
+		return load(path) as Shader
+	_warn_missing(path)
+	return null
 
 
 ## Close-up sheet; a heroine uses hero_<race>_<class>_f.png (the male one if missing).
@@ -304,17 +401,55 @@ static func portrait_bg_path(class_id: StringName) -> String:
 	return PORTRAITS_DIR + "bg_%s.png" % class_id
 
 
+## A texture by path. A missing (or renamed) file never crashes the game:
+## it gives a visible magenta-black checker and one warning per path.
+## Use tex_or_null() where the caller has its own fallback.
 static func tex(path: String) -> Texture2D:
-	if ResourceLoader.exists(path):
+	var t := tex_or_null(path)
+	if t != null:
+		return t
+	_warn_missing(path)
+	return placeholder()
+
+
+## The texture, or null without a warning when the file is absent.
+static func tex_or_null(path: String) -> Texture2D:
+	if path != "" and ResourceLoader.exists(path):
 		return load(path) as Texture2D
-	push_warning("Missing texture: %s" % path)
 	return null
+
+
+static var _placeholder: Texture2D
+static var _warned := {}
+
+
+## 16x16 magenta-black checker: a missing asset is obvious in the game.
+static func placeholder() -> Texture2D:
+	if _placeholder == null:
+		var img := Image.create(16, 16, false, Image.FORMAT_RGBA8)
+		for y in 16:
+			for x in 16:
+				img.set_pixel(x, y, Color(1, 0, 1) if (x / 4 + y / 4) % 2 == 0 else Color(0.08, 0, 0.08))
+		_placeholder = ImageTexture.create_from_image(img)
+	return _placeholder
+
+
+## How many distinct asset paths were missing during this run (tests read it).
+static func missing_count() -> int:
+	return _warned.size()
+
+
+static func _warn_missing(path: String) -> void:
+	if _warned.has(path):
+		return
+	_warned[path] = true
+	push_warning("Missing asset: %s (fallback used)" % path)
 
 
 ## Icon of an expedition map node (type or special kind; "unknown" = fog).
 static func map_icon(kind: StringName) -> Texture2D:
 	var path := MAP_DIR + "node_%s.png" % kind
-	return tex(path) if ResourceLoader.exists(path) else tex(MAP_DIR + "node_unknown.png")
+	return tex_or_null(path) if ResourceLoader.exists(path) else tex(MAP_DIR + "node_unknown.png")
 
 
 static func map_hint(kind: StringName) -> Texture2D:
@@ -324,10 +459,23 @@ static func map_hint(kind: StringName) -> Texture2D:
 ## Icon of a town building (tools/gen_town_loop_art.py): ui/buildings/<id>.png.
 static func building_icon(id: StringName) -> Texture2D:
 	var path := UI_DIR + "buildings/%s.png" % id
-	return tex(path) if ResourceLoader.exists(path) else null
+	return tex_or_null(path)
+
+
+## A town building as it looks at `level`: ruins at 0, its texture at 1,
+## town/<id>_<level>.png above (tools/art/gen_building_levels.py: annexes,
+## a cupola, gilded eaves); a missing level file falls back to the texture.
+static func building_texture(data: BuildingData, level: int) -> Texture2D:
+	if level <= 0:
+		return tex(TOWN_DIR + "ruins.png")
+	if level >= 2:
+		var t := tex_or_null(TOWN_DIR + "%s_%d.png" % [data.id, mini(level, 3)])
+		if t:
+			return t
+	return data.texture if data.texture else tex(TOWN_DIR + "ruins.png")
 
 
 ## Two idle frames of a townsperson (npc/<id>_idle.png), null when none.
 static func npc_sheet(id: StringName) -> Texture2D:
 	var path := SPRITES_DIR + "npc/%s_idle.png" % id
-	return tex(path) if ResourceLoader.exists(path) else null
+	return tex_or_null(path)
